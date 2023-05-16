@@ -1,0 +1,234 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"/><title>Webpack App</title><meta name="viewport" content="width=device-width,initial-scale=1"/><style>html, body {
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  * {
+    box-sizing: border-box;
+  }</style><script>/* globals window */
+  /* eslint-disable no-underscore-dangle */
+  try {
+    if (window.top !== window) {
+      window.__REACT_DEVTOOLS_GLOBAL_HOOK__ = window.top.__REACT_DEVTOOLS_GLOBAL_HOOK__;
+    }
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.warn('unable to connect to top frame for connecting dev tools');
+  }
+
+  window.onerror = function onerror(message, source, line, column, err) {
+    if (window.CONFIG_TYPE !== 'DEVELOPMENT') return;
+    // eslint-disable-next-line no-var, vars-on-top
+    var xhr = new window.XMLHttpRequest();
+    xhr.open('POST', '/runtime-error');
+    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+    xhr.send(
+      JSON.stringify({
+        /* eslint-disable object-shorthand */
+        message: message,
+        source: source,
+        line: line,
+        column: column,
+        error: err && { message: err.message, name: err.name, stack: err.stack },
+        origin: 'manager',
+        /* eslint-enable object-shorthand */
+      })
+    );
+  };</script><script>// Overwrite the default title - cannot be set in the API
+  document.title = process.env.STORYBOOK_TITLE;
+  let t;
+  function setMain() {
+    const main = document.querySelector('[role="main"]');
+    main.style.right = '0';
+    main.style.height = '100%';
+    main.style.top = '0';
+    main.style.width = 'auto';
+  }
+  function setMainDebounced() {
+    if (t) {
+      clearTimeout(t);
+    }
+    t = setTimeout(setMain, 250);
+  }
+
+  function addCustomEventListener(selector, event, handler) {
+    const rootElement = document.querySelector('body');
+    //since the root element is set to be body for our current dealings
+    rootElement.addEventListener(
+      event,
+      function (evt) {
+        var targetElement = evt.target;
+        while (targetElement != null) {
+          if (targetElement.matches(selector)) {
+            handler(evt);
+            return;
+          }
+          targetElement = targetElement.parentElement;
+        }
+      },
+      true
+    );
+  }
+
+  function start() {
+    setMain();
+    window.addEventListener('resize', setMainDebounced);
+    //adding the Event Listeners to all the li tasks
+    addCustomEventListener('[title="Exit full screen [F]"]', 'click', setMainDebounced);
+  }
+  t = setTimeout(start, 500);</script><style>@media (min-width: 600px) {
+    .sidebar-header>a {
+      transform: translate(0, -120px);
+    }
+  }
+
+  /** Logo */
+  .sidebar-header img {
+    width: 120px;
+    max-width: 100%;
+  }
+
+  .sidebar-header img[alt="json-schema-form"] {
+    width: 200px;
+  }
+
+  .sidebar-item {
+    font-size: 0.9rem !important;
+    padding-top: 4px;
+    padding-bottom: 4px;
+    margin-top: 4px;
+    text-transform: capitalize;
+  }
+
+  .sidebar-item[data-nodetype='group'][data-parent-id='false'] {
+    margin-top: 8px;
+  }
+
+  /** Styles for making Storybook closer to Employ **/
+  .sidebar-item {
+    color: #ffffff !important;
+    font-weight: 500;
+  }
+
+  .sidebar-container {
+    background-color: #202d39;
+  }
+
+  .sidebar-subheading {
+    margin-top: 4px !important;
+    font-size: 12px !important;
+    font-size: 11px !important;
+    letter-spacing: normal !important;
+    padding: 4px 20px !important;
+  }
+
+  .sidebar-subheading:hover {
+    background: linear-gradient(-90deg, #5ec1cf 5px, transparent 2px),
+      linear-gradient(90deg, #ffffff0f, #ffffff0f);
+  }
+
+  .sidebar-subheading>button:first-of-type {
+    width: 100%;
+  }
+
+  .sidebar-item[data-selected='true'] {
+    font-weight: normal !important;
+  }
+
+  #storybook-explorer-tree button:focus {
+    color: #fff !important;
+  }
+
+  #storybook-explorer-tree a[data-selected='true'] {
+    background: linear-gradient(-90deg, #5ec1cf 5px, transparent 2px),
+      linear-gradient(90deg, #ffffff0f, #ffffff0f);
+  }
+
+  a[data-selected='true']~a {
+    top: 3px;
+    opacity: 0;
+  }
+
+  a[data-selected='true']~a:focus {
+    opacity: 1;
+  }
+
+  .search-field input {
+    border-color: #b1becd;
+    color: white;
+  }
+
+  .search-field input::placeholder {
+    color: #b1becd;
+    opacity: 1;
+  }
+
+  .search-field input:focus {
+    color: #00234b;
+  }
+
+  .search-field input:focus::placeholder {
+    color: #525f7f;
+  }
+
+  .search-result-item--label {
+    color: white;
+  }
+
+  .search-result-item--label strong {
+    font-weight: 500;
+  }
+
+  .search-result-item--label mark {
+    /* search query match */
+    color: #ff9066;
+  }
+
+  button[title='Shortcuts'] {
+    color: #b1becd;
+    box-shadow: #b1becd 0 0 0 1px inset;
+  }
+
+  button[title='Shortcuts']:hover {
+    background: transparent;
+    color: white;
+    box-shadow: white 0 0 0 1px inset;
+  }
+
+  button[title='Shortcuts']:focus {
+    background: transparent;
+    color: white;
+    box-shadow: 0 0 0 3px #00234b, 0 0 0 5px white;
+  }
+
+  /* "No Results found" had a default color very similar to the bg color */
+  #storybook-explorer-menu strong {
+    color: white;
+  }
+
+  /** Targetting folder svg icon next to group name **/
+  [data-nodetype='group']>svg {
+    color: #f4f7fc;
+  }</style><style>#root[hidden],
+      #docs-root[hidden] {
+        display: none !important;
+      }</style></head><body><div id="root"></div><div id="docs-root"></div><script>window['CONFIG_TYPE'] = "PRODUCTION";
+          
+      
+          
+            window['LOGLEVEL'] = "info";
+          
+      
+          
+            window['FEATURES'] = {"postcss":true,"emotionAlias":false,"warnOnLegacyHierarchySeparator":true,"buildStoriesJson":false,"storyStoreV7":false,"modernInlineRender":false,"breakingChangesV7":false,"interactionsDebugger":false,"babelModeV7":false,"argTypeTargetsV7":false,"previewMdx2":false};
+          
+      
+          
+      
+          
+      
+          
+            window['DOCS_MODE'] = false;</script><script src="runtime~main.63948f22154bd05b1009.manager.bundle.js"></script><script src="119.7d4a413df8761d50b21f.manager.bundle.js"></script><script src="main.8d7cd3e199d2b0c0b27b.manager.bundle.js"></script></body></html>
