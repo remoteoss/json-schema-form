@@ -59,3 +59,4 @@ jobs:
       - name: Lint
         run: npm run lint
       - run: npm run prettier:check
+      - run: check:pr-version
