@@ -13,6 +13,7 @@
   "module": "dist/index.js",
   "files": [
     "dist",
+    "src/tests",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.md"
