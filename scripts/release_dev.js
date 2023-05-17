@@ -7,6 +7,7 @@ const {
   askForText,
   checkGitStatus,
   checkNpmAuth,
+  getDateYYYYMMDDHHMMSS,
   revertCommit,
   runExec,
 } = require('./release.helpers');
@@ -29,14 +30,12 @@ async function checkGitBranchAndStatus() {
 }
 
 async function getNewVersion() {
-  const result = await runExec('git rev-parse --short HEAD^');
-  // BUG TODO later The gitSHA does not match the real next commit sha
-  const gitSHA = result.stdout.toString().trim();
+  const hour = getDateYYYYMMDDHHMMSS(); // Use hour to be an incremental number
   const currentVersion = packageJson.version;
 
   if (currentVersion.includes('-dev.')) {
     console.log('Bumping exisiting dev...');
-    return currentVersion.replace(/-dev\.(.*)$/, `-dev.${gitSHA}`);
+    return currentVersion.replace(/-dev\.(.*)$/, `-dev.${hour}`);
   }
 
   console.log('Creating a new dev...');
@@ -46,7 +45,7 @@ async function getNewVersion() {
     process.exit(1);
   }
   const versionBase = semver.coerce(currentVersion); // 1.0.0-xxxx -> 1.0.0
-  return semver.inc(versionBase, versionType) + `-dev.${gitSHA}`;
+  return semver.inc(versionBase, versionType) + `-dev.${hour}`;
 }
 
 async function bumpVersion({ newVersion }) {
