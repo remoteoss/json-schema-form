@@ -7,14 +7,15 @@ const esbuild = require('esbuild');
 const pkg = require('../package.json');
 
 const licenseContent = fs.readFileSync(path.join(__dirname, '../LICENSE'), 'utf8');
+const packageJson = require(path.resolve(__dirname, '../package.json'));
+const pkgVersion = packageJson.version;
 
 const banner = `
 /*!
  Copyright (c) ${new Date().getFullYear()} Remote Technology, Inc.
- NPM Package (coming soon): @remoteoss/json-schema-form
+ NPM Package: @remoteoss/json-schema-form@${pkgVersion}
  Generated: ${new Date().toUTCString()}
 
- MIT LICENSE
  ${licenseContent}
 */ `;
 

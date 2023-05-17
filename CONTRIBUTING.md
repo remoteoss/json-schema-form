@@ -34,9 +34,25 @@ Please, always add tests to your bug fixs and new features.
 
 ### Testing the PR in your project
 
-It's possible to test your PR in your own projects, by publishing a `dev` release.
+#### Local release
 
-Note that only core maintainers (Remoters) can publish new releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
+The simplest way to test your PR in your project is by installing it locally as a "tarball" version.
+
+1. Run `npm run release:local`, which will create the tarball. It will output a suggest npm command to re-install the package in your project. Example:
+
+```
+  npm un @remoteoss/json-schema-form && npm i -S /Users/kim/Documents/my-repos/json-schema-form/local-0.1.0-beta.0.tgz
+```
+
+2. Then go to your project and run the command above.
+
+You can re-run this `release:local` as many times as you need. Remember to re-install the package each time a new tarball is created.
+
+#### Public release
+
+If you need a public release (for example, to run it on your project CI), you can publish a `dev` release.
+
+Note that only core maintainers (Remoters) can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
 
 1.  Locally run the script `npm run release:dev:patch` or `npm run release:dev:minor` depending on your changes.
     a. You'll be shown what's the new version and prompt you if it's correct. Eg
@@ -44,7 +60,7 @@ Note that only core maintainers (Remoters) can publish new releases. If needed, 
         ```
         Creating a new dev...
         :: Current version: 1.0.0
-        :::::: New version: 1.0.1-dev.20230516-175718
+        :::::: New version: 1.0.1-dev.20230516175718
         Ready to commit and publish it? (Y/n)
 
         ```
@@ -56,10 +72,10 @@ Every `dev` release is [tagged as `dev`](https://docs.npmjs.com/cli/v9/commands/
 You must specify the exact version, for example:
 
 ```bash
-npm install @remoteoss/json-schema-form@1.0.1-dev.20230516-175718
+npm i -S @remoteoss/json-schema-form@1.0.1-dev.20230516-175718
 ```
 
-You can create as many dev releases as you need during the PRs, running the same command.
+You can create as many dev releases as you need during the PRs, by running the same command.
 
 ### Merging a PR
 
