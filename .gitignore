@@ -26,3 +26,5 @@ coverage
 # Build Files
 dist
 *.tgz
+# from unzipping .tgz
+package
