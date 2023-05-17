@@ -59,6 +59,20 @@ async function askForConfirmation(question) {
   return askForConfirmation();
 }
 
+function getDateYYYYMMDDHHMMSS() {
+  const twoDigits = (n) => (n < 10 ? '0' : '') + n;
+  const nowLocal = new Date();
+  const dateUtc = new Date(nowLocal.toUTCString().slice(0, -4));
+  return (
+    dateUtc.getFullYear() +
+    twoDigits(dateUtc.getMonth() + 1) +
+    twoDigits(dateUtc.getDate()) +
+    twoDigits(dateUtc.getHours()) +
+    twoDigits(dateUtc.getMinutes()) +
+    twoDigits(dateUtc.getSeconds())
+  );
+}
+
 async function revertCommit({ newVersion, main } = {}) {
   const version = newVersion || 'x.x.x';
   // TODO later revert this automatically.
@@ -100,6 +114,7 @@ module.exports = {
   checkGitStatus,
   askForText,
   askForConfirmation,
+  getDateYYYYMMDDHHMMSS,
   revertCommit,
   revertChanges,
   runExec,
