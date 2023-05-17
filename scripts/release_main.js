@@ -5,6 +5,7 @@ const semver = require('semver');
 const {
   askForConfirmation,
   askForText,
+  build,
   checkGitStatus,
   checkNpmAuth,
   runExec,
@@ -120,6 +121,8 @@ async function init() {
   if (answerChangelog === 'no') {
     await revertChanges();
   }
+
+  await build(); // run after bumpVersion+changelog to have the latest version.
 
   const otp = await askForText('🔐 What is the NPM Auth OTP? (Check 1PW) ');
 

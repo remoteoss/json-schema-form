@@ -5,6 +5,7 @@ const semver = require('semver');
 const {
   askForConfirmation,
   askForText,
+  build,
   checkGitStatus,
   checkNpmAuth,
   getDateYYYYMMDDHHMMSS,
@@ -101,6 +102,8 @@ async function init() {
   const otp = await askForText('🔐 What is the NPM Auth OTP? (Check 1PW) ');
 
   await bumpVersion({ newVersion });
+  await build(); // run after the bumpVersion to have the latest version.
+
   await gitCommit({ newVersion });
   await publish({ newVersion, otp });
 }

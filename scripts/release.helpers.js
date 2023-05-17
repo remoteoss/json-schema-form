@@ -59,6 +59,10 @@ async function askForConfirmation(question) {
   return askForConfirmation();
 }
 
+async function build() {
+  await runExec('npm run build');
+}
+
 function getDateYYYYMMDDHHMMSS() {
   const twoDigits = (n) => (n < 10 ? '0' : '') + n;
   const nowLocal = new Date();
@@ -114,6 +118,7 @@ module.exports = {
   checkGitStatus,
   askForText,
   askForConfirmation,
+  build,
   getDateYYYYMMDDHHMMSS,
   revertCommit,
   revertChanges,
