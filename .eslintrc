@@ -1,0 +1,29 @@
+{
+  "root": true,
+  "extends": ["eslint:recommended", "prettier"],
+  "plugins": ["import", "jest", "sort-keys", "unused-imports"],
+  "parser": "babel-eslint",
+  "env": {
+    "es6": true,
+    "browser": true,
+    "node": true,
+    "jest": true
+  },
+  "rules": {
+    "jest/no-focused-tests": "error",
+    "arrow-body-style": 0,
+    "default-case": 0,
+    "import/order": [
+      "warn",
+      {
+        "groups": ["builtin", "external", "parent"],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc" /* sort in ascending order. Options: ['ignore', 'asc', 'desc'] */,
+          "caseInsensitive": true /* ignore case. Options: [true, false] */
+        }
+      }
+    ],
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true }]
+  }
+}

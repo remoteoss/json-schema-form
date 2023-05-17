@@ -1,0 +1,27 @@
+# Dependency directories
+node_modules
+
+# Optional npm cache directory
+.npm
+.npmrc
+
+# Optional REPL history
+.DS_Store
+
+# Tests
+coverage
+
+# env files
+.env
+
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/cspell.json
+!.vscode/*.code-snippets
+
+# Build Files
+dist
