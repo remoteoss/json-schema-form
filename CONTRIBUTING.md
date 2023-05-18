@@ -61,7 +61,7 @@ Note that only core maintainers (Remoters) can publish public releases. If neede
         Creating a new dev...
         :: Current version: 1.0.0
         :::::: New version: 1.0.1-dev.20230516175718
-        Ready to commit and publish it? (Y/n)
+        Ready to commit and publish it? (y/n)
 
         ```
 
@@ -96,7 +96,7 @@ The final release is done after merge.
         Creating a new dev...
         :: Current version: 1.0.0-beta.0
         :::::: New version: 1.1.0-beta.0
-        Ready to commit and publish it? (Y/n)
+        Ready to commit and publish it? (y/n)
 
         ```
 

@@ -42,7 +42,7 @@ async function askForConfirmation(question) {
     input: process.stdin,
     output: process.stdout,
   });
-  const answer = await rl.question(`${question} (Y/n)`);
+  const answer = await rl.question(`${question} (y/n)`);
   const normalizedAnswer = answer.trim().toLowerCase();
 
   rl.close();
@@ -56,7 +56,7 @@ async function askForConfirmation(question) {
     return 'no';
   }
   console.log('Invalid input. Please enter Y or n.');
-  return askForConfirmation();
+  return askForConfirmation(question);
 }
 
 async function build() {
