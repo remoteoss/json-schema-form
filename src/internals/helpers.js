@@ -10,10 +10,12 @@ import isEmpty from 'lodash/isEmpty';
 import isFunction from 'lodash/isFunction';
 
 /**
- * Returns the object from the JSON-schema node using the key.
- *
+ * Shorthand to lookup for keys with `x-jsf-*` preffix.
  * @param {Object} node - JSON-schema node
- * @param {String} key - JSON-schema key name
+ * @param {"presentation"|"errorMessage"} key - JSON-schema key name
+ * @example
+ *  pickKey(properties, 'presentation')
+ *  is the same as properties["x-jsf-presentation"]
  * @returns {Object}
  */
 export function pickXKey(node, key) {
