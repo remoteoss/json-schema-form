@@ -1,40 +1,22 @@
 const fs = require('fs');
 
-const { runExec } = require('./release.helpers');
+function init() {
+  const packageJson = fs.readFileSync('./package.json', 'utf8');
+  const { version } = JSON.parse(packageJson);
 
-async function getVersionsOf(fileName) {
-  const packageJson = fs.readFileSync(`./${fileName}`, 'utf8');
-  const { version: branchVersion } = JSON.parse(packageJson);
-
-  const { stdout: mainPkg } = await runExec(`git show main:${fileName}`, { silent: true });
-  const mainVersion = JSON.parse(mainPkg).version;
-
-  return {
-    branch: branchVersion,
-    main: mainVersion,
-  };
-}
-
-async function init() {
-  console.log('Checking your package version...');
-  const pkgVersions = await getVersionsOf('package.json');
-  const pkgLockVersions = await getVersionsOf('package-lock.json');
-
-  // Compare package from this branch to main
-  const isPkgWrong = pkgVersions.branch !== pkgVersions.main;
-  const isPkgLockWrong = pkgLockVersions.branch !== pkgLockVersions.main;
-
-  if (isPkgWrong || isPkgLockWrong) {
+  // TODO ideally I wanted to check diffs against "main",
+  // This works fine -> https://github.com/remoteoss/json-schema-form/pull/3/commits/20b69f27eb14dcba86698766315a9538f9c8ae16
+  // but it fails when running on CI.
+  // So we are left with a more fragile version:
+  if (version.includes('-dev') || !version.includes('-beta.0')) {
     console.log(
-      '🟠 PR cannot be merged because the version of package.json or package-lock.json is incorrect.' +
-        `\n   ::: Your branch: ${isPkgWrong ? pkgVersions.branch : pkgLockVersions.branch}` +
-        `\n   ::: Main branch: ${isPkgWrong ? pkgVersions.main : pkgLockVersions.main}` +
-        `\n   Run "npm run version_as_main" to revert it back to ${pkgVersions.main}.`
+      `🟠 This PR cannot be merged because the package.json version ${version} seems invalid.` +
+        '\n   Run "npm run version_as_main" to revert it back as it is on the main branch.'
     );
     process.exit(1);
   }
 
-  console.log(`Package version ${pkgVersions.branch} matches main's branch. Continuing...`);
+  console.log(`Package version ${version} seems valid. Continuing...`);
 }
 
 init();
