@@ -8,6 +8,7 @@ import { convertDiskSizeFromTo } from './utils';
 
 /**
  * @typedef {import('./createHeadlessForm').FieldParameters} FieldParameters
+ * @typedef {import('../createHeadlessForm').JsfConfig} JsfConfig
  */
 
 export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd';
@@ -297,6 +298,14 @@ function getSchema(fields = [], config) {
   return newSchema;
 }
 
+/**
+ * Returns the Yup schema structure of given fields.
+ * These fields must be the same from
+ * const { fields } = createHeadlessForm()
+ * @param {Fields[]} fields - List of fields
+ * @param {JsfConfig} config - Config
+ * @returns
+ */
 export function buildCompleteYupSchema(fields, config) {
   return object().shape(getSchema(fields, config), getNoSortEdges(fields));
 }
