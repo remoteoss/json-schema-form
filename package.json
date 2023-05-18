@@ -1,6 +1,6 @@
 {
   "name": "@remoteoss/json-schema-form",
-  "version": "0.0.0",
+  "version": "0.0.0-beta.0",
   "description": "Headless UI form powered by JSON Schemas",
   "author": "Remote.com <engineering@remote.com> (https://remote.com/)",
   "license": "MIT",
@@ -13,6 +13,7 @@
   "module": "dist/index.js",
   "files": [
     "dist",
+    "src/tests",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.md"
@@ -25,7 +26,16 @@
     "prepare": "husky install",
     "format:eslint": "eslint --fix \"src/**/*.{js,ts}\"",
     "format:prettier": "prettier --write \"src/**/*.{js,ts}\"",
-    "prettier:check": "prettier --check \"src/**/*.{js,ts}\""
+    "prettier:check": "prettier --check \"src/**/*.{js,ts}\"",
+    "check:pr-version": "node scripts/pr_dev_version",
+    "release:local": "node scripts/release_local",
+    "release:dev:patch": "node scripts/release_dev patch",
+    "release:dev:minor": "node scripts/release_dev minor",
+    "release:main:patch": "node scripts/release_main patch",
+    "release:main:minor": "node scripts/release_main minor",
+    "version_as_main": "node scripts/version_as_main.js",
+    "psrepublishOnly": "if [[ ! $PWD =~ scripts$ ]]; then npm run publish:nopublish; fi",
+    "psublish:nopublish": "echo 'Use `npm release:*` script instead && exit 1"
   },
   "lint-staged": {
     "*.{js,jsx}": [
@@ -42,6 +52,7 @@
     "@babel/preset-env": "^7.21.5",
     "babel-eslint": "^10.1.0",
     "babel-jest": "^29.5.0",
+    "child-process-promise": "^2.2.1",
     "esbuild": "^0.17.15",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.6.0",
@@ -51,10 +62,12 @@
     "eslint-plugin-sort-keys": "^2.3.5",
     "eslint-plugin-unused-imports": "^1.1.5",
     "fs-extra": "^11.1.1",
+    "generate-changelog": "^1.8.0",
     "husky": "^8.0.3",
     "jest": "^29.5.0",
     "jest-environment-jsdom": "^29.5.0",
-    "lint-staged": "^13.2.2"
+    "lint-staged": "^13.2.2",
+    "semver": "^7.5.1"
   },
   "keywords": [
     "json schemas",
