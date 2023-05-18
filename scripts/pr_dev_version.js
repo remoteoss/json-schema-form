@@ -1,32 +1,40 @@
 const fs = require('fs');
 
-function init() {
-  const packageJson = fs.readFileSync('./package.json', 'utf8');
-  const { version } = JSON.parse(packageJson);
+const { runExec } = require('./release.helpers');
 
-  // TODO ideally I wanted to check diffs against "main",
-  // but I don't know how to do it.
-  if (version.includes('-dev')) {
+async function getVersionsOf(fileName) {
+  const packageJson = fs.readFileSync(`./${fileName}`, 'utf8');
+  const { version: branchVersion } = JSON.parse(packageJson);
+
+  const { stdout: mainPkg } = await runExec(`git show main:${fileName}`, { silent: true });
+  const mainVersion = JSON.parse(mainPkg).version;
+
+  return {
+    branch: branchVersion,
+    main: mainVersion,
+  };
+}
+
+async function init() {
+  console.log('Checking your package version...');
+  const pkgVersions = await getVersionsOf('package.json');
+  const pkgLockVersions = await getVersionsOf('package-lock.json');
+
+  // Compare package from this branch to main
+  const isPkgWrong = pkgVersions.branch !== pkgVersions.main;
+  const isPkgLockWrong = pkgLockVersions.branch !== pkgLockVersions.main;
+
+  if (isPkgWrong || isPkgLockWrong) {
     console.log(
-      '🟠 This PR cannot be merged because the package.json version contains ".dev-". ' +
-        '\n   Please change the version back to the original one. ' +
-        '\n   Make sure the version is exactly the same as in the main branch.'
+      '🟠 PR cannot be merged because the version of package.json or package-lock.json is incorrect.' +
+        `\n   ::: Your branch: ${isPkgWrong ? pkgVersions.branch : pkgLockVersions.branch}` +
+        `\n   ::: Main branch: ${isPkgWrong ? pkgVersions.main : pkgLockVersions.main}` +
+        `\n   Run "npm run version_as_main" to revert it back to ${pkgVersions.main}.`
     );
     process.exit(1);
   }
 
-  // In case the dev removes the -dev but forgot to add the beta!
-  // Still not perfect as even "x.x.x-beta.0" would work.
-  if (!version.includes('-beta.')) {
-    console.log(
-      '🟠 This PR cannot be merged because the package.json version DOES NOT contain ".beta-0".' +
-        '\n   Please revert to the original version and try again. ' +
-        '\n   Make sure the version is exactly the same as the main branch.'
-    );
-    process.exit(1);
-  }
-
-  console.log(`Package version ${version} is valid. Continuing...`);
+  console.log(`Package version ${pkgVersions.branch} matches main's branch. Continuing...`);
 }
 
 init();
