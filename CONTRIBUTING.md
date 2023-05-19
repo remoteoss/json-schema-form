@@ -6,7 +6,7 @@ If you have questions about the library, found a bug or want to suggest a featur
 
 ## Documentation
 
-You can visit the [docs website](https://json-schema-form.vercel.app/), however its source is not in the repo yet, only the build (`/docs_build`). Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high.
+You can visit the [docs website](https://json-schema-form.vercel.app/), however its source is not in the repo yet. Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high.
 
 So our strategy is to at each new PR, to update the docs internally and manually copy its build to this repo.
 
