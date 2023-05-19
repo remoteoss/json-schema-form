@@ -51,14 +51,42 @@
       "type": "object",
       "additionalProperties": false,
       "properties": {
-        "required": { "type": "string" },
-        "minimum": { "type": "string" },
-        "minLength": { "type": "string" },
-        "maximum": { "type": "string" },
-        "maxLength": { "type": "string" },
-        "pattern": { "type": "string" },
-        "maxFileSize": { "type": "string" },
-        "accept": { "type": "string" }
+        "type": {
+          "type": "string",
+          "description": "Message shown when the value is not of the correct type."
+        },
+        "required": {
+          "type": "string",
+          "description": "Message shown when the value is required and not provided."
+        },
+        "minimum": {
+          "type": "string",
+          "description": "Message shown when the value is less than the minimum value."
+        },
+        "minLength": {
+          "type": "string",
+          "description": "Message shown when the value is less than the minimum length."
+        },
+        "maximum": {
+          "type": "string",
+          "description": "Message shown when the value is greater than the maximum value."
+        },
+        "maxLength": {
+          "type": "string",
+          "description": "Message shown when the value is greater than the maximum length."
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Message shown when the value is not the correct format and does not match the pattern property."
+        },
+        "maxFileSize": {
+          "type": "string",
+          "description": "Message shown when the file size is greater than the maximum file size."
+        },
+        "accept": {
+          "type": "string",
+          "description": "Message shown when the file type is not accepted."
+        }
       }
     },
     "x-jsf-presentation": {
