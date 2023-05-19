@@ -153,7 +153,6 @@
         },
         "statement": {
           "description": "Special message about the field. Useful in cases where this message is based on the field value.",
-          "additionalProperties": false,
           "type": "object",
           "properties": {
             "title": {
@@ -164,9 +163,14 @@
               "type": "string"
             },
             "severity": {
-              "type": "string",
               "description": "Defines the type of message.",
-              "enum": ["info", "warning", "error", "success"]
+              "anyOf": [
+                { "type": "string", "const": "info" },
+                { "type": "string", "const": "warning" },
+                { "type": "string", "const": "error" },
+                { "type": "string", "const": "success" },
+                {}
+              ]
             }
           }
         },
