@@ -1,0 +1,188 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "JSON json-schema-form-Schema",
+  "definitions": {
+    "schemaArray": {
+      "allOf": [
+        {
+          "$ref": "http://json-schema.org/draft-07/schema#/definitions/schemaArray"
+        },
+        {
+          "items": { "$ref": "#" }
+        }
+      ]
+    }
+  },
+  "allOf": [{ "$ref": "http://json-schema.org/draft-07/schema#" }],
+  "properties": {
+    "additionalItems": { "$ref": "#" },
+    "additionalProperties": { "$ref": "#" },
+    "dependencies": {
+      "additionalProperties": {
+        "anyOf": [{ "$ref": "#" }, { "type": "array" }]
+      }
+    },
+    "items": {
+      "anyOf": [{ "$ref": "#" }, { "$ref": "#/definitions/schemaArray" }]
+    },
+    "definitions": {
+      "additionalProperties": { "$ref": "#" }
+    },
+    "patternProperties": {
+      "additionalProperties": { "$ref": "#" }
+    },
+    "properties": {
+      "additionalProperties": { "$ref": "#" }
+    },
+    "if": { "$ref": "#" },
+    "then": { "$ref": "#" },
+    "else": { "$ref": "#" },
+    "allOf": { "$ref": "#/definitions/schemaArray" },
+    "anyOf": { "$ref": "#/definitions/schemaArray" },
+    "oneOf": { "$ref": "#/definitions/schemaArray" },
+    "not": { "$ref": "#" },
+    "contains": { "$ref": "#" },
+    "propertyNames": { "$ref": "#" },
+    "x-jsf-order": {
+      "description": "This keyword defines the order of fields for a given form or fieldset. It's placed at the schema root and inside of each fieldset.",
+      "$ref": "http://json-schema.org/draft-07/schema#/definitions/stringArray"
+    },
+    "x-jsf-errorMessage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "Message shown when the value is not of the correct type."
+        },
+        "required": {
+          "type": "string",
+          "description": "Message shown when the value is required and not provided."
+        },
+        "minimum": {
+          "type": "string",
+          "description": "Message shown when the value is less than the minimum value."
+        },
+        "minLength": {
+          "type": "string",
+          "description": "Message shown when the value is less than the minimum length."
+        },
+        "maximum": {
+          "type": "string",
+          "description": "Message shown when the value is greater than the maximum value."
+        },
+        "maxLength": {
+          "type": "string",
+          "description": "Message shown when the value is greater than the maximum length."
+        },
+        "pattern": {
+          "type": "string",
+          "description": "Message shown when the value is not the correct format and does not match the pattern property."
+        },
+        "maxFileSize": {
+          "type": "string",
+          "description": "Message shown when the file size is greater than the maximum file size."
+        },
+        "accept": {
+          "type": "string",
+          "description": "Message shown when the file type is not accepted."
+        }
+      }
+    },
+    "x-jsf-presentation": {
+      "type": "object",
+      "description": "Presentation overrides for the schema",
+      "properties": {
+        "inputType": {
+          "description": "Input type for the generated UI field",
+          "type": "string",
+          "anyOf": [
+            {
+              "const": "text",
+              "description": "Similar to the native HTML input with text type."
+            },
+            {
+              "const": "select",
+              "description": "Similar to the native HTML select element."
+            },
+            {
+              "const": "radio",
+              "description": "Similar to a native HTML input with radio type."
+            },
+            {
+              "const": "number",
+              "description": "Similar to the native HTML input with number type."
+            },
+            {
+              "const": "date",
+              "description": "Expects a value with format YYY-MM-DD."
+            },
+            {
+              "const": "checkbox",
+              "description": "Similar to the native HTML input with checkbox type."
+            },
+            {
+              "const": "email",
+              "description": "Similar to the native HTML input with email type."
+            },
+            {
+              "const": "file",
+              "description": "Similar to the native HTML input with file type."
+            },
+            {
+              "const": "fieldset",
+              "description": "Groups multiple Fields inside. Its expected value is a nested object."
+            },
+            {
+              "const": "group-array",
+              "description": "A list of inputs that can be repeated. Its expected value is an array."
+            },
+            {
+              "type": "string",
+              "description": "Any arbitrary custom inputType you might want to represent your UI Field."
+            }
+          ]
+        },
+        "accept": {
+          "description": "For `inputType: \"file\"`. The accepted file types, as a comma separated string.",
+          "type": "string"
+        },
+        "description": {
+          "description": "Field description with HTML. If you don't need HTML, please use the native description keyword.",
+          "type": "string"
+        },
+        "statement": {
+          "description": "Special message about the field. Useful in cases where this message is based on the field value.",
+          "type": "object",
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "description": {
+              "description": "The sentence itself. Might include HTML.",
+              "type": "string"
+            },
+            "severity": {
+              "description": "Defines the type of message.",
+              "anyOf": [
+                { "type": "string", "const": "info" },
+                { "type": "string", "const": "warning" },
+                { "type": "string", "const": "error" },
+                { "type": "string", "const": "success" },
+                {}
+              ]
+            }
+          }
+        },
+        "maxFileSize": {
+          "description": "For `inputType: \"file\"`. The maximum file size in KB. It's used to enhanced Yup validation.",
+          "type": "number"
+        },
+        "addFieldText": {
+          "description": "Used in `group-array` fields. The button text to add a new field.",
+          "type": "string"
+        }
+      }
+    }
+  }
+}
