@@ -96,7 +96,7 @@
         "inputType": {
           "description": "Input type for the generated UI field",
           "type": "string",
-          "oneOf": [
+          "anyOf": [
             {
               "const": "text",
               "description": "Similar to the native HTML input with text type."
