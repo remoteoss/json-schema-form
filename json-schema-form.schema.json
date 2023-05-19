@@ -92,10 +92,9 @@
     "x-jsf-presentation": {
       "type": "object",
       "description": "Presentation overrides for the schema",
-      "additionalProperties": false,
       "properties": {
         "inputType": {
-          "description": "Input type for the schema",
+          "description": "Input type for the generated UI field",
           "type": "string",
           "oneOf": [
             {
@@ -137,6 +136,10 @@
             {
               "const": "group-array",
               "description": "A list of inputs that can be repeated. Its expected value is an array."
+            },
+            {
+              "type": "string",
+              "description": "Any arbitrary custom inputType you might want to represent your UI Field."
             }
           ]
         },
