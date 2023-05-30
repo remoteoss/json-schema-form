@@ -53,18 +53,15 @@ If you need a public release (for example, to run it on your project CI), you ca
 Note that only core maintainers (Remoters) can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
 
 1.  Locally run the script `npm run release:dev:patch` or `npm run release:dev:minor` depending on your changes.
-    a. You'll be shown what's the new version and prompt you if it's correct. Eg
-
-        ```
-        Creating a new dev...
-        :: Current version: 1.0.0
-        :::::: New version: 1.0.1-dev.20230516175718
-        Ready to commit and publish it? (y/n)
-
-        ```
-
-    b. Then it will ask for the `@remoteoss` OTP for the NPM access to publish it.
-    c. Done! 🎉
+    1. You'll be shown what's the new version and prompt you if it's correct. Eg
+       ```
+       Creating a new dev...
+       :: Current version: 1.0.0
+       :::::: New version: 1.0.1-dev.20230516175718
+       Ready to commit and publish it? (y/n)
+       ```
+    2. Then it will ask for the `@remoteoss` OTP for the NPM access to publish it.
+    3. Done! 🎉
 
 Every `dev` release is [tagged as `dev`](https://docs.npmjs.com/cli/v9/commands/npm-publish#tag), which means it won't be automatically installed in your project by default.
 You must specify the exact version, for example:
@@ -88,21 +85,21 @@ The final release is done after merge.
 1.  Checkout `main` and pull the latest commit
 2.  Depending if you want a `path` or `minor`, run the command `npm release:main:patch` or `npm release:main:minor`.
 
-    a. You'll be shown what's the new version and prompt you if it's correct. Eg
+    1. You'll be shown what's the new version and prompt you if it's correct. Eg
 
-        ```
-        Creating a new dev...
-        :: Current version: 1.0.0-beta.0
-        :::::: New version: 1.1.0-beta.0
-        Ready to commit and publish it? (y/n)
+       ```
+       Creating a new version...
+       :: Current version: 1.0.0-beta.0
+       :::::: New version: 1.1.0-beta.0
+       Ready to commit and publish it? (y/n)
 
-        ```
+       ```
 
-    b. Then it will update the CHANGELOG using [generate-changelog](https://github.com/lob/generate-changelog). You may change it if needed, before going to the next step.
-    c. Finally, it will ask for the `@remoteoss` OTP for the NPM access to publish it.
-    d. Done! A new release is [published on NPM](https://www.npmjs.com/package/@remoteoss/json-schema-form)! 🎉
+    2. Then it will update the CHANGELOG using [generate-changelog](https://github.com/lob/generate-changelog). You may change it if needed, before going to the next step.
+    3. Finally, it will ask for the `@remoteoss` OTP for the NPM access to publish it.
+    4. Done! A new release is [published on NPM](https://www.npmjs.com/package/@remoteoss/json-schema-form)! 🎉
 
 3.  Create [a new Github Release](https://github.com/remoteoss/json-schema-form/releases/new).
-    - Choose the tag matching the newest version.
-    - The title is the version eg "v1.0.0-beta.0"
-    - Copy the new part of the CHANGELOG to the description.
+    1. Choose the tag matching the newest version.
+    2. Leave the title empty
+    3. Copy the new part of the CHANGELOG to the description.
