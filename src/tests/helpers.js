@@ -35,6 +35,17 @@ export const mockTextareaInput = {
   type: 'string',
 };
 
+export const mockIntegerInput = {
+  title: 'Tabs',
+  description: 'How many open tabs do you have?',
+  'x-jsf-presentation': {
+    inputType: 'integer',
+  },
+  minimum: 1,
+  maximum: 10,
+  type: 'integer',
+};
+
 export const mockNumberInput = {
   title: 'Tabs',
   description: 'How many open tabs do you have?',
@@ -1044,6 +1055,13 @@ export const schemaInputTypeSelectMultipleOptional = JSONSchemaBuilder()
   .addInput({
     browsers_multi_optional: mockSelectInputMultipleOptional,
   })
+  .build();
+
+export const schemaInputTypeInteger = JSONSchemaBuilder()
+  .addInput({
+    tabs: mockIntegerInput,
+  })
+  .setRequiredFields(['tabs'])
   .build();
 
 export const schemaInputTypeNumber = JSONSchemaBuilder()
