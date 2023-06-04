@@ -16,6 +16,7 @@ import {
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
   schemaInputTypeNumber,
+  schemaInputTypeNumberZeroMaximum,
   schemaInputTypeDate,
   schemaInputTypeEmail,
   schemaInputWithStatement,
@@ -778,6 +779,29 @@ describe('createHeadlessForm', () => {
         'The value must be a number'
       );
       expect(() => fieldValidator.validateSync('')).toThrowError('The value must be a number');
+    });
+
+    it('shows an error when positive number is entered into a "number" field with maximum set to zero', () => {
+      const result = createHeadlessForm(schemaInputTypeNumberZeroMaximum);
+      expect(result).toMatchObject({
+        fields: [
+          {
+            description: 'How many open tabs do you have?',
+            label: 'Tabs',
+            name: 'tabs',
+            required: false,
+            schema: expect.any(Object),
+            type: 'number',
+            minimum: -100,
+            maximum: 0,
+          },
+        ],
+      });
+      const fieldValidator = result.fields[0].schema;
+      expect(fieldValidator.isValidSync('0')).toBe(true);
+      expect(fieldValidator.isValidSync('10')).toBe(false);
+      expect(fieldValidator.isValidSync('-11')).toBe(true);
+      expect(() => fieldValidator.validateSync('5')).toThrowError('Must be smaller or equal to 0');
     });
 
     it('support "number" field type with the percentage attribute', () => {

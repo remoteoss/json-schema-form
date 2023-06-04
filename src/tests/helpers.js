@@ -46,6 +46,23 @@ export const mockNumberInput = {
   type: 'number',
 };
 
+export const mockNumberInputNegative = {
+  title: 'Tabs',
+  description: 'How many open tabs do you have?',
+  'x-jsf-presentation': {
+    inputType: 'number',
+  },
+  minimum: -100,
+  maximum: 0,
+  type: 'number',
+};
+
+export const schemaInputTypeNumberZeroMaximum = JSONSchemaBuilder()
+  .addInput({
+    tabs: mockNumberInputNegative,
+  })
+  .build();
+
 export const mockNumberInputWithPercentage = {
   title: 'Shares',
   description: 'What % of shares do you own?',
