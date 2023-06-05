@@ -14,6 +14,17 @@
 
 JSON Schemas are the SSoT (Single Source of Truth) that allows you to share form's _structure_ and _validations_ between frontend and backend, regardless of the language used.
 
+## Installation
+
+Available on [NPM](https://www.npmjs.com/package/@remoteoss/json-schema-form).
+
+```bash
+npm install @remoteoss/json-schema-form
+# or
+
+yarn install @remoteoss/json-schema-form
+```
+
 ## Documentation
 
 Check the 📚 **[JSF website](https://json-schema-form.vercel.app/)** for documentation and demos.
