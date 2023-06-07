@@ -307,5 +307,7 @@ function getSchema(fields = [], config) {
  * @returns
  */
 export function buildCompleteYupSchema(fields, config) {
+  const schema = getSchema(fields, config);
+  console.log({ schema });
   return object().shape(getSchema(fields, config), getNoSortEdges(fields));
 }
