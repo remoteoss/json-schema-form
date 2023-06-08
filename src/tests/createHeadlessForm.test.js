@@ -781,29 +781,6 @@ describe('createHeadlessForm', () => {
       expect(() => fieldValidator.validateSync('')).toThrowError('The value must be a number');
     });
 
-    it('shows an error when positive number is entered into a "number" field with maximum set to zero', () => {
-      const result = createHeadlessForm(schemaInputTypeNumberZeroMaximum);
-      expect(result).toMatchObject({
-        fields: [
-          {
-            description: 'How many open tabs do you have?',
-            label: 'Tabs',
-            name: 'tabs',
-            required: false,
-            schema: expect.any(Object),
-            type: 'number',
-            minimum: -100,
-            maximum: 0,
-          },
-        ],
-      });
-      const fieldValidator = result.fields[0].schema;
-      expect(fieldValidator.isValidSync('0')).toBe(true);
-      expect(fieldValidator.isValidSync('10')).toBe(false);
-      expect(fieldValidator.isValidSync('-11')).toBe(true);
-      expect(() => fieldValidator.validateSync('5')).toThrowError('Must be smaller or equal to 0');
-    });
-
     it('support "number" field type with the percentage attribute', () => {
       const result = createHeadlessForm(schemaInputTypeNumberWithPercentage);
       expect(result).toMatchObject({
@@ -1864,9 +1841,12 @@ describe('createHeadlessForm', () => {
       });
     });
     describe('and maximum is set to zero', () => {
-      it('shows an error when a positive number', () => {
+      it('shows the correct validation', () => {
         const { handleValidation } = createHeadlessForm(schemaInputTypeNumberZeroMaximum);
         const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        expect(validateForm({ tabs: '0' })).toBeUndefined();
+        expect(validateForm({ tabs: '-10' })).toBeUndefined();
 
         expect(validateForm({ tabs: 1 })).toEqual({
           tabs: 'Must be smaller or equal to 0',
