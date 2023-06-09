@@ -17,9 +17,16 @@ export const baseString = string().trim();
 const todayDateHint = new Date().toISOString().substring(0, 10);
 const convertBytesToKB = convertDiskSizeFromTo('Bytes', 'KB');
 const convertKbBytesToMB = convertDiskSizeFromTo('KB', 'MB');
+const useOnlyStrings = (value, originalValue) => {
+  if (typeof originalValue === 'string') {
+    return originalValue;
+  }
+
+  return null;
+};
 
 const yupSchemas = {
-  text: string().trim().nullable(),
+  text: string().transform(useOnlyStrings).trim().nullable(),
   select: string().trim().nullable(),
   radio: string().trim().nullable(),
   date: string()
