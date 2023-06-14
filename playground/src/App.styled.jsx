@@ -1,5 +1,5 @@
-import "./styles.css";
-import styled from "styled-components";
+import './styles.css';
+import styled from 'styled-components';
 
 export const Box = styled.div`
   ${({ pt }) => pt && `padding-top: ${pt}`}
@@ -45,7 +45,7 @@ export const InputText = styled.input`
 
 export const Hint = styled.span`
   font-size: 14px;
-  color: #333;
+  color: white;
 `;
 
 export const ErrorMessage = styled.span`

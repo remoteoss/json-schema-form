@@ -1,11 +1,8 @@
-import WithReact from './WithReact'
-import './App.css'
+import WithReact from './WithReact';
+import './styles.css';
 
 function App() {
-
-  return (
-    <WithReact />
-  )
+  return <WithReact />;
 }
 
-export default App
+export default App;

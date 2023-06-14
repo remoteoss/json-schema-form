@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState } from 'react';
 
-import "./styles.css";
-import { createHeadlessForm } from "../../src/index";
+import './styles.css';
+import { createHeadlessForm } from '../../src/index';
 
 import {
   Box,
@@ -12,38 +12,78 @@ import {
   InputText,
   Hint,
   ErrorMessage,
-  Label
-} from "./App.styled";
-import { formValuesToJsonValues, getDefaultValuesFromFields } from "./utils";
+  Label,
+} from './App.styled';
+import { formValuesToJsonValues, getDefaultValuesFromFields } from './utils';
 
 const jsonSchemaDemo = {
-  type: "object",
   additionalProperties: false,
   properties: {
+    /*  name: {
+      title: 'Name',
+      type: 'string',
+      minLength: 3,
+    },
+    plan: {
+      title: 'Account plan',
+      description: 'Pick the best plan that suits your needs.',
+      oneOf: [
+        { const: 'personal', title: 'Personal' },
+        { const: 'standard', title: 'Standard' },
+        { const: 'enterprise', title: 'Enterprise' },
+      ],
+      type: 'string',
+    },
+    team_size: {
+      title: 'Team size',
+      description: 'Including you, how many members does your team has?',
+      type: 'number',
+      minimum: 1,
+    }, */
     phone: {
-      title: "Your phone",
+      title: 'Your phone',
       oneOf: [
         {
-          title: "Android",
-          value: "android"
+          title: 'Android',
+          value: 'android',
         },
         {
-          title: "iPhone",
-          value: "iphone"
+          title: 'iPhone',
+          value: 'iphone',
         },
         {
-          title: "Other",
-          value: "other"
-        }
+          title: 'Other',
+          value: 'other',
+        },
       ],
       presentation: {
-        inputType: "select",
-        position: 0
+        inputType: 'select',
       },
-      type: "string"
-    }
+      type: 'string',
+    },
   },
-  required: ["phone"]
+  allOf: [
+    {
+      $comment: 'If plan is enterprise, then team_size is required and must be bigger than 3.',
+      if: {
+        properties: {
+          plan: {
+            const: 'enterprise',
+          },
+        },
+        required: ['plan'],
+      },
+      then: {
+        properties: {
+          team_size: {
+            minimum: 3,
+          },
+        },
+        required: ['team_size'],
+      },
+    },
+  ],
+  required: ['name', 'plan'],
 };
 
 const fieldsMap = {
@@ -51,22 +91,17 @@ const fieldsMap = {
   number: FieldNumber,
   radio: FieldRadio,
   error: FieldUnknown,
-  select: FieldSelect
+  select: FieldSelect,
 };
 
 export default function WithReact() {
   const { fields, handleValidation } = createHeadlessForm(jsonSchemaDemo, {
-    strictInputType: false // so you don't need to pass presentation.inputType
+    strictInputType: false, // so you don't need to pass presentation.inputType
   });
+
   async function handleOnSubmit(jsonValues, { formValues }) {
-    alert(
-      `Submitted with succes! ${JSON.stringify(
-        { formValues, jsonValues },
-        null,
-        3
-      )}`
-    );
-    console.log("Submitted!", { formValues, jsonValues });
+    alert(`Submitted with succes! ${JSON.stringify({ formValues, jsonValues }, null, 3)}`);
+    console.log('Submitted!', { formValues, jsonValues });
   }
 
   return (
@@ -90,28 +125,29 @@ export default function WithReact() {
 // ===============================
 
 function SmartForm({ name, fields, handleValidation, onSubmit }) {
-  const [values, setValues] = useState(() =>
-    getDefaultValuesFromFields(fields)
-  );
+  const [values, setValues] = useState(() => getDefaultValuesFromFields(fields));
   const [errors, setErrors] = useState({});
   const [submited, setSubmited] = useState(false);
 
   function handleInternalValidation(valuesToValidate) {
+    console.log({ valuesToValidate });
     const valuesForJson = formValuesToJsonValues(valuesToValidate, fields);
-    const { formErrors } = handleValidation(valuesForJson);
+    console.log({ valuesForJson });
+    const { formErrors } = handleValidation({ ...valuesForJson, plan: 'foo' });
+    console.log({ formErrors });
 
     setErrors(formErrors || {});
 
     return {
       errors: formErrors,
-      jsonValues: valuesForJson
+      jsonValues: valuesForJson,
     };
   }
 
   function handleFieldChange(fieldName, value) {
     const newValues = {
       ...values,
-      [fieldName]: value
+      [fieldName]: value,
     };
     setValues(newValues);
 
@@ -122,7 +158,9 @@ function SmartForm({ name, fields, handleValidation, onSubmit }) {
     e.preventDefault();
     setSubmited(true);
 
-    const validation = handleInternalValidation({ phone: "foo" });
+    const validation = handleInternalValidation(values);
+
+    console.log({ validation });
 
     if (validation.errors) {
       return null;
@@ -192,9 +230,7 @@ function FieldText({
         aria-required={required}
         {...props}
       />
-      {(touched || submited) && error && (
-        <ErrorMessage id={`${name}-error`}>{error}</ErrorMessage>
-      )}
+      {(touched || submited) && error && <ErrorMessage id={`${name}-error`}>{error}</ErrorMessage>}
     </Box>
   );
 }
@@ -219,7 +255,7 @@ function FieldRadio({
   isVisible,
   error,
   submited,
-  onChange
+  onChange,
 }) {
   const [touched, setTouched] = useState(false);
 
@@ -259,9 +295,8 @@ function FieldRadio({
 
 function FieldUnknown({ type, name, error }) {
   return (
-    <p style={{ border: "1px dashed gray", padding: "8px" }}>
-      Field "{name}" unsupported: The type "{type}" has no UI component built
-      yet.
+    <p style={{ border: '1px dashed gray', padding: '8px' }}>
+      Field "{name}" unsupported: The type "{type}" has no UI component built yet.
       {error && <ErrorMessage id={`${name}-error`}>{error}</ErrorMessage>}
     </p>
   );
@@ -276,7 +311,7 @@ function FieldSelect({
   isVisible,
   error,
   submited,
-  onChange
+  onChange,
 }) {
   const [touched, setTouched] = useState(false);
 
@@ -298,7 +333,9 @@ function FieldSelect({
       {description && <Hint>{description}</Hint>}
       <select value={value} onChange={handleChange}>
         {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>{opt.label}</option>
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
         ))}
       </select>
       {displayError && <ErrorMessage>{displayError}</ErrorMessage>}
