@@ -435,13 +435,13 @@ describe('createHeadlessForm', () => {
       });
 
       const fieldValidator = fields[0].schema;
-      expect(fieldValidator.isValidSync('CI007')).toBe(true);
-      expect(fieldValidator.isValidSync(true)).toBe(false);
-      expect(fieldValidator.isValidSync(1)).toBe(false);
-      expect(fieldValidator.isValidSync(0)).toBe(false);
+      expect(fieldValidator.isValidSync('CI007', { strict: true })).toBe(true);
+      expect(fieldValidator.isValidSync(true, { strict: true })).toBe(false);
+      expect(fieldValidator.isValidSync(1, { strict: true })).toBe(false);
+      expect(fieldValidator.isValidSync(0, { strict: true })).toBe(false);
 
       expect(handleValidation({ id_number: 1 }).formErrors).toEqual({
-        id_number: 'The field id_number must be a string, but you introduced 1',
+        id_number: 'id_number must be a `string` type, but the final value was: `1`.',
       });
 
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
@@ -1311,9 +1311,7 @@ describe('createHeadlessForm', () => {
 
       // The "child.has_child" is required
       expect(validateForm({})).toEqual({
-        child: {
-          has_child: 'Required field',
-        },
+        child: 'Required field',
       });
 
       // The "child.no" is valid

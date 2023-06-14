@@ -41,7 +41,7 @@ function getField(fieldName, fields) {
  */
 function validateFieldSchema(field, value) {
   const validator = buildYupSchema(field);
-  return validator().isValidSync(value);
+  return validator().isValidSync(value, { strict: true });
 }
 
 /**
@@ -558,6 +558,7 @@ export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
   try {
     lazySchema.validateSync(values, {
       abortEarly: false,
+      strict: true,
     });
   } catch (err) {
     if (err.name === 'ValidationError') {
