@@ -419,7 +419,7 @@ describe('createHeadlessForm', () => {
 
   describe('field support', () => {
     it('support "text" field type', () => {
-      const { fields } = createHeadlessForm(schemaInputTypeText);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeText);
 
       expect(fields[0]).toMatchObject({
         description: 'The number of your national identification (max 10 digits)',
@@ -439,6 +439,10 @@ describe('createHeadlessForm', () => {
       expect(fieldValidator.isValidSync(true)).toBe(false);
       expect(fieldValidator.isValidSync(1)).toBe(false);
       expect(fieldValidator.isValidSync(0)).toBe(false);
+
+      expect(handleValidation({ id_number: 1 }).formErrors).toEqual({
+        id_number: 'The field id_number must be a string, but you introduced 1',
+      });
 
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
