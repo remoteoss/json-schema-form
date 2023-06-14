@@ -63,6 +63,11 @@ const getJsonTypeInArray = (jsonType) =>
     ? jsonType.find((val) => val !== 'null') // eg ["string", "null"] // optional fields - get the lead type.
     : jsonType; // eg "string"
 
+const getOptionsValues = (field) => {
+  console.log({ field });
+  return field.options.map((option) => option.value);
+};
+
 /**
  * @param {FieldParameters} field Input fields
  * @returns {Function} Yup schema
@@ -80,6 +85,8 @@ export function buildYupSchema(field, config) {
   } else if (isCheckboxBoolean) {
     baseSchema = yupSchemas.checkboxBool;
   } else {
+    const options = getOptionsValues(field);
+    console.log({ options });
     baseSchema = yupSchemas[inputType] || yupSchemasToJsonTypes[jsonType];
   }
 
@@ -276,6 +283,7 @@ export function getNoSortEdges(fields = []) {
 }
 
 function getSchema(fields = [], config) {
+  console.log({ fields });
   const newSchema = {};
 
   fields.forEach((field) => {
@@ -294,6 +302,8 @@ function getSchema(fields = [], config) {
       }
     }
   });
+
+  console.log({ newSchema });
 
   return newSchema;
 }
