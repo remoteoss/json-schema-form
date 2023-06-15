@@ -16,6 +16,7 @@ import {
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
   schemaInputTypeNumber,
+  schemaInputTypeNumberZeroMaximum,
   schemaInputTypeDate,
   schemaInputTypeEmail,
   schemaInputWithStatement,
@@ -1837,6 +1838,19 @@ describe('createHeadlessForm', () => {
             })
             .validate(assertObj)
         ).resolves.toEqual(assertObj);
+      });
+    });
+    describe('and maximum is set to zero', () => {
+      it('shows the correct validation', () => {
+        const { handleValidation } = createHeadlessForm(schemaInputTypeNumberZeroMaximum);
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        expect(validateForm({ tabs: '0' })).toBeUndefined();
+        expect(validateForm({ tabs: '-10' })).toBeUndefined();
+
+        expect(validateForm({ tabs: 1 })).toEqual({
+          tabs: 'Must be smaller or equal to 0',
+        });
       });
     });
   });
