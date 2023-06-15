@@ -1311,7 +1311,9 @@ describe('createHeadlessForm', () => {
 
       // The "child.has_child" is required
       expect(validateForm({})).toEqual({
-        child: 'Required field',
+        child: {
+          has_child: 'Required field',
+        },
       });
 
       // The "child.no" is valid
