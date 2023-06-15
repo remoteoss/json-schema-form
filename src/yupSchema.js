@@ -18,9 +18,13 @@ const todayDateHint = new Date().toISOString().substring(0, 10);
 const convertBytesToKB = convertDiskSizeFromTo('Bytes', 'KB');
 const convertKbBytesToMB = convertDiskSizeFromTo('KB', 'MB');
 
-const yupSchemas = {
-  text: string().trim().nullable(),
+const validateOnlyStrings = string()
+  .trim()
+  .nullable()
+  .test('is-string', (value, context) => typeof context.originalValue === 'string');
 
+const yupSchemas = {
+  text: validateOnlyStrings,
   select: string().trim().nullable(),
   radio: string().trim().nullable(),
   date: string()
