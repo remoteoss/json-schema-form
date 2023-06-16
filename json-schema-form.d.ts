@@ -7,7 +7,7 @@ type JSConfig = {
   initialValues?: Record<string, unknown>;
   strictInputType?: boolean;
   customProperties?: {
-    description: Function | string;
+    description: (description: string, field: $TSFixMe) => string | string;
     [key: string]: unknown;
   };
   inputTypes?: {
