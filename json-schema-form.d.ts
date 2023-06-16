@@ -26,23 +26,17 @@ type $TsFixMe = any;
  */
 export function buildCompleteYupSchema(fields: Fields, config: JSConfig): $TsFixMe; // TODO: We don't what yup returns here, we'll fix it later
 
-type HeadlessFormOutput =
-  | {
-      fields: Fields;
-      handleValidation: Function;
-      isError: boolean;
-      error?: undefined;
-    }
-  | {
-      fields: never[];
-      isError: boolean;
-      error: any;
-    };
+type HeadlessFormOutput = {
+  fields: Fields;
+  handleValidation: () => $TsFixMe;
+  isError: boolean;
+  error?: undefined;
+};
 
 /**
  * Generates the Headless form based on the provided JSON schema
  */
 export function createHeadlessForm(
   jsonSchema: Record<string, unknown>,
-  customConfig: JSConfig = {}
+  customConfig: JSConfig
 ): HeadlessFormOutput;
