@@ -3,7 +3,7 @@
  */
 export function pickXKey(node: Object, key: 'presentation' | 'errorMessage'): Object | undefined;
 
-type JSConfig = {
+type JSFConfig = {
   initialValues?: Record<string, unknown>;
   strictInputType?: boolean;
   customProperties?: {
@@ -24,7 +24,7 @@ type $TSFixMe = any;
  * These fields must be the same from
  * const { fields } = createHeadlessForm()
  */
-export function buildCompleteYupSchema(fields: Fields, config: JSConfig): $TSFixMe; //TODO: We need to update Yup to 1.0 which supports TS.
+export function buildCompleteYupSchema(fields: Fields, config: JSFConfig): $TSFixMe; //TODO: We need to update Yup to 1.0 which supports TS.
 
 type HeadlessFormOutput = {
   fields: Fields;
@@ -38,5 +38,5 @@ type HeadlessFormOutput = {
  */
 export function createHeadlessForm(
   jsonSchema: Record<string, unknown>,
-  customConfig: JSConfig
+  customConfig: JSFConfig
 ): HeadlessFormOutput;
