@@ -16,7 +16,7 @@ type JSConfig = {
   }
 }
 
-type Fields = any; // TODO: We don't know what type we have here, we need to investigate
+type Fields = Record<string, unknown>[]; // TODO: We don't know what type we have here, we need to investigate
 
 type $TsFixMe = any;
 
@@ -25,5 +25,4 @@ type $TsFixMe = any;
  * These fields must be the same from
  * const { fields } = createHeadlessForm()
  */
-
 export function buildCompleteYupSchema(fields: Fields, config: JSConfig): $TsFixMe // TODO: We don't what yup returns here, we'll fix it later
