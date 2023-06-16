@@ -1,7 +1,7 @@
 /**
  * Shorthand to lookup for keys with `x-jsf-*` preffix.
  */
-export function pickXKey(node: Object, key: 'presentation' | 'error-message'): Object | undefined;
+export function pickXKey(node: Object, key: 'presentation' | 'errorMessage'): Object | undefined;
 
 type JSConfig = {
   initialValues?: Record<string, unknown>;
@@ -15,22 +15,22 @@ type JSConfig = {
   };
 };
 
-type Fields = Record<string, unknown>[]; // TODO: We don't know what type we have here, we need to investigate
+type Fields = Record<string, unknown>[]; //TODO: Type the field based on the given JSON Schema properties.
 
-type $TsFixMe = any;
+type $TSFixMe = any;
 
 /**
  * Returns the Yup schema structure of given fields.
  * These fields must be the same from
  * const { fields } = createHeadlessForm()
  */
-export function buildCompleteYupSchema(fields: Fields, config: JSConfig): $TsFixMe; // TODO: We don't what yup returns here, we'll fix it later
+export function buildCompleteYupSchema(fields: Fields, config: JSConfig): $TSFixMe; //TODO: We need to update Yup to 1.0 which supports TS.
 
 type HeadlessFormOutput = {
   fields: Fields;
-  handleValidation: () => $TsFixMe;
+  handleValidation: () => $TSFixMe;
   isError: boolean;
-  error?: undefined;
+  error?: Error;
 };
 
 /**
