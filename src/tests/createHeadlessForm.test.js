@@ -1008,6 +1008,48 @@ describe('createHeadlessForm', () => {
         ]);
       });
 
+      it('supports nested group arrays', () => {
+        const result = createHeadlessForm({
+          type: 'object',
+          required: ['steps'],
+          properties: {
+            steps: {
+              type: 'array',
+              required: ['ingredients'],
+              additionalItems: false,
+              'x-jsf-presentation': {
+                inputType: 'group-array',
+                addFieldText: 'Add new step',
+              },
+              items: {
+                type: 'object',
+                additionalProperties: true,
+                properties: {
+                  highlights: {
+                    type: 'array',
+                    additionalItems: false,
+                    'x-jsf-presentation': {
+                      inputType: 'group-array',
+                      addFieldText: 'Add new ingredient',
+                    },
+                    items: {
+                      type: 'string',
+                      'x-jsf-presentation': {
+                        inputType: 'string',
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        expect(result.fields[0].schema.innerType.fields).not.toMatchObject({
+          undefined: undefined,
+        });
+      });
+
       it('nested fields (native, core and custom) has correct validations', () => {
         const { handleValidation } = createHeadlessForm({
           properties: {
