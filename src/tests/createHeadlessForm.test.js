@@ -1810,6 +1810,22 @@ describe('createHeadlessForm', () => {
     });
   });
 
+  describe('when a field is text', () => {
+    describe('and format is uri', () => {
+      it('should not throw an error', () => {
+        const { handleValidation } = createHeadlessForm({
+          url: {
+            type: 'string',
+            format: 'uri',
+          },
+        });
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        expect(validateForm({ url: 'https://example.com' })).toBeUndefined();
+      });
+    });
+  });
+
   describe('when a field is number', () => {
     let fields;
     beforeEach(() => {
