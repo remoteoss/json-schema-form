@@ -25,7 +25,7 @@ const validateOnlyStrings = string()
     'is-string',
     '${path} must be a `string` type, but the final value was: `${value}`.',
     (value, context) => {
-      if (context.originalValue) {
+      if (context.originalValue !== null && context.originalValue !== undefined) {
         return typeof context.originalValue === 'string';
       }
       return true;
