@@ -3,18 +3,50 @@
  */
 export function pickXKey(node: Object, key: 'presentation' | 'errorMessage'): Object | undefined;
 
+type ValidationTypes =
+  | 'type'
+  | 'minimum'
+  | 'maximum'
+  | 'minLength'
+  | 'maxLength'
+  | 'pattern'
+  | 'maxFileSize'
+  | 'accept'
+  | 'required';
+
 type JSFConfig = {
+  /**
+   * Initial json values to prefill the form fields.
+   * This influences the initial visibility of conditional fields.
+   */
   initialValues?: Record<string, unknown>;
+  /**
+   * It inforces all json properties (fields) to have x-jsf-presentation.inputType.
+    @default true 
+  */
   strictInputType?: boolean;
+  /**
+   * Customize the output of a given named Field.
+   * Useful if you want to enhance the UI/UX of a particular field.
+   * @example
+   * { has_pet: { "optionsDirection": "horizontal" } }
+   */
   customProperties?: {
     description: (description: string, field: $TSFixMe) => string | string;
     [key: string]: unknown;
   };
+  /**
+   * Customize the config for each inputType
+   */
   inputTypes?: {
-    errorMessage: Record<string, unknown>;
+    /**
+     * Customize the error error message of this input type.
+     * @example
+     * { required: "This number is required." }
+     */
+    errorMessage?: Record<ValidationTypes, string>;
   };
 };
-
 type Fields = Record<string, unknown>[]; //TODO: Type the field based on the given JSON Schema properties.
 
 type $TSFixMe = any;
@@ -27,7 +59,42 @@ type $TSFixMe = any;
 export function buildCompleteYupSchema(fields: Fields, config: JSFConfig): $TSFixMe; //TODO: We need to update Yup to 1.0 which supports TS.
 
 type HeadlessFormOutput = {
+  /**
+   * List of Fields. Each Field corresponds to a form input from the json schema.
+   * @example
+   * [
+      {
+        name: "has_pet",
+        label: "Has Pet",
+        options: [
+          { label: "Yes", value: "yes" },
+          { label: "No", value: "no" }
+        ],
+        required: true,
+        inputType: "radio",
+        jsonType: "string",
+        description: "Do you have a pet?",
+        errorMessage: {},
+        isVisible: true
+      },
+      {
+        type: "text",
+        label: "Pet's name",
+        description: "What's your pet's name?",
+        required: false,
+        inputType: "text",
+        jsonType: "string",
+        isVisible: false
+      }
+   * ]
+   */
   fields: Fields;
+  /**
+   * Validates given values and returns the respective errors.
+   * @example
+   * const { formErrors } = handleValidation({ has_pet: "yes" });
+   * console.log(formErrors) // { pet_name: "Required field." }
+   */
   handleValidation: () => $TSFixMe;
   isError: boolean;
   error?: Error;
