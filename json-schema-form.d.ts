@@ -33,10 +33,12 @@ type HeadlessFormOutput = {
   error?: Error;
 };
 
+type JSONSchemaObjectType = Record<string, unknown>;
+
 /**
  * Generates the Headless form based on the provided JSON schema
  */
 export function createHeadlessForm(
-  jsonSchema: Record<string, unknown>,
+  jsonSchema: JSONSchemaObjectType,
   customConfig: JSFConfig
 ): HeadlessFormOutput;
