@@ -44,7 +44,7 @@ type JSFConfig = {
      * @example
      * { required: "This number is required." }
      */
-    errorMessage?: Record<ValidationTypes, string>;
+    errorMessage?: Partial<Record<ValidationTypes, string>>;
   };
 };
 type Fields = Record<string, unknown>[]; //TODO: Type the field based on the given JSON Schema properties.
@@ -106,6 +106,7 @@ type JSONSchemaObjectType = Record<string, unknown>;
  * Generates the Headless form based on the provided JSON schema
  */
 export function createHeadlessForm(
+  /** A JSON Schema of type object */
   jsonSchema: JSONSchemaObjectType,
   customConfig?: JSFConfig
 ): HeadlessFormOutput;
