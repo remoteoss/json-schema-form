@@ -32,7 +32,7 @@ type JSFConfig = {
    * { has_pet: { "optionsDirection": "horizontal" } }
    */
   customProperties?: {
-    description: (description: string, field: $TSFixMe) => string | string;
+    description?: (description: string, field: $TSFixMe) => string | string;
     [key: string]: unknown;
   };
   /**
