@@ -435,10 +435,10 @@ describe('createHeadlessForm', () => {
       });
 
       const fieldValidator = fields[0].schema;
-      expect(fieldValidator.isValidSync('CI007', { strict: true })).toBe(true);
-      expect(fieldValidator.isValidSync(true, { strict: true })).toBe(false);
-      expect(fieldValidator.isValidSync(1, { strict: true })).toBe(false);
-      expect(fieldValidator.isValidSync(0, { strict: true })).toBe(false);
+      expect(fieldValidator.isValidSync('CI007')).toBe(true);
+      expect(fieldValidator.isValidSync(true)).toBe(false);
+      expect(fieldValidator.isValidSync(1)).toBe(false);
+      expect(fieldValidator.isValidSync(0)).toBe(false);
 
       expect(handleValidation({ id_number: 1 }).formErrors).toEqual({
         id_number: 'id_number must be a `string` type, but the final value was: `1`.',
