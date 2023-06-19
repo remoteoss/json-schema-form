@@ -40,5 +40,5 @@ type JSONSchemaObjectType = Record<string, unknown>;
  */
 export function createHeadlessForm(
   jsonSchema: JSONSchemaObjectType,
-  customConfig: JSFConfig
+  customConfig?: JSFConfig
 ): HeadlessFormOutput;
