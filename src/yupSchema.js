@@ -21,7 +21,16 @@ const convertKbBytesToMB = convertDiskSizeFromTo('KB', 'MB');
 const validateOnlyStrings = string()
   .trim()
   .nullable()
-  .test('is-string', (value, context) => typeof context.originalValue === 'string');
+  .test(
+    'is-string',
+    '${path} must be a `string` type, but the final value was: `${value}`.',
+    (value, context) => {
+      if (context.originalValue) {
+        return typeof context.originalValue === 'string';
+      }
+      return true;
+    }
+  );
 
 const yupSchemas = {
   text: validateOnlyStrings,
