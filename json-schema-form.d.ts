@@ -95,7 +95,10 @@ type HeadlessFormOutput = {
    * const { formErrors } = handleValidation({ has_pet: "yes" });
    * console.log(formErrors) // { pet_name: "Required field." }
    */
-  handleValidation: () => $TSFixMe;
+  handleValidation: (values: Record<string, unknown>) => {
+    yupError: $TSFixMe;
+    formErrors: $TSFixMe;
+  };
   isError: boolean;
   error?: Error;
 };
