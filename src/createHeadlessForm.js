@@ -57,12 +57,12 @@ import { buildYupSchema } from './yupSchema';
 
 /**
  * @typedef {Object} JsfConfig
- * @property {Object} config.initialValues - Initial values to evaluate the form against
- * @param {Boolean} config.strictInputType - Disabled by default. When enabled, presentation.inputType is required.
- * @param {Object} config.customProperties - Object of fields with custom attributes
- * @param {Function|String} config.customProperties[].description - Override description for FieldParameters
- * @param {*} config.customProperties[].* - Any other attribute is included in the FieldParameters
- * @param {Object} config.inputTypes[].errorMessage.* - Custom error messages by each error type. eg errorMessage: { required: 'Cannot be empty' }
+ * @property {Object} [config.initialValues] - Initial values to evaluate the form against
+ * @property {Boolean} [config.strictInputType] - Disabled by default. When enabled, presentation.inputType is required.
+ * @property {Object} [config.customProperties] - Object of fields with custom attributes
+ * @property {Function|String} config.customProperties[].description - Override description for FieldParameters
+ * @property {*} config.customProperties[].* - Any other attribute is included in the FieldParameters
+ * @property {Object} config.inputTypes[].errorMessage.* - Custom error messages by each error type. eg errorMessage: { required: 'Cannot be empty' }
 
 */
 

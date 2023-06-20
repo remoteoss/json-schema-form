@@ -11,10 +11,12 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "typings": "./json-schema-form.d.ts",
   "files": [
     "dist",
     "src/tests",
     "json-schema-form.schema.json",
+    "json-schema-form.d.ts",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.md"
