@@ -871,34 +871,35 @@ export const schemaInputDeprecated = JSONSchemaBuilder()
   .build();
 
 /** @deprecated */
-export const schemaInputTypeRadioDeprecated = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputTypeRadioDeprecated = {
+  properties: {
     has_siblings: mockRadioInputDeprecated,
-  })
-  .setRequiredFields(['has_siblings'])
-  .build();
-export const schemaInputTypeRadio = JSONSchemaBuilder()
-  .addInput({
-    has_siblings: mockRadioInput,
-  })
-  .setRequiredFields(['has_siblings'])
-  .build();
+  },
+  required: ['has_siblings'],
+};
 
-export const schemaInputTypeRadioRequiredAndOptional = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputTypeRadio = {
+  properties: {
+    has_siblings: mockRadioInput,
+  },
+  required: ['has_siblings'],
+};
+
+export const schemaInputTypeRadioRequiredAndOptional = {
+  properties: {
     has_siblings: mockRadioInput,
     has_car: mockRadioInputOptional,
-  })
-  .setRequiredFields(['has_siblings'])
-  .build();
+  },
+  required: ['has_siblings'],
+};
 
-export const schemaInputTypeRadioCard = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputTypeRadioCard = {
+  properties: {
     experience_level: mockRadioCardExpandableInput,
     payment_method: mockRadioCardInput,
-  })
-  .setRequiredFields(['experience_level'])
-  .build();
+  },
+  required: ['experience_level'],
+};
 
 /** @deprecated */
 export const schemaInputTypeSelectSoloDeprecated = JSONSchemaBuilder()
