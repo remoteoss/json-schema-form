@@ -10,6 +10,7 @@ import {
   schemaInputTypeRadioDeprecated,
   schemaInputTypeRadio,
   schemaInputTypeRadioRequiredAndOptional,
+  schemaInputTypeRadioOptionsWithDetails,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
   schemaInputTypeSelectMultipleDeprecated,
@@ -751,6 +752,43 @@ describe('createHeadlessForm', () => {
       const fieldValidator = result.fields[0].schema;
       expect(fieldValidator.isValidSync('yes')).toBe(true);
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
+    });
+
+    it('support "radio" field type with extra info inside each option', () => {
+      const result = createHeadlessForm(schemaInputTypeRadioOptionsWithDetails);
+
+      expect(result.fields).toHaveLength(1);
+
+      const fieldOptions = result.fields[0].options;
+
+      // The x-jsf-presentation value was spread to the root:
+      expect(fieldOptions[0]).not.toHaveProperty('x-jsf-presentation');
+      expect(fieldOptions).toEqual([
+        {
+          label: 'Basic',
+          value: 'basic',
+          carrierName: 'Segure Inc',
+          displayCost: '$30.00/mo',
+          urlDetails: 'www.example-bsc.com',
+          // Other x-* keywords are kept as it is.
+          'x-another': 'extra-thing',
+        },
+        {
+          label: 'Standard',
+          value: 'standard',
+          carrierName: 'Vanilla Lda',
+          displayCost: '$50.00/mo',
+          urlDetails: 'www.example-std.com',
+        },
+        {
+          label: 'Pro',
+          value: 'pro',
+          tierName: 'Pro',
+          carrierName: 'Satefy xtra',
+          displayCost: '$100.00/mo + variable costs',
+          urlDetails: 'www.example-pro.com',
+        },
+      ]);
     });
 
     it('support "number" field type', () => {

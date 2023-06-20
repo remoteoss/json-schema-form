@@ -901,6 +901,51 @@ export const schemaInputTypeRadioCard = {
   required: ['experience_level'],
 };
 
+export const schemaInputTypeRadioOptionsWithDetails = {
+  properties: {
+    health_perks: {
+      title: 'Health perks',
+      description:
+        'This example contains options with more custom details, under the x-jsf-presentation key',
+      oneOf: [
+        {
+          const: 'basic',
+          title: 'Basic',
+          'x-jsf-presentation': {
+            carrierName: 'Segure Inc',
+            displayCost: '$30.00/mo',
+            urlDetails: 'www.example-bsc.com',
+          },
+          'x-another': 'extra-thing',
+        },
+        {
+          const: 'standard',
+          title: 'Standard',
+          'x-jsf-presentation': {
+            carrierName: 'Vanilla Lda',
+            displayCost: '$50.00/mo',
+            urlDetails: 'www.example-std.com',
+          },
+        },
+        {
+          const: 'pro',
+          title: 'Pro',
+          'x-jsf-presentation': {
+            tierName: 'Pro',
+            carrierName: 'Satefy xtra',
+            displayCost: '$100.00/mo + variable costs',
+            urlDetails: 'www.example-pro.com',
+          },
+        },
+      ],
+      'x-jsf-presentation': {
+        inputType: 'radio',
+      },
+      type: 'string',
+    },
+  },
+};
+
 /** @deprecated */
 export const schemaInputTypeSelectSoloDeprecated = JSONSchemaBuilder()
   .addInput({
