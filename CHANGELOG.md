@@ -1,3 +1,13 @@
+#### 0.3.0-beta.0 (2023-06-21)
+
+##### Fixes
+
+- Fix validation for text schema to only validate strings ([#12](https://github.com/remoteoss/json-schema-form/pull/12)) ([00017c0](https://github.com/remoteoss/json-schema-form/commit/00017c056d8a3583d56d9fefc4d3c7e0f4c1dd99))
+
+##### Chores
+
+- Update yup version to v.0.30.0 ([#12](https://github.com/remoteoss/json-schema-form/pull/12)) ([00017c0](https://github.com/remoteoss/json-schema-form/commit/00017c056d8a3583d56d9fefc4d3c7e0f4c1dd99))
+
 #### 0.2.0-beta.0 (2023-06-20)
 
 ##### New Features
