@@ -68,7 +68,8 @@ const getOptionsValues = (field) => {
 };
 
 const getYupSchema = (options, inputType, jsonType) => {
-  if (Array.isArray(options) && options.length > 0) {
+  const inputTypesWithOptions = ['select', 'radio'];
+  if (inputTypesWithOptions.includes(inputType) && Array.isArray(options) && options.length > 0) {
     return yupSchemas[inputType](options) || yupSchemasToJsonTypes[jsonType];
   }
 

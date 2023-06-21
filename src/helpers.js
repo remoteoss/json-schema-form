@@ -560,7 +560,6 @@ export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
       abortEarly: false,
     });
   } catch (err) {
-    console.log('errors when calling validateSync', { err });
     if (err.name === 'ValidationError') {
       errors = err;
     } else {
