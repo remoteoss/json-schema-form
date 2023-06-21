@@ -1,6 +1,6 @@
 {
   "name": "@remoteoss/json-schema-form",
-  "version": "0.1.0-beta.0",
+  "version": "0.2.0-beta.0",
   "description": "Headless UI form powered by JSON Schemas",
   "author": "Remote.com <engineering@remote.com> (https://remote.com/)",
   "license": "MIT",
@@ -11,10 +11,12 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
+  "typings": "./json-schema-form.d.ts",
   "files": [
     "dist",
     "src/tests",
     "json-schema-form.schema.json",
+    "json-schema-form.d.ts",
     "README.md",
     "CHANGELOG.md",
     "LICENSE.md"

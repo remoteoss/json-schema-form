@@ -247,7 +247,8 @@ export function buildYupSchema(field, config) {
     validators.push(withMinLength);
   }
 
-  if (propertyFields.maximum) {
+  // support maximum with 0 value
+  if (propertyFields.maximum !== undefined) {
     validators.push(withMax);
   }
 
