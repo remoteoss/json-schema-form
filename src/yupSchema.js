@@ -20,8 +20,16 @@ const convertKbBytesToMB = convertDiskSizeFromTo('KB', 'MB');
 
 const yupSchemas = {
   text: string().trim().nullable(),
-  select: (options) => string().oneOf(options).trim().nullable(),
-  radio: (options) => string().oneOf(options).trim().nullable(),
+  select: (options) =>
+    string()
+      .oneOf([...options, '']) // if we don't allow this whitespace, nullable won't work
+      .trim()
+      .nullable(),
+  radio: (options) =>
+    string()
+      .oneOf([...options, ''])
+      .trim()
+      .nullable(),
   date: string()
     .nullable()
     .trim()
