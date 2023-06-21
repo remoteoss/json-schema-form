@@ -20,8 +20,8 @@ const convertKbBytesToMB = convertDiskSizeFromTo('KB', 'MB');
 
 const yupSchemas = {
   text: string().trim().nullable(),
-  select: string().trim().nullable(),
-  radio: string().trim().nullable(),
+  select: (options) => string().oneOf(options).trim().nullable(),
+  radio: (options) => string().oneOf(options).trim().nullable(),
   date: string()
     .nullable()
     .trim()
@@ -64,8 +64,15 @@ const getJsonTypeInArray = (jsonType) =>
     : jsonType; // eg "string"
 
 const getOptionsValues = (field) => {
-  console.log({ field });
-  return field.options.map((option) => option.value);
+  return field.options?.map((option) => option.value);
+};
+
+const getYupSchema = (options, inputType, jsonType) => {
+  if (Array.isArray(options) && options.length > 0) {
+    return yupSchemas[inputType](options) || yupSchemasToJsonTypes[jsonType];
+  }
+
+  return yupSchemas[inputType] || yupSchemasToJsonTypes[jsonType];
 };
 
 /**
@@ -86,8 +93,7 @@ export function buildYupSchema(field, config) {
     baseSchema = yupSchemas.checkboxBool;
   } else {
     const options = getOptionsValues(field);
-    console.log({ options });
-    baseSchema = yupSchemas[inputType] || yupSchemasToJsonTypes[jsonType];
+    baseSchema = getYupSchema(options, inputType, jsonType);
   }
 
   if (!baseSchema) {
@@ -284,7 +290,6 @@ export function getNoSortEdges(fields = []) {
 }
 
 function getSchema(fields = [], config) {
-  console.log({ fields });
   const newSchema = {};
 
   fields.forEach((field) => {
@@ -304,8 +309,6 @@ function getSchema(fields = [], config) {
     }
   });
 
-  console.log({ newSchema });
-
   return newSchema;
 }
 
@@ -318,7 +321,5 @@ function getSchema(fields = [], config) {
  * @returns
  */
 export function buildCompleteYupSchema(fields, config) {
-  const schema = getSchema(fields, config);
-  console.log({ schema });
   return object().shape(getSchema(fields, config), getNoSortEdges(fields));
 }

@@ -133,7 +133,7 @@ function SmartForm({ name, fields, handleValidation, onSubmit }) {
     console.log({ valuesToValidate });
     const valuesForJson = formValuesToJsonValues(valuesToValidate, fields);
     console.log({ valuesForJson });
-    const { formErrors } = handleValidation({ ...valuesForJson, plan: 'foo' });
+    const { formErrors } = handleValidation({ ...valuesForJson /* phone: 'foo' */ });
     console.log({ formErrors });
 
     setErrors(formErrors || {});

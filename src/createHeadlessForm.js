@@ -105,16 +105,12 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
 
   const inputType = getInputType(fieldProperties, config.strictInputType, name);
 
-  console.log({ inputType, name });
-
   if (inputType === supportedTypes.FIELDSET) {
     // eslint-disable-next-line no-use-before-define
     fields = getFieldsFromJSONSchema(fieldProperties, {
       customProperties: get(config, `customProperties.${name}`, {}),
     });
   }
-
-  console.log({ inputType });
 
   const result = {
     name,
@@ -126,8 +122,6 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
     position,
     ...extractParametersFromNode(fieldProperties),
   };
-
-  console.log({ result });
 
   return omitBy(result, isNil);
 }
@@ -145,8 +139,6 @@ function convertJSONSchemaPropertiesToFieldParameters(
   config = {}
 ) {
   const sortFields = (a, b) => sortByOrderOrPosition(a, b, order);
-
-  console.log({ properties });
 
   // Gather fields represented at the root of the node , sort them by
   // their position and then remove the position property (since it's no longer needed)
@@ -283,11 +275,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config) {
 
   const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(scopedJsonSchema, config);
 
-  console.log({ fieldParamsList });
-
   applyFieldsDependencies(fieldParamsList, scopedJsonSchema);
-
-  console.log('fieldsParamsList after applying dependencies', { fieldParamsList });
 
   const fields = [];
 
@@ -336,8 +324,6 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
 
   try {
     const fields = getFieldsFromJSONSchema(jsonSchema, config);
-
-    console.log({ fields });
 
     const handleValidation = handleValuesChange(fields, jsonSchema, config);
 

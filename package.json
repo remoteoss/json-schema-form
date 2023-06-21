@@ -24,6 +24,7 @@
   "scripts": {
     "build": "node scripts/build.js",
     "test": "jest",
+    "test:watch": "jest --watchAll",
     "lint": "eslint \"src/**/*.{js,ts}\"",
     "format": "npm run format:prettier && npm run format:eslint",
     "prepare": "husky install",
