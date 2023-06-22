@@ -761,32 +761,24 @@ describe('createHeadlessForm', () => {
 
       const fieldOptions = result.fields[0].options;
 
-      // The x-jsf-presentation value was spread to the root:
+      // The x-jsf-presentation content was spread to the root:
       expect(fieldOptions[0]).not.toHaveProperty('x-jsf-presentation');
       expect(fieldOptions).toEqual([
         {
           label: 'Basic',
           value: 'basic',
-          carrierName: 'Segure Inc',
-          displayCost: '$30.00/mo',
-          urlDetails: 'www.example-bsc.com',
+          meta: {
+            displayCost: '$30.00/mo',
+          },
           // Other x-* keywords are kept as it is.
           'x-another': 'extra-thing',
         },
         {
           label: 'Standard',
           value: 'standard',
-          carrierName: 'Vanilla Lda',
-          displayCost: '$50.00/mo',
-          urlDetails: 'www.example-std.com',
-        },
-        {
-          label: 'Pro',
-          value: 'pro',
-          tierName: 'Pro',
-          carrierName: 'Satefy xtra',
-          displayCost: '$100.00/mo + variable costs',
-          urlDetails: 'www.example-pro.com',
+          meta: {
+            displayCost: '$50.00/mo',
+          },
         },
       ]);
     });

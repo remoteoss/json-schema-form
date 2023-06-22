@@ -912,9 +912,9 @@ export const schemaInputTypeRadioOptionsWithDetails = {
           const: 'basic',
           title: 'Basic',
           'x-jsf-presentation': {
-            carrierName: 'Segure Inc',
-            displayCost: '$30.00/mo',
-            urlDetails: 'www.example-bsc.com',
+            meta: {
+              displayCost: '$30.00/mo',
+            },
           },
           'x-another': 'extra-thing',
         },
@@ -922,19 +922,9 @@ export const schemaInputTypeRadioOptionsWithDetails = {
           const: 'standard',
           title: 'Standard',
           'x-jsf-presentation': {
-            carrierName: 'Vanilla Lda',
-            displayCost: '$50.00/mo',
-            urlDetails: 'www.example-std.com',
-          },
-        },
-        {
-          const: 'pro',
-          title: 'Pro',
-          'x-jsf-presentation': {
-            tierName: 'Pro',
-            carrierName: 'Satefy xtra',
-            displayCost: '$100.00/mo + variable costs',
-            urlDetails: 'www.example-pro.com',
+            meta: {
+              displayCost: '$50.00/mo',
+            },
           },
         },
       ],
