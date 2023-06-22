@@ -406,12 +406,27 @@ export function updateFieldsProperties(fields, formValues, jsonSchema) {
 
 const notNullOption = (opt) => opt.const !== null;
 
+function flatPresentation(item) {
+  return Object.entries(item).reduce((newItem, [key, value]) => {
+    if (key === 'x-jsf-presentation') {
+      return {
+        ...newItem,
+        ...value,
+      };
+    }
+    return {
+      ...newItem,
+      [key]: value,
+    };
+  }, {});
+}
+
 function getFieldOptions(node, presentation) {
   function convertToOptions(nodeOptions) {
     return nodeOptions.filter(notNullOption).map(({ title, const: cons, ...item }) => ({
       label: title,
       value: cons,
-      ...item,
+      ...flatPresentation(item),
     }));
   }
 

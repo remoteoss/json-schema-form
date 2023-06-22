@@ -10,6 +10,7 @@ import {
   schemaInputTypeRadioDeprecated,
   schemaInputTypeRadio,
   schemaInputTypeRadioRequiredAndOptional,
+  schemaInputTypeRadioOptionsWithDetails,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
   schemaInputTypeSelectMultipleDeprecated,
@@ -420,7 +421,7 @@ describe('createHeadlessForm', () => {
 
   describe('field support', () => {
     it('support "text" field type', () => {
-      const { fields } = createHeadlessForm(schemaInputTypeText);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeText);
 
       expect(fields[0]).toMatchObject({
         description: 'The number of your national identification (max 10 digits)',
@@ -437,9 +438,13 @@ describe('createHeadlessForm', () => {
 
       const fieldValidator = fields[0].schema;
       expect(fieldValidator.isValidSync('CI007')).toBe(true);
-      expect(fieldValidator.isValidSync(true)).toBe(true); // @BUG RMT-446 - cannot be a bool
-      expect(fieldValidator.isValidSync(1)).toBe(true); // @BUG RMT-446 - cannot be a number
-      expect(fieldValidator.isValidSync(0)).toBe(true); // @BUG RMT-446 - cannot be a number
+      expect(fieldValidator.isValidSync(true)).toBe(false);
+      expect(fieldValidator.isValidSync(1)).toBe(false);
+      expect(fieldValidator.isValidSync(0)).toBe(false);
+
+      expect(handleValidation({ id_number: 1 }).formErrors).toEqual({
+        id_number: 'id_number must be a `string` type, but the final value was: `1`.',
+      });
 
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
@@ -768,6 +773,35 @@ describe('createHeadlessForm', () => {
       const fieldValidator = result.fields[0].schema;
       expect(fieldValidator.isValidSync('yes')).toBe(true);
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
+    });
+
+    it('support "radio" field type with extra info inside each option', () => {
+      const result = createHeadlessForm(schemaInputTypeRadioOptionsWithDetails);
+
+      expect(result.fields).toHaveLength(1);
+
+      const fieldOptions = result.fields[0].options;
+
+      // The x-jsf-presentation content was spread to the root:
+      expect(fieldOptions[0]).not.toHaveProperty('x-jsf-presentation');
+      expect(fieldOptions).toEqual([
+        {
+          label: 'Basic',
+          value: 'basic',
+          meta: {
+            displayCost: '$30.00/mo',
+          },
+          // Other x-* keywords are kept as it is.
+          'x-another': 'extra-thing',
+        },
+        {
+          label: 'Standard',
+          value: 'standard',
+          meta: {
+            displayCost: '$50.00/mo',
+          },
+        },
+      ]);
     });
 
     it('support "number" field type', () => {
@@ -2344,7 +2378,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'no',
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
             },
             mandatory_group_array: 'no',
           })
@@ -2359,7 +2393,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
             },
             mandatory_group_array: 'no',
           })
@@ -2375,7 +2409,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
             },
             mandatory_group_array: 'yes',
             a_group_array: [{ full_name: 'adfs' }],
@@ -2386,7 +2420,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
               tabs: 2,
             },
             mandatory_group_array: 'no',
@@ -2477,7 +2511,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_fieldset: ['id_number'],
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
             },
           })
         ).toBeUndefined();
@@ -2486,7 +2520,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_fieldset: ['id_number', 'all'],
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
             },
           })
         ).toEqual({
@@ -2499,7 +2533,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_fieldset: ['id_number', 'all'],
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
               tabs: 2,
             },
           })
@@ -2514,7 +2548,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_fieldset: ['id_number'],
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
             },
           })
         ).toBeUndefined();
@@ -2523,7 +2557,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_fieldset: ['id_number', 'all'],
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
             },
           })
         ).toEqual({
@@ -2536,7 +2570,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_fieldset: ['id_number', 'all'],
             a_fieldset: {
-              id_number: 123,
+              id_number: '123',
               tabs: 2,
             },
           })
