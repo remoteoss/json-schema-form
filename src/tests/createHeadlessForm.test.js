@@ -10,6 +10,7 @@ import {
   schemaInputTypeRadioDeprecated,
   schemaInputTypeRadio,
   schemaInputTypeRadioRequiredAndOptional,
+  schemaInputTypeRadioOptionsWithDetails,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
   schemaInputTypeSelectMultipleDeprecated,
@@ -755,6 +756,35 @@ describe('createHeadlessForm', () => {
       const fieldValidator = result.fields[0].schema;
       expect(fieldValidator.isValidSync('yes')).toBe(true);
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
+    });
+
+    it('support "radio" field type with extra info inside each option', () => {
+      const result = createHeadlessForm(schemaInputTypeRadioOptionsWithDetails);
+
+      expect(result.fields).toHaveLength(1);
+
+      const fieldOptions = result.fields[0].options;
+
+      // The x-jsf-presentation content was spread to the root:
+      expect(fieldOptions[0]).not.toHaveProperty('x-jsf-presentation');
+      expect(fieldOptions).toEqual([
+        {
+          label: 'Basic',
+          value: 'basic',
+          meta: {
+            displayCost: '$30.00/mo',
+          },
+          // Other x-* keywords are kept as it is.
+          'x-another': 'extra-thing',
+        },
+        {
+          label: 'Standard',
+          value: 'standard',
+          meta: {
+            displayCost: '$50.00/mo',
+          },
+        },
+      ]);
     });
 
     it('support "number" field type', () => {
