@@ -710,6 +710,7 @@ describe('createHeadlessForm', () => {
 
       const fieldValidator = result.fields[0].schema;
       expect(fieldValidator.isValidSync('yes')).toBe(true);
+      expect(fieldValidator.isValidSync('n/a')).toBe(false);
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
     it('support "radio" field type', () => {
@@ -740,6 +741,7 @@ describe('createHeadlessForm', () => {
 
       const fieldValidator = result.fields[0].schema;
       expect(fieldValidator.isValidSync('yes')).toBe(true);
+      expect(fieldValidator.isValidSync('n/a')).toBe(false);
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
 
