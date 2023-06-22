@@ -516,8 +516,7 @@ describe('createHeadlessForm', () => {
       );
     });
 
-    it.only('support "select" field type @deprecated', () => {
-      // TODO: Add field validations like in the radio, see support "radio"
+    it('support "select" field type @deprecated', () => {
       // TODO: Test radio in the playground
       // TODO: https://linear.app/remote/issue/RMT-23/jsf-select-validation-is-incomplete, I am missing Multi-select validation
       const result = createHeadlessForm(schemaInputTypeSelectSoloDeprecated);
@@ -547,7 +546,16 @@ describe('createHeadlessForm', () => {
           },
         ],
       });
+
+      const fieldValidator = result.fields[0].schema;
+
+      expect(fieldValidator.isValidSync('Medical Insurance')).toBe(true);
+      expect(fieldValidator.isValidSync('Health Insurance')).toBe(true);
+      expect(fieldValidator.isValidSync('Travel Bonus')).toBe(true);
+      expect(fieldValidator.isValidSync('Travel Bonusssss')).toBe(false);
+      expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
+
     it('support "select" field type', () => {
       const result = createHeadlessForm(schemaInputTypeSelectSolo);
 
@@ -574,6 +582,14 @@ describe('createHeadlessForm', () => {
       });
 
       expect(fieldSelect).not.toHaveProperty('multiple');
+
+      const fieldValidator = result.fields[0].schema;
+
+      expect(fieldValidator.isValidSync('chr')).toBe(true);
+      expect(fieldValidator.isValidSync('ff')).toBe(true);
+      expect(fieldValidator.isValidSync('ie')).toBe(true);
+      expect(fieldValidator.isValidSync('edge')).toBe(false);
+      expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
 
     it('supports "select" field type with multiple options @deprecated', () => {
