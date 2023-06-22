@@ -517,8 +517,6 @@ describe('createHeadlessForm', () => {
     });
 
     it('support "select" field type @deprecated', () => {
-      // TODO: Test radio in the playground
-      // TODO: https://linear.app/remote/issue/RMT-23/jsf-select-validation-is-incomplete, I am missing Multi-select validation
       const result = createHeadlessForm(schemaInputTypeSelectSoloDeprecated);
 
       expect(result).toMatchObject({
