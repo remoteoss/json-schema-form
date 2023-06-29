@@ -4,6 +4,7 @@ import { randexp } from 'randexp';
 import { string, number, boolean, object, array } from 'yup';
 
 import { supportedTypes } from './internals/fields';
+import { yupSchemaWithCustomJSONLogic } from './jsonLogic';
 import { convertDiskSizeFromTo } from './utils';
 
 /**
@@ -196,7 +197,7 @@ const getYupSchema = ({ inputType, ...field }) => {
  * @param {FieldParameters} field Input fields
  * @returns {Function} Yup schema
  */
-export function buildYupSchema(field, config) {
+export function buildYupSchema(field, config, validations) {
   const { inputType, jsonType: jsonTypeValue, errorMessage = {}, ...propertyFields } = field;
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
@@ -404,6 +405,12 @@ export function buildYupSchema(field, config) {
 
   if (propertyFields.const) {
     validators.push(withConst);
+  }
+
+  if (propertyFields.requiredValidations) {
+    propertyFields.requiredValidations.forEach((id) =>
+      validators.push(yupSchemaWithCustomJSONLogic({ field, id, validations, config }))
+    );
   }
 
   return flow(validators);
