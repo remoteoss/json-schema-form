@@ -311,7 +311,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
         addFieldText: fieldParams.addFieldText,
       };
 
-      buildField(fieldParams, config, scopedJsonSchema, logic).forEach((groupField) => {
+      buildField(fieldParams, config, scopedJsonSchema, validations).forEach((groupField) => {
         fields.push(groupField);
       });
     } else {
@@ -344,7 +344,7 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
       fields,
       getPrefillValues(fields, config.initialValues),
       jsonSchema,
-      logic
+      validations
     );
 
     return {
