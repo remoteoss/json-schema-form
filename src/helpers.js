@@ -40,8 +40,8 @@ export function getField(fieldName, fields) {
  * @param {any} value
  * @returns
  */
-export function validateFieldSchema(field, value) {
-  const validator = buildYupSchema(field);
+export function validateFieldSchema(field, value, validations) {
+  const validator = buildYupSchema(field, {}, validations);
   return validator().isValidSync(value);
 }
 
@@ -246,7 +246,14 @@ function updateField(field, requiredFields, node, formValues) {
  * @param {Set} accRequired - set of required field names gathered by traversing the tree
  * @returns {Object}
  */
-function processNode(node, formValues, formFields, accRequired = new Set()) {
+export function processNode({
+  node,
+  formValues,
+  formFields,
+  accRequired = new Set(),
+  parentID = 'root',
+  validations,
+}) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
 
@@ -263,25 +270,29 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
   });
 
   if (node.if) {
-    const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
+    const matchesCondition = checkIfConditionMatches(node, formValues, formFields, validations);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
-      const { required: branchRequired } = processNode(
-        node.then,
+      const { required: branchRequired } = processNode({
+        node: node.then,
         formValues,
         formFields,
-        requiredFields
-      );
+        accRequired: requiredFields,
+        parentID,
+        validations,
+      });
 
       branchRequired.forEach((field) => requiredFields.add(field));
     } else if (node.else) {
-      const { required: branchRequired } = processNode(
-        node.else,
+      const { required: branchRequired } = processNode({
+        node: node.else,
         formValues,
         formFields,
-        requiredFields
-      );
+        accRequired: requiredFields,
+        parentID,
+        validations,
+      });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
   }
@@ -302,7 +313,16 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
 
   if (node.allOf) {
     node.allOf
-      .map((allOfNode) => processNode(allOfNode, formValues, formFields, requiredFields))
+      .map((allOfNode) =>
+        processNode({
+          node: allOfNode,
+          formValues,
+          formFields,
+          accRequired: requiredFields,
+          parentID,
+          validations,
+        })
+      )
       .forEach(({ required: allOfItemRequired }) => {
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
@@ -313,7 +333,13 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
       const inputType = getInputType(nestedNode);
       if (inputType === supportedTypes.FIELDSET) {
         // It's a fieldset, which might contain scoped conditions
-        processNode(nestedNode, formValues[name] || {}, getField(name, formFields).fields);
+        processNode({
+          node: nestedNode,
+          formValues: formValues[name] || {},
+          formFields: getField(name, formFields).fields,
+          validations,
+          parentID: name,
+        });
       }
     });
   }
@@ -348,11 +374,11 @@ function clearValuesIfNotVisible(fields, formValues) {
  * @param {Object} formValues - current values of the form
  * @param {Object} jsonSchema - JSON schema object
  */
-export function updateFieldsProperties(fields, formValues, jsonSchema) {
+export function updateFieldsProperties(fields, formValues, jsonSchema, validations) {
   if (!jsonSchema?.properties) {
     return;
   }
-  processNode(jsonSchema, formValues, fields);
+  processNode({ node: jsonSchema, formValues, formFields: fields, validations });
   clearValuesIfNotVisible(fields, formValues);
 }
 
@@ -415,6 +441,7 @@ export function extractParametersFromNode(schemaNode) {
 
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
+  const requiredValidations = schemaNode['x-jsf-logic-validations'];
 
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
@@ -460,6 +487,7 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
+      requiredValidations,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
             class: 'jsf-description',
