@@ -7,6 +7,7 @@ import { lazy } from 'yup';
 
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
+import { processValidationRule } from './jsonLogic';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
@@ -29,7 +30,7 @@ function hasType(type, typeName) {
  * @param {Object[]} fields - form fields
  * @returns
  */
-function getField(fieldName, fields) {
+export function getField(fieldName, fields) {
   return fields.find(({ name }) => name === fieldName);
 }
 
@@ -228,7 +229,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues) {
+export function updateField(field, requiredFields, node, formValues) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -275,6 +276,10 @@ function updateField(field, requiredFields, node, formValues) {
       }
     });
 
+  if (node?.target && field.name === node?.target) {
+    field.rules = Array.isArray(field.rules) ? field.rules.push(node) : [node];
+  }
+
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
     const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
@@ -320,6 +325,10 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
     requiredFields.add(fieldName);
     updateField(getField(fieldName, formFields), requiredFields, node, formValues);
   });
+
+  node['x-jsf-validations']?.forEach((validation) =>
+    processValidationRule(validation, formFields, requiredFields, node, formValues)
+  );
 
   if (node.if) {
     const matchesCondition = checkIfConditionMatches(node, formValues, formFields);

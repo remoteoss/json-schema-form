@@ -4,6 +4,7 @@ import { randexp } from 'randexp';
 import { string, number, boolean, object, array } from 'yup';
 
 import { supportedTypes } from './internals/fields';
+import { yupSchemaWithCustomJSONLogic } from './jsonLogic';
 import { convertDiskSizeFromTo } from './utils';
 
 /**
@@ -334,6 +335,11 @@ export function buildYupSchema(field, config) {
   if (propertyFields.accept) {
     validators.push(withFileFormat);
   }
+
+  if (propertyFields.rules) {
+    propertyFields.rules.forEach((rule) => validators.push(yupSchemaWithCustomJSONLogic(rule)));
+  }
+
   return flow(validators);
 }
 
@@ -367,6 +373,10 @@ function getSchema(fields = [], config) {
       } else {
         Object.assign(newSchema, getSchema(field.fields, config));
       }
+    }
+    // For custom json-logic rules, rebuild the schema.
+    if (field.rules) {
+      newSchema[field.name] = buildYupSchema(field, config)();
     }
   });
 
