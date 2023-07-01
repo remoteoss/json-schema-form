@@ -59,7 +59,7 @@ function rebuildFieldset(fields, property) {
 
   return fields.map((field) => ({
     ...field,
-    required: isFieldRequired(property, field.name),
+    required: isFieldRequired(property, field),
   }));
 }
 

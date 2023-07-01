@@ -102,13 +102,11 @@ function removeInvalidAttributes(fields) {
 function buildFieldParameters(name, fieldProperties, required = [], config = {}) {
   const { position } = pickXKey(fieldProperties, 'presentation') ?? {};
   let fields;
-  console.log(':: 🏗', name);
 
   const inputType = getInputType(fieldProperties, config.strictInputType, name);
 
   if (inputType === supportedTypes.FIELDSET) {
     // eslint-disable-next-line no-use-before-define
-    console.log(':: 🏗🔻');
     fields = getFieldsFromJSONSchema(fieldProperties, {
       customProperties: get(config, `customProperties.${name}`, {}),
     });
@@ -140,7 +138,6 @@ function convertJSONSchemaPropertiesToFieldParameters(
   { properties, required, 'x-jsf-order': order },
   config = {}
 ) {
-  console.log(':: 🔀 convert');
   const sortFields = (a, b) => sortByOrderOrPosition(a, b, order);
 
   // Gather fields represented at the root of the node , sort them by
@@ -152,56 +149,27 @@ function convertJSONSchemaPropertiesToFieldParameters(
     .map(({ position, ...fieldParams }) => fieldParams);
 }
 
-function markAndLookInside(field, nodePathField) {
-  console.log(':: ⛳️ Dynamic', field.name);
-  field.isDynamic = true;
-
-  // Check nested fields too (Fieldset)
-  // Do not check inputType === fieldset because it might be an arbitrary one
-  if (nodePathField && field.jsonType === 'object') {
-    console.log(':: ⛳️ 🔻');
-
-    field.fields.forEach((subField) => {
-      const nodePathSubField = nodePathField.properties?.[subField.name];
-      if (nodePathSubField) {
-        markAndLookInside(subField, nodePathSubField);
-      }
-    });
-  }
-}
-
-function markConditionalFields(fields, node) {
-  fields.forEach((field) => {
-    const name = field.name;
-    const thenPathField = node.then?.properties?.[name];
-    const thenIsRequired = node.then?.required?.includes(name);
-
-    if (thenPathField || thenIsRequired) {
-      markAndLookInside(field, thenPathField);
-    }
-
-    const elsePathFields = node.else?.properties?.[name];
-    const elseIsRequired = node.else?.required?.includes(name);
-
-    if (elsePathFields || elseIsRequired) {
-      markAndLookInside(field, elsePathFields);
-    }
-  });
-}
-
 /**
  * Checks which fields have dependencies (dynamic behavior based on the form state) and marks them as such
  *
  * @param {FieldParameters[]} fieldsParameters - list of field parameters
- * @param {Object} node - JSON schema conditional Node -
+ * @param {Object} node - JSON schema node
  */
-function markFieldsInConditionals(fieldsParameters, node) {
-  if (node.then || node.else) {
-    // Mark conditional nested fields (eg fieldsets)
-    markConditionalFields(fieldsParameters, node);
+function applyFieldsDependencies(fieldsParameters, node) {
+  if (node?.then) {
+    fieldsParameters
+      .filter(
+        ({ name }) =>
+          node.then?.properties?.[name] ||
+          node.then?.required?.includes(name) ||
+          node.else?.properties?.[name] ||
+          node.else?.required?.includes(name)
+      )
+      .forEach((property) => {
+        property.isDynamic = true;
+      });
 
-    // Search in nested conditionals (if > then > if > ...)
-    markFieldsInConditionals(fieldsParameters, node.then);
+    applyFieldsDependencies(fieldsParameters, node.then);
   }
 
   if (node?.anyOf) {
@@ -211,12 +179,12 @@ function markFieldsInConditionals(fieldsParameters, node) {
         property.isDynamic = true;
       });
 
-    markFieldsInConditionals(fieldsParameters, node.then);
+    applyFieldsDependencies(fieldsParameters, node.then);
   }
 
   if (node?.allOf) {
     node.allOf.forEach((condition) => {
-      markFieldsInConditionals(fieldsParameters, condition);
+      applyFieldsDependencies(fieldsParameters, condition);
     });
   }
 }
@@ -254,7 +222,7 @@ function getComposeFunctionForField(fieldParams, hasCustomizations) {
  * @param {JsfConfig} config - parser config
  * @returns {Object} field object
  */
-function buildFieldDynamic(fieldParams, config, scopedJsonSchema) {
+function buildField(fieldParams, config, scopedJsonSchema) {
   const customProperties = getCustomPropertiesForField(fieldParams, config);
   const composeFn = getComposeFunctionForField(fieldParams, !!customProperties);
 
@@ -262,7 +230,6 @@ function buildFieldDynamic(fieldParams, config, scopedJsonSchema) {
   const calculateConditionalFieldsClosure =
     fieldParams.isDynamic && calculateConditionalProperties(fieldParams, customProperties);
 
-  console.log(':: 🔮', fieldParams.name, fieldParams.isDynamic);
   const calculateCustomValidationPropertiesClosure = calculateCustomValidationProperties(
     fieldParams,
     customProperties
@@ -308,7 +275,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config) {
 
   const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(scopedJsonSchema, config);
 
-  markFieldsInConditionals(fieldParamsList, scopedJsonSchema);
+  applyFieldsDependencies(fieldParamsList, scopedJsonSchema);
 
   const fields = [];
 
@@ -332,17 +299,11 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config) {
         addFieldText: fieldParams.addFieldText,
       };
 
-      buildFieldDynamic(fieldParams, config, scopedJsonSchema).forEach((groupField) => {
+      buildField(fieldParams, config, scopedJsonSchema).forEach((groupField) => {
         fields.push(groupField);
       });
-    } else if (fieldParams.inputType === 'fieldset') {
-      let field = buildFieldDynamic(fieldParams, config, scopedJsonSchema);
-      const subFields = fieldParams.fields.map((subField) =>
-        buildFieldDynamic(subField, config, scopedJsonSchema.properties[fieldParams.name])
-      );
-      fields.push({ ...field, fields: subFields });
     } else {
-      fields.push(buildFieldDynamic(fieldParams, config, scopedJsonSchema));
+      fields.push(buildField(fieldParams, config, scopedJsonSchema));
     }
   });
 
@@ -352,40 +313,6 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config) {
 /**
  * Generates the Headless form based on the provided JSON schema
  *
-
-🍝 Data Flow of createHeadlessForm() 🍝
-
-createHeadlessForm
-  🥢 getFieldsFromJSONSchema
-    🔀 convertJSONSchemaPropertiesToFieldParameters
-      🏗 buildFieldParameters
-        (if fieldset) 🥢 getFieldsFromJSONSchema
-    ⛳️ markFieldsInConditionals
-    (if group-array) 🔀 convertJSONSchemaPropertiesToFieldParameters
-    🔮 buildFieldDynamic
-      (if group-array) 🔮 buildFieldDynamic
-      🧠 calculateConditionalProperties
-
-Thoughts:
-1. The fn names can be improved.
-2. Fields inside Fieldsets never go through ⛳️ and 🧠. Bug or code-smell?
-3. So much pasta... convert, build, mark, build, calculate.
-4. So much implicit mutation. Nothing against mutation, it's just sneaky.
-5. We definitely can simplify the mental model of JSF.
-  - convertHelper (eg title -> label)
-  - build-base (root) - cache it.
-  - build-blocks (conditionals) - cache it.
-  - search-conditionals - cache them to avoid iterations on every change.
-  - compose then/else - eg [...base, ...block].
-    - this solves the issue with redundant else "readOnly: false".
-    - no need for internal calculateConditionalProperties 
-  - todo: solve issue with re-renders. new Instance?
-
-  ----
-  handleValidation
-    🌪 processNode
-
-
  * @param {Object} jsonSchema - JSON Schema
  * @param {JsfConfig} customConfig - Config
  */
