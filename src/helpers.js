@@ -5,7 +5,7 @@ import omitBy from 'lodash/omitBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
-import { supportedTypes, getInputType } from './internals/fields';
+import { supportedTypes } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
@@ -30,6 +30,7 @@ function hasType(type, typeName) {
  * @returns
  */
 function getField(fieldName, fields) {
+  if (!fields) return undefined;
   return fields.find(({ name }) => name === fieldName);
 }
 
@@ -269,6 +270,7 @@ function updateField(field, requiredFields, node, formValues) {
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
     const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
+    console.log(':: 🧠', field.name, newFieldValues);
     updateValues(newFieldValues);
   }
 
@@ -299,11 +301,14 @@ function updateField(field, requiredFields, node, formValues) {
 function processNode(node, formValues, formFields, accRequired = new Set()) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
+  console.log(':: 🌪 process');
 
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
+    console.log(':: 🌪 start:', fieldName, field.options);
     updateField(field, requiredFields, node, formValues);
+    console.log(':: 🌪 done:', fieldName, field.options);
   });
 
   // Update required fields based on the `required` property and mutate node if needed
@@ -312,9 +317,31 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
     updateField(getField(fieldName, formFields), requiredFields, node, formValues);
   });
 
+  if (node.properties) {
+    Object.entries(node.properties).forEach(([name, nestedNode]) => {
+      if (nestedNode.properties) {
+        console.log(':: 🔻 process fieldset', name);
+        // Look for scoped conditions
+        processNode(nestedNode, formValues[name] || {}, getField(name, formFields).fields);
+
+        // Look for fieldsets in root condition
+        Object.keys(nestedNode.properties).forEach((nestedFieldName) => {
+          const parentField = getField(name, formFields);
+          const nestedField = getField(nestedFieldName, parentField?.fields);
+          console.log(':: npr start', nestedField.name, nestedField.options);
+          updateField(nestedField.name, requiredFields, node, formValues[name]);
+          console.log(':: npr done', nestedField.name, nestedField.options);
+        });
+      }
+    });
+  }
+
   if (node.if) {
     const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
+    // BUG HERE (unreleated) - what if it matches but doesn't has a then,
+    // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
+      console.log(':: ✅ match');
       const { required: branchRequired } = processNode(
         node.then,
         formValues,
@@ -354,16 +381,6 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
       .forEach(({ required: allOfItemRequired }) => {
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
-  }
-
-  if (node.properties) {
-    Object.entries(node.properties).forEach(([name, nestedNode]) => {
-      const inputType = getInputType(nestedNode);
-      if (inputType === supportedTypes.FIELDSET) {
-        // It's a fieldset, which might contain scoped conditions
-        processNode(nestedNode, formValues[name] || {}, getField(name, formFields).fields);
-      }
-    });
   }
 
   return {
@@ -567,6 +584,7 @@ export function yupToFormErrors(yupError) {
 export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
   updateFieldsProperties(fields, values, jsonSchema);
 
+  console.log(':: 🆕 fields', fields);
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
   let errors;
 
