@@ -102,9 +102,9 @@ const getOptionsAllowed = (field) => {
   return optionsBroken;
 
   /*
-    [1] @BUG XXX-000 - explanation
+    [1] @BUG RMT-518 - explanation
     The "" (empty string) is to keep retrocompatibily with previous version.
-    The "" does NOT match the JSON Schema specs, as `oneOf` keyword does not allow "" value, ever.
+    The "" does NOT match the JSON Schema specs. In the specs the `oneOf` keyword does not allow "" value by default.
 
     Preving its value in this PR#18 would be a major BREAKING CHANGE
     because before any string was allowed but now only the options[].value are,
