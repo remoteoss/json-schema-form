@@ -422,38 +422,26 @@ describe('createHeadlessForm', () => {
   });
 
   describe('field support', () => {
-    function assertOptionsValidation({ handleValidation, fieldName, validOptions }) {
+    function assertOptionsAllowed({ handleValidation, fieldName, validOptions }) {
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       // All allowed options are valid
       validOptions.forEach((value) => {
-        expect(
-          validateForm({
-            [fieldName]: value,
-          })
-        ).toBeUndefined();
+        expect(validateForm({ [fieldName]: value })).toBeUndefined();
       });
 
       // Any other arbitrary value is not valid.
-      expect(
-        validateForm({
-          [fieldName]: 'blah-blah',
-        })
-      ).toEqual({
+      expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
         [fieldName]: 'The option "blah-blah" is not valid.',
       });
 
-      // This is a required field:
+      // Given undefined, it says it's a  required field.
       expect(validateForm({})).toEqual({
         [fieldName]: 'Required field',
       });
 
-      // As required field, empty string ("") is also considered empty. @BUG XXX-000
-      expect(
-        validateForm({
-          [fieldName]: '',
-        })
-      ).toEqual({
+      // Given empty string (""), it also complaints it's required.
+      expect(validateForm({ [fieldName]: '' })).toEqual({
         [fieldName]: 'Required field',
       });
     }
@@ -586,7 +574,7 @@ describe('createHeadlessForm', () => {
         },
       ]);
 
-      assertOptionsValidation({
+      assertOptionsAllowed({
         handleValidation,
         fieldName: 'benefits',
         validOptions: ['Medical Insurance', 'Health Insurance', 'Travel Bonus'],
@@ -620,7 +608,7 @@ describe('createHeadlessForm', () => {
 
       expect(fieldSelect).not.toHaveProperty('multiple');
 
-      assertOptionsValidation({
+      assertOptionsAllowed({
         handleValidation,
         fieldName: 'browsers',
         validOptions: ['chr', 'ff', 'ie'],
@@ -738,7 +726,7 @@ describe('createHeadlessForm', () => {
         },
       ]);
 
-      assertOptionsValidation({
+      assertOptionsAllowed({
         handleValidation,
         fieldName: 'has_siblings',
         validOptions: ['yes', 'no'],
@@ -768,7 +756,7 @@ describe('createHeadlessForm', () => {
         },
       ]);
 
-      assertOptionsValidation({
+      assertOptionsAllowed({
         handleValidation,
         fieldName: 'has_siblings',
         validOptions: ['yes', 'no'],
@@ -814,8 +802,11 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    describe('support "radio" optional field - more examples @BUG XXX-000', () => {
+    describe('support "radio" optional field - more examples @BUG RMT-518', () => {
       function assertCommonBehavior(validateForm) {
+        // Note: Very similar to assertOptionsAllowed()
+        // We could reuse it in a next iteration.
+
         // Happy path
         expect(validateForm({ has_car: 'yes' })).toBeUndefined();
 
@@ -823,8 +814,8 @@ describe('createHeadlessForm', () => {
         expect(validateForm({})).toBeUndefined();
 
         // Does not accept other values
-        expect(validateForm({ has_car: 'jdsadjag' })).toEqual({
-          has_car: 'The option "jdsadjag" is not valid.',
+        expect(validateForm({ has_car: 'blah-blah' })).toEqual({
+          has_car: 'The option "blah-blah" is not valid.',
         });
 
         // Does not accept "null" as string
@@ -832,7 +823,7 @@ describe('createHeadlessForm', () => {
           has_car: 'The option "null" is not valid.',
         });
 
-        // Accepts empty string ("") — @BUG XXX-000
+        // Accepts empty string ("") — @BUG RMT-518
         // Expectation: Does not accept empty string ("")
         expect(validateForm({ has_car: '' })).toBeUndefined();
       }
