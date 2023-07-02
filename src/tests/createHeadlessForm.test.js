@@ -1586,6 +1586,20 @@ describe('createHeadlessForm', () => {
           // perks.food options changed ("No" was removed)
           expect(foodField.options).toHaveLength(3);
 
+          // Ensure the "no" option is no longer accepted:
+          // This is a very important test in case the UI fails for some reason.
+          expect(
+            validateForm({
+              work_hours_per_week: 35,
+              pto: 20,
+              perks: perksForLowWorkHours,
+            })
+          ).toEqual({
+            perks: {
+              food: 'The option "no" is not valid.',
+            },
+          });
+
           // perks.food has a new description
           expect(foodField.description).toBe("Above 30 hours, the 'no' option disappears.");
           // pto has a new description
