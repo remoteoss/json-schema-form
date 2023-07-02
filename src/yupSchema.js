@@ -34,16 +34,12 @@ const validateOnlyStrings = string()
 
 const yupSchemas = {
   text: validateOnlyStrings,
-  select: (options) =>
+  radioOrSelect: (options) =>
     string()
-      .oneOf([...options, '']) // if we don't allow this whitespace, nullable won't work
-      .trim()
-      .nullable(),
-  radio: (options) =>
-    string()
-      .oneOf([...options, ''])
-      .trim()
-      .nullable(),
+      .nullable()
+      .oneOf(options, ({ value }) => {
+        return `The option ${JSON.stringify(value)} is not valid.`;
+      }),
   date: string()
     .nullable()
     .trim()
@@ -82,17 +78,53 @@ function getRequiredErrorMessage(inputType, { inlineError, configError }) {
 
 const getJsonTypeInArray = (jsonType) =>
   Array.isArray(jsonType)
-    ? jsonType.find((val) => val !== 'null') // eg ["string", "null"] // optional fields - get the lead type.
+    ? jsonType.find((val) => val !== 'null') // eg ["string", "null"] // optional fields - get the head type.
     : jsonType; // eg "string"
 
-const getOptionsValues = (field) => {
-  return field.options?.map((option) => option.value);
+const getOptionsAllowed = (field) => {
+  const onlyValues = field.options?.map((option) => option.value);
+  const optionsBroken = [...onlyValues, '']; /*[1]*/
+
+  if (field.required) {
+    return optionsBroken;
+  }
+
+  const isOptionalWithNull =
+    Array.isArray(field.jsonType) &&
+    // @TODO should also check the "oneOf" directly looking for "null" option
+    // but we don't have direct access at this point. Otherwise
+    // the JSON Schema validator will fail because setting jsonType is not enough.
+    field.jsonType.includes('null');
+  if (isOptionalWithNull) {
+    return [...optionsBroken, null];
+  }
+
+  return optionsBroken;
+
+  /*
+    [1] @BUG XXX-000 - explanation
+    The "" (empty string) is to keep retrocompatibily with previous version.
+    The "" does NOT match the JSON Schema specs, as `oneOf` keyword does not allow "" value, ever.
+
+    Preving its value in this PR#18 would be a major BREAKING CHANGE
+    because before any string was allowed but now only the options[].value are,
+    which means we'd need to also exclude "" from being accepted.   
+
+    This is a dangerous change as it can disrupt existing UI Form integrations
+    that might handle empty fields differently ("" vs null vs undefined).
+
+    We'd need to implement a feature_flag/transition deprecation warning
+    to give devs the time to adapt their integrations before we fix this behavior.
+    Check the PR#18 and tests for more details.
+  */
 };
 
-const getYupSchema = (options, inputType, jsonType) => {
-  const inputTypesWithOptions = ['select', 'radio'];
-  if (inputTypesWithOptions.includes(inputType) && Array.isArray(options) && options.length > 0) {
-    return yupSchemas[inputType](options) || yupSchemasToJsonTypes[jsonType];
+const getYupSchema = ({ inputType, ...field }) => {
+  const jsonType = getJsonTypeInArray(field.jsonType);
+
+  if (field.options?.length > 0) {
+    const optionsAllowed = getOptionsAllowed(field);
+    return yupSchemas.radioOrSelect(optionsAllowed);
   }
 
   return yupSchemas[inputType] || yupSchemasToJsonTypes[jsonType];
@@ -106,7 +138,6 @@ export function buildYupSchema(field, config) {
   const { inputType, jsonType: jsonTypeValue, errorMessage = {}, ...propertyFields } = field;
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
-  const jsonType = getJsonTypeInArray(jsonTypeValue);
   const errorMessageFromConfig = config?.inputTypes?.[inputType]?.errorMessage || {};
 
   if (propertyFields.multiple) {
@@ -115,8 +146,7 @@ export function buildYupSchema(field, config) {
   } else if (isCheckboxBoolean) {
     baseSchema = yupSchemas.checkboxBool;
   } else {
-    const options = getOptionsValues(field);
-    baseSchema = getYupSchema(options, inputType, jsonType);
+    baseSchema = getYupSchema(field);
   }
 
   if (!baseSchema) {

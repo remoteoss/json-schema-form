@@ -10,6 +10,8 @@ import {
   schemaInputTypeRadioDeprecated,
   schemaInputTypeRadio,
   schemaInputTypeRadioRequiredAndOptional,
+  schemaInputRadioOptionalNull,
+  schemaInputRadioOptionalConventional,
   schemaInputTypeRadioOptionsWithDetails,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
@@ -420,6 +422,42 @@ describe('createHeadlessForm', () => {
   });
 
   describe('field support', () => {
+    function assertOptionsValidation({ handleValidation, fieldName, validOptions }) {
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      // All allowed options are valid
+      validOptions.forEach((value) => {
+        expect(
+          validateForm({
+            [fieldName]: value,
+          })
+        ).toBeUndefined();
+      });
+
+      // Any other arbitrary value is not valid.
+      expect(
+        validateForm({
+          [fieldName]: 'blah-blah',
+        })
+      ).toEqual({
+        [fieldName]: 'The option "blah-blah" is not valid.',
+      });
+
+      // This is a required field:
+      expect(validateForm({})).toEqual({
+        [fieldName]: 'Required field',
+      });
+
+      // As required field, empty string ("") is also considered empty. @BUG XXX-000
+      expect(
+        validateForm({
+          [fieldName]: '',
+        })
+      ).toEqual({
+        [fieldName]: 'Required field',
+      });
+    }
+
     it('support "text" field type', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaInputTypeText);
 
@@ -522,47 +560,43 @@ describe('createHeadlessForm', () => {
     });
 
     it('support "select" field type @deprecated', () => {
-      const result = createHeadlessForm(schemaInputTypeSelectSoloDeprecated);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectSoloDeprecated);
 
-      expect(result).toMatchObject({
-        fields: [
-          {
-            description: 'Life Insurance',
-            label: 'Benefits (solo)',
-            name: 'benefits',
-            placeholder: 'Select...',
-            type: 'select',
-            options: [
-              {
-                label: 'Medical Insurance',
-                value: 'Medical Insurance',
-              },
-              {
-                label: 'Health Insurance',
-                value: 'Health Insurance',
-              },
-              {
-                label: 'Travel Bonus',
-                value: 'Travel Bonus',
-              },
-            ],
-          },
-        ],
+      expect(fields).toMatchObject([
+        {
+          description: 'Life Insurance',
+          label: 'Benefits (solo)',
+          name: 'benefits',
+          placeholder: 'Select...',
+          type: 'select',
+          options: [
+            {
+              label: 'Medical Insurance',
+              value: 'Medical Insurance',
+            },
+            {
+              label: 'Health Insurance',
+              value: 'Health Insurance',
+            },
+            {
+              label: 'Travel Bonus',
+              value: 'Travel Bonus',
+            },
+          ],
+        },
+      ]);
+
+      assertOptionsValidation({
+        handleValidation,
+        fieldName: 'benefits',
+        validOptions: ['Medical Insurance', 'Health Insurance', 'Travel Bonus'],
       });
-
-      const fieldValidator = result.fields[0].schema;
-
-      expect(fieldValidator.isValidSync('Medical Insurance')).toBe(true);
-      expect(fieldValidator.isValidSync('Health Insurance')).toBe(true);
-      expect(fieldValidator.isValidSync('Travel Bonus')).toBe(true);
-      expect(fieldValidator.isValidSync('Travel Bonusssss')).toBe(false);
-      expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
 
     it('support "select" field type', () => {
-      const result = createHeadlessForm(schemaInputTypeSelectSolo);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectSolo);
 
-      const fieldSelect = result.fields[0];
+      const fieldSelect = fields[0];
       expect(fieldSelect).toMatchObject({
         name: 'browsers',
         label: 'Browsers (solo)',
@@ -586,13 +620,11 @@ describe('createHeadlessForm', () => {
 
       expect(fieldSelect).not.toHaveProperty('multiple');
 
-      const fieldValidator = result.fields[0].schema;
-
-      expect(fieldValidator.isValidSync('chr')).toBe(true);
-      expect(fieldValidator.isValidSync('ff')).toBe(true);
-      expect(fieldValidator.isValidSync('ie')).toBe(true);
-      expect(fieldValidator.isValidSync('edge')).toBe(false);
-      expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
+      assertOptionsValidation({
+        handleValidation,
+        fieldName: 'browsers',
+        validOptions: ['chr', 'ff', 'ie'],
+      });
     });
 
     it('supports "select" field type with multiple options @deprecated', () => {
@@ -683,98 +715,149 @@ describe('createHeadlessForm', () => {
     });
 
     it('support "radio" field type @deprecated', () => {
-      const result = createHeadlessForm(schemaInputTypeRadioDeprecated);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioDeprecated);
 
-      expect(result).toMatchObject({
-        fields: [
-          {
-            description: 'Do you have any siblings?',
-            label: 'Has siblings',
-            name: 'has_siblings',
-            options: [
-              {
-                label: 'Yes',
-                value: 'yes',
-              },
-              {
-                label: 'No',
-                value: 'no',
-              },
-            ],
-            required: true,
-            schema: expect.any(Object),
-            type: 'radio',
-          },
-        ],
+      expect(fields).toMatchObject([
+        {
+          description: 'Do you have any siblings?',
+          label: 'Has siblings',
+          name: 'has_siblings',
+          options: [
+            {
+              label: 'Yes',
+              value: 'yes',
+            },
+            {
+              label: 'No',
+              value: 'no',
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsValidation({
+        handleValidation,
+        fieldName: 'has_siblings',
+        validOptions: ['yes', 'no'],
       });
-
-      const fieldValidator = result.fields[0].schema;
-      expect(fieldValidator.isValidSync('yes')).toBe(true);
-      expect(fieldValidator.isValidSync('n/a')).toBe(false);
-      expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
     it('support "radio" field type', () => {
-      const result = createHeadlessForm(schemaInputTypeRadio);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadio);
 
-      expect(result).toMatchObject({
-        fields: [
-          {
-            description: 'Do you have any siblings?',
-            label: 'Has siblings',
-            name: 'has_siblings',
-            options: [
-              {
-                label: 'Yes',
-                value: 'yes',
-              },
-              {
-                label: 'No',
-                value: 'no',
-              },
-            ],
-            required: true,
-            schema: expect.any(Object),
-            type: 'radio',
-          },
-        ],
+      expect(fields).toMatchObject([
+        {
+          description: 'Do you have any siblings?',
+          label: 'Has siblings',
+          name: 'has_siblings',
+          options: [
+            {
+              label: 'Yes',
+              value: 'yes',
+            },
+            {
+              label: 'No',
+              value: 'no',
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsValidation({
+        handleValidation,
+        fieldName: 'has_siblings',
+        validOptions: ['yes', 'no'],
       });
-
-      const fieldValidator = result.fields[0].schema;
-      expect(fieldValidator.isValidSync('yes')).toBe(true);
-      expect(fieldValidator.isValidSync('n/a')).toBe(false);
-      expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
 
     it('support "radio" optional field', () => {
-      const result = createHeadlessForm(schemaInputTypeRadioRequiredAndOptional);
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaInputTypeRadioRequiredAndOptional
+      );
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
 
-      expect(result).toMatchObject({
-        fields: [
-          {},
-          {
-            name: 'has_car',
-            label: 'Has car',
-            description: 'Do you have a car? (optional field, check oneOf)',
-            options: [
-              {
-                label: 'Yes',
-                value: 'yes',
-              },
-              {
-                label: 'No',
-                value: 'no',
-              },
-            ],
-            required: false,
-            schema: expect.any(Object),
-            type: 'radio',
-          },
-        ],
+      expect(fields).toMatchObject([
+        {},
+        {
+          name: 'has_car',
+          label: 'Has car',
+          description: 'Do you have a car? (optional field, check oneOf)',
+          options: [
+            {
+              label: 'Yes',
+              value: 'yes',
+            },
+            {
+              label: 'No',
+              value: 'no',
+            },
+          ],
+          required: false,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      expect(
+        validateForm({
+          has_siblings: 'yes',
+          has_car: 'yes',
+        })
+      ).toBeUndefined();
+      expect(validateForm({})).toEqual({
+        has_siblings: 'Required field',
+      });
+    });
+
+    describe('support "radio" optional field - more examples @BUG XXX-000', () => {
+      function assertCommonBehavior(validateForm) {
+        // Happy path
+        expect(validateForm({ has_car: 'yes' })).toBeUndefined();
+
+        // Accepts undefined field
+        expect(validateForm({})).toBeUndefined();
+
+        // Does not accept other values
+        expect(validateForm({ has_car: 'jdsadjag' })).toEqual({
+          has_car: 'The option "jdsadjag" is not valid.',
+        });
+
+        // Does not accept "null" as string
+        expect(validateForm({ has_car: 'null' })).toEqual({
+          has_car: 'The option "null" is not valid.',
+        });
+
+        // Accepts empty string ("") — @BUG XXX-000
+        // Expectation: Does not accept empty string ("")
+        expect(validateForm({ has_car: '' })).toBeUndefined();
+      }
+
+      it('with null option (as Remote)', () => {
+        const { handleValidation } = createHeadlessForm(schemaInputRadioOptionalNull);
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        assertCommonBehavior(validateForm);
+
+        // Accepts null value
+        expect(validateForm({ has_car: null })).toBeUndefined();
       });
 
-      const fieldValidator = result.fields[0].schema;
-      expect(fieldValidator.isValidSync('yes')).toBe(true);
-      expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
+      it('without null option (conventional way)', () => {
+        const { handleValidation } = createHeadlessForm(schemaInputRadioOptionalConventional);
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        assertCommonBehavior(validateForm);
+
+        // Does NOT accept null value
+        expect(validateForm({ has_car: null })).toEqual({
+          has_car: 'The option null is not valid.',
+        });
+      });
     });
 
     it('support "radio" field type with extra info inside each option', () => {

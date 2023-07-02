@@ -127,28 +127,6 @@ export const mockRadioInput = {
   },
   type: 'string',
 };
-export const mockRadioInputOptional = {
-  title: 'Has car',
-  description: 'Do you have a car? (optional field, check oneOf)',
-  oneOf: [
-    {
-      const: null, // The option is excluded from the jsf options.
-      title: 'N/A',
-    },
-    {
-      const: 'yes',
-      title: 'Yes',
-    },
-    {
-      const: 'no',
-      title: 'No',
-    },
-  ],
-  'x-jsf-presentation': {
-    inputType: 'radio',
-  },
-  type: ['string', 'null'],
-};
 
 export const mockRadioCardExpandableInput = {
   title: 'Experience level',
@@ -885,12 +863,48 @@ export const schemaInputTypeRadio = {
   required: ['has_siblings'],
 };
 
+export const mockRadioInputOptionalNull = {
+  title: 'Has car',
+  oneOf: [
+    { const: 'yes', title: 'Yes' },
+    { const: 'no', title: 'No' },
+    // JSF excludes the null option from the field output
+    // But keepts null as an accepted value
+    { const: null, title: 'N/A' },
+  ],
+  'x-jsf-presentation': { inputType: 'radio' },
+  type: ['string', 'null'], // Yes, the JSON Schema spec is 'null', not null.
+};
+
 export const schemaInputTypeRadioRequiredAndOptional = {
   properties: {
     has_siblings: mockRadioInput,
-    has_car: mockRadioInputOptional,
+    has_car: {
+      ...mockRadioInputOptionalNull,
+      description: 'Do you have a car? (optional field, check oneOf)',
+    },
   },
   required: ['has_siblings'],
+};
+
+export const schemaInputRadioOptionalNull = {
+  properties: {
+    has_car: mockRadioInputOptionalNull,
+  },
+};
+
+export const schemaInputRadioOptionalConventional = {
+  properties: {
+    has_car: {
+      title: 'Has car',
+      oneOf: [
+        { const: 'yes', title: 'Yes' },
+        { const: 'no', title: 'No' },
+      ],
+      'x-jsf-presentation': { inputType: 'radio' },
+      type: 'string',
+    },
+  },
 };
 
 export const schemaInputTypeRadioCard = {
