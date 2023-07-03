@@ -105,20 +105,29 @@ const getOptionsAllowed = (field) => {
     return [...optionsBroken, null];
   }
 
-  return optionsBroken;
+  return [
+    ...optionsBroken,
+    null, // [3]
+  ];
 
   /*
-    [1] @BUG RMT-518 - explanation
+    [1] @BUG RMT-518 - explanation from PR#18
     The "" (empty string) is to keep retrocompatibily with previous version.
     The "" does NOT match the JSON Schema specs. In the specs the `oneOf` keyword does not allow "" value by default.
 
-    Preving its value in this PR#18 would be a major BREAKING CHANGE
+    Disallowing "" would be a major BREAKING CHANGE
     because before any string was allowed but now only the options[].value are,
     which means we'd need to also exclude "" from being accepted.   
 
     This is a dangerous change as it can disrupt existing UI Form integrations
     that might handle empty fields differently ("" vs null vs undefined).
-    [2] The null also needs to be always accepted for the same reason.
+    [2] The null needs to be allowed in required fields to show the
+        message "Required field" instead of "The option null is not valid".
+    [3] The nulls needs to be allowed in conventional optional fields because
+        some consumers (eg Remote) expect empty fields to be sent as "null"
+        even though their JSON Schemas are not created correctly (missing an option with const: null).
+        This will allow the JSF to still mark the field as valid (false positive)
+        and let the JSON Schema validator fail.
 
     We'd need to implement a feature_flag/transition deprecation warning
     to give devs the time to adapt their integrations before we fix this behavior.

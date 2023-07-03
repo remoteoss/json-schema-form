@@ -835,7 +835,24 @@ describe('createHeadlessForm', () => {
         expect(validateForm({ has_car: '' })).toBeUndefined();
       }
 
-      it('with null option (as Remote)', () => {
+      it('normal optional (conventional way)', () => {
+        const { handleValidation } = createHeadlessForm(schemaInputRadioOptionalConventional);
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        assertCommonBehavior(validateForm);
+
+        // Accepts null, even though it shoudln't @BUG RMT-518
+        // This is for cases where we (Remote) still have incorrect
+        // JSON Schemas in our Platform.
+        expect(validateForm({ has_car: null })).toBeUndefined();
+        // Expected:
+        // // Does NOT accept null value
+        // expect(validateForm({ has_car: null })).toEqual({
+        //   has_car: 'The option null is not valid.',
+        // });
+      });
+
+      it('with null option (as Remote does)', () => {
         const { handleValidation } = createHeadlessForm(schemaInputRadioOptionalNull);
         const validateForm = (vals) => friendlyError(handleValidation(vals));
 
@@ -843,18 +860,6 @@ describe('createHeadlessForm', () => {
 
         // Accepts null value
         expect(validateForm({ has_car: null })).toBeUndefined();
-      });
-
-      it('without null option (conventional way)', () => {
-        const { handleValidation } = createHeadlessForm(schemaInputRadioOptionalConventional);
-        const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-        assertCommonBehavior(validateForm);
-
-        // Does NOT accept null value
-        expect(validateForm({ has_car: null })).toEqual({
-          has_car: 'The option null is not valid.',
-        });
       });
     });
 
