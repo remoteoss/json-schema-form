@@ -200,7 +200,7 @@ export const schemaInputTypeHidden = {
       ...mockSelectInputSolo,
       title: 'Select hidden',
       'x-jsf-presentation': { inputType: 'hidden' },
-      default: 'Travel Bonus',
+      default: 'chr',
     },
     a_hidden_select_multiple: {
       ...schemaInputTypeCountriesMultiple.properties.nationality,
