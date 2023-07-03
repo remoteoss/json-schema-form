@@ -83,17 +83,23 @@ const getJsonTypeInArray = (jsonType) =>
 
 const getOptionsAllowed = (field) => {
   const onlyValues = field.options?.map((option) => option.value);
-  const optionsBroken = [...onlyValues, '']; /*[1]*/
+  const optionsBroken = [
+    ...onlyValues,
+    '', // [1]
+  ];
 
   if (field.required) {
-    return optionsBroken;
+    return [
+      ...optionsBroken,
+      null, // [2]
+    ];
   }
 
   const isOptionalWithNull =
     Array.isArray(field.jsonType) &&
-    // @TODO should also check the "oneOf" directly looking for "null" option
-    // but we don't have direct access at this point. Otherwise
-    // the JSON Schema validator will fail because setting jsonType is not enough.
+    // @TODO should also check the "oneOf" directly looking for "null"
+    // option but we don't have direct access at this point.
+    // Otherwise the JSON Schema validator will fail as explained in PR#18
     field.jsonType.includes('null');
   if (isOptionalWithNull) {
     return [...optionsBroken, null];
@@ -112,6 +118,7 @@ const getOptionsAllowed = (field) => {
 
     This is a dangerous change as it can disrupt existing UI Form integrations
     that might handle empty fields differently ("" vs null vs undefined).
+    [2] The null also needs to be always accepted for the same reason.
 
     We'd need to implement a feature_flag/transition deprecation warning
     to give devs the time to adapt their integrations before we fix this behavior.

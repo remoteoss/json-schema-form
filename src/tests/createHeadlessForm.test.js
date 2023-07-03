@@ -440,8 +440,15 @@ describe('createHeadlessForm', () => {
         [fieldName]: 'Required field',
       });
 
-      // Given empty string (""), it also complaints it's required.
+      // As required field, empty string ("") is also considered empty. @BUG RMT-518
+      // Expectation: The error to be "The option '' is not valid."
       expect(validateForm({ [fieldName]: '' })).toEqual({
+        [fieldName]: 'Required field',
+      });
+
+      // As required field, null is also considered empty @BUG RMT-518
+      // Expectation: The error to be "The option null is not valid."
+      expect(validateForm({ [fieldName]: null })).toEqual({
         [fieldName]: 'Required field',
       });
     }
