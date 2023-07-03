@@ -12,16 +12,16 @@ import { buildYupSchema } from './yupSchema';
 /**
  * Verifies if a field is required
  * @param {Object} node - JSON schema parent node
- * @param {String} inputName - input name
+ * @param {String} field - input name
  * @return {Boolean}
  */
-function isFieldRequired(node, inputName) {
-  // For nested properties (case of fieldset) we need to check recursively
-  if (node?.required) {
-    return node.required.includes(inputName);
-  }
-
-  return false;
+function isFieldRequired(node, field) {
+  return (
+    // Check base root required
+    field.scopedJsonSchema?.required?.includes(field.name) ||
+    // Check conditional required
+    node?.required?.includes(field.name)
+  );
 }
 
 /**
@@ -32,25 +32,34 @@ function isFieldRequired(node, inputName) {
  * @param {Object} property - property that relates with the list of fields
  * @returns {Object}
  */
-function rebuildInnerFieldsRequiredProperty(fields, property) {
+function rebuildFieldset(fields, property) {
   if (property?.properties) {
     return fields.map((field) => {
+      const propertyConditionals = property.properties[field.name];
+      if (!propertyConditionals) {
+        return field;
+      }
+
+      const newFieldParams = extractParametersFromNode(propertyConditionals);
+
       if (field.fields) {
         return {
           ...field,
-          fields: rebuildInnerFieldsRequiredProperty(field.fields, property.properties[field.name]),
+          ...newFieldParams,
+          fields: rebuildFieldset(field.fields, propertyConditionals),
         };
       }
       return {
         ...field,
-        required: isFieldRequired(property, field.name),
+        ...newFieldParams,
+        required: isFieldRequired(property, field),
       };
     });
   }
 
   return fields.map((field) => ({
     ...field,
-    required: isFieldRequired(property, field.name),
+    required: isFieldRequired(property, field),
   }));
 }
 
@@ -85,10 +94,7 @@ export function calculateConditionalProperties(fieldParams, customProperties) {
       let fieldSetFields;
 
       if (fieldParams.inputType === supportedTypes.FIELDSET) {
-        fieldSetFields = rebuildInnerFieldsRequiredProperty(
-          fieldParams.fields,
-          conditionalProperty
-        );
+        fieldSetFields = rebuildFieldset(fieldParams.fields, conditionalProperty);
         newFieldParams.fields = fieldSetFields;
       }
 

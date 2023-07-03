@@ -323,6 +323,8 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
 
   if (node.if) {
     const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
+    // BUG HERE (unreleated) - what if it matches but doesn't has a then,
+    // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
       const { required: branchRequired } = processNode(
         node.then,

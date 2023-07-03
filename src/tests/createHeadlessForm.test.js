@@ -47,6 +47,7 @@ import {
   mockNestedFieldset,
   mockGroupArrayInput,
   schemaFieldsetScopedCondition,
+  schemaWithConditionalToFieldset,
   schemaWithConditionalPresentationProperties,
   schemaWithConditionalReadOnlyProperty,
   schemaWithWrongConditional,
@@ -78,6 +79,17 @@ function friendlyError({ formErrors }) {
   // destruct the formErrors directly
   return formErrors;
 }
+
+// Get a field by name recursively
+// eg getField(demo, "age") -> returns "age" field
+// eg getField(demo, child, name) -> returns "child.name" subfield
+const getField = (fields, name, ...subNames) => {
+  const field = fields.find((f) => f.name === name);
+  if (subNames.length > 0) {
+    return getField(field.fields, ...subNames);
+  }
+  return field;
+};
 
 beforeEach(() => {
   jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -1287,46 +1299,6 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('supports "fieldset" field type', () => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            fieldset: mockFieldset,
-          })
-          .build()
-      );
-
-      expect(result).toMatchObject({
-        fields: [
-          {
-            description: 'Fieldset description',
-            label: 'Fieldset title',
-            name: 'fieldset',
-            type: 'fieldset',
-            required: false,
-            fields: [
-              {
-                description: 'The number of your national identification (max 10 digits)',
-                label: 'ID number',
-                name: 'id_number',
-                type: 'text',
-                required: true,
-              },
-              {
-                description: 'How many open tabs do you have?',
-                label: 'Tabs',
-                maximum: 10,
-                minimum: 1,
-                name: 'tabs',
-                type: 'number',
-                required: false,
-              },
-            ],
-          },
-        ],
-      });
-    });
-
     it('supports "radio" field type with its "card" and "card-expandable" variants', () => {
       const result = createHeadlessForm(
         JSONSchemaBuilder()
@@ -1392,130 +1364,298 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('supports nested "fieldset" field type', () => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            nestedFieldset: mockNestedFieldset,
+    describe('supports "fieldset" field type', () => {
+      it('supports basic case', () => {
+        const result = createHeadlessForm({
+          properties: {
+            fieldset: mockFieldset,
+          },
+        });
+
+        expect(result).toMatchObject({
+          fields: [
+            {
+              description: 'Fieldset description',
+              label: 'Fieldset title',
+              name: 'fieldset',
+              type: 'fieldset',
+              required: false,
+              fields: [
+                {
+                  description: 'The number of your national identification (max 10 digits)',
+                  label: 'ID number',
+                  name: 'id_number',
+                  type: 'text',
+                  required: true,
+                },
+                {
+                  description: 'How many open tabs do you have?',
+                  label: 'Tabs',
+                  maximum: 10,
+                  minimum: 1,
+                  name: 'tabs',
+                  type: 'number',
+                  required: false,
+                },
+              ],
+            },
+          ],
+        });
+      });
+
+      it('supports nested fieldset (fieldset inside fieldset)', () => {
+        const result = createHeadlessForm(
+          JSONSchemaBuilder()
+            .addInput({
+              nestedFieldset: mockNestedFieldset,
+            })
+            .build()
+        );
+
+        expect(result).toMatchObject({
+          fields: [
+            {
+              label: 'Nested fieldset title',
+              description: 'Nested fieldset description',
+              name: 'nestedFieldset',
+              type: 'fieldset',
+              required: false,
+              fields: [
+                {
+                  description: 'Fieldset description',
+                  label: 'Fieldset title',
+                  name: 'innerFieldset',
+                  type: 'fieldset',
+                  required: false,
+                  fields: [
+                    {
+                      description: 'The number of your national identification (max 10 digits)',
+                      label: 'ID number',
+                      name: 'id_number',
+                      type: 'text',
+                      required: true,
+                    },
+                    {
+                      description: 'How many open tabs do you have?',
+                      label: 'Tabs',
+                      maximum: 10,
+                      minimum: 1,
+                      name: 'tabs',
+                      type: 'number',
+                      required: false,
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+      });
+
+      it('supported "fieldset" with scoped conditionals', () => {
+        const { handleValidation } = createHeadlessForm(schemaFieldsetScopedCondition, {});
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        // The "child.has_child" is required
+        expect(validateForm({})).toEqual({
+          child: {
+            has_child: 'Required field',
+          },
+        });
+
+        // The "child.no" is valid
+        expect(
+          validateForm({
+            child: {
+              has_child: 'no',
+            },
           })
-          .build()
-      );
+        ).toBeUndefined();
 
-      expect(result).toMatchObject({
-        fields: [
-          {
-            label: 'Nested fieldset title',
-            description: 'Nested fieldset description',
-            name: 'nestedFieldset',
-            type: 'fieldset',
-            required: false,
-            fields: [
-              {
-                description: 'Fieldset description',
-                label: 'Fieldset title',
-                name: 'innerFieldset',
-                type: 'fieldset',
-                required: false,
-                fields: [
-                  {
-                    description: 'The number of your national identification (max 10 digits)',
-                    label: 'ID number',
-                    name: 'id_number',
-                    type: 'text',
-                    required: true,
-                  },
-                  {
-                    description: 'How many open tabs do you have?',
-                    label: 'Tabs',
-                    maximum: 10,
-                    minimum: 1,
-                    name: 'tabs',
-                    type: 'number',
-                    required: false,
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      });
-    });
-
-    it('supported "fieldset" with scoped conditionals', () => {
-      const { handleValidation } = createHeadlessForm(schemaFieldsetScopedCondition, {});
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-      // The "child.has_child" is required
-      expect(validateForm({})).toEqual({
-        child: {
-          has_child: 'Required field',
-        },
-      });
-
-      // The "child.no" is valid
-      expect(
-        validateForm({
+        // Invalid because it expect child.age too
+        expect(
+          validateForm({
+            child: {
+              has_child: 'yes',
+            },
+          })
+        ).toEqual({
           child: {
-            has_child: 'no',
+            age: 'Required field',
           },
-        })
-      ).toBeUndefined();
+        });
 
-      // Invalid because it expect child.age too
-      expect(
-        validateForm({
-          child: {
-            has_child: 'yes',
-          },
-        })
-      ).toEqual({
-        child: {
-          age: 'Required field',
-        },
+        // Valid without optional child.passport_id
+        expect(
+          validateForm({
+            child: {
+              has_child: 'yes',
+              age: 15,
+            },
+          })
+        ).toBeUndefined();
+
+        // Valid with optional child.passport_id
+        expect(
+          validateForm({
+            child: {
+              has_child: 'yes',
+              age: 15,
+              passport_id: 'asdf',
+            },
+          })
+        ).toBeUndefined();
       });
 
-      // Valid without optional child.passport_id
-      expect(
-        validateForm({
+      it('should set any nested "fieldset" form values to null when they are invisible', async () => {
+        const { handleValidation } = createHeadlessForm(schemaFieldsetScopedCondition, {});
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        const formValues = {
           child: {
             has_child: 'yes',
             age: 15,
           },
-        })
-      ).toBeUndefined();
+        };
 
-      // Valid with optional child.passport_id
-      expect(
-        validateForm({
-          child: {
-            has_child: 'yes',
-            age: 15,
-            passport_id: 'asdf',
-          },
-        })
-      ).toBeUndefined();
-    });
+        await expect(validateForm(formValues)).toBeUndefined();
+        expect(formValues.child.age).toBe(15);
 
-    it('should set any nested "fieldset" form values to null when they are invisible', async () => {
-      const { handleValidation } = createHeadlessForm(schemaFieldsetScopedCondition, {});
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
+        formValues.child.has_child = 'no';
+        // form value updates re-validate; see computeYupSchema()
+        await expect(validateForm(formValues)).toBeUndefined();
 
-      const formValues = {
-        child: {
-          has_child: 'yes',
-          age: 15,
-        },
-      };
+        // when child.has_child is 'no' child.age is invisible
+        expect(formValues.child.age).toBe(null);
+      });
 
-      await expect(validateForm(formValues)).toBeUndefined();
-      expect(formValues.child.age).toBe(15);
+      describe('supports conditionals to fieldsets', () => {
+        // To not mix the concepts:
+        // - Scoped conditionals: Conditionals written inside a fieldset
+        // - Conditionals to fieldsets: Root conditionals that affect a fieldset
 
-      formValues.child.has_child = 'no';
-      // form value updates re-validate; see computeYupSchema()
-      await expect(validateForm(formValues)).toBeUndefined();
+        // This describe has sequential tests, covering the following:
+        // If the working_hours > 30,
+        // Then the fieldset perks.food changes (the "no" option gets removed)
 
-      // when child.has_child is 'no' child.age is invisible
-      expect(formValues.child.age).toBe(null);
+        // Setup (arrange)
+        const { fields, handleValidation } = createHeadlessForm(schemaWithConditionalToFieldset);
+
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+        const originalFood = getField(fields, 'perks', 'food');
+
+        const perksForLowWorkHours = {
+          food: 'no', // this option will be removed when the condition happens.
+          retirement: 'basic',
+        };
+
+        it('by default, the Perks.food has 4 options', () => {
+          expect(originalFood.options).toHaveLength(4);
+          expect(originalFood.description).toBeUndefined();
+
+          // Ensure the perks are required
+          expect(validateForm({})).toEqual({
+            work_hours_per_week: 'Required field',
+            perks: {
+              food: 'Required field',
+              retirement: 'Required field',
+            },
+          });
+
+          // Given low work hours, the form is valid.
+          expect(
+            validateForm({
+              work_hours_per_week: 5,
+              perks: perksForLowWorkHours,
+            })
+          ).toBeUndefined();
+        });
+
+        it('Given a lot work hours, the perks.food options change', () => {
+          expect(
+            validateForm({
+              work_hours_per_week: 35,
+            })
+          ).toEqual({
+            pto: 'Required field', // Sanity-check - this field gets required too.
+            perks: {
+              food: 'Required field',
+              retirement: 'Required field',
+            },
+          });
+
+          // The fieldset changed!
+          const foodField = getField(fields, 'perks', 'food');
+          // perks.food options changed ("No" was removed)
+          expect(foodField.options).toHaveLength(3);
+
+          // Ensure the "no" option is no longer accepted:
+          // This is a very important test in case the UI fails for some reason.
+          expect(
+            validateForm({
+              work_hours_per_week: 35,
+              pto: 20,
+              perks: perksForLowWorkHours,
+            })
+          ).toEqual({
+            perks: {
+              food: 'The option "no" is not valid.',
+            },
+          });
+
+          // perks.food has a new description
+          expect(foodField.description).toBe("Above 30 hours, the 'no' option disappears.");
+          // pto has a new description
+          expect(getField(fields, 'pto').description).toBe(
+            'Above 30 hours, the PTO needs to be at least 20 days.'
+          );
+
+          // Sanity-check: Now the PTO also has a minimum value
+          expect(
+            validateForm({
+              work_hours_per_week: 35,
+              pto: 5, // too low
+              perks: { food: 'lunch', retirement: 'basic' },
+            })
+          ).toEqual({
+            pto: 'Must be greater or equal to 20',
+          });
+        });
+
+        it('When changing back to low work hours, the perks.food goes back to the original state', () => {
+          expect(
+            validateForm({
+              work_hours_per_week: 10,
+              pto: 5,
+            })
+          ).toEqual({
+            perks: {
+              food: 'Required field',
+              retirement: 'Required field',
+            },
+            // ...pto is minimum error is gone! (sanity-check)
+          });
+
+          const foodField = getField(fields, 'perks', 'food');
+          // ...Number of perks.food options was back to the original (4)
+          expect(foodField.options).toHaveLength(4);
+          // ...Food description was back to the original
+          expect(foodField.description).toBeUndefined();
+
+          // @BUG RMT-58 PTO description should disappear, but it didn't.
+          expect(getField(fields, 'pto').description).toBe(
+            'Above 30 hours, the PTO needs to be at least 20 days.'
+          );
+
+          // Given again "low perks", the form valid.
+          expect(
+            validateForm({
+              work_hours_per_week: 10,
+              perks: perksForLowWorkHours,
+            })
+          ).toBeUndefined();
+        });
+      });
     });
 
     it('support "email" field type', () => {
@@ -1834,14 +1974,12 @@ describe('createHeadlessForm', () => {
         strictInputType: false,
       });
 
-      const getByName = (fieldList, name) => fieldList.find((f) => f.name === name);
-
-      const aFieldInRoot = getByName(fields, 'a_string');
+      const aFieldInRoot = getField(fields, 'a_string');
       // It's the entire json schema
       expect(aFieldInRoot.scopedJsonSchema).toEqual(schemaWithoutInputTypes);
 
-      const aFieldset = getByName(fields, 'a_object');
-      const aFieldInTheFieldset = getByName(aFieldset.fields, 'foo');
+      const aFieldset = getField(fields, 'a_object');
+      const aFieldInTheFieldset = getField(aFieldset.fields, 'foo');
 
       // It's only the json schema of that fieldset
       expect(aFieldInTheFieldset.scopedJsonSchema).toEqual(
@@ -2301,8 +2439,6 @@ describe('createHeadlessForm', () => {
   });
 
   describe('when a JSON Schema is provided', () => {
-    const getByName = (fields, name) => fields.find((f) => f.name === name);
-
     describe('and all fields are optional', () => {
       let handleValidation;
       const validateForm = (vals) => friendlyError(handleValidation(vals));
@@ -2709,23 +2845,23 @@ describe('createHeadlessForm', () => {
           const { fields } = createHeadlessForm(schemaWithConditionalReadOnlyProperty, {
             field_a: null,
           });
-          expect(getByName(fields, 'field_b').isVisible).toBe(false);
+          expect(getField(fields, 'field_b').isVisible).toBe(false);
         });
 
         it('given a match, runs "then" (turns visible and editable)', () => {
           const { fields } = createHeadlessForm(schemaWithConditionalReadOnlyProperty, {
             initialValues: { field_a: 'yes' },
           });
-          expect(getByName(fields, 'field_b').isVisible).toBe(true);
-          expect(getByName(fields, 'field_b').readOnly).toBe(false);
+          expect(getField(fields, 'field_b').isVisible).toBe(true);
+          expect(getField(fields, 'field_b').readOnly).toBe(false);
         });
 
         it('given a nested match, runs "else-then" (turns visible but readOnly)', () => {
           const { fields } = createHeadlessForm(schemaWithConditionalReadOnlyProperty, {
             initialValues: { field_a: 'no' },
           });
-          expect(getByName(fields, 'field_b').isVisible).toBe(true);
-          expect(getByName(fields, 'field_b').readOnly).toBe(true);
+          expect(getField(fields, 'field_b').isVisible).toBe(true);
+          expect(getField(fields, 'field_b').readOnly).toBe(true);
         });
       });
 
@@ -2737,26 +2873,26 @@ describe('createHeadlessForm', () => {
             initialValues: { field_a: null, field_a_wrong: null },
           });
           // The dependent correct field gets hidden, but...
-          expect(getByName(fieldsEmpty, 'field_b').isVisible).toBe(false);
+          expect(getField(fieldsEmpty, 'field_b').isVisible).toBe(false);
           // ...the dependent wrong field stays visible because the
           // conditional is wrong (it's missing the if.required[])
-          expect(getByName(fieldsEmpty, 'field_b_wrong').isVisible).toBe(true);
+          expect(getField(fieldsEmpty, 'field_b_wrong').isVisible).toBe(true);
         });
 
         it('given a match ("yes"), both runs "then" (turn visible)', () => {
           const { fields: fieldsVisible } = createHeadlessForm(schemaWithWrongConditional, {
             initialValues: { field_a: 'yes', field_a_wrong: 'yes' },
           });
-          expect(getByName(fieldsVisible, 'field_b').isVisible).toBe(true);
-          expect(getByName(fieldsVisible, 'field_b_wrong').isVisible).toBe(true);
+          expect(getField(fieldsVisible, 'field_b').isVisible).toBe(true);
+          expect(getField(fieldsVisible, 'field_b_wrong').isVisible).toBe(true);
         });
 
         it('not given a match ("no"), both run else (stay hidden)', () => {
           const { fields: fieldsHidden } = createHeadlessForm(schemaWithWrongConditional, {
             initialValues: { field_a: 'no', field_a_wrong: 'no' },
           });
-          expect(getByName(fieldsHidden, 'field_b').isVisible).toBe(false);
-          expect(getByName(fieldsHidden, 'field_b_wrong').isVisible).toBe(false);
+          expect(getField(fieldsHidden, 'field_b').isVisible).toBe(false);
+          expect(getField(fieldsHidden, 'field_b_wrong').isVisible).toBe(false);
         });
       });
 
@@ -2766,7 +2902,7 @@ describe('createHeadlessForm', () => {
             field_a: 'no',
           },
         });
-        const dependentField = getByName(fields, 'field_b');
+        const dependentField = getField(fields, 'field_b');
         expect(dependentField.isVisible).toBe(false);
         expect(dependentField.value).toBe(undefined);
       });
@@ -2777,7 +2913,7 @@ describe('createHeadlessForm', () => {
             field_a: 'yes',
           },
         });
-        const dependentField = getByName(fields, 'field_b');
+        const dependentField = getField(fields, 'field_b');
         expect(dependentField.isVisible).toBe(true);
         expect(dependentField.value).toBe(undefined);
       });
