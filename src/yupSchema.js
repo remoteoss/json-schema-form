@@ -37,6 +37,39 @@ const yupSchemas = {
   radioOrSelect: (options) =>
     string()
       .nullable()
+      .transform((value) => {
+        if (value === '') {
+          return undefined; // [1]
+        }
+        if (options?.includes(null)) {
+          return value;
+        }
+        return value === null
+          ? undefined // [2]
+          : value;
+
+        /*
+          [1] @BUG RMT-518 - explanation from PR#18
+          The "" (empty string) is to keep retrocompatibily with previous version.
+          The "" does NOT match the JSON Schema specs. In the specs the `oneOf` keyword does not allow "" value by default.
+
+          Disallowing "" would be a major BREAKING CHANGE
+          because previously any string was allowed but now only the options[].value are,
+          which means we'd need to also exclude "" from being accepted.   
+          This would be a dangerous change as it can disrupt existing UI Form integrations
+          that might handle empty fields differently ("" vs null vs undefined).
+
+          [2] The null also needs to be always allowed for the same reason.
+              Some consumers (eg Remote) expect empty optional fields to be sent as "null"
+              even when their JSON Schemas are not created correctly (missing an option with const: null).
+              This will allow the JSF to still mark the field as valid (false positive)
+              and let the JSON Schema validator fail.
+
+          We'd need to implement a feature_flag/transition deprecation warning
+          to give devs the time to adapt their integrations before we fix this behavior.
+          Check the PR#18 and tests for more details.
+        */
+      })
       .oneOf(options, ({ value }) => {
         return `The option ${JSON.stringify(value)} is not valid.`;
       }),
@@ -81,19 +114,8 @@ const getJsonTypeInArray = (jsonType) =>
     ? jsonType.find((val) => val !== 'null') // eg ["string", "null"] // optional fields - get the head type.
     : jsonType; // eg "string"
 
-const getOptionsAllowed = (field) => {
-  const onlyValues = field.options?.map((option) => option.value);
-  const optionsBroken = [
-    ...onlyValues,
-    '', // [1]
-  ];
-
-  if (field.required) {
-    return [
-      ...optionsBroken,
-      null, // [2]
-    ];
-  }
+const getOptions = (field) => {
+  const allValues = field.options?.map((option) => option.value);
 
   const isOptionalWithNull =
     Array.isArray(field.jsonType) &&
@@ -101,46 +123,16 @@ const getOptionsAllowed = (field) => {
     // option but we don't have direct access at this point.
     // Otherwise the JSON Schema validator will fail as explained in PR#18
     field.jsonType.includes('null');
-  if (isOptionalWithNull) {
-    return [...optionsBroken, null];
-  }
 
-  return [
-    ...optionsBroken,
-    null, // [3]
-  ];
-
-  /*
-    [1] @BUG RMT-518 - explanation from PR#18
-    The "" (empty string) is to keep retrocompatibily with previous version.
-    The "" does NOT match the JSON Schema specs. In the specs the `oneOf` keyword does not allow "" value by default.
-
-    Disallowing "" would be a major BREAKING CHANGE
-    because before any string was allowed but now only the options[].value are,
-    which means we'd need to also exclude "" from being accepted.   
-
-    This is a dangerous change as it can disrupt existing UI Form integrations
-    that might handle empty fields differently ("" vs null vs undefined).
-    [2] The null needs to be allowed in required fields to show the
-        message "Required field" instead of "The option null is not valid".
-    [3] The nulls needs to be allowed in conventional optional fields because
-        some consumers (eg Remote) expect empty fields to be sent as "null"
-        even though their JSON Schemas are not created correctly (missing an option with const: null).
-        This will allow the JSF to still mark the field as valid (false positive)
-        and let the JSON Schema validator fail.
-
-    We'd need to implement a feature_flag/transition deprecation warning
-    to give devs the time to adapt their integrations before we fix this behavior.
-    Check the PR#18 and tests for more details.
-  */
+  return isOptionalWithNull ? [...allValues, null] : allValues;
 };
 
 const getYupSchema = ({ inputType, ...field }) => {
   const jsonType = getJsonTypeInArray(field.jsonType);
 
   if (field.options?.length > 0) {
-    const optionsAllowed = getOptionsAllowed(field);
-    return yupSchemas.radioOrSelect(optionsAllowed);
+    const optionValues = getOptions(field);
+    return yupSchemas.radioOrSelect(optionValues);
   }
 
   return yupSchemas[inputType] || yupSchemasToJsonTypes[jsonType];
