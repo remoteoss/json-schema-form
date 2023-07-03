@@ -336,8 +336,10 @@ export function buildYupSchema(field, config) {
     validators.push(withFileFormat);
   }
 
-  if (propertyFields.rules) {
-    propertyFields.rules.forEach((rule) => validators.push(yupSchemaWithCustomJSONLogic(rule)));
+  if (propertyFields.validations) {
+    propertyFields.validations.forEach((rule) =>
+      validators.push(yupSchemaWithCustomJSONLogic(rule))
+    );
   }
 
   return flow(validators);

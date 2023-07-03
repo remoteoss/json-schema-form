@@ -7,7 +7,6 @@ import { lazy } from 'yup';
 
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
-import { processValidationRule } from './jsonLogic';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
@@ -276,10 +275,6 @@ export function updateField(field, requiredFields, node, formValues) {
       }
     });
 
-  if (node?.target && field.name === node?.target) {
-    field.rules = Array.isArray(field.rules) ? field.rules.push(node) : [node];
-  }
-
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
     const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
@@ -325,10 +320,6 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
     requiredFields.add(fieldName);
     updateField(getField(fieldName, formFields), requiredFields, node, formValues);
   });
-
-  node['x-jsf-validations']?.forEach((validation) =>
-    processValidationRule(validation, formFields, requiredFields, node, formValues)
-  );
 
   if (node.if) {
     const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
@@ -483,6 +474,7 @@ export function extractParametersFromNode(schemaNode) {
 
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
+  const validations = schemaNode['x-jsf-validations'];
 
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
@@ -527,6 +519,7 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
+      validations: validations,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
             class: 'jsf-description',
