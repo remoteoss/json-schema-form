@@ -107,9 +107,18 @@ function checkIfConditionMatches(node, formValues, formFields) {
       return currentProperty.enum.includes(value);
     }
 
-    const { inputType } = getField(name, formFields);
+    const field = getField(name, formFields);
 
-    return validateFieldSchema({ ...currentProperty, inputType, required: true }, value);
+    return validateFieldSchema(
+      {
+        options: field.options,
+        // @TODO/CODE SMELL. We are passing the property (raw field), but buildYupSchema() expected the output field.
+        ...currentProperty,
+        inputType: field.inputType,
+        required: true,
+      },
+      value
+    );
   });
 }
 
