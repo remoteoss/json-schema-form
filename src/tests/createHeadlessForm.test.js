@@ -439,23 +439,15 @@ describe('createHeadlessForm', () => {
 
       // All allowed options are valid
       validOptions.forEach((value) => {
-        expect(
-          validateForm({
-            [fieldName]: value,
-          })
-        ).toBeUndefined();
+        expect(validateForm({ [fieldName]: value })).toBeUndefined();
       });
 
       // Any other arbitrary value is not valid.
-      expect(
-        validateForm({
-          [fieldName]: 'blah-blah',
-        })
-      ).toEqual({
+      expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
         [fieldName]: 'The option "blah-blah" is not valid.',
       });
 
-      // This is a required field:
+      // Given undefined, it says it's a  required field.
       expect(validateForm({})).toEqual({
         [fieldName]: 'Required field',
       });
@@ -831,6 +823,9 @@ describe('createHeadlessForm', () => {
 
     describe('support "radio" optional field - more examples @BUG RMT-518', () => {
       function assertCommonBehavior(validateForm) {
+        // Note: Very similar to assertOptionsAllowed()
+        // We could reuse it in a next iteration.
+
         // Happy path
         expect(validateForm({ has_car: 'yes' })).toBeUndefined();
 
