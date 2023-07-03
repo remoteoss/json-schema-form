@@ -1696,7 +1696,7 @@ export const schemaWithConditionalToFieldset = {
   properties: {
     work_hours_per_week: {
       title: 'Hours per week',
-      type: 'string',
+      type: 'number',
       description: 'Above 30 hours, the Perk>Food options change, and PTO is required.',
       'x-jsf-presentation': {
         inputType: 'number',
@@ -1704,7 +1704,7 @@ export const schemaWithConditionalToFieldset = {
     },
     pto: {
       title: 'Time-off (days)',
-      type: 'string',
+      type: 'number',
       'x-jsf-presentation': {
         inputType: 'number',
       },
