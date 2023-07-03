@@ -1,3 +1,10 @@
+#### 0.4.1-beta.0 (2023-07-03)
+
+##### Bug Fixes
+
+* **fieldset:**  support root conditionals for fieldsets ([#23](https://github.com/remoteoss/json-schema-form/pull/23)) ([65d87b3a](https://github.com/remoteoss/json-schema-form/commit/65d87b3a93018f0729aed565000eb2a2ce1f2ce7))
+* **select/radio:**  Accept just the values in options (plus `''` and `null` for backward-compatibility) ([#18](https://github.com/remoteoss/json-schema-form/pull/18)) ([37501d2d](https://github.com/remoteoss/json-schema-form/commit/37501d2ddafdd5e207b34d2ca3f6b7b7a1006e9d))
+
 #### 0.4.0-beta.0 (2023-06-22)
 
 ##### New Features
