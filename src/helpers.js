@@ -29,7 +29,7 @@ function hasType(type, typeName) {
  * @param {Object[]} fields - form fields
  * @returns
  */
-export function getField(fieldName, fields) {
+function getField(fieldName, fields) {
   return fields.find(({ name }) => name === fieldName);
 }
 
@@ -228,7 +228,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-export function updateField(field, requiredFields, node, formValues) {
+function updateField(field, requiredFields, node, formValues) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
