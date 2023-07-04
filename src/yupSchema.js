@@ -337,8 +337,8 @@ export function buildYupSchema(field, config) {
   }
 
   if (propertyFields.validations) {
-    propertyFields.validations.forEach((rule) =>
-      validators.push(yupSchemaWithCustomJSONLogic(rule))
+    propertyFields.validations.forEach((validation, index) =>
+      validators.push(yupSchemaWithCustomJSONLogic(field, validation, index))
     );
   }
 
