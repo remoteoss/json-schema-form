@@ -197,4 +197,16 @@ describe('cross-value validations', () => {
   describe('Derive values', () => {
     it.todo('field_b is field_a * 2');
   });
+
+  describe('Nested fieldsets', () => {
+    it.todo('Does everything above work when the field is nested');
+    it.todo('Validate a field and a nested field together');
+    it.todo('compute a nested field attribute');
+  });
+
+  describe('Arrays', () => {
+    it.todo('How will this even work?');
+    it.todo('What do I need to do when i need to validate all items');
+    it.todo('What do i need to do when i need to validate a specific array item');
+  });
 });
