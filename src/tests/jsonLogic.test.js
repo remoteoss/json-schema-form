@@ -58,8 +58,32 @@ describe('cross-value validations', () => {
   });
 
   describe('Arithmetic: +, -, *, /', () => {
-    it.todo('multiple: field_a > field_b * 2');
-    it.todo('divide: field_a > field_b / 2');
+    it('multiple: field_a > field_b * 2', () => {
+      const { handleValidation } = createHeadlessForm(
+        createSchemaWithRuleOnFieldA({
+          errorMessage: 'Field A must be at least twice as big as field b',
+          rule: { '>': [{ var: 'field_a' }, { '*': [{ var: 'field_b' }, 2] }] },
+        }),
+        { strictInputType: false }
+      );
+      const { formErrors } = handleValidation({ field_a: 1, field_b: 4 });
+      expect(formErrors.field_a).toEqual('Field A must be at least twice as big as field b');
+      expect(handleValidation({ field_a: 3, field_b: 1 }).formErrors).toEqual(undefined);
+    });
+
+    it('divide: field_a > field_b / 2', () => {
+      const { handleValidation } = createHeadlessForm(
+        createSchemaWithRuleOnFieldA({
+          errorMessage: 'Field A must be greater than field_b / 2',
+          rule: { '>': [{ var: 'field_a' }, { '/': [{ var: 'field_b' }, 2] }] },
+        }),
+        { strictInputType: false }
+      );
+      const { formErrors } = handleValidation({ field_a: 2, field_b: 4 });
+      expect(formErrors.field_a).toEqual('Field A must be greater than field_b / 2');
+      expect(handleValidation({ field_a: 3, field_b: 5 }).formErrors).toEqual(undefined);
+    });
+
     it.todo('sum: field_a > field_b + field_c'); // eg salary is bigger than X and Y together.
   });
 
