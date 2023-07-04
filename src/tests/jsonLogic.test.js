@@ -71,4 +71,13 @@ describe('cross-value validations', () => {
   describe('Conditionals', () => {
     it.todo('when field_a > field_b, show field_c');
   });
+
+  describe('Multiple validations', () => {
+    it.todo('2 rules where A must be bigger than B and not an even number in another rule');
+    it.todo('2 seperate fields with rules failing');
+  });
+
+  describe('Derive values', () => {
+    it.todo('field_b is field_a * 2');
+  });
 });
