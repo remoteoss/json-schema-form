@@ -1,37 +1,64 @@
 import { createHeadlessForm } from '../createHeadlessForm';
 
-const schema = {
-  properties: {
-    field_a: {
-      type: 'number',
-      'x-jsf-validations': [
-        {
-          errorMessage: 'Field A must be bigger than field B',
-          rule: { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-        },
-      ],
+function createSchemaWithRuleOnFieldA(rule) {
+  return {
+    properties: {
+      field_a: {
+        type: 'number',
+        'x-jsf-validations': [rule],
+      },
+      field_b: {
+        type: 'number',
+      },
     },
-    field_b: {
-      type: 'number',
-    },
-  },
-  required: ['field_a', 'field_b'],
-};
+    required: ['field_a', 'field_b'],
+  };
+}
 
 describe('cross-value validations', () => {
   describe('Relative: <, >, =', () => {
     it('bigger: field_a > field_b', () => {
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(
+        createSchemaWithRuleOnFieldA({
+          errorMessage: 'Field A must be bigger than field B',
+          rule: { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+        }),
+        { strictInputType: false }
+      );
       const { formErrors } = handleValidation({ field_a: 1, field_b: 2 });
       expect(formErrors.field_a).toEqual('Field A must be bigger than field B');
+      expect(handleValidation({ field_a: 2, field_b: 0 }).formErrors).toEqual(undefined);
     });
 
-    it.todo('smaller: field_a < field_b');
-    it.todo('equal: field_a = field_b');
+    it('smaller: field_a < field_b', () => {
+      const { handleValidation } = createHeadlessForm(
+        createSchemaWithRuleOnFieldA({
+          errorMessage: 'Field A must be smaller than field B',
+          rule: { '<': [{ var: 'field_a' }, { var: 'field_b' }] },
+        }),
+        { strictInputType: false }
+      );
+      const { formErrors } = handleValidation({ field_a: 2, field_b: 2 });
+      expect(formErrors.field_a).toEqual('Field A must be smaller than field B');
+      expect(handleValidation({ field_a: 0, field_b: 2 }).formErrors).toEqual(undefined);
+    });
+
+    it('equal: field_a = field_b', () => {
+      const { handleValidation } = createHeadlessForm(
+        createSchemaWithRuleOnFieldA({
+          errorMessage: 'Field A must equal field B',
+          rule: { '==': [{ var: 'field_a' }, { var: 'field_b' }] },
+        }),
+        { strictInputType: false }
+      );
+      const { formErrors } = handleValidation({ field_a: 3, field_b: 2 });
+      expect(formErrors.field_a).toEqual('Field A must equal field B');
+      expect(handleValidation({ field_a: 2, field_b: 2 }).formErrors).toEqual(undefined);
+    });
   });
 
   describe('Arithmetic: +, -, *, /', () => {
-    it.todo('multiple: field_a > field_b * 2'); // eg bonus is at least the double of salary
+    it.todo('multiple: field_a > field_b * 2');
     it.todo('divide: field_a > field_b / 2');
     it.todo('sum: field_a > field_b + field_c'); // eg salary is bigger than X and Y together.
   });
