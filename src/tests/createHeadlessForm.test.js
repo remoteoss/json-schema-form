@@ -18,6 +18,7 @@ import {
   schemaInputTypeSelectMultipleDeprecated,
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
+  schemaInputTypeInteger,
   schemaInputTypeNumber,
   schemaInputTypeNumberZeroMaximum,
   schemaInputTypeDate,
@@ -902,6 +903,39 @@ describe('createHeadlessForm', () => {
           },
         },
       ]);
+    });
+
+    it('support "integer" field type', () => {
+      const result = createHeadlessForm(schemaInputTypeInteger);
+      expect(result).toMatchObject({
+        fields: [
+          {
+            description: 'How many open tabs do you have?',
+            label: 'Tabs',
+            name: 'tabs',
+            required: true,
+            schema: expect.any(Object),
+            type: 'integer',
+            minimum: 1,
+            maximum: 10,
+          },
+        ],
+      });
+
+      const fieldValidator = result.fields[0].schema;
+      expect(fieldValidator.isValidSync('0')).toBe(false);
+      expect(fieldValidator.isValidSync('10')).toBe(true);
+      expect(fieldValidator.isValidSync('11')).toBe(false);
+      expect(fieldValidator.isValidSync('5.5')).toBe(false);
+      expect(fieldValidator.isValidSync('1.0')).toBe(true);
+      expect(fieldValidator.isValidSync('this is text with a number 1')).toBe(false);
+      expect(() => fieldValidator.validateSync('5.5')).toThrowError(
+        'Must not contain decimal points. E.g. 5 instead of 5.5'
+      );
+      expect(() => fieldValidator.validateSync('some text')).toThrowError(
+        'The value must be a number'
+      );
+      expect(() => fieldValidator.validateSync('')).toThrowError('The value must be a number');
     });
 
     it('support "number" field type', () => {
