@@ -37,12 +37,12 @@ describe('cross-value validations', () => {
   describe('Relative: <, >, =', () => {
     it('bigger: field_a > field_b', () => {
       const { handleValidation } = createHeadlessForm(
-        createSchemaWithRulesOnFieldA([
-          {
+        createSchemaWithRulesOnFieldA({
+          a_greater_than_b: {
             errorMessage: 'Field A must be bigger than field B',
             rule: { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
           },
-        ]),
+        }),
         { strictInputType: false }
       );
       const { formErrors } = handleValidation({ field_a: 1, field_b: 2 });
@@ -52,12 +52,12 @@ describe('cross-value validations', () => {
 
     it('smaller: field_a < field_b', () => {
       const { handleValidation } = createHeadlessForm(
-        createSchemaWithRulesOnFieldA([
-          {
+        createSchemaWithRulesOnFieldA({
+          a_less_than_b: {
             errorMessage: 'Field A must be smaller than field B',
             rule: { '<': [{ var: 'field_a' }, { var: 'field_b' }] },
           },
-        ]),
+        }),
         { strictInputType: false }
       );
       const { formErrors } = handleValidation({ field_a: 2, field_b: 2 });
@@ -67,12 +67,12 @@ describe('cross-value validations', () => {
 
     it('equal: field_a = field_b', () => {
       const { handleValidation } = createHeadlessForm(
-        createSchemaWithRulesOnFieldA([
-          {
+        createSchemaWithRulesOnFieldA({
+          a_equals_b: {
             errorMessage: 'Field A must equal field B',
             rule: { '==': [{ var: 'field_a' }, { var: 'field_b' }] },
           },
-        ]),
+        }),
         { strictInputType: false }
       );
       const { formErrors } = handleValidation({ field_a: 3, field_b: 2 });
@@ -84,12 +84,12 @@ describe('cross-value validations', () => {
   describe('Arithmetic: +, -, *, /', () => {
     it('multiple: field_a > field_b * 2', () => {
       const { handleValidation } = createHeadlessForm(
-        createSchemaWithRulesOnFieldA([
-          {
+        createSchemaWithRulesOnFieldA({
+          a_greater_than_b_multiplied_by_2: {
             errorMessage: 'Field A must be at least twice as big as field b',
             rule: { '>': [{ var: 'field_a' }, { '*': [{ var: 'field_b' }, 2] }] },
           },
-        ]),
+        }),
         { strictInputType: false }
       );
       const { formErrors } = handleValidation({ field_a: 1, field_b: 4 });
@@ -99,12 +99,12 @@ describe('cross-value validations', () => {
 
     it('divide: field_a > field_b / 2', () => {
       const { handleValidation } = createHeadlessForm(
-        createSchemaWithRulesOnFieldA([
-          {
+        createSchemaWithRulesOnFieldA({
+          a_greater_than_b_divided_by_2: {
             errorMessage: 'Field A must be greater than field_b / 2',
             rule: { '>': [{ var: 'field_a' }, { '/': [{ var: 'field_b' }, 2] }] },
           },
-        ]),
+        }),
         { strictInputType: false }
       );
       const { formErrors } = handleValidation({ field_a: 2, field_b: 4 });
@@ -113,14 +113,14 @@ describe('cross-value validations', () => {
     });
 
     it('sum: field_a > field_b + field_c', () => {
-      const schema = createSchemaWithThreePropertiesWithRuleOnFieldA([
-        {
+      const schema = createSchemaWithThreePropertiesWithRuleOnFieldA({
+        a_is_greater_than_b_plus_c: {
           errorMessage: 'Field A must be greater than field_b and field_b added together',
           rule: {
             '>': [{ var: 'field_a' }, { '+': [{ var: 'field_b' }, { var: 'field_c' }] }],
           },
         },
-      ]);
+      });
       const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
       const { formErrors } = handleValidation({ field_a: 0, field_b: 1, field_c: 2 });
       expect(formErrors.field_a).toEqual(
@@ -134,20 +134,20 @@ describe('cross-value validations', () => {
 
   describe('Logical: ||, &&', () => {
     it('AND: field_a > field_b && field_a > field_c (implicit with multiple rules in a single field)', () => {
-      const schema = createSchemaWithThreePropertiesWithRuleOnFieldA([
-        {
+      const schema = createSchemaWithThreePropertiesWithRuleOnFieldA({
+        a_is_greater_than_b: {
           errorMessage: 'Field A must be greater than field_b',
           rule: {
             '>': [{ var: 'field_a' }, { var: 'field_b' }],
           },
         },
-        {
+        a_is_greater_than_c: {
           errorMessage: 'Field A must be greater than field_c',
           rule: {
             '>': [{ var: 'field_a' }, { var: 'field_c' }],
           },
         },
-      ]);
+      });
       const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
       expect(handleValidation({ field_a: 1, field_b: 10, field_c: 0 }).formErrors.field_a).toEqual(
         'Field A must be greater than field_b'
@@ -161,8 +161,8 @@ describe('cross-value validations', () => {
     });
 
     it('OR: field_a > field_b or field_a > field_c', () => {
-      const schema = createSchemaWithThreePropertiesWithRuleOnFieldA([
-        {
+      const schema = createSchemaWithThreePropertiesWithRuleOnFieldA({
+        field_a_is_greater_than_b_or_c: {
           errorMessage: 'Field A must be greater than field_b or field_c',
           rule: {
             or: [
@@ -171,7 +171,7 @@ describe('cross-value validations', () => {
             ],
           },
         },
-      ]);
+      });
       const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
       expect(handleValidation({ field_a: 0, field_b: 10, field_c: 10 }).formErrors.field_a).toEqual(
         'Field A must be greater than field_b or field_c'
