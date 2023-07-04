@@ -224,6 +224,7 @@ function getComposeFunctionForField(fieldParams, hasCustomizations) {
  */
 function buildField(fieldParams, config, scopedJsonSchema) {
   const customProperties = getCustomPropertiesForField(fieldParams, config);
+  console.log({ customProperties });
   const composeFn = getComposeFunctionForField(fieldParams, !!customProperties);
 
   const yupSchema = buildYupSchema(fieldParams, config);
@@ -324,6 +325,8 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
 
   try {
     const fields = getFieldsFromJSONSchema(jsonSchema, config);
+
+    console.log({ fields });
 
     const handleValidation = handleValuesChange(fields, jsonSchema, config);
 
