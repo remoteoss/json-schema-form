@@ -1,9 +1,10 @@
 import jsonLogic from 'json-logic-js';
 
-export function yupSchemaWithCustomJSONLogic(validation) {
+export function yupSchemaWithCustomJSONLogic(field, validation, index) {
+  console.log(field);
   return (yupSchema) =>
     yupSchema.test(
-      'randomName',
+      `${field.name}-validation-${index}`,
       validation.errorMessage ?? 'This field is invalid.',
       (_, { parent }) => {
         return jsonLogic.apply(validation.rule, parent);
