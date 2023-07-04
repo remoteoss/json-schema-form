@@ -2,7 +2,6 @@
   "root": true,
   "extends": ["eslint:recommended", "prettier"],
   "plugins": ["import", "jest", "sort-keys", "unused-imports"],
-  "ignorePatterns": ["playground/**"],
   "parser": "babel-eslint",
   "env": {
     "es6": true,
