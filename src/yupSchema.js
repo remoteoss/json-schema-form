@@ -376,10 +376,6 @@ function getSchema(fields = [], config) {
         Object.assign(newSchema, getSchema(field.fields, config));
       }
     }
-    // For custom json-logic rules, rebuild the schema.
-    if (field.rules) {
-      newSchema[field.name] = buildYupSchema(field, config)();
-    }
   });
 
   return newSchema;
