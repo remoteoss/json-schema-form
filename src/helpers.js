@@ -518,11 +518,7 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
-      description: containsHTML(description)
-        ? wrapWithSpan(description, {
-            class: 'jsf-description',
-          })
-        : description,
+      description,
       extra: containsHTML(presentation.extra)
         ? wrapWithSpan(presentation.extra, { class: 'jsf-extra' })
         : presentation.extra,
