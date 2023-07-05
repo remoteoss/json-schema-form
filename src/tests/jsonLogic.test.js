@@ -374,8 +374,83 @@ describe('cross-value validations', () => {
   });
 
   describe('Multiple validations', () => {
-    it.todo('2 rules where A must be bigger than B and not an even number in another rule');
-    it.todo('2 seperate fields with rules failing');
+    it('2 rules where A must be bigger than B and not an even number in another rule', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+            'x-jsf-validations': {
+              a_bigger_than_b: {
+                errorMessage: 'A must be bigger than B',
+                rule: {
+                  '>': [{ var: 'field_a' }, { var: 'field_b' }],
+                },
+              },
+              is_even_number: {
+                errorMessage: 'A must be even',
+                rule: {
+                  '===': [{ '%': [{ var: 'field_a' }, 2] }, 0],
+                },
+              },
+            },
+          },
+          field_b: {
+            type: 'number',
+          },
+        },
+        required: ['field_a', 'field_b'],
+      };
+
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(handleValidation({ field_a: 1 }).formErrors).toEqual({
+        field_a: 'A must be even',
+        field_b: 'Required field',
+      });
+      expect(handleValidation({ field_a: 1, field_b: 2 }).formErrors).toEqual({
+        field_a: 'A must be bigger than B',
+      });
+      expect(handleValidation({ field_a: 3, field_b: 2 }).formErrors).toEqual({
+        field_a: 'A must be even',
+      });
+      expect(handleValidation({ field_a: 4, field_b: 2 }).formErrors).toEqual(undefined);
+    });
+
+    it('2 seperate fields with rules failing', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+            'x-jsf-validations': {
+              a_bigger_than_b: {
+                errorMessage: 'A must be bigger than B',
+                rule: {
+                  '>': [{ var: 'field_a' }, { var: 'field_b' }],
+                },
+              },
+            },
+          },
+          field_b: {
+            type: 'number',
+            'x-jsf-validations': {
+              is_even_number: {
+                errorMessage: 'B must be even',
+                rule: {
+                  '===': [{ '%': [{ var: 'field_b' }, 2] }, 0],
+                },
+              },
+            },
+          },
+        },
+        required: ['field_a', 'field_b'],
+      };
+
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual({
+        field_a: 'A must be bigger than B',
+        field_b: 'B must be even',
+      });
+      expect(handleValidation({ field_a: 4, field_b: 2 }).formErrors).toEqual(undefined);
+    });
   });
 
   describe('Derive values', () => {
