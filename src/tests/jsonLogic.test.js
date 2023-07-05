@@ -179,52 +179,52 @@ describe('cross-value validations', () => {
   });
 
   describe('Conditionals', () => {
-    const schema = {
-      properties: {
-        field_a: {
-          type: 'number',
+    it('when field_a > field_b, show field_c', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+          },
+          field_b: {
+            type: 'number',
+          },
+          field_c: {
+            type: 'number',
+          },
         },
-        field_b: {
-          type: 'number',
-        },
-        field_c: {
-          type: 'number',
-        },
-      },
-      required: ['field_a', 'field_b'],
-      allOf: [
-        {
-          if: {
-            'x-jsf-validations': {
-              require_c: {
-                const: true,
+        required: ['field_a', 'field_b'],
+        allOf: [
+          {
+            if: {
+              'x-jsf-validations': {
+                require_c: {
+                  const: true,
+                },
+              },
+            },
+            then: {
+              required: ['field_c'],
+            },
+            else: {
+              properties: {
+                field_c: false,
               },
             },
           },
-          then: {
-            required: ['field_c'],
-          },
-          else: {
-            properties: {
-              field_c: false,
+        ],
+        'x-jsf-validations': {
+          require_c: {
+            rule: {
+              and: [
+                { '!==': [{ var: 'field_b' }, null] },
+                { '!==': [{ var: 'field_a' }, null] },
+                { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+              ],
             },
           },
         },
-      ],
-      'x-jsf-validations': {
-        require_c: {
-          rule: {
-            and: [
-              { '!==': [{ var: 'field_b' }, null] },
-              { '!==': [{ var: 'field_a' }, null] },
-              { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-            ],
-          },
-        },
-      },
-    };
+      };
 
-    it('when field_a > field_b, show field_c', () => {
       const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
       expect(fields.find((i) => i.name === 'field_c').isVisible).toEqual(false);
 
@@ -236,6 +236,138 @@ describe('cross-value validations', () => {
         field_c: 'Required field',
       });
       expect(handleValidation({ field_a: 10, field_b: 3, field_c: 0 }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('A schema with both a `x-jsf-validations` and `properties` check', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+          },
+          field_b: {
+            type: 'number',
+          },
+          field_c: {
+            type: 'number',
+          },
+        },
+        required: ['field_a', 'field_b'],
+        allOf: [
+          {
+            if: {
+              'x-jsf-validations': {
+                require_c: {
+                  const: true,
+                },
+              },
+              properties: {
+                field_a: {
+                  const: 10,
+                },
+              },
+            },
+            then: {
+              required: ['field_c'],
+            },
+            else: {
+              properties: {
+                field_c: false,
+              },
+            },
+          },
+        ],
+        'x-jsf-validations': {
+          require_c: {
+            rule: {
+              and: [
+                { '!==': [{ var: 'field_b' }, null] },
+                { '!==': [{ var: 'field_a' }, null] },
+                { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+              ],
+            },
+          },
+        },
+      };
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 5, field_b: 3 }).formErrors).toEqual(undefined);
+    });
+
+    it('Conditionally apply a validation on a property depending on values', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+          },
+          field_b: {
+            type: 'number',
+          },
+          field_c: {
+            type: 'number',
+          },
+        },
+        required: ['field_a', 'field_b'],
+        allOf: [
+          {
+            if: {
+              'x-jsf-validations': {
+                require_c: {
+                  const: true,
+                },
+              },
+            },
+            then: {
+              required: ['field_c'],
+              properties: {
+                field_c: {
+                  description: 'I am a description!',
+                  'x-jsf-validations': {
+                    c_must_be_large: {
+                      errorMessage: 'Needs more numbers',
+                      rule: {
+                        '>': [{ var: 'field_c' }, 200],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+            else: {
+              properties: {
+                field_c: false,
+              },
+            },
+          },
+        ],
+        'x-jsf-validations': {
+          require_c: {
+            rule: {
+              and: [
+                { '!==': [{ var: 'field_b' }, null] },
+                { '!==': [{ var: 'field_a' }, null] },
+                { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+              ],
+            },
+          },
+        },
+      };
+      const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const cField = fields.find((i) => i.name === 'field_c');
+      expect(cField.isVisible).toEqual(false);
+      expect(cField.description).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 5 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 0 }).formErrors).toEqual({
+        field_c: 'Needs more numbers',
+      });
+      expect(cField.description).toBe('I am a description!');
+      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
         undefined
       );
     });
