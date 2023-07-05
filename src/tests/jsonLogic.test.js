@@ -221,14 +221,30 @@ describe('cross-value validations', () => {
       'x-jsf-validations': {
         require_c: {
           rule: {
-            '>': [{ var: 'field_a' }, { var: 'field_b' }],
+            and: [
+              { '!==': [{ var: 'field_b' }, null] },
+              { '!==': [{ var: 'field_a' }, null] },
+              { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+            ],
           },
         },
       },
     };
 
     it('when field_a > field_b, show field_c', () => {
-      createHeadlessForm(schema, { strictInputType: false });
+      const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(fields.find((i) => i.name === 'field_c').isVisible).toEqual(false);
+
+      expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 1, field_b: null }).formErrors).toEqual({
+        field_b: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 3, field_c: 0 }).formErrors).toEqual(
+        undefined
+      );
     });
   });
 

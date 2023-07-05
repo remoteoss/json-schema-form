@@ -18,9 +18,16 @@ export function getValidationsFromJSONSchema(schema, initialValues) {
     ruleMap,
     evaluateRule(id, values) {
       const validation = ruleMap.get(id);
-      return jsonLogic.apply(validation.rule, values);
+      const answer = jsonLogic.apply(validation.rule, clean(values));
+      return answer;
     },
   };
+}
+
+function clean(values) {
+  return Object.entries(values).reduce((prev, [key, value]) => {
+    return { ...prev, [key]: value === undefined ? null : value };
+  }, {});
 }
 
 export function yupSchemaWithCustomJSONLogic(field, validation, id) {
