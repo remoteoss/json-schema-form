@@ -186,7 +186,50 @@ describe('cross-value validations', () => {
   });
 
   describe('Conditionals', () => {
-    it.todo('when field_a > field_b, show field_c');
+    const schema = {
+      properties: {
+        field_a: {
+          type: 'number',
+        },
+        field_b: {
+          type: 'number',
+        },
+        field_c: {
+          type: 'number',
+        },
+      },
+      required: ['field_a', 'field_b'],
+      allOf: [
+        {
+          if: {
+            'x-jsf-validations': {
+              require_c: {
+                const: true,
+              },
+            },
+          },
+          then: {
+            required: ['field_c'],
+          },
+          else: {
+            properties: {
+              field_c: false,
+            },
+          },
+        },
+      ],
+      'x-jsf-validations': {
+        require_c: {
+          rule: {
+            '>': [{ var: 'field_a' }, { var: 'field_b' }],
+          },
+        },
+      },
+    };
+
+    it('when field_a > field_b, show field_c', () => {
+      createHeadlessForm(schema, { strictInputType: false });
+    });
   });
 
   describe('Multiple validations', () => {

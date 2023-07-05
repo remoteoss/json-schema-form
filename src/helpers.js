@@ -68,8 +68,8 @@ function compareFormValueWithSchemaValue(formValue, schemaValue) {
  * @param {Object} formValues - form state
  * @returns {Boolean}
  */
-function checkIfConditionMatches(node, formValues, formFields) {
-  return Object.keys(node.if.properties).every((name) => {
+function checkIfConditionMatches(node, formValues, formFields, validations) {
+  const propertiesMatch = Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
     const value = formValues[name];
     const hasEmptyValue =
@@ -120,6 +120,16 @@ function checkIfConditionMatches(node, formValues, formFields) {
       value
     );
   });
+
+  const validationsMatch = Object.entries(node.if['x-jsf-validations'] ?? {}).every(
+    ([name, property]) => {
+      const currentValue = validations.evaluateRule(name, formValues);
+      if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
+      return false;
+    }
+  );
+
+  return propertiesMatch && validationsMatch;
 }
 
 /**
@@ -305,7 +315,7 @@ function updateField(field, requiredFields, node, formValues) {
  * @param {Set} accRequired - set of required field names gathered by traversing the tree
  * @returns {Object}
  */
-function processNode(node, formValues, formFields, accRequired = new Set()) {
+function processNode({ node, formValues, formFields, accRequired = new Set(), validations }) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
 
@@ -322,25 +332,27 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
   });
 
   if (node.if) {
-    const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
+    const matchesCondition = checkIfConditionMatches(node, formValues, formFields, validations);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
-      const { required: branchRequired } = processNode(
-        node.then,
+      const { required: branchRequired } = processNode({
+        node: node.then,
         formValues,
         formFields,
-        requiredFields
-      );
+        accRequired: requiredFields,
+        validations,
+      });
 
       branchRequired.forEach((field) => requiredFields.add(field));
     } else if (node.else) {
-      const { required: branchRequired } = processNode(
-        node.else,
+      const { required: branchRequired } = processNode({
+        node: node.else,
         formValues,
         formFields,
-        requiredFields
-      );
+        accRequired: requiredFields,
+        validations,
+      });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
   }
@@ -361,7 +373,15 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
 
   if (node.allOf) {
     node.allOf
-      .map((allOfNode) => processNode(allOfNode, formValues, formFields, requiredFields))
+      .map((allOfNode) =>
+        processNode({
+          node: allOfNode,
+          formValues,
+          formFields,
+          accRequired: requiredFields,
+          validations,
+        })
+      )
       .forEach(({ required: allOfItemRequired }) => {
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
@@ -372,7 +392,12 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
       const inputType = getInputType(nestedNode);
       if (inputType === supportedTypes.FIELDSET) {
         // It's a fieldset, which might contain scoped conditions
-        processNode(nestedNode, formValues[name] || {}, getField(name, formFields).fields);
+        processNode({
+          node: nestedNode,
+          formValues: formValues[name] || {},
+          formFields: getField(name, formFields).fields,
+          validations,
+        });
       }
     });
   }
@@ -407,11 +432,11 @@ function clearValuesIfNotVisible(fields, formValues) {
  * @param {Object} formValues - current values of the form
  * @param {Object} jsonSchema - JSON schema object
  */
-export function updateFieldsProperties(fields, formValues, jsonSchema) {
+export function updateFieldsProperties(fields, formValues, jsonSchema, validations) {
   if (!jsonSchema?.properties) {
     return;
   }
-  processNode(jsonSchema, formValues, fields);
+  processNode({ node: jsonSchema, formValues, formFields: fields, validations });
   clearValuesIfNotVisible(fields, formValues);
 }
 
@@ -577,8 +602,8 @@ export function yupToFormErrors(yupError) {
  * @param {JsfConfig} config - jsf config
  * @returns {Function(values: Object): { YupError: YupObject, formErrors: Object }} Callback that returns Yup errors <YupObject>
  */
-export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
-  updateFieldsProperties(fields, values, jsonSchema);
+export const handleValuesChange = (fields, jsonSchema, config, validations) => (values) => {
+  updateFieldsProperties(fields, values, jsonSchema, validations);
 
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
   let errors;

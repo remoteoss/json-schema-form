@@ -24,6 +24,7 @@ import {
   getInputType,
 } from './internals/fields';
 import { pickXKey } from './internals/helpers';
+import { getValidationsFromJSONSchema } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
 
 // Some type definitions (to be migrated into .d.ts file or TS Interfaces)
@@ -324,10 +325,16 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
 
   try {
     const fields = getFieldsFromJSONSchema(jsonSchema, config);
+    const validations = getValidationsFromJSONSchema(jsonSchema, config.initialValues);
 
-    const handleValidation = handleValuesChange(fields, jsonSchema, config);
+    const handleValidation = handleValuesChange(fields, jsonSchema, config, validations);
 
-    updateFieldsProperties(fields, getPrefillValues(fields, config.initialValues), jsonSchema);
+    updateFieldsProperties(
+      fields,
+      getPrefillValues(fields, config.initialValues),
+      jsonSchema,
+      validations
+    );
 
     return {
       fields,
