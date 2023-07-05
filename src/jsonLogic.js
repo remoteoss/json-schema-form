@@ -6,12 +6,12 @@ import jsonLogic from 'json-logic-js';
  * @param {Object} initialValues - form state
  * @returns {Object}
  */
-export function getValidationsFromJSONSchema(schema, initialValues) {
+export function getValidationsFromJSONSchema(schema) {
   const ruleMap = new Map();
 
   const validationObject = Object.entries(schema?.['x-jsf-validations'] ?? {});
   validationObject.forEach(([id, { rule }]) => {
-    ruleMap.set(id, { rule, evaluation: jsonLogic.apply(rule, initialValues) });
+    ruleMap.set(id, { rule });
   });
 
   return {
