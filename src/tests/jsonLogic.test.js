@@ -454,7 +454,37 @@ describe('cross-value validations', () => {
   });
 
   describe('Derive values', () => {
-    it.todo('field_b is field_a * 2');
+    it('field_b is field_a * 2', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+          },
+          field_b: {
+            type: 'number',
+            'x-jsf-computedAttributes': {
+              description:
+                'This field is 2 times bigger than field_a with value of {{a_times_two}}.',
+            },
+          },
+        },
+        required: ['field_a', 'field_b'],
+        'x-jsf-validations': {
+          a_times_two: {
+            rule: {
+              '*': [{ var: 'field_a' }, 2],
+            },
+          },
+        },
+      };
+      const { fields } = createHeadlessForm(schema, {
+        strictInputType: false,
+        initialValues: { field_a: 2 },
+      });
+      expect(fields.find((i) => i.name === 'field_b').description).toEqual(
+        'This field is 2 times bigger than field_a with value of 4.'
+      );
+    });
   });
 
   describe('Nested fieldsets', () => {

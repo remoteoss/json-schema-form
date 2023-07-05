@@ -24,7 +24,7 @@ import {
   getInputType,
 } from './internals/fields';
 import { pickXKey } from './internals/helpers';
-import { getValidationsFromJSONSchema } from './jsonLogic';
+import { calculateComputedAttributes, getValidationsFromJSONSchema } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
 
 // Some type definitions (to be migrated into .d.ts file or TS Interfaces)
@@ -236,6 +236,9 @@ function buildField(fieldParams, config, scopedJsonSchema) {
     customProperties
   );
 
+  const caclulateComputedAttributes =
+    fieldParams.computedAttributes && calculateComputedAttributes(fieldParams);
+
   const hasCustomValidations =
     !!customProperties &&
     size(pick(customProperties, SUPPORTED_CUSTOM_VALIDATION_FIELD_PARAMS)) > 0;
@@ -251,6 +254,7 @@ function buildField(fieldParams, config, scopedJsonSchema) {
     ...(hasCustomValidations && {
       calculateCustomValidationProperties: calculateCustomValidationPropertiesClosure,
     }),
+    ...(caclulateComputedAttributes && { caclulateComputedAttributes }),
     // field customization properties
     ...(customProperties && { fieldCustomization: customProperties }),
     // base schema

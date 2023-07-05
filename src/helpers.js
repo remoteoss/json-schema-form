@@ -238,7 +238,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues) {
+function updateField(field, requiredFields, node, formValues, validations) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -299,6 +299,17 @@ function updateField(field, requiredFields, node, formValues) {
     );
     updateValues(newFieldValues);
   }
+
+  if (field.caclulateComputedAttributes) {
+    const computedFieldValues = field.caclulateComputedAttributes({
+      field,
+      isRequired: fieldIsRequired,
+      node,
+      formValues,
+      validations,
+    });
+    updateValues(computedFieldValues);
+  }
 }
 
 /**
@@ -322,13 +333,13 @@ function processNode({ node, formValues, formFields, accRequired = new Set(), va
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues);
+    updateField(field, requiredFields, node, formValues, validations);
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues);
+    updateField(getField(fieldName, formFields), requiredFields, node, formValues, validations);
   });
 
   if (node.if) {
@@ -366,7 +377,7 @@ function processNode({ node, formValues, formFields, accRequired = new Set(), va
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues);
+        updateField(field, requiredFields, node, formValues, validations);
       });
     });
   }
@@ -500,6 +511,7 @@ export function extractParametersFromNode(schemaNode) {
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
   const validations = schemaNode['x-jsf-validations'];
+  const computedAttributes = schemaNode['x-jsf-computedAttributes'];
 
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
@@ -544,7 +556,8 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
-      validations: validations,
+      validations,
+      computedAttributes,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
             class: 'jsf-description',

@@ -24,7 +24,7 @@ export function getValidationsFromJSONSchema(schema) {
   };
 }
 
-function clean(values) {
+function clean(values = {}) {
   return Object.entries(values).reduce((prev, [key, value]) => {
     return { ...prev, [key]: value === undefined ? null : value };
   }, {});
@@ -39,4 +39,31 @@ export function yupSchemaWithCustomJSONLogic(field, validation, id) {
         return jsonLogic.apply(validation.rule, parent);
       }
     );
+}
+
+function replaceHandlebarsTemplates(string, validations, formValues) {
+  return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+    return validations.evaluateRule(key.trim(), formValues);
+  });
+}
+
+export function calculateComputedAttributes(fieldParams) {
+  return ({ validations, field, formValues }) => {
+    const { computedAttributes } = fieldParams;
+    console.log(field);
+    return Object.fromEntries(
+      Object.entries(computedAttributes)
+        .map(([key, value]) => {
+          if (key === 'description')
+            return [key, replaceHandlebarsTemplates(value, validations, formValues)];
+          if (key === 'title') {
+            return ['label', replaceHandlebarsTemplates(value, validations, formValues)];
+          }
+          if (key === 'const' || key === 'value')
+            return [key, validations.evaluateRule(value, formValues)];
+          return [key, null];
+        })
+        .filter(([, value]) => value !== null)
+    );
+  };
 }
