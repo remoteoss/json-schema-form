@@ -302,7 +302,7 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 5, field_b: 3 }).formErrors).toEqual(undefined);
     });
 
-    it.skip('Conditionally apply a validation on a property depending on values', () => {
+    it('Conditionally apply a validation on a property depending on values', () => {
       const schema = {
         properties: {
           field_a: {
@@ -316,48 +316,49 @@ describe('cross-value validations', () => {
           },
         },
         required: ['field_a', 'field_b'],
-        allOf: [
-          {
-            if: {
-              'x-jsf-validations': {
-                require_c: {
-                  const: true,
-                },
+        'x-jsf-logic': {
+          validations: {
+            c_must_be_large: {
+              errorMessage: 'Needs more numbers',
+              rule: {
+                '>': [{ var: 'field_c' }, 200],
               },
             },
-            then: {
-              required: ['field_c'],
-              properties: {
-                field_c: {
-                  description: 'I am a description!',
-                  'x-jsf-validations': {
-                    c_must_be_large: {
-                      errorMessage: 'Needs more numbers',
-                      rule: {
-                        '>': [{ var: 'field_c' }, 200],
-                      },
-                    },
+            require_c: {
+              rule: {
+                and: [
+                  { '!==': [{ var: 'field_b' }, null] },
+                  { '!==': [{ var: 'field_a' }, null] },
+                  { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+                ],
+              },
+            },
+          },
+          allOf: [
+            {
+              if: {
+                validations: {
+                  require_c: {
+                    const: true,
                   },
                 },
               },
-            },
-            else: {
-              properties: {
-                field_c: false,
+              then: {
+                required: ['field_c'],
+                properties: {
+                  field_c: {
+                    description: 'I am a description!',
+                    'x-jsf-requiredValidations': ['c_must_be_large'],
+                  },
+                },
+              },
+              else: {
+                properties: {
+                  field_c: false,
+                },
               },
             },
-          },
-        ],
-        'x-jsf-validations': {
-          require_c: {
-            rule: {
-              and: [
-                { '!==': [{ var: 'field_b' }, null] },
-                { '!==': [{ var: 'field_a' }, null] },
-                { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-              ],
-            },
-          },
+          ],
         },
       };
       const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
@@ -371,6 +372,65 @@ describe('cross-value validations', () => {
         field_c: 'Needs more numbers',
       });
       expect(cField.description).toBe('I am a description!');
+      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('Should apply a conditional based on a true computedValue', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+          },
+          field_b: {
+            type: 'number',
+          },
+          field_c: {
+            type: 'number',
+          },
+        },
+        required: ['field_a', 'field_b'],
+        'x-jsf-logic': {
+          computedValues: {
+            require_c: {
+              rule: {
+                and: [
+                  { '!==': [{ var: 'field_b' }, null] },
+                  { '!==': [{ var: 'field_a' }, null] },
+                  { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+                ],
+              },
+            },
+          },
+          allOf: [
+            {
+              if: {
+                computedValues: {
+                  require_c: {
+                    const: true,
+                  },
+                },
+              },
+              then: {
+                required: ['field_c'],
+              },
+              else: {
+                properties: {
+                  field_c: false,
+                },
+              },
+            },
+          ],
+        },
+      };
+      const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const cField = fields.find((i) => i.name === 'field_c');
+      expect(cField.isVisible).toEqual(false);
+      expect(cField.description).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 5 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
       expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
         undefined
       );

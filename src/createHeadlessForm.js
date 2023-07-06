@@ -233,7 +233,8 @@ function buildField(fieldParams, config, scopedJsonSchema, validations) {
 
   const yupSchema = buildYupSchema(fieldParams, config, validations);
   const calculateConditionalFieldsClosure =
-    fieldParams.isDynamic && calculateConditionalProperties(fieldParams, customProperties);
+    fieldParams.isDynamic &&
+    calculateConditionalProperties(fieldParams, customProperties, validations);
 
   const calculateCustomValidationPropertiesClosure = calculateCustomValidationProperties(
     fieldParams,

@@ -219,7 +219,7 @@ function updateField(field, requiredFields, node, formValues, validations) {
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
+    const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node, validations);
     updateValues(newFieldValues);
   }
 

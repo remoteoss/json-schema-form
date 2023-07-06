@@ -41,7 +41,7 @@ export function getValidationsFromJSONSchema(schema) {
       return answer;
     },
     evaluateComputedValueRule(id, values) {
-      const validation = computedValues.get(id);
+      const validation = computedValuesMap.get(id);
       const answer = jsonLogic.apply(validation.rule, clean(values));
       return answer;
     },

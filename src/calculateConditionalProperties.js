@@ -69,7 +69,7 @@ function rebuildFieldset(fields, property) {
  * @param {FieldParameters} fieldParams - field parameters
  * @returns {Function}
  */
-export function calculateConditionalProperties(fieldParams, customProperties) {
+export function calculateConditionalProperties(fieldParams, customProperties, validations) {
   /**
    * Runs dynamic property calculation on a field based on a conditional that has been calculated
    * @param {Boolean} isRequired - if the field is required
@@ -102,13 +102,17 @@ export function calculateConditionalProperties(fieldParams, customProperties) {
         isVisible: true,
         required: isRequired,
         ...(presentation?.inputType && { type: presentation.inputType }),
-        schema: buildYupSchema({
-          ...fieldParams,
-          ...newFieldParams,
-          // If there are inner fields (case of fieldset) they need to be updated based on the condition
-          fields: fieldSetFields,
-          required: isRequired,
-        }),
+        schema: buildYupSchema(
+          {
+            ...fieldParams,
+            ...newFieldParams,
+            // If there are inner fields (case of fieldset) they need to be updated based on the condition
+            fields: fieldSetFields,
+            required: isRequired,
+          },
+          undefined,
+          validations
+        ),
       };
 
       return omit(merge(base, presentation, newFieldParams), ['inputType']);
