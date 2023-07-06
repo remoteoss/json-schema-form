@@ -520,6 +520,86 @@ describe('cross-value validations', () => {
       });
       expect(handleValidation({ field_a: 4, field_b: 2 }).formErrors).toEqual(undefined);
     });
+
+    it.todo('Need to handle checking a const that is a number in an if for a computed value.');
+
+    it.skip('Advanced example driving multiple concepts together', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+          },
+          field_b: {
+            type: 'number',
+            'x-jsf-requiredValidations': ['divisible_by_five'],
+            'x-jsf-computedAttributes': {
+              title: 'This is {{a_times_two}}!',
+              value: 'a_times_two',
+              description:
+                'This field is 2 times bigger than field_a with value of {{a_times_two}}.',
+            },
+          },
+          field_c: {
+            type: 'number',
+          },
+        },
+        required: ['field_a', 'field_b'],
+        'x-jsf-logic': {
+          validations: {
+            divisible_by_five: {
+              errorMessage: 'This value must be divisible by 5!',
+              rule: {
+                '===': [{ '%': [{ var: 'field_b' }, 5] }, 0],
+              },
+            },
+            double_b: {
+              errorMessage: 'Must be two times A',
+              rule: {
+                '>': [{ var: 'field_c' }, { '*': [{ var: 'field_b' }, 2] }],
+              },
+            },
+          },
+          computedValues: {
+            a_times_two: {
+              rule: {
+                '*': [{ var: 'field_a' }, 2],
+              },
+            },
+          },
+          allOf: [
+            {
+              if: {
+                computedValues: {
+                  a_times_two: {
+                    const: 10,
+                  },
+                },
+                validations: {
+                  divisible_by_five: {
+                    const: false,
+                  },
+                },
+              },
+              then: {
+                required: ['field_c'],
+                properties: {
+                  field_c: {
+                    'x-jsf-requiredValidations': ['double_b'],
+                    title: 'Adding a title.',
+                  },
+                },
+              },
+              else: {
+                properties: {
+                  field_c: false,
+                },
+              },
+            },
+          ],
+        },
+      };
+      createHeadlessForm(schema, { strictInputType: false });
+    });
   });
 
   describe('Derive values', () => {
@@ -541,7 +621,7 @@ describe('cross-value validations', () => {
         },
         required: ['field_a', 'field_b'],
         'x-jsf-logic': {
-          validations: {
+          computedValues: {
             a_times_two: {
               rule: {
                 '*': [{ var: 'field_a' }, 2],

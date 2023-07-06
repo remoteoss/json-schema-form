@@ -68,7 +68,7 @@ export function yupSchemaWithCustomJSONLogic({ field, validations, id }) {
 
 function replaceHandlebarsTemplates(string, validations, formValues) {
   return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-    return validations.evaluateValidationRule(key.trim(), formValues);
+    return validations.evaluateComputedValueRule(key.trim(), formValues);
   });
 }
 
@@ -84,7 +84,7 @@ export function calculateComputedAttributes(fieldParams) {
             return ['label', replaceHandlebarsTemplates(value, validations, formValues)];
           }
           if (key === 'const' || key === 'value')
-            return [key, validations.evaluateValidationRule(value, formValues)];
+            return [key, validations.evaluateComputedValueRule(value, formValues)];
           return [key, null];
         })
         .filter(([, value]) => value !== null)
