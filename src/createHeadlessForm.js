@@ -188,6 +188,10 @@ function applyFieldsDependencies(fieldsParameters, node) {
       applyFieldsDependencies(fieldsParameters, condition);
     });
   }
+
+  if (node?.['x-jsf-logic']) {
+    applyFieldsDependencies(fieldsParameters, node['x-jsf-logic']);
+  }
 }
 
 /**

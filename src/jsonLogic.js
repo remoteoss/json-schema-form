@@ -1,5 +1,11 @@
 import jsonLogic from 'json-logic-js';
 
+import { processNode } from './helpers';
+import {
+  checkIfConditionMatches,
+  checkIfMatchesValidationsAndComputedValues,
+} from './nodeProcessing/checkIfConditionMatches';
+
 /**
  * Parses the JSON schema to extract the advanced validation logic and returns a set of functionality to check the current status of said rules.
  * @param {Object} schema - JSON schema node
@@ -29,8 +35,13 @@ export function getValidationsFromJSONSchema(schema) {
   return {
     validationMap,
     computedValuesMap,
-    evaluateRule(id, values) {
+    evaluateValidationRule(id, values) {
       const validation = validationMap.get(id);
+      const answer = jsonLogic.apply(validation.rule, clean(values));
+      return answer;
+    },
+    evaluateComputedValueRule(id, values) {
+      const validation = computedValues.get(id);
       const answer = jsonLogic.apply(validation.rule, clean(values));
       return answer;
     },
@@ -57,7 +68,7 @@ export function yupSchemaWithCustomJSONLogic({ field, validations, id }) {
 
 function replaceHandlebarsTemplates(string, validations, formValues) {
   return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-    return validations.evaluateRule(key.trim(), formValues);
+    return validations.evaluateValidationRule(key.trim(), formValues);
   });
 }
 
@@ -73,10 +84,63 @@ export function calculateComputedAttributes(fieldParams) {
             return ['label', replaceHandlebarsTemplates(value, validations, formValues)];
           }
           if (key === 'const' || key === 'value')
-            return [key, validations.evaluateRule(value, formValues)];
+            return [key, validations.evaluateValidationRule(value, formValues)];
           return [key, null];
         })
         .filter(([, value]) => value !== null)
     );
   };
+}
+
+export function processJSONLogicNode({ node, formFields, formValues, accRequired, validations }) {
+  const requiredFields = new Set(accRequired);
+
+  if (node.allOf) {
+    node.allOf
+      .map((allOfNode) =>
+        processJSONLogicNode({ node: allOfNode, formValues, formFields, validations })
+      )
+      .forEach(({ required: allOfItemRequired }) => {
+        allOfItemRequired.forEach(requiredFields.add, requiredFields);
+      });
+  }
+
+  if (node.if) {
+    const matchesPropertyCondition = checkIfConditionMatches(
+      node,
+      formValues,
+      formFields,
+      validations
+    );
+    const matchesValidationsAndComputedValues = checkIfMatchesValidationsAndComputedValues(
+      node,
+      formValues,
+      validations
+    );
+
+    const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
+
+    if (isConditionMatch && node.then) {
+      const { required: branchRequired } = processNode({
+        node: node.then,
+        formValues,
+        formFields,
+        accRequired,
+        validations,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+    if (!isConditionMatch && node.else) {
+      const { required: branchRequired } = processNode({
+        node: node.else,
+        formValues,
+        formFields,
+        accRequired: requiredFields,
+        validations,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+  }
+
+  return { required: requiredFields };
 }

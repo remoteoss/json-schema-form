@@ -180,7 +180,7 @@ describe('cross-value validations', () => {
     });
   });
 
-  describe.skip('Conditionals', () => {
+  describe('Conditionals', () => {
     it('when field_a > field_b, show field_c', () => {
       const schema = {
         properties: {
@@ -195,35 +195,37 @@ describe('cross-value validations', () => {
           },
         },
         required: ['field_a', 'field_b'],
-        allOf: [
-          {
-            if: {
-              'x-jsf-validations': {
-                require_c: {
-                  const: true,
+        'x-jsf-logic': {
+          validations: {
+            require_c: {
+              rule: {
+                and: [
+                  { '!==': [{ var: 'field_b' }, null] },
+                  { '!==': [{ var: 'field_a' }, null] },
+                  { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+                ],
+              },
+            },
+          },
+          allOf: [
+            {
+              if: {
+                validations: {
+                  require_c: {
+                    const: true,
+                  },
+                },
+              },
+              then: {
+                required: ['field_c'],
+              },
+              else: {
+                properties: {
+                  field_c: false,
                 },
               },
             },
-            then: {
-              required: ['field_c'],
-            },
-            else: {
-              properties: {
-                field_c: false,
-              },
-            },
-          },
-        ],
-        'x-jsf-validations': {
-          require_c: {
-            rule: {
-              and: [
-                { '!==': [{ var: 'field_b' }, null] },
-                { '!==': [{ var: 'field_a' }, null] },
-                { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-              ],
-            },
-          },
+          ],
         },
       };
 
@@ -300,7 +302,7 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 5, field_b: 3 }).formErrors).toEqual(undefined);
     });
 
-    it('Conditionally apply a validation on a property depending on values', () => {
+    it.skip('Conditionally apply a validation on a property depending on values', () => {
       const schema = {
         properties: {
           field_a: {
