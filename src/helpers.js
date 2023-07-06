@@ -39,8 +39,8 @@ function getField(fieldName, fields) {
  * @param {any} value
  * @returns
  */
-function validateFieldSchema(field, value) {
-  const validator = buildYupSchema(field);
+function validateFieldSchema(field, value, validations) {
+  const validator = buildYupSchema(field, undefined, validations);
   return validator().isValidSync(value);
 }
 
@@ -117,7 +117,8 @@ function checkIfConditionMatches(node, formValues, formFields, validations) {
         inputType: field.inputType,
         required: true,
       },
-      value
+      value,
+      validations
     );
   });
 
@@ -510,7 +511,7 @@ export function extractParametersFromNode(schemaNode) {
 
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
-  const validations = schemaNode['x-jsf-validations'];
+  const requiredValidations = schemaNode['x-jsf-requiredValidations'];
   const computedAttributes = schemaNode['x-jsf-computedAttributes'];
 
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
@@ -556,7 +557,7 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
-      validations,
+      requiredValidations,
       computedAttributes,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
@@ -618,7 +619,7 @@ export function yupToFormErrors(yupError) {
 export const handleValuesChange = (fields, jsonSchema, config, validations) => (values) => {
   updateFieldsProperties(fields, values, jsonSchema, validations);
 
-  const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
+  const lazySchema = lazy(() => buildCompleteYupSchema(fields, config, validations));
   let errors;
 
   try {

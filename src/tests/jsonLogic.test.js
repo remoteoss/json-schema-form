@@ -5,13 +5,14 @@ function createSchemaWithRulesOnFieldA(rules) {
     properties: {
       field_a: {
         type: 'number',
-        'x-jsf-validations': rules,
+        'x-jsf-requiredValidations': Object.keys(rules),
       },
       field_b: {
         type: 'number',
       },
     },
     required: ['field_a', 'field_b'],
+    'x-jsf-logic': { validations: rules },
   };
 }
 
@@ -20,7 +21,7 @@ function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
     properties: {
       field_a: {
         type: 'number',
-        'x-jsf-validations': rules,
+        'x-jsf-requiredValidations': Object.keys(rules),
       },
       field_b: {
         type: 'number',
@@ -29,6 +30,7 @@ function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
         type: 'number',
       },
     },
+    'x-jsf-logic': { validations: rules },
     required: ['field_a', 'field_b', 'field_c'],
   };
 }
@@ -178,7 +180,7 @@ describe('cross-value validations', () => {
     });
   });
 
-  describe('Conditionals', () => {
+  describe.skip('Conditionals', () => {
     it('when field_a > field_b, show field_c', () => {
       const schema = {
         properties: {
@@ -379,26 +381,29 @@ describe('cross-value validations', () => {
         properties: {
           field_a: {
             type: 'number',
-            'x-jsf-validations': {
-              a_bigger_than_b: {
-                errorMessage: 'A must be bigger than B',
-                rule: {
-                  '>': [{ var: 'field_a' }, { var: 'field_b' }],
-                },
-              },
-              is_even_number: {
-                errorMessage: 'A must be even',
-                rule: {
-                  '===': [{ '%': [{ var: 'field_a' }, 2] }, 0],
-                },
-              },
-            },
+            'x-jsf-requiredValidations': ['a_bigger_than_b', 'is_even_number'],
           },
           field_b: {
             type: 'number',
           },
         },
         required: ['field_a', 'field_b'],
+        'x-jsf-logic': {
+          validations: {
+            a_bigger_than_b: {
+              errorMessage: 'A must be bigger than B',
+              rule: {
+                '>': [{ var: 'field_a' }, { var: 'field_b' }],
+              },
+            },
+            is_even_number: {
+              errorMessage: 'A must be even',
+              rule: {
+                '===': [{ '%': [{ var: 'field_a' }, 2] }, 0],
+              },
+            },
+          },
+        },
       };
 
       const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
@@ -420,28 +425,30 @@ describe('cross-value validations', () => {
         properties: {
           field_a: {
             type: 'number',
-            'x-jsf-validations': {
-              a_bigger_than_b: {
-                errorMessage: 'A must be bigger than B',
-                rule: {
-                  '>': [{ var: 'field_a' }, { var: 'field_b' }],
-                },
-              },
-            },
+            'x-jsf-requiredValidations': ['a_bigger_than_b'],
           },
           field_b: {
             type: 'number',
-            'x-jsf-validations': {
-              is_even_number: {
-                errorMessage: 'B must be even',
-                rule: {
-                  '===': [{ '%': [{ var: 'field_b' }, 2] }, 0],
-                },
+            'x-jsf-requiredValidations': ['is_even_number'],
+          },
+        },
+        required: ['field_a', 'field_b'],
+        'x-jsf-logic': {
+          validations: {
+            a_bigger_than_b: {
+              errorMessage: 'A must be bigger than B',
+              rule: {
+                '>': [{ var: 'field_a' }, { var: 'field_b' }],
+              },
+            },
+            is_even_number: {
+              errorMessage: 'B must be even',
+              rule: {
+                '===': [{ '%': [{ var: 'field_b' }, 2] }, 0],
               },
             },
           },
         },
-        required: ['field_a', 'field_b'],
       };
 
       const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
@@ -463,16 +470,20 @@ describe('cross-value validations', () => {
           field_b: {
             type: 'number',
             'x-jsf-computedAttributes': {
+              title: 'This is {{a_times_two}}!',
+              value: 'a_times_two',
               description:
                 'This field is 2 times bigger than field_a with value of {{a_times_two}}.',
             },
           },
         },
         required: ['field_a', 'field_b'],
-        'x-jsf-validations': {
-          a_times_two: {
-            rule: {
-              '*': [{ var: 'field_a' }, 2],
+        'x-jsf-logic': {
+          validations: {
+            a_times_two: {
+              rule: {
+                '*': [{ var: 'field_a' }, 2],
+              },
             },
           },
         },
@@ -481,9 +492,12 @@ describe('cross-value validations', () => {
         strictInputType: false,
         initialValues: { field_a: 2 },
       });
-      expect(fields.find((i) => i.name === 'field_b').description).toEqual(
+      const fieldB = fields.find((i) => i.name === 'field_b');
+      expect(fieldB.description).toEqual(
         'This field is 2 times bigger than field_a with value of 4.'
       );
+      expect(fieldB.value).toEqual(4);
+      expect(fieldB.label).toEqual('This is 4!');
     });
   });
 

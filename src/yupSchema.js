@@ -143,7 +143,7 @@ const getYupSchema = ({ inputType, ...field }) => {
  * @param {FieldParameters} field Input fields
  * @returns {Function} Yup schema
  */
-export function buildYupSchema(field, config) {
+export function buildYupSchema(field, config, validations) {
   const { inputType, jsonType: jsonTypeValue, errorMessage = {}, ...propertyFields } = field;
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
@@ -272,7 +272,8 @@ export function buildYupSchema(field, config) {
             ...fieldSetfield,
             inputType: fieldSetfield.type,
           },
-          config
+          config,
+          validations
         )();
       }
     });
@@ -284,7 +285,7 @@ export function buildYupSchema(field, config) {
       propertyFields.nthFieldGroup.fields().reduce(
         (schema, groupArrayField) => ({
           ...schema,
-          [groupArrayField.name]: buildYupSchema(groupArrayField, config)(),
+          [groupArrayField.name]: buildYupSchema(groupArrayField, config, validations)(),
         }),
         {}
       )
@@ -336,9 +337,9 @@ export function buildYupSchema(field, config) {
     validators.push(withFileFormat);
   }
 
-  if (propertyFields.validations) {
-    Object.entries(propertyFields.validations).forEach(([id, validation]) =>
-      validators.push(yupSchemaWithCustomJSONLogic(field, validation, id))
+  if (propertyFields.requiredValidations) {
+    propertyFields.requiredValidations.forEach((id) =>
+      validators.push(yupSchemaWithCustomJSONLogic({ field, id, validations }))
     );
   }
 
@@ -358,7 +359,7 @@ export function getNoSortEdges(fields = []) {
   }, []);
 }
 
-function getSchema(fields = [], config) {
+function getSchema(fields = [], config, validations) {
   const newSchema = {};
 
   fields.forEach((field) => {
@@ -367,13 +368,13 @@ function getSchema(fields = [], config) {
         if (field.inputType === supportedTypes.FIELDSET) {
           // Fieldset validation schemas depend on the inner schemas of their fields,
           // so we need to rebuild it to take into account any of those updates.
-          const fieldsetSchema = buildYupSchema(field, config)();
+          const fieldsetSchema = buildYupSchema(field, config, validations)();
           newSchema[field.name] = fieldsetSchema;
         } else {
           newSchema[field.name] = field.schema;
         }
       } else {
-        Object.assign(newSchema, getSchema(field.fields, config));
+        Object.assign(newSchema, getSchema(field.fields, config, validations));
       }
     }
   });
@@ -389,6 +390,6 @@ function getSchema(fields = [], config) {
  * @param {JsfConfig} config - Config
  * @returns
  */
-export function buildCompleteYupSchema(fields, config) {
-  return object().shape(getSchema(fields, config), getNoSortEdges(fields));
+export function buildCompleteYupSchema(fields, config, validations) {
+  return object().shape(getSchema(fields, config, validations), getNoSortEdges(fields));
 }

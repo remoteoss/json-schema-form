@@ -223,11 +223,11 @@ function getComposeFunctionForField(fieldParams, hasCustomizations) {
  * @param {JsfConfig} config - parser config
  * @returns {Object} field object
  */
-function buildField(fieldParams, config, scopedJsonSchema) {
+function buildField(fieldParams, config, scopedJsonSchema, validations) {
   const customProperties = getCustomPropertiesForField(fieldParams, config);
   const composeFn = getComposeFunctionForField(fieldParams, !!customProperties);
 
-  const yupSchema = buildYupSchema(fieldParams, config);
+  const yupSchema = buildYupSchema(fieldParams, config, validations);
   const calculateConditionalFieldsClosure =
     fieldParams.isDynamic && calculateConditionalProperties(fieldParams, customProperties);
 
@@ -272,7 +272,7 @@ function buildField(fieldParams, config, scopedJsonSchema) {
  * @param {JsfConfig} config - JSON-schema-form config
  * @returns {ParserFields} ParserFields
  */
-function getFieldsFromJSONSchema(scopedJsonSchema, config) {
+function getFieldsFromJSONSchema(scopedJsonSchema, config, validations) {
   if (!scopedJsonSchema) {
     // NOTE: other type of verifications might be needed.
     return [];
@@ -304,11 +304,11 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config) {
         addFieldText: fieldParams.addFieldText,
       };
 
-      buildField(fieldParams, config, scopedJsonSchema).forEach((groupField) => {
+      buildField(fieldParams, config, scopedJsonSchema, validations).forEach((groupField) => {
         fields.push(groupField);
       });
     } else {
-      fields.push(buildField(fieldParams, config, scopedJsonSchema));
+      fields.push(buildField(fieldParams, config, scopedJsonSchema, validations));
     }
   });
 
@@ -328,8 +328,8 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
   };
 
   try {
-    const fields = getFieldsFromJSONSchema(jsonSchema, config);
     const validations = getValidationsFromJSONSchema(jsonSchema);
+    const fields = getFieldsFromJSONSchema(jsonSchema, config, validations);
 
     const handleValidation = handleValuesChange(fields, jsonSchema, config, validations);
 

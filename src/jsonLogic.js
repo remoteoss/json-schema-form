@@ -7,17 +7,30 @@ import jsonLogic from 'json-logic-js';
  * @returns {Object}
  */
 export function getValidationsFromJSONSchema(schema) {
-  const ruleMap = new Map();
+  const validationMap = new Map();
+  const computedValuesMap = new Map();
 
-  const validationObject = Object.entries(schema?.['x-jsf-validations'] ?? {});
-  validationObject.forEach(([id, { rule }]) => {
-    ruleMap.set(id, { rule });
+  const logic = schema?.['x-jsf-logic'] ?? {
+    validations: {},
+    computedValues: {},
+  };
+
+  const validations = Object.entries(logic.validations ?? {});
+  const computedValues = Object.entries(logic.computedValues ?? {});
+
+  validations.forEach(([id, validation]) => {
+    validationMap.set(id, validation);
+  });
+
+  computedValues.forEach(([id, computedValue]) => {
+    computedValuesMap.set(id, computedValue);
   });
 
   return {
-    ruleMap,
+    validationMap,
+    computedValuesMap,
     evaluateRule(id, values) {
-      const validation = ruleMap.get(id);
+      const validation = validationMap.get(id);
       const answer = jsonLogic.apply(validation.rule, clean(values));
       return answer;
     },
@@ -30,7 +43,8 @@ function clean(values = {}) {
   }, {});
 }
 
-export function yupSchemaWithCustomJSONLogic(field, validation, id) {
+export function yupSchemaWithCustomJSONLogic({ field, validations, id }) {
+  const validation = validations.validationMap.get(id);
   return (yupSchema) =>
     yupSchema.test(
       `${field.name}-validation-${id}`,
@@ -48,9 +62,8 @@ function replaceHandlebarsTemplates(string, validations, formValues) {
 }
 
 export function calculateComputedAttributes(fieldParams) {
-  return ({ validations, field, formValues }) => {
+  return ({ validations, formValues }) => {
     const { computedAttributes } = fieldParams;
-    console.log(field);
     return Object.fromEntries(
       Object.entries(computedAttributes)
         .map(([key, value]) => {
