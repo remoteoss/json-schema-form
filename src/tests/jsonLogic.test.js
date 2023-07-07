@@ -667,8 +667,6 @@ describe('cross-value validations', () => {
       });
       expect(handleValidation({ field_a: 4, field_b: 2 }).formErrors).toEqual(undefined);
     });
-
-    it.todo('Need to handle checking a const that is a number in an if for a computed value.');
   });
 
   describe('Derive values', () => {
@@ -713,7 +711,42 @@ describe('cross-value validations', () => {
   });
 
   describe('Nested fieldsets', () => {
-    it.todo('Does everything above work when the field is nested');
+    it('Does everything above work when the field is nested', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'object',
+            'x-jsf-presentation': {
+              inputType: 'fieldset',
+            },
+            properties: {
+              child: {
+                type: 'number',
+                'x-jsf-requiredValidations': ['child_greater_than_10'],
+              },
+            },
+            required: ['child'],
+            'x-jsf-logic': {
+              validations: {
+                child_greater_than_10: {
+                  errorMessage: 'Must be greater than 10!',
+                  rule: {
+                    '>': [{ var: 'child' }, 10],
+                  },
+                },
+              },
+            },
+          },
+        },
+        required: ['field_a'],
+      };
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(handleValidation({}).formErrors).toEqual({ field_a: { child: 'Required field' } });
+      expect(handleValidation({ field_a: { child: 0 } }).formErrors).toEqual({
+        field_a: { child: 'Must be greater than 10!' },
+      });
+    });
+
     it.todo('Validate a field and a nested field together');
     it.todo('compute a nested field attribute');
   });

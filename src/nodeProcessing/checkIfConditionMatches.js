@@ -64,14 +64,14 @@ export function checkIfConditionMatches(node, formValues, formFields, validation
 
 export function checkIfMatchesValidationsAndComputedValues(node, formValues, validations) {
   const validationsMatch = Object.entries(node.if.validations ?? {}).every(([name, property]) => {
-    const currentValue = validations.evaluateValidationRule(name, formValues);
+    const currentValue = validations.getScope().evaluateValidationRule(name, formValues);
     if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
     return false;
   });
 
   const computedValuesMatch = Object.entries(node.if.computedValues ?? {}).every(
     ([name, property]) => {
-      const currentValue = validations.evaluateComputedValueRule(name, formValues);
+      const currentValue = validations.getScope().evaluateComputedValueRule(name, formValues);
       if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
       return false;
     }

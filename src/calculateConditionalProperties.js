@@ -110,7 +110,7 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
             fields: fieldSetFields,
             required: isRequired,
           },
-          undefined,
+          { config: { parentID: fieldParams.name } },
           validations
         ),
       };

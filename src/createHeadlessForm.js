@@ -24,7 +24,7 @@ import {
   getInputType,
 } from './internals/fields';
 import { pickXKey } from './internals/helpers';
-import { calculateComputedAttributes, getValidationsFromJSONSchema } from './jsonLogic';
+import { calculateComputedAttributes, createValidationChecker } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
 
 // Some type definitions (to be migrated into .d.ts file or TS Interfaces)
@@ -100,7 +100,7 @@ function removeInvalidAttributes(fields) {
  *
  * @returns {FieldParameters}
  */
-function buildFieldParameters(name, fieldProperties, required = [], config = {}) {
+function buildFieldParameters(name, fieldProperties, required = [], config = {}, validations) {
   const { position } = pickXKey(fieldProperties, 'presentation') ?? {};
   let fields;
 
@@ -108,9 +108,13 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
 
   if (inputType === supportedTypes.FIELDSET) {
     // eslint-disable-next-line no-use-before-define
-    fields = getFieldsFromJSONSchema(fieldProperties, {
-      customProperties: get(config, `customProperties.${name}`, {}),
-    });
+    fields = getFieldsFromJSONSchema(
+      fieldProperties,
+      {
+        customProperties: get(config, `customProperties.${name}`, {}),
+      },
+      validations
+    );
   }
 
   const result = {
@@ -137,7 +141,8 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
  */
 function convertJSONSchemaPropertiesToFieldParameters(
   { properties, required, 'x-jsf-order': order },
-  config = {}
+  config = {},
+  validations
 ) {
   const sortFields = (a, b) => sortByOrderOrPosition(a, b, order);
 
@@ -145,7 +150,7 @@ function convertJSONSchemaPropertiesToFieldParameters(
   // their position and then remove the position property (since it's no longer needed)
   return Object.entries(properties)
     .filter(([, value]) => typeof value === 'object')
-    .map(([key, value]) => buildFieldParameters(key, value, required, config))
+    .map(([key, value]) => buildFieldParameters(key, value, required, config, validations))
     .sort(sortFields)
     .map(({ position, ...fieldParams }) => fieldParams);
 }
@@ -283,7 +288,11 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, validations) {
     return [];
   }
 
-  const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(scopedJsonSchema, config);
+  const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(
+    scopedJsonSchema,
+    config,
+    validations
+  );
 
   applyFieldsDependencies(fieldParamsList, scopedJsonSchema);
 
@@ -333,7 +342,7 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
   };
 
   try {
-    const validations = getValidationsFromJSONSchema(jsonSchema);
+    const validations = createValidationChecker(jsonSchema);
     const fields = getFieldsFromJSONSchema(jsonSchema, config, validations);
 
     const handleValidation = handleValuesChange(fields, jsonSchema, config, validations);

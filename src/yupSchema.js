@@ -339,7 +339,7 @@ export function buildYupSchema(field, config, validations) {
 
   if (propertyFields.requiredValidations) {
     propertyFields.requiredValidations.forEach((id) =>
-      validators.push(yupSchemaWithCustomJSONLogic({ field, id, validations }))
+      validators.push(yupSchemaWithCustomJSONLogic({ field, id, validations, config }))
     );
   }
 
@@ -368,7 +368,11 @@ function getSchema(fields = [], config, validations) {
         if (field.inputType === supportedTypes.FIELDSET) {
           // Fieldset validation schemas depend on the inner schemas of their fields,
           // so we need to rebuild it to take into account any of those updates.
-          const fieldsetSchema = buildYupSchema(field, config, validations)();
+          const fieldsetSchema = buildYupSchema(
+            field,
+            { ...config, parentID: field.name },
+            validations
+          )();
           newSchema[field.name] = fieldsetSchema;
         } else {
           newSchema[field.name] = field.schema;

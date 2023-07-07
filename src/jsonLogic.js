@@ -12,7 +12,29 @@ import {
  * @param {Object} initialValues - form state
  * @returns {Object}
  */
-export function getValidationsFromJSONSchema(schema) {
+export function createValidationChecker(schema) {
+  const scopes = new Map();
+
+  function createScopes(jsonSchema, key = 'root') {
+    scopes.set(key, createValidationsScope(jsonSchema));
+    Object.entries(jsonSchema.properties)
+      .filter(([, property]) => property.type === 'object')
+      .forEach(([key, property]) => {
+        createScopes(property, key);
+      });
+  }
+
+  createScopes(schema);
+
+  return {
+    scopes,
+    getScope(name = 'root') {
+      return scopes.get(name);
+    },
+  };
+}
+
+function createValidationsScope(schema) {
   const validationMap = new Map();
   const computedValuesMap = new Map();
 
@@ -54,12 +76,13 @@ function clean(values = {}) {
   }, {});
 }
 
-export function yupSchemaWithCustomJSONLogic({ field, validations, id }) {
-  const validation = validations.validationMap.get(id);
+export function yupSchemaWithCustomJSONLogic({ field, validations, config, id }) {
+  const { parentID = 'root' } = config;
+  const validation = validations.getScope(parentID).validationMap.get(id);
   return (yupSchema) =>
     yupSchema.test(
       `${field.name}-validation-${id}`,
-      validation.errorMessage ?? 'This field is invalid.',
+      validation?.errorMessage ?? 'This field is invalid.',
       (_, { parent }) => {
         return jsonLogic.apply(validation.rule, parent);
       }
@@ -68,7 +91,7 @@ export function yupSchemaWithCustomJSONLogic({ field, validations, id }) {
 
 function replaceHandlebarsTemplates(string, validations, formValues) {
   return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-    return validations.evaluateComputedValueRule(key.trim(), formValues);
+    return validations.getScope().evaluateComputedValueRule(key.trim(), formValues);
   });
 }
 
@@ -84,7 +107,7 @@ export function calculateComputedAttributes(fieldParams) {
             return ['label', replaceHandlebarsTemplates(value, validations, formValues)];
           }
           if (key === 'const' || key === 'value')
-            return [key, validations.evaluateComputedValueRule(value, formValues)];
+            return [key, validations.getScope().evaluateComputedValueRule(value, formValues)];
           return [key, null];
         })
         .filter(([, value]) => value !== null)
