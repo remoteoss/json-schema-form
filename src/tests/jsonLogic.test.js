@@ -128,7 +128,39 @@ describe('cross-value validations', () => {
       console.error.mockRestore();
     });
 
-    it.todo('Should throw when a var does not exist in a rule.');
+    it('Should throw when a var does not exist in a rule.', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+          },
+        },
+        'x-jsf-logic': {
+          validations: {
+            a_greater_than_ten: {
+              errorMessage: 'Must be greater than 10',
+              rule: {
+                '>': [{ var: 'field_b' }, 10],
+              },
+            },
+          },
+        },
+        required: [],
+      };
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      createHeadlessForm(schema, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+      console.error.mockRestore();
+    });
+
+    it.todo('Should throw when a var does not exist in a deeply nested rule');
+
+    it.todo('Should throw when a var does not exist in a fieldset.');
+    it.todo('Should throw when a var does not exist in an array.');
   });
 
   describe('Relative: <, >, =', () => {

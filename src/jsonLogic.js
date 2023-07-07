@@ -45,14 +45,31 @@ function createValidationsScope(schema) {
 
   const validations = Object.entries(logic.validations ?? {});
   const computedValues = Object.entries(logic.computedValues ?? {});
+  const sampleEmptyObject = buildSampleEmptyObject(schema);
 
   validations.forEach(([id, validation]) => {
     if (!validation.rule) {
       throw Error(`Missing rule for validation with id of: "${id}".`);
     }
 
+    checkDataIntegrity(validation.rule, id, sampleEmptyObject);
+
     validationMap.set(id, validation);
   });
+
+  function checkDataIntegrity(rule, id) {
+    Object.values(rule).map((subRule) => {
+      subRule.map((item) => {
+        const isVar = Object.hasOwn(item, 'var');
+        if (isVar) {
+          const exists = jsonLogic.apply({ var: item.var }, sampleEmptyObject);
+          if (exists === null) {
+            throw Error(`"${item.var}" in rule "${id}" does not exist as a JSON schema property.`);
+          }
+        }
+      });
+    });
+  }
 
   computedValues.forEach(([id, computedValue]) => {
     if (!computedValue.rule) {
@@ -176,4 +193,14 @@ export function processJSONLogicNode({ node, formFields, formValues, accRequired
   }
 
   return { required: requiredFields };
+}
+
+function buildSampleEmptyObject(schema) {
+  const { properties } = schema;
+  return Object.fromEntries(
+    Object.entries(properties ?? {}).map(([key, value]) => {
+      if (value.type !== 'object') return [key, true];
+      return [key, buildSampleEmptyObject(value)];
+    })
+  );
 }
