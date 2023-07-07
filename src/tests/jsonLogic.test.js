@@ -36,6 +36,10 @@ function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
 }
 
 describe('cross-value validations', () => {
+  describe('Does not conflict with native JSON schema', () => {
+    it.todo('When a field is not required, validations should not block submitting');
+  });
+
   describe('Relative: <, >, =', () => {
     it('bigger: field_a > field_b', () => {
       const schema = createSchemaWithRulesOnFieldA({
@@ -711,7 +715,7 @@ describe('cross-value validations', () => {
   });
 
   describe('Nested fieldsets', () => {
-    it('Does everything above work when the field is nested', () => {
+    it('Basic nested validation works', () => {
       const schema = {
         properties: {
           field_a: {
@@ -745,6 +749,58 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: { child: 0 } }).formErrors).toEqual({
         field_a: { child: 'Must be greater than 10!' },
       });
+      expect(handleValidation({ field_a: { child: 11 } }).formErrors).toEqual(undefined);
+    });
+
+    it('Validating two nested fields together', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'object',
+            'x-jsf-presentation': {
+              inputType: 'fieldset',
+            },
+            properties: {
+              child: {
+                type: 'number',
+                'x-jsf-requiredValidations': ['child_greater_than_10'],
+              },
+              other_child: {
+                type: 'number',
+                'x-jsf-requiredValidations': ['greater_than_child'],
+              },
+            },
+            required: ['child', 'other_child'],
+            'x-jsf-logic': {
+              validations: {
+                child_greater_than_10: {
+                  errorMessage: 'Must be greater than 10!',
+                  rule: {
+                    '>': [{ var: 'child' }, 10],
+                  },
+                },
+                greater_than_child: {
+                  errorMessage: 'Must be greater than child',
+                  rule: {
+                    '>': [{ var: 'other_child' }, { var: 'child' }],
+                  },
+                },
+              },
+            },
+          },
+        },
+        required: ['field_a'],
+      };
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(handleValidation({}).formErrors).toEqual({
+        field_a: { child: 'Required field', other_child: 'Required field' },
+      });
+      expect(handleValidation({ field_a: { child: 0, other_child: 0 } }).formErrors).toEqual({
+        field_a: { child: 'Must be greater than 10!', other_child: 'Must be greater than child' },
+      });
+      expect(handleValidation({ field_a: { child: 11, other_child: 12 } }).formErrors).toEqual(
+        undefined
+      );
     });
 
     it.todo('Validate a field and a nested field together');
