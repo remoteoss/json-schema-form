@@ -451,8 +451,25 @@ describe('cross-value validations', () => {
     });
 
     it('Validate a field and a nested field together', () => {
-      createHeadlessForm(twoLevelsOfJSONLogicSchema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(twoLevelsOfJSONLogicSchema, {
+        strictInputType: false,
+      });
+      expect(handleValidation({}).formErrors).toEqual({
+        field_a: { child: 'Required field' },
+        field_b: 'Required field',
+      });
+      expect(handleValidation({ field_a: { child: 0 }, field_b: 0 }).formErrors).toEqual({
+        field_a: { child: 'Must be greater than 10!' },
+        field_b: 'Must be greater than 10!',
+      });
+      expect(handleValidation({ field_a: { child: 11 }, field_b: 11 }).formErrors).toEqual({
+        field_b: 'child must be greater than 15!',
+      });
+      expect(handleValidation({ field_a: { child: 16 }, field_b: 11 }).formErrors).toEqual(
+        undefined
+      );
     });
+
     it.todo('compute a nested field attribute');
   });
 

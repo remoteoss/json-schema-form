@@ -619,12 +619,8 @@ export const twoLevelsOfJSONLogicSchema = {
           type: 'number',
           'x-jsf-requiredValidations': ['child_greater_than_10'],
         },
-        other_child: {
-          type: 'number',
-          'x-jsf-requiredValidations': ['greater_than_child'],
-        },
       },
-      required: ['child', 'other_child'],
+      required: ['child'],
       'x-jsf-logic': {
         validations: {
           child_greater_than_10: {
@@ -633,14 +629,12 @@ export const twoLevelsOfJSONLogicSchema = {
               '>': [{ var: 'child' }, 10],
             },
           },
-          greater_than_child: {
-            errorMessage: 'Must be greater than child',
-            rule: {
-              '>': [{ var: 'other_child' }, { var: 'child' }],
-            },
-          },
         },
       },
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-requiredValidations': ['validation_parent', 'peek_to_nested'],
     },
   },
   'x-jsf-logic': {
@@ -648,16 +642,16 @@ export const twoLevelsOfJSONLogicSchema = {
       validation_parent: {
         errorMessage: 'Must be greater than 10!',
         rule: {
-          '>': [{ var: 'child' }, 10],
+          '>': [{ var: 'field_b' }, 10],
         },
       },
-      greater_than_child: {
-        errorMessage: 'Must be greater than child',
+      peek_to_nested: {
+        errorMessage: 'child must be greater than 15!',
         rule: {
-          '>': [{ var: 'other_child' }, { var: 'child' }],
+          '>': [{ var: 'field_a.child' }, 15],
         },
       },
     },
   },
-  required: ['field_a'],
+  required: ['field_a', 'field_b'],
 };
