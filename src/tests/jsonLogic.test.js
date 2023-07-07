@@ -3,14 +3,23 @@ import { createHeadlessForm } from '../createHeadlessForm';
 import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
+  multiRuleSchema,
+  nestedFieldsetWithValidationSchema,
   schemaWithChecksAndThenValidationsOnThen,
+  schemaWithComputedAttributes,
+  schemaWithComputedValueChecksInIf,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithGreaterThanChecksForThreeFields,
+  schemaWithIfStatementWithComputedValuesAndValidationChecks,
   schemaWithMissingRule,
+  schemaWithMultipleComputedValueChecks,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithPropertiesCheckAndValidationsInAIf,
+  schemaWithTwoRules,
   schemaWithVarThatDoesNotExist,
+  twoLevelsOfJSONLogicSchema,
+  validatingTwoNestedFieldsSchema,
 } from './jsonLogicFixtures';
 
 describe('cross-value validations', () => {
@@ -322,53 +331,9 @@ describe('cross-value validations', () => {
     });
 
     it('Should apply a conditional based on a true computedValue', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-          field_b: {
-            type: 'number',
-          },
-          field_c: {
-            type: 'number',
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          computedValues: {
-            require_c: {
-              rule: {
-                and: [
-                  { '!==': [{ var: 'field_b' }, null] },
-                  { '!==': [{ var: 'field_a' }, null] },
-                  { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-                ],
-              },
-            },
-          },
-          allOf: [
-            {
-              if: {
-                computedValues: {
-                  require_c: {
-                    const: true,
-                  },
-                },
-              },
-              then: {
-                required: ['field_c'],
-              },
-              else: {
-                properties: {
-                  field_c: false,
-                },
-              },
-            },
-          ],
-        },
-      };
-      const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { fields, handleValidation } = createHeadlessForm(schemaWithComputedValueChecksInIf, {
+        strictInputType: false,
+      });
       const cField = fields.find((i) => i.name === 'field_c');
       expect(cField.isVisible).toEqual(false);
       expect(cField.description).toEqual(undefined);
@@ -381,71 +346,9 @@ describe('cross-value validations', () => {
     });
 
     it('Handle multiple computedValue checks by ANDing them together', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-          field_b: {
-            type: 'number',
-          },
-          field_c: {
-            type: 'number',
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          validations: {
-            double_b: {
-              errorMessage: 'Must be two times B',
-              rule: {
-                '>': [{ var: 'field_c' }, { '*': [{ var: 'field_b' }, 2] }],
-              },
-            },
-          },
-          computedValues: {
-            a_times_two: {
-              rule: {
-                '*': [{ var: 'field_a' }, 2],
-              },
-            },
-            mod_by_five: {
-              rule: {
-                '%': [{ var: 'field_b' }, 5],
-              },
-            },
-          },
-          allOf: [
-            {
-              if: {
-                computedValues: {
-                  a_times_two: {
-                    const: 20,
-                  },
-                  mod_by_five: {
-                    const: 3,
-                  },
-                },
-              },
-              then: {
-                required: ['field_c'],
-                properties: {
-                  field_c: {
-                    'x-jsf-requiredValidations': ['double_b'],
-                    title: 'Adding a title.',
-                  },
-                },
-              },
-              else: {
-                properties: {
-                  field_c: false,
-                },
-              },
-            },
-          ],
-        },
-      };
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(schemaWithMultipleComputedValueChecks, {
+        strictInputType: false,
+      });
       expect(handleValidation({}).formErrors).toEqual({
         field_a: 'Required field',
         field_b: 'Required field',
@@ -462,61 +365,10 @@ describe('cross-value validations', () => {
     });
 
     it('Handle having a true condition with both validations and computedValue checks', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-          field_b: {
-            type: 'number',
-          },
-          field_c: {
-            type: 'number',
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          validations: {
-            greater_than_b: {
-              rule: {
-                '>': [{ var: 'field_a' }, { var: 'field_b' }],
-              },
-            },
-          },
-          computedValues: {
-            a_times_two: {
-              rule: {
-                '*': [{ var: 'field_a' }, 2],
-              },
-            },
-          },
-          allOf: [
-            {
-              if: {
-                computedValues: {
-                  a_times_two: {
-                    const: 20,
-                  },
-                },
-                validations: {
-                  greater_than_b: {
-                    const: true,
-                  },
-                },
-              },
-              then: {
-                required: ['field_c'],
-              },
-              else: {
-                properties: {
-                  field_c: false,
-                },
-              },
-            },
-          ],
-        },
-      };
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(
+        schemaWithIfStatementWithComputedValuesAndValidationChecks,
+        { strictInputType: false }
+      );
       expect(handleValidation({ field_a: 1, field_b: 1 }).formErrors).toEqual(undefined);
       expect(handleValidation({ field_a: 10, field_b: 20 }).formErrors).toEqual(undefined);
       expect(handleValidation({ field_a: 10, field_b: 9 }).formErrors).toEqual({
@@ -530,36 +382,7 @@ describe('cross-value validations', () => {
 
   describe('Multiple validations', () => {
     it('2 rules where A must be bigger than B and not an even number in another rule', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-            'x-jsf-requiredValidations': ['a_bigger_than_b', 'is_even_number'],
-          },
-          field_b: {
-            type: 'number',
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          validations: {
-            a_bigger_than_b: {
-              errorMessage: 'A must be bigger than B',
-              rule: {
-                '>': [{ var: 'field_a' }, { var: 'field_b' }],
-              },
-            },
-            is_even_number: {
-              errorMessage: 'A must be even',
-              rule: {
-                '===': [{ '%': [{ var: 'field_a' }, 2] }, 0],
-              },
-            },
-          },
-        },
-      };
-
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(multiRuleSchema, { strictInputType: false });
       expect(handleValidation({ field_a: 1 }).formErrors).toEqual({
         field_a: 'A must be even',
         field_b: 'Required field',
@@ -574,37 +397,9 @@ describe('cross-value validations', () => {
     });
 
     it('2 seperate fields with rules failing', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-            'x-jsf-requiredValidations': ['a_bigger_than_b'],
-          },
-          field_b: {
-            type: 'number',
-            'x-jsf-requiredValidations': ['is_even_number'],
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          validations: {
-            a_bigger_than_b: {
-              errorMessage: 'A must be bigger than B',
-              rule: {
-                '>': [{ var: 'field_a' }, { var: 'field_b' }],
-              },
-            },
-            is_even_number: {
-              errorMessage: 'B must be even',
-              rule: {
-                '===': [{ '%': [{ var: 'field_b' }, 2] }, 0],
-              },
-            },
-          },
-        },
-      };
-
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(schemaWithTwoRules, {
+        strictInputType: false,
+      });
       expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual({
         field_a: 'A must be bigger than B',
         field_b: 'B must be even',
@@ -615,33 +410,7 @@ describe('cross-value validations', () => {
 
   describe('Derive values', () => {
     it('field_b is field_a * 2', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-          field_b: {
-            type: 'number',
-            'x-jsf-computedAttributes': {
-              title: 'This is {{a_times_two}}!',
-              value: 'a_times_two',
-              description:
-                'This field is 2 times bigger than field_a with value of {{a_times_two}}.',
-            },
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          computedValues: {
-            a_times_two: {
-              rule: {
-                '*': [{ var: 'field_a' }, 2],
-              },
-            },
-          },
-        },
-      };
-      const { fields } = createHeadlessForm(schema, {
+      const { fields } = createHeadlessForm(schemaWithComputedAttributes, {
         strictInputType: false,
         initialValues: { field_a: 2 },
       });
@@ -656,35 +425,9 @@ describe('cross-value validations', () => {
 
   describe('Nested fieldsets', () => {
     it('Basic nested validation works', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'object',
-            'x-jsf-presentation': {
-              inputType: 'fieldset',
-            },
-            properties: {
-              child: {
-                type: 'number',
-                'x-jsf-requiredValidations': ['child_greater_than_10'],
-              },
-            },
-            required: ['child'],
-            'x-jsf-logic': {
-              validations: {
-                child_greater_than_10: {
-                  errorMessage: 'Must be greater than 10!',
-                  rule: {
-                    '>': [{ var: 'child' }, 10],
-                  },
-                },
-              },
-            },
-          },
-        },
-        required: ['field_a'],
-      };
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(nestedFieldsetWithValidationSchema, {
+        strictInputType: false,
+      });
       expect(handleValidation({}).formErrors).toEqual({ field_a: { child: 'Required field' } });
       expect(handleValidation({ field_a: { child: 0 } }).formErrors).toEqual({
         field_a: { child: 'Must be greater than 10!' },
@@ -693,45 +436,9 @@ describe('cross-value validations', () => {
     });
 
     it('Validating two nested fields together', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'object',
-            'x-jsf-presentation': {
-              inputType: 'fieldset',
-            },
-            properties: {
-              child: {
-                type: 'number',
-                'x-jsf-requiredValidations': ['child_greater_than_10'],
-              },
-              other_child: {
-                type: 'number',
-                'x-jsf-requiredValidations': ['greater_than_child'],
-              },
-            },
-            required: ['child', 'other_child'],
-            'x-jsf-logic': {
-              validations: {
-                child_greater_than_10: {
-                  errorMessage: 'Must be greater than 10!',
-                  rule: {
-                    '>': [{ var: 'child' }, 10],
-                  },
-                },
-                greater_than_child: {
-                  errorMessage: 'Must be greater than child',
-                  rule: {
-                    '>': [{ var: 'other_child' }, { var: 'child' }],
-                  },
-                },
-              },
-            },
-          },
-        },
-        required: ['field_a'],
-      };
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(validatingTwoNestedFieldsSchema, {
+        strictInputType: false,
+      });
       expect(handleValidation({}).formErrors).toEqual({
         field_a: { child: 'Required field', other_child: 'Required field' },
       });
@@ -743,62 +450,8 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.skip('Validate a field and a nested field together', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'object',
-            'x-jsf-presentation': {
-              inputType: 'fieldset',
-            },
-            properties: {
-              child: {
-                type: 'number',
-                'x-jsf-requiredValidations': ['child_greater_than_10'],
-              },
-              other_child: {
-                type: 'number',
-                'x-jsf-requiredValidations': ['greater_than_child'],
-              },
-            },
-            required: ['child', 'other_child'],
-            'x-jsf-logic': {
-              validations: {
-                child_greater_than_10: {
-                  errorMessage: 'Must be greater than 10!',
-                  rule: {
-                    '>': [{ var: 'child' }, 10],
-                  },
-                },
-                greater_than_child: {
-                  errorMessage: 'Must be greater than child',
-                  rule: {
-                    '>': [{ var: 'other_child' }, { var: 'child' }],
-                  },
-                },
-              },
-            },
-          },
-        },
-        'x-jsf-logic': {
-          validations: {
-            validation_parent: {
-              errorMessage: 'Must be greater than 10!',
-              rule: {
-                '>': [{ var: 'child' }, 10],
-              },
-            },
-            greater_than_child: {
-              errorMessage: 'Must be greater than child',
-              rule: {
-                '>': [{ var: 'other_child' }, { var: 'child' }],
-              },
-            },
-          },
-        },
-        required: ['field_a'],
-      };
-      createHeadlessForm(schema, { strictInputType: false });
+    it('Validate a field and a nested field together', () => {
+      createHeadlessForm(twoLevelsOfJSONLogicSchema, { strictInputType: false });
     });
     it.todo('compute a nested field attribute');
   });
