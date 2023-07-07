@@ -37,7 +37,98 @@ function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
 
 describe('cross-value validations', () => {
   describe('Does not conflict with native JSON schema', () => {
-    it.todo('When a field is not required, validations should not block submitting');
+    it('When a field is not required, validations should not block submitting when its an empty value', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+            'x-jsf-requiredValidations': ['a_greater_than_ten'],
+          },
+        },
+        'x-jsf-logic': {
+          validations: {
+            a_greater_than_ten: {
+              errorMessage: 'Must be greater than 10',
+              rule: {
+                '>': [{ var: 'field_a' }, 10],
+              },
+            },
+          },
+        },
+        required: [],
+      };
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(handleValidation({}).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 0 }).formErrors).toEqual({
+        field_a: 'Must be greater than 10',
+      });
+      expect(handleValidation({ field_a: 'incorrect value' }).formErrors).toEqual({
+        field_a: 'The value must be a number',
+      });
+      expect(handleValidation({ field_a: 11 }).formErrors).toEqual(undefined);
+    });
+
+    it('Native validations always appear first', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+            minimum: 5,
+            'x-jsf-requiredValidations': ['a_greater_than_ten'],
+          },
+        },
+        'x-jsf-logic': {
+          validations: {
+            a_greater_than_ten: {
+              errorMessage: 'Must be greater than 10',
+              rule: {
+                '>': [{ var: 'field_a' }, 10],
+              },
+            },
+          },
+        },
+        required: ['field_a'],
+      };
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      expect(handleValidation({}).formErrors).toEqual({ field_a: 'Required field' });
+      expect(handleValidation({ field_a: 0 }).formErrors).toEqual({
+        field_a: 'Must be greater or equal to 5',
+      });
+      expect(handleValidation({ field_a: 5 }).formErrors).toEqual({
+        field_a: 'Must be greater than 10',
+      });
+    });
+  });
+
+  describe('Badly written schemas', () => {
+    it('Should throw when theres a missing rule', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'number',
+            'x-jsf-requiredValidations': ['a_greater_than_ten'],
+          },
+        },
+        'x-jsf-logic': {
+          validations: {
+            a_greater_than_ten: {
+              errorMessage: 'Must be greater than 10',
+            },
+          },
+        },
+        required: [],
+      };
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+
+      createHeadlessForm(schema, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('Missing rule for validation with id of: "a_greater_than_ten".')
+      );
+      console.error.mockRestore();
+    });
+
+    it.todo('Should throw when a var does not exist in a rule.');
   });
 
   describe('Relative: <, >, =', () => {

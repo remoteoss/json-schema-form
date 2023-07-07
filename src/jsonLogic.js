@@ -17,7 +17,7 @@ export function createValidationChecker(schema) {
 
   function createScopes(jsonSchema, key = 'root') {
     scopes.set(key, createValidationsScope(jsonSchema));
-    Object.entries(jsonSchema.properties)
+    Object.entries(jsonSchema?.properties ?? {})
       .filter(([, property]) => property.type === 'object')
       .forEach(([key, property]) => {
         createScopes(property, key);
@@ -47,10 +47,18 @@ function createValidationsScope(schema) {
   const computedValues = Object.entries(logic.computedValues ?? {});
 
   validations.forEach(([id, validation]) => {
+    if (!validation.rule) {
+      throw Error(`Missing rule for validation with id of: "${id}".`);
+    }
+
     validationMap.set(id, validation);
   });
 
   computedValues.forEach(([id, computedValue]) => {
+    if (!computedValue.rule) {
+      throw Error(`Missing rule for computedValue with id of: "${id}".`);
+    }
+
     computedValuesMap.set(id, computedValue);
   });
 
@@ -79,11 +87,13 @@ function clean(values = {}) {
 export function yupSchemaWithCustomJSONLogic({ field, validations, config, id }) {
   const { parentID = 'root' } = config;
   const validation = validations.getScope(parentID).validationMap.get(id);
+
   return (yupSchema) =>
     yupSchema.test(
       `${field.name}-validation-${id}`,
       validation?.errorMessage ?? 'This field is invalid.',
-      (_, { parent }) => {
+      (value, { parent }) => {
+        if (value === undefined && !field.required) return true;
         return jsonLogic.apply(validation.rule, parent);
       }
     );
