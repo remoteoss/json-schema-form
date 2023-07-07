@@ -655,3 +655,42 @@ export const twoLevelsOfJSONLogicSchema = {
   },
   required: ['field_a', 'field_b'],
 };
+
+export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+          'x-jsf-requiredValidations': ['child_greater_than_10'],
+        },
+        other_child: {
+          type: 'number',
+          'x-jsf-requiredValidations': ['greater_than_child'],
+        },
+      },
+      required: ['child', 'other_child'],
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      validation_parent: {
+        errorMessage: 'Must be greater than 10!',
+        rule: {
+          '>': [{ var: 'child' }, 10],
+        },
+      },
+      greater_than_child: {
+        errorMessage: 'Must be greater than child',
+        rule: {
+          '>': [{ var: 'other_child' }, { var: 'child' }],
+        },
+      },
+    },
+  },
+  required: ['field_a'],
+};

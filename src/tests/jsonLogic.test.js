@@ -16,6 +16,7 @@ import {
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithPropertiesCheckAndValidationsInAIf,
+  schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
   schemaWithVarThatDoesNotExist,
   twoLevelsOfJSONLogicSchema,
@@ -89,46 +90,16 @@ describe('cross-value validations', () => {
 
     it.todo('On a property, it should throw an error for a requiredValidation that does not exist');
 
-    it.skip('A top level logic keyword will not be able to reference fieldset properties', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'object',
-            'x-jsf-presentation': {
-              inputType: 'fieldset',
-            },
-            properties: {
-              child: {
-                type: 'number',
-                'x-jsf-requiredValidations': ['child_greater_than_10'],
-              },
-              other_child: {
-                type: 'number',
-                'x-jsf-requiredValidations': ['greater_than_child'],
-              },
-            },
-            required: ['child', 'other_child'],
-          },
-        },
-        'x-jsf-logic': {
-          validations: {
-            validation_parent: {
-              errorMessage: 'Must be greater than 10!',
-              rule: {
-                '>': [{ var: 'child' }, 10],
-              },
-            },
-            greater_than_child: {
-              errorMessage: 'Must be greater than child',
-              rule: {
-                '>': [{ var: 'other_child' }, { var: 'child' }],
-              },
-            },
-          },
-        },
-        required: ['field_a'],
-      };
-      createHeadlessForm(schema, { strictInputType: false });
+    it('A top level logic keyword will not be able to reference fieldset properties', () => {
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+      createHeadlessForm(schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"child" in rule "validation_parent" does not exist as a JSON schema property.')
+      );
+      console.error.mockRestore();
     });
 
     it.todo('Should throw when a var does not exist in an array.');
