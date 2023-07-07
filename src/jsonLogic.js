@@ -183,7 +183,7 @@ export function processJSONLogicNode({ node, formFields, formValues, accRequired
   return { required: requiredFields };
 }
 
-function buildSampleEmptyObject(schema) {
+function buildSampleEmptyObject(schema = {}) {
   const { properties } = schema;
   return Object.fromEntries(
     Object.entries(properties ?? {}).map(([key, value]) => {
