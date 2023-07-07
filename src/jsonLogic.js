@@ -57,20 +57,6 @@ function createValidationsScope(schema) {
     validationMap.set(id, validation);
   });
 
-  function checkDataIntegrity(rule, id) {
-    Object.values(rule).map((subRule) => {
-      subRule.map((item) => {
-        const isVar = Object.hasOwn(item, 'var');
-        if (isVar) {
-          const exists = jsonLogic.apply({ var: item.var }, sampleEmptyObject);
-          if (exists === null) {
-            throw Error(`"${item.var}" in rule "${id}" does not exist as a JSON schema property.`);
-          }
-        }
-      });
-    });
-  }
-
   computedValues.forEach(([id, computedValue]) => {
     if (!computedValue.rule) {
       throw Error(`Missing rule for computedValue with id of: "${id}".`);
@@ -203,4 +189,20 @@ function buildSampleEmptyObject(schema) {
       return [key, buildSampleEmptyObject(value)];
     })
   );
+}
+
+function checkDataIntegrity(rule, id, data) {
+  Object.values(rule ?? {}).map((subRule) => {
+    subRule.map((item) => {
+      const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
+      if (isVar) {
+        const exists = jsonLogic.apply({ var: item.var }, data);
+        if (exists === null) {
+          throw Error(`"${item.var}" in rule "${id}" does not exist as a JSON schema property.`);
+        }
+      } else {
+        checkDataIntegrity(item, id, data);
+      }
+    });
+  });
 }
