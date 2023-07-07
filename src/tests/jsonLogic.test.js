@@ -1,63 +1,24 @@
 import { createHeadlessForm } from '../createHeadlessForm';
 
-function createSchemaWithRulesOnFieldA(rules) {
-  return {
-    properties: {
-      field_a: {
-        type: 'number',
-        'x-jsf-requiredValidations': Object.keys(rules),
-      },
-      field_b: {
-        type: 'number',
-      },
-    },
-    required: ['field_a', 'field_b'],
-    'x-jsf-logic': { validations: rules },
-  };
-}
-
-function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
-  return {
-    properties: {
-      field_a: {
-        type: 'number',
-        'x-jsf-requiredValidations': Object.keys(rules),
-      },
-      field_b: {
-        type: 'number',
-      },
-      field_c: {
-        type: 'number',
-      },
-    },
-    'x-jsf-logic': { validations: rules },
-    required: ['field_a', 'field_b', 'field_c'],
-  };
-}
+import {
+  createSchemaWithRulesOnFieldA,
+  createSchemaWithThreePropertiesWithRuleOnFieldA,
+  schemaWithChecksAndThenValidationsOnThen,
+  schemaWithDeepVarThatDoesNotExist,
+  schemaWithGreaterThanChecksForThreeFields,
+  schemaWithMissingRule,
+  schemaWithNativeAndJSONLogicChecks,
+  schemaWithNonRequiredField,
+  schemaWithPropertiesCheckAndValidationsInAIf,
+  schemaWithVarThatDoesNotExist,
+} from './jsonLogicFixtures';
 
 describe('cross-value validations', () => {
   describe('Does not conflict with native JSON schema', () => {
     it('When a field is not required, validations should not block submitting when its an empty value', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-            'x-jsf-requiredValidations': ['a_greater_than_ten'],
-          },
-        },
-        'x-jsf-logic': {
-          validations: {
-            a_greater_than_ten: {
-              errorMessage: 'Must be greater than 10',
-              rule: {
-                '>': [{ var: 'field_a' }, 10],
-              },
-            },
-          },
-        },
-        required: [],
-      };
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(schemaWithNonRequiredField, {
+        strictInputType: false,
+      });
       expect(handleValidation({}).formErrors).toEqual(undefined);
       expect(handleValidation({ field_a: 0 }).formErrors).toEqual({
         field_a: 'Must be greater than 10',
@@ -69,27 +30,9 @@ describe('cross-value validations', () => {
     });
 
     it('Native validations always appear first', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-            minimum: 5,
-            'x-jsf-requiredValidations': ['a_greater_than_ten'],
-          },
-        },
-        'x-jsf-logic': {
-          validations: {
-            a_greater_than_ten: {
-              errorMessage: 'Must be greater than 10',
-              rule: {
-                '>': [{ var: 'field_a' }, 10],
-              },
-            },
-          },
-        },
-        required: ['field_a'],
-      };
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(schemaWithNativeAndJSONLogicChecks, {
+        strictInputType: false,
+      });
       expect(handleValidation({}).formErrors).toEqual({ field_a: 'Required field' });
       expect(handleValidation({ field_a: 0 }).formErrors).toEqual({
         field_a: 'Must be greater or equal to 5',
@@ -102,25 +45,9 @@ describe('cross-value validations', () => {
 
   describe('Badly written schemas', () => {
     it('Should throw when theres a missing rule', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-            'x-jsf-requiredValidations': ['a_greater_than_ten'],
-          },
-        },
-        'x-jsf-logic': {
-          validations: {
-            a_greater_than_ten: {
-              errorMessage: 'Must be greater than 10',
-            },
-          },
-        },
-        required: [],
-      };
       jest.spyOn(console, 'error').mockImplementation(() => {});
 
-      createHeadlessForm(schema, { strictInputType: false });
+      createHeadlessForm(schemaWithMissingRule, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('Missing rule for validation with id of: "a_greater_than_ten".')
@@ -129,27 +56,9 @@ describe('cross-value validations', () => {
     });
 
     it('Should throw when a var does not exist in a rule.', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-        },
-        'x-jsf-logic': {
-          validations: {
-            a_greater_than_ten: {
-              errorMessage: 'Must be greater than 10',
-              rule: {
-                '>': [{ var: 'field_b' }, 10],
-              },
-            },
-          },
-        },
-        required: [],
-      };
       jest.spyOn(console, 'error').mockImplementation(() => {});
 
-      createHeadlessForm(schema, { strictInputType: false });
+      createHeadlessForm(schemaWithVarThatDoesNotExist, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
@@ -158,30 +67,8 @@ describe('cross-value validations', () => {
     });
 
     it('Should throw when a var does not exist in a deeply nested rule', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-        },
-        'x-jsf-logic': {
-          validations: {
-            a_greater_than_ten: {
-              errorMessage: 'Must be greater than 10',
-              rule: {
-                '>': [
-                  { var: 'field_a' },
-                  { '*': [2, { '/': [2, { '*': [1, { var: 'field_b' }] }] }] },
-                ],
-              },
-            },
-          },
-        },
-        required: [],
-      };
       jest.spyOn(console, 'error').mockImplementation(() => {});
-
-      createHeadlessForm(schema, { strictInputType: false });
+      createHeadlessForm(schemaWithDeepVarThatDoesNotExist, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
@@ -190,6 +77,51 @@ describe('cross-value validations', () => {
     });
 
     it.todo('Should throw when a var does not exist in a fieldset.');
+
+    it.todo('On a property, it should throw an error for a requiredValidation that does not exist');
+
+    it.skip('A top level logic keyword will not be able to reference fieldset properties', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'object',
+            'x-jsf-presentation': {
+              inputType: 'fieldset',
+            },
+            properties: {
+              child: {
+                type: 'number',
+                'x-jsf-requiredValidations': ['child_greater_than_10'],
+              },
+              other_child: {
+                type: 'number',
+                'x-jsf-requiredValidations': ['greater_than_child'],
+              },
+            },
+            required: ['child', 'other_child'],
+          },
+        },
+        'x-jsf-logic': {
+          validations: {
+            validation_parent: {
+              errorMessage: 'Must be greater than 10!',
+              rule: {
+                '>': [{ var: 'child' }, 10],
+              },
+            },
+            greater_than_child: {
+              errorMessage: 'Must be greater than child',
+              rule: {
+                '>': [{ var: 'other_child' }, { var: 'child' }],
+              },
+            },
+          },
+        },
+        required: ['field_a'],
+      };
+      createHeadlessForm(schema, { strictInputType: false });
+    });
+
     it.todo('Should throw when a var does not exist in an array.');
   });
 
@@ -339,54 +271,10 @@ describe('cross-value validations', () => {
 
   describe('Conditionals', () => {
     it('when field_a > field_b, show field_c', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-          field_b: {
-            type: 'number',
-          },
-          field_c: {
-            type: 'number',
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          validations: {
-            require_c: {
-              rule: {
-                and: [
-                  { '!==': [{ var: 'field_b' }, null] },
-                  { '!==': [{ var: 'field_a' }, null] },
-                  { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-                ],
-              },
-            },
-          },
-          allOf: [
-            {
-              if: {
-                validations: {
-                  require_c: {
-                    const: true,
-                  },
-                },
-              },
-              then: {
-                required: ['field_c'],
-              },
-              else: {
-                properties: {
-                  field_c: false,
-                },
-              },
-            },
-          ],
-        },
-      };
-
-      const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithGreaterThanChecksForThreeFields,
+        { strictInputType: false }
+      );
       expect(fields.find((i) => i.name === 'field_c').isVisible).toEqual(false);
 
       expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
@@ -402,56 +290,10 @@ describe('cross-value validations', () => {
     });
 
     it('A schema with both a `x-jsf-validations` and `properties` check', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-          field_b: {
-            type: 'number',
-          },
-          field_c: {
-            type: 'number',
-          },
-        },
-        required: ['field_a', 'field_b'],
-        allOf: [
-          {
-            if: {
-              'x-jsf-validations': {
-                require_c: {
-                  const: true,
-                },
-              },
-              properties: {
-                field_a: {
-                  const: 10,
-                },
-              },
-            },
-            then: {
-              required: ['field_c'],
-            },
-            else: {
-              properties: {
-                field_c: false,
-              },
-            },
-          },
-        ],
-        'x-jsf-validations': {
-          require_c: {
-            rule: {
-              and: [
-                { '!==': [{ var: 'field_b' }, null] },
-                { '!==': [{ var: 'field_a' }, null] },
-                { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-              ],
-            },
-          },
-        },
-      };
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { handleValidation } = createHeadlessForm(
+        schemaWithPropertiesCheckAndValidationsInAIf,
+        { strictInputType: false }
+      );
       expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
       expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
         field_c: 'Required field',
@@ -460,65 +302,10 @@ describe('cross-value validations', () => {
     });
 
     it('Conditionally apply a validation on a property depending on values', () => {
-      const schema = {
-        properties: {
-          field_a: {
-            type: 'number',
-          },
-          field_b: {
-            type: 'number',
-          },
-          field_c: {
-            type: 'number',
-          },
-        },
-        required: ['field_a', 'field_b'],
-        'x-jsf-logic': {
-          validations: {
-            c_must_be_large: {
-              errorMessage: 'Needs more numbers',
-              rule: {
-                '>': [{ var: 'field_c' }, 200],
-              },
-            },
-            require_c: {
-              rule: {
-                and: [
-                  { '!==': [{ var: 'field_b' }, null] },
-                  { '!==': [{ var: 'field_a' }, null] },
-                  { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-                ],
-              },
-            },
-          },
-          allOf: [
-            {
-              if: {
-                validations: {
-                  require_c: {
-                    const: true,
-                  },
-                },
-              },
-              then: {
-                required: ['field_c'],
-                properties: {
-                  field_c: {
-                    description: 'I am a description!',
-                    'x-jsf-requiredValidations': ['c_must_be_large'],
-                  },
-                },
-              },
-              else: {
-                properties: {
-                  field_c: false,
-                },
-              },
-            },
-          ],
-        },
-      };
-      const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithChecksAndThenValidationsOnThen,
+        { strictInputType: false }
+      );
       const cField = fields.find((i) => i.name === 'field_c');
       expect(cField.isVisible).toEqual(false);
       expect(cField.description).toEqual(undefined);
@@ -956,7 +743,63 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('Validate a field and a nested field together');
+    it.skip('Validate a field and a nested field together', () => {
+      const schema = {
+        properties: {
+          field_a: {
+            type: 'object',
+            'x-jsf-presentation': {
+              inputType: 'fieldset',
+            },
+            properties: {
+              child: {
+                type: 'number',
+                'x-jsf-requiredValidations': ['child_greater_than_10'],
+              },
+              other_child: {
+                type: 'number',
+                'x-jsf-requiredValidations': ['greater_than_child'],
+              },
+            },
+            required: ['child', 'other_child'],
+            'x-jsf-logic': {
+              validations: {
+                child_greater_than_10: {
+                  errorMessage: 'Must be greater than 10!',
+                  rule: {
+                    '>': [{ var: 'child' }, 10],
+                  },
+                },
+                greater_than_child: {
+                  errorMessage: 'Must be greater than child',
+                  rule: {
+                    '>': [{ var: 'other_child' }, { var: 'child' }],
+                  },
+                },
+              },
+            },
+          },
+        },
+        'x-jsf-logic': {
+          validations: {
+            validation_parent: {
+              errorMessage: 'Must be greater than 10!',
+              rule: {
+                '>': [{ var: 'child' }, 10],
+              },
+            },
+            greater_than_child: {
+              errorMessage: 'Must be greater than child',
+              rule: {
+                '>': [{ var: 'other_child' }, { var: 'child' }],
+              },
+            },
+          },
+        },
+        required: ['field_a'],
+      };
+      createHeadlessForm(schema, { strictInputType: false });
+    });
     it.todo('compute a nested field attribute');
   });
 

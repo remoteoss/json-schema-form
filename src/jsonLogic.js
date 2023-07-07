@@ -52,7 +52,7 @@ function createValidationsScope(schema) {
       throw Error(`Missing rule for validation with id of: "${id}".`);
     }
 
-    checkDataIntegrity(validation.rule, id, sampleEmptyObject);
+    checkRuleIntegrity(validation.rule, id, sampleEmptyObject);
 
     validationMap.set(id, validation);
   });
@@ -61,6 +61,8 @@ function createValidationsScope(schema) {
     if (!computedValue.rule) {
       throw Error(`Missing rule for computedValue with id of: "${id}".`);
     }
+
+    checkRuleIntegrity(computedValue.rule, id, sampleEmptyObject);
 
     computedValuesMap.set(id, computedValue);
   });
@@ -191,7 +193,7 @@ function buildSampleEmptyObject(schema) {
   );
 }
 
-function checkDataIntegrity(rule, id, data) {
+function checkRuleIntegrity(rule, id, data) {
   Object.values(rule ?? {}).map((subRule) => {
     subRule.map((item) => {
       const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
@@ -201,7 +203,7 @@ function checkDataIntegrity(rule, id, data) {
           throw Error(`"${item.var}" in rule "${id}" does not exist as a JSON schema property.`);
         }
       } else {
-        checkDataIntegrity(item, id, data);
+        checkRuleIntegrity(item, id, data);
       }
     });
   });
