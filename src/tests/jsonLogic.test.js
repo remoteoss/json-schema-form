@@ -463,8 +463,6 @@ describe('cross-value validations', () => {
       expect(fieldB.value).toEqual(4);
       expect(fieldB.label).toEqual('This is 4!');
     });
-
-    it.todo('Should be able to reference values in errorMessages');
   });
 
   describe('Nested fieldsets', () => {
