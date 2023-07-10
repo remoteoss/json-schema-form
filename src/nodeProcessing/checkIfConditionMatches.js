@@ -69,7 +69,9 @@ export function checkIfMatchesValidationsAndComputedValues(
   parentID
 ) {
   const validationsMatch = Object.entries(node.if.validations ?? {}).every(([name, property]) => {
-    const currentValue = validations.getScope(parentID).evaluateValidationRule(name, formValues);
+    const currentValue = validations
+      .getScope(parentID)
+      .evaluateValidationRuleInCondition(name, formValues);
     if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
     return false;
   });

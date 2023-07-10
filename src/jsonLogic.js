@@ -68,8 +68,11 @@ function createValidationsScope(schema) {
   });
 
   function evaluateComputedValueRule(validation, values) {
-    const answer = jsonLogic.apply(validation.rule, clean(values));
-    return answer;
+    return jsonLogic.apply(validation.rule, clean(values));
+  }
+
+  function evaluateValidation(validation, values) {
+    return jsonLogic.apply(validation.rule, clean(values));
   }
 
   return {
@@ -77,8 +80,14 @@ function createValidationsScope(schema) {
     computedValuesMap,
     evaluateValidationRule(id, values) {
       const validation = validationMap.get(id);
-      const answer = jsonLogic.apply(validation.rule, clean(values));
-      return answer;
+      return evaluateValidation(validation, values);
+    },
+    evaluateValidationRuleInCondition(id, values) {
+      const validation = validationMap.get(id);
+      if (validation === undefined) {
+        throw Error(`"${id}" validation in if condition doesn't exist.`);
+      }
+      return evaluateValidation(validation, values);
     },
     evaluateComputedValueRuleForField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);

@@ -216,6 +216,27 @@ export const ifConditionWithMissingComputedValue = {
   },
 };
 
+export const ifConditionWithMissingValidation = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+  },
+  'x-jsf-logic': {
+    allOf: [
+      {
+        if: {
+          validations: {
+            iDontExist: {
+              const: true,
+            },
+          },
+        },
+      },
+    ],
+  },
+};
+
 export const schemaWithGreaterThanChecksForThreeFields = {
   properties: {
     field_a: {

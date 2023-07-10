@@ -6,6 +6,7 @@ import {
   fieldsetWithAConditionalToApplyExtraValidations,
   fieldsetWithComputedAttributes,
   ifConditionWithMissingComputedValue,
+  ifConditionWithMissingValidation,
   multiRuleSchema,
   nestedFieldsetWithValidationSchema,
   schemaWithChecksAndThenValidationsOnThen,
@@ -162,7 +163,15 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('Error for a missing validation in an if');
+    it('Error for a missing validation in an if', () => {
+      createHeadlessForm(ifConditionWithMissingValidation, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" validation in if condition doesn't exist.`)
+      );
+    });
   });
 
   describe('Relative: <, >, =', () => {
