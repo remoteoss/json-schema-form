@@ -62,16 +62,23 @@ export function checkIfConditionMatches(node, formValues, formFields, validation
   });
 }
 
-export function checkIfMatchesValidationsAndComputedValues(node, formValues, validations) {
+export function checkIfMatchesValidationsAndComputedValues(
+  node,
+  formValues,
+  validations,
+  parentID
+) {
   const validationsMatch = Object.entries(node.if.validations ?? {}).every(([name, property]) => {
-    const currentValue = validations.getScope().evaluateValidationRule(name, formValues);
+    const currentValue = validations.getScope(parentID).evaluateValidationRule(name, formValues);
     if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
     return false;
   });
 
   const computedValuesMatch = Object.entries(node.if.computedValues ?? {}).every(
     ([name, property]) => {
-      const currentValue = validations.getScope().evaluateComputedValueRule(name, formValues);
+      const currentValue = validations
+        .getScope(parentID)
+        .evaluateComputedValueRule(name, formValues);
       if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
       return false;
     }

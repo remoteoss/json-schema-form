@@ -170,7 +170,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues, validations) {
+function updateField(field, requiredFields, node, formValues, validations, config) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -219,7 +219,12 @@ function updateField(field, requiredFields, node, formValues, validations) {
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node, validations);
+    const newFieldValues = field.calculateConditionalProperties(
+      fieldIsRequired,
+      node,
+      validations,
+      config
+    );
     updateValues(newFieldValues);
   }
 
@@ -263,6 +268,7 @@ export function processNode({
   formValues,
   formFields,
   accRequired = new Set(),
+  parentID = 'root',
   validations,
 }) {
   // Set initial required fields
@@ -271,13 +277,15 @@ export function processNode({
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues, validations);
+    updateField(field, requiredFields, node, formValues, validations, { parentID });
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues, validations);
+    updateField(getField(fieldName, formFields), requiredFields, node, formValues, validations, {
+      parentID,
+    });
   });
 
   if (node.if) {
@@ -290,6 +298,7 @@ export function processNode({
         formValues,
         formFields,
         accRequired: requiredFields,
+        parentID,
         validations,
       });
 
@@ -300,6 +309,7 @@ export function processNode({
         formValues,
         formFields,
         accRequired: requiredFields,
+        parentID,
         validations,
       });
       branchRequired.forEach((field) => requiredFields.add(field));
@@ -315,7 +325,7 @@ export function processNode({
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues, validations);
+        updateField(field, requiredFields, node, formValues, validations, { parentID });
       });
     });
   }
@@ -328,6 +338,7 @@ export function processNode({
           formValues,
           formFields,
           accRequired: requiredFields,
+          parentID,
           validations,
         })
       )
@@ -346,6 +357,7 @@ export function processNode({
           formValues: formValues[name] || {},
           formFields: getField(name, formFields).fields,
           validations,
+          parentID: name,
         });
       }
     });
@@ -354,10 +366,10 @@ export function processNode({
   if (node['x-jsf-logic']) {
     const { required: requiredFromLogic } = processJSONLogicNode({
       node: node['x-jsf-logic'],
-      parentNode: node,
       formValues,
       formFields,
       accRequired: requiredFields,
+      parentID,
       validations,
     });
     requiredFromLogic.forEach((field) => requiredFields.add(field));

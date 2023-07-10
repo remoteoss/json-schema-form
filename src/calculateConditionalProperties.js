@@ -69,7 +69,7 @@ function rebuildFieldset(fields, property) {
  * @param {FieldParameters} fieldParams - field parameters
  * @returns {Function}
  */
-export function calculateConditionalProperties(fieldParams, customProperties, validations) {
+export function calculateConditionalProperties(fieldParams, customProperties, validations, config) {
   /**
    * Runs dynamic property calculation on a field based on a conditional that has been calculated
    * @param {Boolean} isRequired - if the field is required
@@ -110,7 +110,7 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
             fields: fieldSetFields,
             required: isRequired,
           },
-          { config: { parentID: fieldParams.name } },
+          config,
           validations
         ),
       };

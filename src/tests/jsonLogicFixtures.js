@@ -723,6 +723,86 @@ export const fieldsetWithComputedAttributes = {
   required: ['field_a'],
 };
 
+export const fieldsetWithAConditionalToApplyExtraValidations = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+        },
+        other_child: {
+          type: 'number',
+        },
+        third_child: {
+          type: 'number',
+        },
+      },
+      required: ['child', 'other_child'],
+      'x-jsf-logic': {
+        validations: {
+          child_is_greater_than_other_child: {
+            rule: {
+              '>': [{ var: 'child' }, { var: 'other_child' }],
+            },
+          },
+          third_child_is_greater_than_other_child: {
+            errorMessage: 'Must be greater than other child.',
+            rule: {
+              '>': [{ var: 'third_child' }, { var: 'other_child' }],
+            },
+          },
+        },
+        computedValues: {
+          child_times_10: {
+            rule: {
+              '*': [{ var: 'child' }, 10],
+            },
+          },
+        },
+        allOf: [
+          {
+            if: {
+              computedValues: {
+                child_times_10: {
+                  const: 100,
+                },
+              },
+              validations: {
+                child_is_greater_than_other_child: {
+                  const: false,
+                },
+              },
+              properties: {
+                child: {
+                  const: 10,
+                },
+              },
+            },
+            then: {
+              required: ['third_child'],
+              properties: {
+                third_child: {
+                  'x-jsf-requiredValidations': ['third_child_is_greater_than_other_child'],
+                },
+              },
+            },
+            else: {
+              properties: {
+                third_child: false,
+              },
+            },
+          },
+        ],
+      },
+    },
+  },
+  required: ['field_a'],
+};
+
 export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
   properties: {
     field_a: {

@@ -3,6 +3,7 @@ import { createHeadlessForm } from '../createHeadlessForm';
 import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
+  fieldsetWithAConditionalToApplyExtraValidations,
   fieldsetWithComputedAttributes,
   multiRuleSchema,
   nestedFieldsetWithValidationSchema,
@@ -368,6 +369,8 @@ describe('cross-value validations', () => {
         undefined
       );
     });
+
+    it.todo('Should handle a enum as well as a const in the if statement?');
   });
 
   describe('Multiple validations', () => {
@@ -411,6 +414,8 @@ describe('cross-value validations', () => {
       expect(fieldB.value).toEqual(4);
       expect(fieldB.label).toEqual('This is 4!');
     });
+
+    it.todo('Should be able to reference values in errorMessages');
   });
 
   describe('Nested fieldsets', () => {
@@ -478,7 +483,43 @@ describe('cross-value validations', () => {
       expect(computedField.value).toEqual(110);
     });
 
-    it.todo('Apply a conditional value in a nested field with a conditional extra validation.');
+    it('Apply a conditional value in a nested field with a conditional extra validation.', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        fieldsetWithAConditionalToApplyExtraValidations,
+        {
+          strictInputType: false,
+        }
+      );
+      const [fieldA] = fields;
+      const [, , thirdChild] = fieldA.fields;
+      expect(thirdChild.isVisible).toEqual(false);
+      expect(thirdChild.required).toEqual(false);
+
+      expect(handleValidation({ field_a: {} }).formErrors).toEqual({
+        field_a: { child: 'Required field', other_child: 'Required field' },
+      });
+      expect(handleValidation({ field_a: { child: 0, other_child: 0 } }).formErrors).toEqual(
+        undefined
+      );
+      expect(handleValidation({ field_a: { child: 10, other_child: 0 } }).formErrors).toEqual(
+        undefined
+      );
+      expect(handleValidation({ field_a: { child: 10, other_child: 20 } }).formErrors).toEqual({
+        field_a: { third_child: 'Required field' },
+      });
+      expect(thirdChild.isVisible).toEqual(true);
+      expect(thirdChild.required).toEqual(true);
+
+      expect(
+        handleValidation({ field_a: { child: 10, other_child: 20, third_child: 10 } }).formErrors
+      ).toEqual({
+        field_a: { third_child: 'Must be greater than other child.' },
+      });
+
+      expect(
+        handleValidation({ field_a: { child: 10, other_child: 20, third_child: 30 } }).formErrors
+      ).toEqual(undefined);
+    });
 
     it.todo('From the top level I can reach into a nested fieldsets value for validations');
   });

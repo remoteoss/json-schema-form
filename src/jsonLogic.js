@@ -137,13 +137,20 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
   };
 }
 
-export function processJSONLogicNode({ node, formFields, formValues, accRequired, validations }) {
+export function processJSONLogicNode({
+  node,
+  formFields,
+  formValues,
+  accRequired,
+  parentID,
+  validations,
+}) {
   const requiredFields = new Set(accRequired);
 
   if (node.allOf) {
     node.allOf
       .map((allOfNode) =>
-        processJSONLogicNode({ node: allOfNode, formValues, formFields, validations })
+        processJSONLogicNode({ node: allOfNode, formValues, formFields, validations, parentID })
       )
       .forEach(({ required: allOfItemRequired }) => {
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
@@ -160,7 +167,8 @@ export function processJSONLogicNode({ node, formFields, formValues, accRequired
     const matchesValidationsAndComputedValues = checkIfMatchesValidationsAndComputedValues(
       node,
       formValues,
-      validations
+      validations,
+      parentID
     );
 
     const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
