@@ -75,8 +75,13 @@ function createValidationsScope(schema) {
       const answer = jsonLogic.apply(validation.rule, clean(values));
       return answer;
     },
-    evaluateComputedValueRule(id, values) {
+    evaluateComputedValueRule(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
+      if (validation === undefined)
+        throw Error(
+          `"${id}" computed property in field "${fieldName}" does not exist as a validation.`
+        );
+
       const answer = jsonLogic.apply(validation.rule, clean(values));
       return answer;
     },
@@ -108,27 +113,35 @@ export function yupSchemaWithCustomJSONLogic({ field, validations, config, id })
     );
 }
 
-function replaceHandlebarsTemplates(string, validations, formValues) {
+function replaceHandlebarsTemplates(string, validations, formValues, parentID, fieldName) {
   return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-    return validations.getScope().evaluateComputedValueRule(key.trim(), formValues);
+    return validations
+      .getScope(parentID)
+      .evaluateComputedValueRule(key.trim(), formValues, fieldName);
   });
 }
 
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
   return ({ validations, formValues }) => {
-    const { computedAttributes } = fieldParams;
+    const { name, computedAttributes } = fieldParams;
     return Object.fromEntries(
       Object.entries(computedAttributes)
         .map(([key, value]) => {
           if (key === 'description')
-            return [key, replaceHandlebarsTemplates(value, validations, formValues)];
+            return [
+              key,
+              replaceHandlebarsTemplates(value, validations, formValues, parentID, name),
+            ];
           if (key === 'title') {
-            return ['label', replaceHandlebarsTemplates(value, validations, formValues)];
+            return [
+              'label',
+              replaceHandlebarsTemplates(value, validations, formValues, parentID, name),
+            ];
           }
           if (key === 'const' || key === 'value')
             return [
               key,
-              validations.getScope(parentID).evaluateComputedValueRule(value, formValues),
+              validations.getScope(parentID).evaluateComputedValueRule(value, formValues, name),
             ];
           return [key, null];
         })

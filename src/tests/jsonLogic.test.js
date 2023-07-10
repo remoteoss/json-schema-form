@@ -8,6 +8,9 @@ import {
   multiRuleSchema,
   nestedFieldsetWithValidationSchema,
   schemaWithChecksAndThenValidationsOnThen,
+  schemaWithComputedAttributeThatDoesntExist,
+  schemaWithComputedAttributeThatDoesntExistDescription,
+  schemaWithComputedAttributeThatDoesntExistTitle,
   schemaWithComputedAttributes,
   schemaWithComputedValueChecksInIf,
   schemaWithDeepVarThatDoesNotExist,
@@ -118,11 +121,38 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('On x-jsf-computedAttributes, error if theres a value that does not exist.');
-    it.todo(
-      'On x-jsf-computedAttributes, error if theres a value that does not exist on a description.'
-    );
-    it.todo('On x-jsf-computedAttributes, error if theres a value that does not exist on a title.');
+    it('On x-jsf-computedAttributes, error if theres a value that does not exist.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExist, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"iDontExist" computed property in field "field_a" does not exist as a validation.')
+      );
+    });
+
+    it('On x-jsf-computedAttributes, error if theres a value that does not exist on a title.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistTitle, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"iDontExist" computed property in field "field_a" does not exist as a validation.')
+      );
+    });
+
+    it('On x-jsf-computedAttributes, error if theres a value that does not exist on a description.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistDescription, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"iDontExist" computed property in field "field_a" does not exist as a validation.')
+      );
+    });
+
+    it.todo('Error for a missing computed value in an if');
+    it.todo('Error for a missing validation in an if');
   });
 
   describe('Relative: <, >, =', () => {
@@ -478,9 +508,11 @@ describe('cross-value validations', () => {
 
       expect(handleValidation({ field_a: { child: 10 } }).formErrors).toEqual(undefined);
       expect(computedField.value).toEqual(100);
+      expect(computedField.description).toEqual('this is 100');
 
       expect(handleValidation({ field_a: { child: 11 } }).formErrors).toEqual(undefined);
       expect(computedField.value).toEqual(110);
+      expect(computedField.description).toEqual('this is 110');
     });
 
     it('Apply a conditional value in a nested field with a conditional extra validation.', () => {
@@ -520,8 +552,6 @@ describe('cross-value validations', () => {
         handleValidation({ field_a: { child: 10, other_child: 20, third_child: 30 } }).formErrors
       ).toEqual(undefined);
     });
-
-    it.todo('From the top level I can reach into a nested fieldsets value for validations');
   });
 
   describe('Arrays', () => {

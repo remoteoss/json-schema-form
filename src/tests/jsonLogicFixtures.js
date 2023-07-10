@@ -162,6 +162,39 @@ export const schemaWithValidationThatDoesNotExistOnProperty = {
   },
 };
 
+export const schemaWithComputedAttributeThatDoesntExist = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-computedAttributes': {
+        value: 'iDontExist',
+      },
+    },
+  },
+};
+
+export const schemaWithComputedAttributeThatDoesntExistTitle = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-computedAttributes': {
+        title: `this doesn't exist {{iDontExist}}`,
+      },
+    },
+  },
+};
+
+export const schemaWithComputedAttributeThatDoesntExistDescription = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-computedAttributes': {
+        description: `this doesn't exist {{iDontExist}}`,
+      },
+    },
+  },
+};
+
 export const schemaWithGreaterThanChecksForThreeFields = {
   properties: {
     field_a: {
@@ -705,6 +738,7 @@ export const fieldsetWithComputedAttributes = {
           readOnly: true,
           'x-jsf-computedAttributes': {
             value: 'child_times_10',
+            description: 'this is {{child_times_10}}',
           },
         },
       },
