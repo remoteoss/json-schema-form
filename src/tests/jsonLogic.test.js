@@ -607,7 +607,7 @@ describe('cross-value validations', () => {
       });
     });
 
+    // FIXME: This doesn't work because conditionals in items are not supported.
     it.todo('Should be able to use conditionals in items');
-    it.todo('A test where in each item, the number must be greater than the previous');
   });
 });

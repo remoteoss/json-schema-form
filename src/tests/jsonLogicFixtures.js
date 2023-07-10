@@ -971,3 +971,48 @@ export const validatingASingleItemInTheArray = {
     },
   },
 };
+
+// FIXME: This doesn't work because conditionals in items are not supported.
+export const conditionalAppliedInAnItem = {
+  properties: {
+    field_array: {
+      type: 'array',
+      items: {
+        properties: {
+          item: {
+            type: 'number',
+          },
+          other_item: {
+            type: 'number',
+          },
+        },
+        required: ['item'],
+        'x-jsf-logic': {
+          validations: {
+            divisible_by_three: {
+              rule: {
+                '===': [{ '%': [{ var: 'item' }, 3] }, 0],
+              },
+            },
+            other_item_divisible_by_three: {
+              errorMessage: 'Must be disivisble_by_three',
+              rule: {
+                '===': [{ '%': [{ var: 'other_item' }, 3] }, 0],
+              },
+            },
+          },
+          allOf: [
+            {
+              if: { validations: { divisible_by_three: { cosnt: true } } },
+              then: {
+                required: ['other_item'],
+                other_item: { 'x-jsf-requiredValidations': ['other_item_divisible_by_three'] },
+              },
+              else: { properties: { other_item: false } },
+            },
+          ],
+        },
+      },
+    },
+  },
+};
