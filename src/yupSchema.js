@@ -285,7 +285,11 @@ export function buildYupSchema(field, config, validations) {
       propertyFields.nthFieldGroup.fields().reduce(
         (schema, groupArrayField) => ({
           ...schema,
-          [groupArrayField.name]: buildYupSchema(groupArrayField, config, validations)(),
+          [groupArrayField.name]: buildYupSchema(
+            groupArrayField,
+            { ...config, parentID: `${propertyFields.nthFieldGroup.name}[]` },
+            validations
+          )(),
         }),
         {}
       )

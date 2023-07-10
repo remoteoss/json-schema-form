@@ -18,8 +18,11 @@ export function createValidationChecker(schema) {
   function createScopes(jsonSchema, key = 'root') {
     scopes.set(key, createValidationsScope(jsonSchema));
     Object.entries(jsonSchema?.properties ?? {})
-      .filter(([, property]) => property.type === 'object')
+      .filter(([, property]) => property.type === 'object' || property.type === 'array')
       .forEach(([key, property]) => {
+        if (property.type === 'array') {
+          createScopes(property.items, `${key}[]`);
+        }
         createScopes(property, key);
       });
   }
@@ -232,13 +235,23 @@ export function processJSONLogicNode({
 }
 
 function buildSampleEmptyObject(schema = {}) {
-  const { properties } = schema;
-  return Object.fromEntries(
-    Object.entries(properties ?? {}).map(([key, value]) => {
-      if (value.type !== 'object') return [key, true];
-      return [key, buildSampleEmptyObject(value)];
-    })
-  );
+  const sample = {};
+  if (typeof schema !== 'object' || !schema.properties) {
+    return schema;
+  }
+
+  for (const key in schema.properties) {
+    if (schema.properties[key].type === 'object') {
+      sample[key] = buildSampleEmptyObject(schema.properties[key]);
+    } else if (schema.properties[key].type === 'array') {
+      const itemSchema = schema.properties[key].items;
+      sample[key] = buildSampleEmptyObject(itemSchema);
+    } else {
+      sample[key] = true;
+    }
+  }
+
+  return sample;
 }
 
 function checkRuleIntegrity(rule, id, data) {
@@ -246,7 +259,7 @@ function checkRuleIntegrity(rule, id, data) {
     subRule.map((item) => {
       const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
       if (isVar) {
-        const exists = jsonLogic.apply({ var: item.var }, data);
+        const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, data);
         if (exists === null) {
           throw Error(`"${item.var}" in rule "${id}" does not exist as a JSON schema property.`);
         }
@@ -255,4 +268,9 @@ function checkRuleIntegrity(rule, id, data) {
       }
     });
   });
+}
+
+function removeIndicesFromPath(path) {
+  const intermediatePath = path.replace(/\.\d+\./g, '.');
+  return intermediatePath.replace(/\.\d+$/, '');
 }

@@ -917,3 +917,57 @@ export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
   },
   required: ['field_a'],
 };
+
+export const simpleArrayValidationSchema = {
+  properties: {
+    field_array: {
+      type: 'array',
+      items: {
+        properties: {
+          array_item: {
+            type: 'number',
+            'x-jsf-requiredValidations': ['divisible_by_two'],
+          },
+        },
+        required: ['array_item'],
+        'x-jsf-logic': {
+          validations: {
+            divisible_by_two: {
+              errorMessage: 'Must be divisible by two',
+              rule: {
+                '===': [{ '%': [{ var: 'array_item' }, 2] }, 0],
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const validatingASingleItemInTheArray = {
+  properties: {
+    field_array: {
+      type: 'array',
+      'x-jsf-requiredValidations': ['second_item_is_divisible_by_four'],
+      items: {
+        properties: {
+          item: {
+            type: 'number',
+          },
+        },
+        required: ['item'],
+      },
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      second_item_is_divisible_by_four: {
+        errorMessage: 'Second item in array must be divisible by 4',
+        rule: {
+          '===': [{ '%': [{ var: 'field_array.1.item' }, 4] }, 0],
+        },
+      },
+    },
+  },
+};

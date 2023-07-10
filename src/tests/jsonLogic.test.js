@@ -28,7 +28,9 @@ import {
   schemaWithTwoRules,
   schemaWithValidationThatDoesNotExistOnProperty,
   schemaWithVarThatDoesNotExist,
+  simpleArrayValidationSchema,
   twoLevelsOfJSONLogicSchema,
+  validatingASingleItemInTheArray,
   validatingTwoNestedFieldsSchema,
 } from './jsonLogicFixtures';
 
@@ -418,8 +420,6 @@ describe('cross-value validations', () => {
         undefined
       );
     });
-
-    it.todo('Should handle a enum as well as a const in the if statement?');
   });
 
   describe('Multiple validations', () => {
@@ -573,9 +573,41 @@ describe('cross-value validations', () => {
     });
   });
 
-  describe('Arrays', () => {
-    it.todo('How will this even work?');
-    it.todo('What do I need to do when i need to validate all items');
-    it.todo('What do i need to do when i need to validate a specific array item');
+  describe('Array validation', () => {
+    it('Should apply the json logic on an individual array item', () => {
+      const { handleValidation } = createHeadlessForm(simpleArrayValidationSchema, {
+        strictInputType: false,
+      });
+      expect(handleValidation({ field_array: [] }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_array: [{}] }).formErrors).toEqual({
+        field_array: [{ array_item: 'Required field' }],
+      });
+      expect(handleValidation({ field_array: [{ array_item: 1 }] }).formErrors).toEqual({
+        field_array: [{ array_item: 'Must be divisible by two' }],
+      });
+      expect(handleValidation({ field_array: [{ array_item: 2 }] }).formErrors).toEqual(undefined);
+      expect(
+        handleValidation({ field_array: [{ array_item: 2 }, { array_item: 1 }] }).formErrors
+      ).toEqual({
+        field_array: [undefined, { array_item: 'Must be divisible by two' }],
+      });
+      expect(
+        handleValidation({ field_array: [{ array_item: 2 }, { array_item: 2 }] }).formErrors
+      ).toEqual(undefined);
+    });
+
+    it('Validating a single item in an array should work', () => {
+      const { handleValidation } = createHeadlessForm(validatingASingleItemInTheArray, {
+        strictInputType: false,
+      });
+      expect(handleValidation({ field_array: [] }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_array: [{ item: 0 }] }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_array: [{ item: 0 }, { item: 3 }] }).formErrors).toEqual({
+        field_array: 'Second item in array must be divisible by 4',
+      });
+    });
+
+    it.todo('Should be able to use conditionals in items');
+    it.todo('A test where in each item, the number must be greater than the previous');
   });
 });
