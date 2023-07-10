@@ -248,7 +248,7 @@ function buildField(fieldParams, config, scopedJsonSchema, validations) {
   );
 
   const caclulateComputedAttributes =
-    fieldParams.computedAttributes && calculateComputedAttributes(fieldParams);
+    fieldParams.computedAttributes && calculateComputedAttributes(fieldParams, config);
 
   const hasCustomValidations =
     !!customProperties &&

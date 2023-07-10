@@ -689,6 +689,40 @@ export const twoLevelsOfJSONLogicSchema = {
   required: ['field_a', 'field_b'],
 };
 
+export const fieldsetWithComputedAttributes = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+        },
+        other_child: {
+          type: 'number',
+          readOnly: true,
+          'x-jsf-computedAttributes': {
+            value: 'child_times_10',
+          },
+        },
+      },
+      required: ['child'],
+      'x-jsf-logic': {
+        computedValues: {
+          child_times_10: {
+            rule: {
+              '*': [{ var: 'child' }, 10],
+            },
+          },
+        },
+      },
+    },
+  },
+  required: ['field_a'],
+};
+
 export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
   properties: {
     field_a: {

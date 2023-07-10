@@ -3,6 +3,7 @@ import { createHeadlessForm } from '../createHeadlessForm';
 import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
+  fieldsetWithComputedAttributes,
   multiRuleSchema,
   nestedFieldsetWithValidationSchema,
   schemaWithChecksAndThenValidationsOnThen,
@@ -55,7 +56,7 @@ describe('cross-value validations', () => {
     });
   });
 
-  describe('Badly written schemas', () => {
+  describe('Incorrectly written schemas', () => {
     beforeEach(() => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
     });
@@ -116,7 +117,11 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('Should throw when a var does not exist in an array.');
+    it.todo('On x-jsf-computedAttributes, error if theres a value that does not exist.');
+    it.todo(
+      'On x-jsf-computedAttributes, error if theres a value that does not exist on a description.'
+    );
+    it.todo('On x-jsf-computedAttributes, error if theres a value that does not exist on a title.');
   });
 
   describe('Relative: <, >, =', () => {
@@ -455,7 +460,27 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('compute a nested field attribute');
+    it('compute a nested field attribute', () => {
+      const { fields, handleValidation } = createHeadlessForm(fieldsetWithComputedAttributes, {
+        strictInputType: false,
+      });
+      const [fieldA] = fields;
+      const [, computedField] = fieldA.fields;
+      expect(handleValidation({}).formErrors).toEqual({
+        field_a: { child: 'Required field' },
+      });
+      expect(computedField.value).toEqual(NaN);
+
+      expect(handleValidation({ field_a: { child: 10 } }).formErrors).toEqual(undefined);
+      expect(computedField.value).toEqual(100);
+
+      expect(handleValidation({ field_a: { child: 11 } }).formErrors).toEqual(undefined);
+      expect(computedField.value).toEqual(110);
+    });
+
+    it.todo('Apply a conditional value in a nested field with a conditional extra validation.');
+
+    it.todo('From the top level I can reach into a nested fieldsets value for validations');
   });
 
   describe('Arrays', () => {

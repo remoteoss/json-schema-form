@@ -114,7 +114,7 @@ function replaceHandlebarsTemplates(string, validations, formValues) {
   });
 }
 
-export function calculateComputedAttributes(fieldParams) {
+export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
   return ({ validations, formValues }) => {
     const { computedAttributes } = fieldParams;
     return Object.fromEntries(
@@ -126,7 +126,10 @@ export function calculateComputedAttributes(fieldParams) {
             return ['label', replaceHandlebarsTemplates(value, validations, formValues)];
           }
           if (key === 'const' || key === 'value')
-            return [key, validations.getScope().evaluateComputedValueRule(value, formValues)];
+            return [
+              key,
+              validations.getScope(parentID).evaluateComputedValueRule(value, formValues),
+            ];
           return [key, null];
         })
         .filter(([, value]) => value !== null)
