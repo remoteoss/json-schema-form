@@ -129,6 +129,30 @@ export const schemaWithDeepVarThatDoesNotExist = {
   required: [],
 };
 
+export const schemaWithDeepVarThatDoesNotExistOnFieldset = {
+  properties: {
+    field_a: {
+      type: 'object',
+      properties: {
+        child: {
+          type: 'number',
+        },
+      },
+      'x-jsf-logic': {
+        validations: {
+          a_greater_than_ten: {
+            errorMessage: 'Must be greater than 10',
+            rule: {
+              '>': [{ var: 'child' }, { '*': [2, { '/': [2, { '*': [1, { var: 'field_a' }] }] }] }],
+            },
+          },
+        },
+      },
+    },
+  },
+  required: [],
+};
+
 export const schemaWithGreaterThanChecksForThreeFields = {
   properties: {
     field_a: {

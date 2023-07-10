@@ -9,6 +9,7 @@ import {
   schemaWithComputedAttributes,
   schemaWithComputedValueChecksInIf,
   schemaWithDeepVarThatDoesNotExist,
+  schemaWithDeepVarThatDoesNotExistOnFieldset,
   schemaWithGreaterThanChecksForThreeFields,
   schemaWithIfStatementWithComputedValuesAndValidationChecks,
   schemaWithMissingRule,
@@ -54,44 +55,49 @@ describe('cross-value validations', () => {
   });
 
   describe('Badly written schemas', () => {
-    it('Should throw when theres a missing rule', () => {
+    beforeEach(() => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
 
+    afterEach(() => {
+      console.error.mockRestore();
+    });
+
+    it('Should throw when theres a missing rule', () => {
       createHeadlessForm(schemaWithMissingRule, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('Missing rule for validation with id of: "a_greater_than_ten".')
       );
-      console.error.mockRestore();
     });
 
     it('Should throw when a var does not exist in a rule.', () => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-
       createHeadlessForm(schemaWithVarThatDoesNotExist, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
       );
-      console.error.mockRestore();
     });
 
     it('Should throw when a var does not exist in a deeply nested rule', () => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
       createHeadlessForm(schemaWithDeepVarThatDoesNotExist, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
       );
-      console.error.mockRestore();
     });
 
-    it.todo('Should throw when a var does not exist in a fieldset.');
+    it('Should throw when a var does not exist in a fieldset.', () => {
+      createHeadlessForm(schemaWithDeepVarThatDoesNotExistOnFieldset, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_a" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
 
     it.todo('On a property, it should throw an error for a requiredValidation that does not exist');
 
     it('A top level logic keyword will not be able to reference fieldset properties', () => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
       createHeadlessForm(schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset, {
         strictInputType: false,
       });
@@ -99,7 +105,6 @@ describe('cross-value validations', () => {
         'JSON Schema invalid!',
         Error('"child" in rule "validation_parent" does not exist as a JSON schema property.')
       );
-      console.error.mockRestore();
     });
 
     it.todo('Should throw when a var does not exist in an array.');
