@@ -112,6 +112,7 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {},
       fieldProperties,
       {
         customProperties: get(config, `customProperties.${name}`, {}),
+        parentID: name,
       },
       validations
     );

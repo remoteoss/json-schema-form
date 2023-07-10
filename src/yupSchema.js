@@ -272,7 +272,7 @@ export function buildYupSchema(field, config, validations) {
             ...fieldSetfield,
             inputType: fieldSetfield.type,
           },
-          config,
+          { ...config, parentID: field.name },
           validations
         )();
       }

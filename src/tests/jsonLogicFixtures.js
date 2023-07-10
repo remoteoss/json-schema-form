@@ -153,6 +153,15 @@ export const schemaWithDeepVarThatDoesNotExistOnFieldset = {
   required: [],
 };
 
+export const schemaWithValidationThatDoesNotExistOnProperty = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-requiredValidations': ['iDontExist'],
+    },
+  },
+};
+
 export const schemaWithGreaterThanChecksForThreeFields = {
   properties: {
     field_a: {

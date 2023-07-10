@@ -19,6 +19,7 @@ import {
   schemaWithPropertiesCheckAndValidationsInAIf,
   schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
+  schemaWithValidationThatDoesNotExistOnProperty,
   schemaWithVarThatDoesNotExist,
   twoLevelsOfJSONLogicSchema,
   validatingTwoNestedFieldsSchema,
@@ -95,7 +96,15 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('On a property, it should throw an error for a requiredValidation that does not exist');
+    it('On a property, it should throw an error for a requiredValidation that does not exist', () => {
+      createHeadlessForm(schemaWithValidationThatDoesNotExistOnProperty, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`Validation "iDontExist" required for "field_a" doesn't exist.`)
+      );
+    });
 
     it('A top level logic keyword will not be able to reference fieldset properties', () => {
       createHeadlessForm(schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset, {

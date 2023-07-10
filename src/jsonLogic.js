@@ -93,6 +93,10 @@ export function yupSchemaWithCustomJSONLogic({ field, validations, config, id })
   const { parentID = 'root' } = config;
   const validation = validations.getScope(parentID).validationMap.get(id);
 
+  if (validation === undefined) {
+    throw Error(`Validation "${id}" required for "${field.name}" doesn't exist.`);
+  }
+
   return (yupSchema) =>
     yupSchema.test(
       `${field.name}-validation-${id}`,
