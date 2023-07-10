@@ -83,9 +83,7 @@ function createValidationsScope(schema) {
     evaluateComputedValueRuleForField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
       if (validation === undefined)
-        throw Error(
-          `"${id}" computed property in field "${fieldName}" does not exist as a validation.`
-        );
+        throw Error(`"${id}" computedValue in field "${fieldName}" doesn't exist.`);
 
       return evaluateComputedValueRule(validation, values);
     },

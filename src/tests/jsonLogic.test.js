@@ -128,7 +128,7 @@ describe('cross-value validations', () => {
       });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error('"iDontExist" computed property in field "field_a" does not exist as a validation.')
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
       );
     });
 
@@ -138,7 +138,7 @@ describe('cross-value validations', () => {
       });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error('"iDontExist" computed property in field "field_a" does not exist as a validation.')
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
       );
     });
 
@@ -148,7 +148,7 @@ describe('cross-value validations', () => {
       });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error('"iDontExist" computed property in field "field_a" does not exist as a validation.')
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
       );
     });
 
