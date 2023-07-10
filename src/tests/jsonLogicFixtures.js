@@ -195,6 +195,27 @@ export const schemaWithComputedAttributeThatDoesntExistDescription = {
   },
 };
 
+export const ifConditionWithMissingComputedValue = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+  },
+  'x-jsf-logic': {
+    allOf: [
+      {
+        if: {
+          computedValues: {
+            iDontExist: {
+              const: 10,
+            },
+          },
+        },
+      },
+    ],
+  },
+};
+
 export const schemaWithGreaterThanChecksForThreeFields = {
   properties: {
     field_a: {

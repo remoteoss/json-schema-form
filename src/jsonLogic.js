@@ -67,6 +67,11 @@ function createValidationsScope(schema) {
     computedValuesMap.set(id, computedValue);
   });
 
+  function evaluateComputedValueRule(validation, values) {
+    const answer = jsonLogic.apply(validation.rule, clean(values));
+    return answer;
+  }
+
   return {
     validationMap,
     computedValuesMap,
@@ -75,15 +80,21 @@ function createValidationsScope(schema) {
       const answer = jsonLogic.apply(validation.rule, clean(values));
       return answer;
     },
-    evaluateComputedValueRule(id, values, fieldName) {
+    evaluateComputedValueRuleForField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
       if (validation === undefined)
         throw Error(
           `"${id}" computed property in field "${fieldName}" does not exist as a validation.`
         );
 
-      const answer = jsonLogic.apply(validation.rule, clean(values));
-      return answer;
+      return evaluateComputedValueRule(validation, values);
+    },
+    evaluateComputedValueRuleInCondition(id, values) {
+      const validation = computedValuesMap.get(id);
+      if (validation === undefined)
+        throw Error(`"${id}" computedValue in if condition doesn't exist.`);
+
+      return evaluateComputedValueRule(validation, values);
     },
   };
 }
@@ -117,7 +128,7 @@ function replaceHandlebarsTemplates(string, validations, formValues, parentID, f
   return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
     return validations
       .getScope(parentID)
-      .evaluateComputedValueRule(key.trim(), formValues, fieldName);
+      .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
   });
 }
 
@@ -141,7 +152,9 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
           if (key === 'const' || key === 'value')
             return [
               key,
-              validations.getScope(parentID).evaluateComputedValueRule(value, formValues, name),
+              validations
+                .getScope(parentID)
+                .evaluateComputedValueRuleForField(value, formValues, name),
             ];
           return [key, null];
         })

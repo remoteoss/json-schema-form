@@ -78,7 +78,7 @@ export function checkIfMatchesValidationsAndComputedValues(
     ([name, property]) => {
       const currentValue = validations
         .getScope(parentID)
-        .evaluateComputedValueRule(name, formValues);
+        .evaluateComputedValueRuleInCondition(name, formValues);
       if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
       return false;
     }

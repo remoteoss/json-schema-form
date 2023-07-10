@@ -5,6 +5,7 @@ import {
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   fieldsetWithAConditionalToApplyExtraValidations,
   fieldsetWithComputedAttributes,
+  ifConditionWithMissingComputedValue,
   multiRuleSchema,
   nestedFieldsetWithValidationSchema,
   schemaWithChecksAndThenValidationsOnThen,
@@ -151,7 +152,16 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('Error for a missing computed value in an if');
+    it('Error for a missing computed value in an if', () => {
+      createHeadlessForm(ifConditionWithMissingComputedValue, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" computedValue in if condition doesn't exist.`)
+      );
+    });
+
     it.todo('Error for a missing validation in an if');
   });
 
