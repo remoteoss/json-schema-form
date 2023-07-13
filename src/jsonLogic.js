@@ -1,0 +1,294 @@
+import jsonLogic from 'json-logic-js';
+
+import { processNode } from './helpers';
+import {
+  checkIfConditionMatches,
+  checkIfMatchesValidationsAndComputedValues,
+} from './nodeProcessing/checkIfConditionMatches';
+
+/**
+ * Parses the JSON schema to extract the advanced validation logic and returns a set of functionality to check the current status of said rules.
+ * @param {Object} schema - JSON schema node
+ * @param {Object} initialValues - form state
+ * @returns {Object}
+ */
+export function createValidationChecker(schema) {
+  const scopes = new Map();
+
+  function createScopes(jsonSchema, key = 'root') {
+    scopes.set(key, createValidationsScope(jsonSchema));
+    Object.entries(jsonSchema?.properties ?? {})
+      .filter(([, property]) => property.type === 'object' || property.type === 'array')
+      .forEach(([key, property]) => {
+        if (property.type === 'array') {
+          createScopes(property.items, `${key}[]`);
+        }
+        createScopes(property, key);
+      });
+  }
+
+  createScopes(schema);
+
+  return {
+    scopes,
+    getScope(name = 'root') {
+      return scopes.get(name);
+    },
+  };
+}
+
+function createValidationsScope(schema) {
+  const validationMap = new Map();
+  const computedValuesMap = new Map();
+
+  const logic = schema?.['x-jsf-logic'] ?? {
+    validations: {},
+    computedValues: {},
+  };
+
+  const validations = Object.entries(logic.validations ?? {});
+  const computedValues = Object.entries(logic.computedValues ?? {});
+  const sampleEmptyObject = buildSampleEmptyObject(schema);
+
+  validations.forEach(([id, validation]) => {
+    if (!validation.rule) {
+      throw Error(`Missing rule for validation with id of: "${id}".`);
+    }
+
+    checkRuleIntegrity(validation.rule, id, sampleEmptyObject);
+
+    validationMap.set(id, validation);
+  });
+
+  computedValues.forEach(([id, computedValue]) => {
+    if (!computedValue.rule) {
+      throw Error(`Missing rule for computedValue with id of: "${id}".`);
+    }
+
+    checkRuleIntegrity(computedValue.rule, id, sampleEmptyObject);
+
+    computedValuesMap.set(id, computedValue);
+  });
+
+  function evaluateComputedValueRule(validation, values) {
+    return jsonLogic.apply(validation.rule, clean(values));
+  }
+
+  function evaluateValidation(validation, values) {
+    return jsonLogic.apply(validation.rule, clean(values));
+  }
+
+  return {
+    validationMap,
+    computedValuesMap,
+    evaluateValidationRule(id, values) {
+      const validation = validationMap.get(id);
+      return evaluateValidation(validation, values);
+    },
+    evaluateValidationRuleInCondition(id, values) {
+      const validation = validationMap.get(id);
+      if (validation === undefined) {
+        throw Error(`"${id}" validation in if condition doesn't exist.`);
+      }
+      return evaluateValidation(validation, values);
+    },
+    evaluateComputedValueRuleForField(id, values, fieldName) {
+      const validation = computedValuesMap.get(id);
+      if (validation === undefined)
+        throw Error(`"${id}" computedValue in field "${fieldName}" doesn't exist.`);
+
+      return evaluateComputedValueRule(validation, values);
+    },
+    evaluateComputedValueRuleInCondition(id, values) {
+      const validation = computedValuesMap.get(id);
+      if (validation === undefined)
+        throw Error(`"${id}" computedValue in if condition doesn't exist.`);
+
+      return evaluateComputedValueRule(validation, values);
+    },
+  };
+}
+
+function clean(values = {}) {
+  return Object.entries(values).reduce((prev, [key, value]) => {
+    return { ...prev, [key]: value === undefined ? null : value };
+  }, {});
+}
+
+export function yupSchemaWithCustomJSONLogic({ field, validations, config, id }) {
+  const { parentID = 'root' } = config;
+  const validation = validations.getScope(parentID).validationMap.get(id);
+
+  if (validation === undefined) {
+    throw Error(`Validation "${id}" required for "${field.name}" doesn't exist.`);
+  }
+
+  return (yupSchema) =>
+    yupSchema.test(
+      `${field.name}-validation-${id}`,
+      validation?.errorMessage ?? 'This field is invalid.',
+      (value, { parent }) => {
+        if (value === undefined && !field.required) return true;
+        return jsonLogic.apply(validation.rule, parent);
+      }
+    );
+}
+
+function replaceHandlebarsTemplates(string, validations, formValues, parentID, fieldName) {
+  return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+    return validations
+      .getScope(parentID)
+      .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+  });
+}
+
+export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
+  return ({ validations, formValues }) => {
+    const { name, computedAttributes } = fieldParams;
+    return Object.fromEntries(
+      Object.entries(computedAttributes)
+        .map(handleComputedAttribute(validations, formValues, parentID, name))
+        .filter(([, value]) => value !== null)
+    );
+  };
+}
+
+function handleComputedAttribute(validations, formValues, parentID, name) {
+  return ([key, value]) => {
+    if (key === 'description')
+      return [key, replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+
+    if (key === 'title') {
+      return ['label', replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+    }
+
+    if (key === 'const' || key === 'value')
+      return [
+        key,
+        validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
+      ];
+
+    if (key === 'x-jsf-errorMessage') {
+      return [
+        'errorMessage',
+        handleComputedErrorMessages(value, formValues, parentID, validations, name),
+      ];
+    }
+
+    return [
+      key,
+      validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
+    ];
+  };
+}
+
+function handleComputedErrorMessages(values, formValues, parentID, validations, name) {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => {
+      return [key, replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+    })
+  );
+}
+
+export function processJSONLogicNode({
+  node,
+  formFields,
+  formValues,
+  accRequired,
+  parentID,
+  validations,
+}) {
+  const requiredFields = new Set(accRequired);
+
+  if (node.allOf) {
+    node.allOf
+      .map((allOfNode) =>
+        processJSONLogicNode({ node: allOfNode, formValues, formFields, validations, parentID })
+      )
+      .forEach(({ required: allOfItemRequired }) => {
+        allOfItemRequired.forEach(requiredFields.add, requiredFields);
+      });
+  }
+
+  if (node.if) {
+    const matchesPropertyCondition = checkIfConditionMatches(
+      node,
+      formValues,
+      formFields,
+      validations
+    );
+    const matchesValidationsAndComputedValues = checkIfMatchesValidationsAndComputedValues(
+      node,
+      formValues,
+      validations,
+      parentID
+    );
+
+    const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
+
+    if (isConditionMatch && node.then) {
+      const { required: branchRequired } = processNode({
+        node: node.then,
+        formValues,
+        formFields,
+        accRequired,
+        validations,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+    if (!isConditionMatch && node.else) {
+      const { required: branchRequired } = processNode({
+        node: node.else,
+        formValues,
+        formFields,
+        accRequired: requiredFields,
+        validations,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+  }
+
+  return { required: requiredFields };
+}
+
+function buildSampleEmptyObject(schema = {}) {
+  const sample = {};
+  if (typeof schema !== 'object' || !schema.properties) {
+    return schema;
+  }
+
+  for (const key in schema.properties) {
+    if (schema.properties[key].type === 'object') {
+      sample[key] = buildSampleEmptyObject(schema.properties[key]);
+    } else if (schema.properties[key].type === 'array') {
+      const itemSchema = schema.properties[key].items;
+      sample[key] = buildSampleEmptyObject(itemSchema);
+    } else {
+      sample[key] = true;
+    }
+  }
+
+  return sample;
+}
+
+function checkRuleIntegrity(rule, id, data) {
+  Object.values(rule ?? {}).map((subRule) => {
+    if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
+    subRule.map((item) => {
+      const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
+      if (isVar) {
+        const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, data);
+        if (exists === null) {
+          throw Error(`"${item.var}" in rule "${id}" does not exist as a JSON schema property.`);
+        }
+      } else {
+        checkRuleIntegrity(item, id, data);
+      }
+    });
+  });
+}
+
+function removeIndicesFromPath(path) {
+  const intermediatePath = path.replace(/\.\d+\./g, '.');
+  return intermediatePath.replace(/\.\d+$/, '');
+}
