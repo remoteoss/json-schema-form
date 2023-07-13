@@ -147,30 +147,47 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
     const { name, computedAttributes } = fieldParams;
     return Object.fromEntries(
       Object.entries(computedAttributes)
-        .map(([key, value]) => {
-          if (key === 'description')
-            return [
-              key,
-              replaceHandlebarsTemplates(value, validations, formValues, parentID, name),
-            ];
-          if (key === 'title') {
-            return [
-              'label',
-              replaceHandlebarsTemplates(value, validations, formValues, parentID, name),
-            ];
-          }
-          if (key === 'const' || key === 'value')
-            return [
-              key,
-              validations
-                .getScope(parentID)
-                .evaluateComputedValueRuleForField(value, formValues, name),
-            ];
-          return [key, null];
-        })
+        .map(handleComputedAttribute(validations, formValues, parentID, name))
         .filter(([, value]) => value !== null)
     );
   };
+}
+
+function handleComputedAttribute(validations, formValues, parentID, name) {
+  return ([key, value]) => {
+    if (key === 'description')
+      return [key, replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+
+    if (key === 'title') {
+      return ['label', replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+    }
+
+    if (key === 'const' || key === 'value')
+      return [
+        key,
+        validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
+      ];
+
+    if (key === 'x-jsf-errorMessage') {
+      return [
+        'errorMessage',
+        handleComputedErrorMessages(value, formValues, parentID, validations, name),
+      ];
+    }
+
+    return [
+      key,
+      validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
+    ];
+  };
+}
+
+function handleComputedErrorMessages(values, formValues, parentID, validations, name) {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => {
+      return [key, replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+    })
+  );
 }
 
 export function processJSONLogicNode({

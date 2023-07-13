@@ -223,7 +223,8 @@ function updateField(field, requiredFields, node, formValues, validations, confi
       fieldIsRequired,
       node,
       validations,
-      config
+      config,
+      formValues
     );
     updateValues(newFieldValues);
   }

@@ -1,6 +1,7 @@
 import { createHeadlessForm } from '../createHeadlessForm';
 
 import {
+  aConditionallyAppliedComputedAttribute,
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   fieldsetWithAConditionalToApplyExtraValidations,
@@ -468,6 +469,17 @@ describe('cross-value validations', () => {
       expect(fieldB.value).toEqual(4);
       expect(fieldB.label).toEqual('This is 4!');
     });
+
+    it('computedAttribute test that minimum, errorMessages.minimum is working', () => {
+      const { handleValidation } = createHeadlessForm(aConditionallyAppliedComputedAttribute, {
+        strictInputType: false,
+      });
+      expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual({
+        field_b: 'use 10 or more',
+      });
+    });
+
+    it.todo('computedAttribute test that maximum, errorMessages.maximum is working');
   });
 
   describe('Nested fieldsets', () => {

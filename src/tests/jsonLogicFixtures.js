@@ -1016,3 +1016,40 @@ export const conditionalAppliedInAnItem = {
     },
   },
 };
+
+export const aConditionallyAppliedComputedAttribute = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+  },
+  allOf: [
+    {
+      if: { properties: { field_a: { const: 20 } } },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-computedAttributes': {
+              minimum: 'a_divided_by_two',
+              'x-jsf-errorMessage': {
+                minimum: 'use {{a_divided_by_two}} or more',
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
+  'x-jsf-logic': {
+    computedValues: {
+      a_divided_by_two: {
+        rule: {
+          '/': [{ var: 'field_a' }, 2],
+        },
+      },
+    },
+  },
+};

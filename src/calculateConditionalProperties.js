@@ -4,6 +4,7 @@ import omit from 'lodash/omit';
 import { extractParametersFromNode } from './helpers';
 import { supportedTypes } from './internals/fields';
 import { getFieldDescription, pickXKey } from './internals/helpers';
+import { calculateComputedAttributes } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
 /**
  * @typedef {import('./createHeadlessForm').FieldParameters} FieldParameters
@@ -76,7 +77,7 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
    * @param {Object} conditionBranch - condition branch being applied
    * @returns {Object} updated field parameters
    */
-  return (isRequired, conditionBranch) => {
+  return (isRequired, conditionBranch, __, _, formValues) => {
     // Check if the current field is conditionally declared in the schema
 
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
@@ -98,6 +99,11 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
         newFieldParams.fields = fieldSetFields;
       }
 
+      const { computedAttributes, ...restNewFieldParams } = newFieldParams;
+      const caclulatedComputedAttributes = computedAttributes
+        ? calculateComputedAttributes(newFieldParams, config)({ validations, formValues })
+        : {};
+
       const base = {
         isVisible: true,
         required: isRequired,
@@ -105,7 +111,8 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
         schema: buildYupSchema(
           {
             ...fieldParams,
-            ...newFieldParams,
+            ...restNewFieldParams,
+            ...caclulatedComputedAttributes,
             // If there are inner fields (case of fieldset) they need to be updated based on the condition
             fields: fieldSetFields,
             required: isRequired,
