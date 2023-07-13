@@ -256,6 +256,7 @@ function buildSampleEmptyObject(schema = {}) {
 
 function checkRuleIntegrity(rule, id, data) {
   Object.values(rule ?? {}).map((subRule) => {
+    if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
     subRule.map((item) => {
       const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
       if (isVar) {
