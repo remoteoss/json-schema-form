@@ -1,7 +1,8 @@
 import { createHeadlessForm } from '../createHeadlessForm';
 
 import {
-  aConditionallyAppliedComputedAttribute,
+  aConditionallyAppliedComputedAttributeMinimum,
+  aConditionallyAppliedComputedAttributeValue,
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   fieldsetWithAConditionalToApplyExtraValidations,
@@ -471,15 +472,35 @@ describe('cross-value validations', () => {
     });
 
     it('computedAttribute test that minimum, errorMessages.minimum is working', () => {
-      const { handleValidation } = createHeadlessForm(aConditionallyAppliedComputedAttribute, {
-        strictInputType: false,
-      });
+      const { handleValidation } = createHeadlessForm(
+        aConditionallyAppliedComputedAttributeMinimum,
+        {
+          strictInputType: false,
+        }
+      );
       expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual({
         field_b: 'use 10 or more',
       });
     });
 
     it.todo('computedAttribute test that maximum, errorMessages.maximum is working');
+
+    it('Apply a conditional computed Attrbute value', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        aConditionallyAppliedComputedAttributeValue,
+        {
+          strictInputType: false,
+        }
+      );
+
+      //TODO: this should fail because we have a const: 10, it should have an error from yup saying only 10 is accepted.
+      expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual();
+
+      const [, fieldB] = fields;
+      expect(fieldB.value).toEqual(10);
+      expect(handleValidation({ field_a: 10, field_b: 1 }).formErrors).toEqual();
+      expect(fieldB.value).toEqual(undefined);
+    });
   });
 
   describe('Nested fieldsets', () => {
