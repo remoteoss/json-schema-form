@@ -46,12 +46,20 @@ const compareDates = (d1, d2) => {
 };
 
 const validateMinDate = (value, minDate) => {
+  if (!value) {
+    return true;
+  }
+
   const compare = compareDates(value, minDate);
 
   return compare === 'GREATER' || compare === 'EQUAL' ? true : false;
 };
 
 const validateMaxDate = (value, minDate) => {
+  if (!value) {
+    return true;
+  }
+
   const compare = compareDates(value, minDate);
 
   return compare === 'LESSER' || compare === 'EQUAL' ? true : false;
