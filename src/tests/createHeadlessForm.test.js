@@ -1035,6 +1035,62 @@ describe('createHeadlessForm', () => {
       );
     });
 
+    it('support "date" field type with a minDate', () => {
+      const result = createHeadlessForm(schemaInputTypeDate);
+
+      expect(result).toMatchObject({
+        fields: [
+          {
+            label: 'Birthdate',
+            name: 'birthdate',
+            required: true,
+            schema: expect.any(Object),
+            type: 'date',
+            maxLength: 10,
+            minDate: '1922-03-01',
+            maxDate: '2022-03-01',
+          },
+        ],
+      });
+
+      const fieldValidator = result.fields[0].schema;
+      const todayDateHint = new Date().toISOString().substring(0, 10);
+      expect(fieldValidator.isValidSync('1922-02-01')).toBe(false);
+      expect(fieldValidator.isValidSync('1922-03-01')).toBe(true);
+      expect(fieldValidator.isValidSync('2021-03-01')).toBe(true);
+      expect(() => fieldValidator.validateSync('')).toThrowError(
+        `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`
+      );
+    });
+
+    it('support "date" field type with a maxDate', () => {
+      const result = createHeadlessForm(schemaInputTypeDate);
+
+      expect(result).toMatchObject({
+        fields: [
+          {
+            label: 'Birthdate',
+            name: 'birthdate',
+            required: true,
+            schema: expect.any(Object),
+            type: 'date',
+            maxLength: 10,
+            minDate: '1922-03-01',
+            maxDate: '2022-03-01',
+          },
+        ],
+      });
+
+      const fieldValidator = result.fields[0].schema;
+      const todayDateHint = new Date().toISOString().substring(0, 10);
+      expect(fieldValidator.isValidSync('2022-02-01')).toBe(true);
+      expect(fieldValidator.isValidSync('2022-03-01')).toBe(true);
+      expect(fieldValidator.isValidSync('2022-04-01')).toBe(false);
+      expect(() => fieldValidator.validateSync('')).toThrowError(
+        `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`
+      );
+    });
+
     it('supports "file" field type', () => {
       const result = createHeadlessForm(
         JSONSchemaBuilder()
