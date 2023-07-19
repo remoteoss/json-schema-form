@@ -108,6 +108,7 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
         isVisible: true,
         required: isRequired,
         ...(presentation?.inputType && { type: presentation.inputType }),
+        ...caclulatedComputedAttributes,
         ...(caclulatedComputedAttributes.value
           ? { value: caclulatedComputedAttributes.value }
           : { value: undefined }),

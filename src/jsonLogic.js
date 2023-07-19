@@ -6,6 +6,12 @@ import {
   checkIfMatchesValidationsAndComputedValues,
 } from './nodeProcessing/checkIfConditionMatches';
 
+jsonLogic.add_operation('Number.toFixed', (a, b) => {
+  if (typeof a === 'number') return a.toFixed(b);
+  else if (typeof a === 'string') return parseFloat(a).toFixed(b);
+  else return a;
+});
+
 /**
  * Parses the JSON schema to extract the advanced validation logic and returns a set of functionality to check the current status of said rules.
  * @param {Object} schema - JSON schema node
@@ -172,6 +178,13 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
       return [
         'errorMessage',
         handleComputedErrorMessages(value, formValues, parentID, validations, name),
+      ];
+    }
+
+    if (key === 'x-jsf-presentation' && value.statement) {
+      return [
+        'statement',
+        handleComputedErrorMessages(value.statement, formValues, parentID, validations, name),
       ];
     }
 
