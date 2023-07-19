@@ -1054,10 +1054,8 @@ describe('createHeadlessForm', () => {
         birthdate: 'Required field',
       });
 
-      const todayDateHint = new Date().toISOString().substring(0, 10);
-
       expect(validateForm({ birthdate: '' })).toEqual({
-        birthdate: `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`,
+        birthdate: `Required field`,
       });
 
       expect(validateForm({ birthdate: '1922-02-01' })).toEqual({
@@ -1084,10 +1082,8 @@ describe('createHeadlessForm', () => {
         maxDate: '2022-03-01',
       });
 
-      const todayDateHint = new Date().toISOString().substring(0, 10);
-
       expect(validateForm({ birthdate: '' })).toEqual({
-        birthdate: `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`,
+        birthdate: `Required field`,
       });
 
       expect(validateForm({ birthdate: '2022-02-01' })).toBeUndefined();
