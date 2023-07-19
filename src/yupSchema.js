@@ -46,20 +46,12 @@ const compareDates = (d1, d2) => {
 };
 
 const validateMinDate = (value, minDate) => {
-  if (!value) {
-    return true;
-  }
-
   const compare = compareDates(value, minDate);
 
   return compare === 'GREATER' || compare === 'EQUAL' ? true : false;
 };
 
 const validateMaxDate = (value, minDate) => {
-  if (!value) {
-    return true;
-  }
-
   const compare = compareDates(value, minDate);
 
   return compare === 'LESSER' || compare === 'EQUAL' ? true : false;
@@ -107,54 +99,27 @@ const yupSchemas = {
         return `The option ${JSON.stringify(value)} is not valid.`;
       }),
   date: ({ minDate, maxDate }) => {
-    if (minDate && maxDate) {
-      return string()
-        .nullable()
-        .trim()
-        .matches(
-          /(?:\d){4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9]|3[0-1])/,
-          `Must be a valid date in ${DEFAULT_DATE_FORMAT.toLocaleLowerCase()} format. e.g. ${todayDateHint}`
-        )
-        .test('minDate', `The date must be ${minDate} or after`, (value) =>
-          validateMinDate(value, minDate)
-        )
-        .test('maxDate', `The date must be ${maxDate} or before`, (value) =>
-          validateMaxDate(value, maxDate)
-        );
-    }
-    if (minDate) {
-      return string()
-        .nullable()
-        .trim()
-        .matches(
-          /(?:\d){4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9]|3[0-1])/,
-          `Must be a valid date in ${DEFAULT_DATE_FORMAT.toLocaleLowerCase()} format. e.g. ${todayDateHint}`
-        )
-        .test('minDate', `The date must be ${minDate} or after`, (value) =>
-          validateMinDate(value, minDate)
-        );
-    }
-
-    if (maxDate) {
-      return string()
-        .nullable()
-        .trim()
-        .matches(
-          /(?:\d){4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9]|3[0-1])/,
-          `Must be a valid date in ${DEFAULT_DATE_FORMAT.toLocaleLowerCase()} format. e.g. ${todayDateHint}`
-        )
-        .test('maxDate', `The date must be ${maxDate} or before`, (value) =>
-          validateMaxDate(value, maxDate)
-        );
-    }
-
-    return string()
+    let dateString = string()
       .nullable()
       .trim()
       .matches(
         /(?:\d){4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9]|3[0-1])/,
         `Must be a valid date in ${DEFAULT_DATE_FORMAT.toLocaleLowerCase()} format. e.g. ${todayDateHint}`
       );
+
+    if (minDate) {
+      dateString = dateString.test('minDate', `The date must be ${minDate} or after.`, (value) =>
+        validateMinDate(value, minDate)
+      );
+    }
+
+    if (maxDate) {
+      dateString = dateString.test('maxDate', `The date must be ${maxDate} or before.`, (value) =>
+        validateMaxDate(value, maxDate)
+      );
+    }
+
+    return dateString;
   },
 
   number: number().typeError('The value must be a number').nullable(),

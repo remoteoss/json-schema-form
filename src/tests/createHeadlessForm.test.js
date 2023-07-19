@@ -1036,59 +1036,67 @@ describe('createHeadlessForm', () => {
     });
 
     it('support "date" field type with a minDate', () => {
-      const result = createHeadlessForm(schemaInputTypeDate);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeDate);
 
-      expect(result).toMatchObject({
-        fields: [
-          {
-            label: 'Birthdate',
-            name: 'birthdate',
-            required: true,
-            schema: expect.any(Object),
-            type: 'date',
-            maxLength: 10,
-            minDate: '1922-03-01',
-            maxDate: '2022-03-01',
-          },
-        ],
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields[0]).toMatchObject({
+        label: 'Birthdate',
+        name: 'birthdate',
+        required: true,
+        schema: expect.any(Object),
+        type: 'date',
+        maxLength: 10,
+        minDate: '1922-03-01',
+        maxDate: '2022-03-01',
       });
 
-      const fieldValidator = result.fields[0].schema;
+      expect(validateForm({})).toEqual({
+        birthdate: 'Required field',
+      });
+
       const todayDateHint = new Date().toISOString().substring(0, 10);
-      expect(fieldValidator.isValidSync('1922-02-01')).toBe(false);
-      expect(fieldValidator.isValidSync('1922-03-01')).toBe(true);
-      expect(fieldValidator.isValidSync('2021-03-01')).toBe(true);
-      expect(() => fieldValidator.validateSync('')).toThrowError(
-        `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`
-      );
+
+      expect(validateForm({ birthdate: '' })).toEqual({
+        birthdate: `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`,
+      });
+
+      expect(validateForm({ birthdate: '1922-02-01' })).toEqual({
+        birthdate: 'The date must be 1922-03-01 or after.',
+      });
+
+      expect(validateForm({ birthdate: '1922-03-01' })).toEqual(undefined);
+
+      expect(validateForm({ birthdate: '2021-03-01' })).toEqual(undefined);
     });
 
     it('support "date" field type with a maxDate', () => {
-      const result = createHeadlessForm(schemaInputTypeDate);
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeDate);
 
-      expect(result).toMatchObject({
-        fields: [
-          {
-            label: 'Birthdate',
-            name: 'birthdate',
-            required: true,
-            schema: expect.any(Object),
-            type: 'date',
-            maxLength: 10,
-            minDate: '1922-03-01',
-            maxDate: '2022-03-01',
-          },
-        ],
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields[0]).toMatchObject({
+        label: 'Birthdate',
+        name: 'birthdate',
+        required: true,
+        schema: expect.any(Object),
+        type: 'date',
+        maxLength: 10,
+        minDate: '1922-03-01',
+        maxDate: '2022-03-01',
       });
 
-      const fieldValidator = result.fields[0].schema;
       const todayDateHint = new Date().toISOString().substring(0, 10);
-      expect(fieldValidator.isValidSync('2022-02-01')).toBe(true);
-      expect(fieldValidator.isValidSync('2022-03-01')).toBe(true);
-      expect(fieldValidator.isValidSync('2022-04-01')).toBe(false);
-      expect(() => fieldValidator.validateSync('')).toThrowError(
-        `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`
-      );
+
+      expect(validateForm({ birthdate: '' })).toEqual({
+        birthdate: `Must be a valid date in yyyy-mm-dd format. e.g. ${todayDateHint}`,
+      });
+
+      expect(validateForm({ birthdate: '2022-02-01' })).toEqual(undefined);
+      expect(validateForm({ birthdate: '2022-03-01' })).toEqual(undefined);
+      expect(validateForm({ birthdate: '2022-04-01' })).toEqual({
+        birthdate: 'The date must be 2022-03-01 or before.',
+      });
     });
 
     it('supports "file" field type', () => {
