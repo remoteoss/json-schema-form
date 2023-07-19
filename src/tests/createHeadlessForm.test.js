@@ -1019,7 +1019,6 @@ describe('createHeadlessForm', () => {
         required: true,
         schema: expect.any(Object),
         type: 'date',
-        maxLength: 10,
         minDate: '1922-03-01',
         maxDate: '2022-03-01',
       });
@@ -1047,7 +1046,6 @@ describe('createHeadlessForm', () => {
         required: true,
         schema: expect.any(Object),
         type: 'date',
-        maxLength: 10,
         minDate: '1922-03-01',
         maxDate: '2022-03-01',
       });
@@ -1082,7 +1080,6 @@ describe('createHeadlessForm', () => {
         required: true,
         schema: expect.any(Object),
         type: 'date',
-        maxLength: 10,
         minDate: '1922-03-01',
         maxDate: '2022-03-01',
       });
