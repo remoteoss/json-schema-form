@@ -503,6 +503,7 @@ export function extractParametersFromNode(schemaNode) {
       maximum: node.maximum,
       maxFileSize: node.maxFileSize, // @deprecated in favor of presentation.maxFileSize
       default: node.default,
+      format: node.format,
       // Checkboxes conditions
       // — For checkboxes that only accept one value (string)
       ...(presentation?.inputType === 'checkbox' && { checkboxValue: node.const }),
