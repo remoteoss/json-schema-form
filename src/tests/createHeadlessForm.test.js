@@ -1020,7 +1020,7 @@ describe('createHeadlessForm', () => {
         schema: expect.any(Object),
         type: 'date',
         minDate: '1922-03-01',
-        maxDate: '2022-03-01',
+        maxDate: '2022-03-17',
       });
 
       const todayDateHint = new Date().toISOString().substring(0, 10);
@@ -1047,7 +1047,7 @@ describe('createHeadlessForm', () => {
         schema: expect.any(Object),
         type: 'date',
         minDate: '1922-03-01',
-        maxDate: '2022-03-01',
+        maxDate: '2022-03-17',
       });
 
       expect(validateForm({})).toEqual({
@@ -1079,7 +1079,7 @@ describe('createHeadlessForm', () => {
         schema: expect.any(Object),
         type: 'date',
         minDate: '1922-03-01',
-        maxDate: '2022-03-01',
+        maxDate: '2022-03-17',
       });
 
       expect(validateForm({ birthdate: '' })).toEqual({
@@ -1089,7 +1089,7 @@ describe('createHeadlessForm', () => {
       expect(validateForm({ birthdate: '2022-02-01' })).toBeUndefined();
       expect(validateForm({ birthdate: '2022-03-01' })).toBeUndefined();
       expect(validateForm({ birthdate: '2022-04-01' })).toEqual({
-        birthdate: 'The date must be 2022-03-01 or before.',
+        birthdate: 'The date must be 2022-03-17 or before.',
       });
     });
 
