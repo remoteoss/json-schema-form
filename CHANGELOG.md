@@ -1,3 +1,9 @@
+#### 0.4.2-beta.0 (2023-07-20)
+
+##### Bug Fixes
+
+* **date:**  Validate based on minDate and maxDate ([#30](https://github.com/remoteoss/json-schema-form/pull/30)) ([01c0143e](https://github.com/remoteoss/json-schema-form/commit/01c0143ea4a3775f9489ae6cb8fd99a90b3f1394))
+
 #### 0.4.1-beta.0 (2023-07-03)
 
 ##### Bug Fixes
