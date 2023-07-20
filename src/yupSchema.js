@@ -102,6 +102,7 @@ const yupSchemas = {
     let dateString = string()
       .nullable()
       .transform((value) => {
+        // @BUG RMT-518 - Same reason to radioOrSelect above.
         if (value === '') {
           return undefined;
         }
