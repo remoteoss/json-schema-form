@@ -991,7 +991,7 @@ export const schemaInputTypeDate = {
   additionalProperties: false,
   properties: {
     birthdate: {
-      'x-jsf-presentation': { inputType: 'date', maxDate: '2022-03-01', minDate: '1922-03-01' },
+      'x-jsf-presentation': { inputType: 'date', maxDate: '2022-03-17', minDate: '1922-03-01' },
       title: 'Birthdate',
       type: 'string',
       format: 'date',
