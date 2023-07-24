@@ -185,7 +185,7 @@ const getYupSchema = ({ inputType, ...field }) => {
     return yupSchemas.radioOrSelect(optionValues);
   }
 
-  if (field.format === 'date') {
+  if (inputType === 'date' || field.format === 'date') {
     return yupSchemas.date({ minDate: field.minDate, maxDate: field.maxDate });
   }
 
