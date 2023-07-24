@@ -1117,6 +1117,29 @@ describe('createHeadlessForm', () => {
       });
     });
 
+    it('support format date with minDate and maxDate without the format property', () => {
+      const schemaFormatDate = {
+        properties: {
+          birthdate: {
+            title: 'Birthdate',
+            type: 'string',
+            'x-jsf-presentation': {
+              inputType: 'date',
+              maxDate: '2022-03-01',
+              minDate: '1922-03-01',
+            },
+          },
+        },
+      };
+
+      const { handleValidation } = createHeadlessForm(schemaFormatDate);
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({ birthdate: '1922-02-01' })).toEqual({
+        birthdate: 'The date must be 1922-03-01 or after.',
+      });
+    });
+
     it('supports "file" field type', () => {
       const result = createHeadlessForm(
         JSONSchemaBuilder()
