@@ -306,6 +306,7 @@ function updateField(field, requiredFields, node, formValues) {
  * @returns {Object}
  */
 function processNode(node, formValues, formFields, accRequired = new Set()) {
+  console.log(':: 🌬 process');
   // Set initial required fields
   const requiredFields = new Set(accRequired);
 
@@ -326,6 +327,7 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
+      console.log(':: - then');
       const { required: branchRequired } = processNode(
         node.then,
         formValues,
@@ -335,6 +337,7 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
 
       branchRequired.forEach((field) => requiredFields.add(field));
     } else if (node.else) {
+      console.log(':: - else');
       const { required: branchRequired } = processNode(
         node.else,
         formValues,
@@ -408,6 +411,7 @@ function clearValuesIfNotVisible(fields, formValues) {
  * @param {Object} jsonSchema - JSON schema object
  */
 export function updateFieldsProperties(fields, formValues, jsonSchema) {
+  console.log(':: 🌪 updateFields');
   if (!jsonSchema?.properties) {
     return;
   }
@@ -577,6 +581,8 @@ export function yupToFormErrors(yupError) {
  * @returns {Function(values: Object): { YupError: YupObject, formErrors: Object }} Callback that returns Yup errors <YupObject>
  */
 export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
+  console.log(':: 🚦 handleVal');
+
   updateFieldsProperties(fields, values, jsonSchema);
 
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));

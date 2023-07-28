@@ -325,9 +325,9 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
   try {
     const fields = getFieldsFromJSONSchema(jsonSchema, config);
 
-    const handleValidation = handleValuesChange(fields, jsonSchema, config);
-
     updateFieldsProperties(fields, getPrefillValues(fields, config.initialValues), jsonSchema);
+
+    const handleValidation = handleValuesChange(fields, jsonSchema, config);
 
     return {
       fields,

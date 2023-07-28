@@ -77,6 +77,7 @@ export function calculateConditionalProperties(fieldParams, customProperties) {
    * @returns {Object} updated field parameters
    */
   return (isRequired, conditionBranch) => {
+    console.log(':: 🧠 calc Cond', fieldParams.name);
     // Check if the current field is conditionally declared in the schema
 
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
