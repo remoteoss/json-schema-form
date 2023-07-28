@@ -173,6 +173,21 @@ export const schemaWithComputedAttributeThatDoesntExist = {
   },
 };
 
+export const schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-computedAttributes': {
+        title: {
+          rule: {
+            '+': [{ var: 'IdontExist' }],
+          },
+        },
+      },
+    },
+  },
+};
+
 export const schemaWithComputedAttributeThatDoesntExistTitle = {
   properties: {
     field_a: {
@@ -1096,3 +1111,68 @@ export const aConditionallyAppliedComputedAttributeValue = {
     },
   },
 };
+
+export const schemaWithInlineRuleForComputedAttributeWithCopy = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-computedAttributes': {
+        title: {
+          value: 'I need this to work using the {{rule}}.',
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+      },
+    },
+  },
+};
+
+export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-computedAttributes': {
+        title: {
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+      },
+    },
+  },
+};
+
+export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-computedAttributes': {
+        minumum: {
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+        'x-jsf-errorMessage': {
+          minimum: {
+            value: 'This should be greater than {{rule}}.',
+            rule: {
+              '+': [{ var: 'field_a' }, 10],
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema = {};

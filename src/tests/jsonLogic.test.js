@@ -21,6 +21,7 @@ import {
   schemaWithDeepVarThatDoesNotExistOnFieldset,
   schemaWithGreaterThanChecksForThreeFields,
   schemaWithIfStatementWithComputedValuesAndValidationChecks,
+  schemaWithInlineRuleForComputedAttributeWithCopy,
   schemaWithMissingRule,
   schemaWithMultipleComputedValueChecks,
   schemaWithNativeAndJSONLogicChecks,
@@ -176,6 +177,10 @@ describe('cross-value validations', () => {
         Error(`"iDontExist" validation in if condition doesn't exist.`)
       );
     });
+
+    it.todo(
+      'On an inline rule for a computedAttribute, error if theres a value referenced that does not exist'
+    );
   });
 
   describe('Relative: <, >, =', () => {
@@ -501,6 +506,24 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 10, field_b: 1 }).formErrors).toEqual();
       expect(fieldB.value).toEqual(undefined);
     });
+
+    it('Use a self contained rule in a schema for a title attribute', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithInlineRuleForComputedAttributeWithCopy,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(handleValidation({ field_a: 0 }).formErrors).toEqual(undefined);
+      expect(fieldB.label).toEqual('I need this to work using the 10.');
+      expect(handleValidation({ field_a: 10 }).formErrors).toEqual(undefined);
+      expect(fieldB.label).toEqual('I need this to work using the 20.');
+    });
+
+    it.todo('Use a self contained rule in a schema for a title but it just uses the value');
+    it.todo('Use a self contained rule for a minimum value');
+    it.todo('Use a self contained rule for a conditionally applied schema');
   });
 
   describe('Nested fieldsets', () => {

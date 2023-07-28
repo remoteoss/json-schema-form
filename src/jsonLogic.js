@@ -76,41 +76,38 @@ function createValidationsScope(schema) {
     computedValuesMap.set(id, computedValue);
   });
 
-  function evaluateComputedValueRule(validation, values) {
-    return jsonLogic.apply(validation.rule, clean(values));
-  }
-
-  function evaluateValidation(validation, values) {
-    return jsonLogic.apply(validation.rule, clean(values));
+  function evaluateValidation(rule, values) {
+    return jsonLogic.apply(rule, clean(values));
   }
 
   return {
     validationMap,
     computedValuesMap,
+    evaluateValidation,
     evaluateValidationRule(id, values) {
       const validation = validationMap.get(id);
-      return evaluateValidation(validation, values);
+      return evaluateValidation(validation.rule, values);
     },
     evaluateValidationRuleInCondition(id, values) {
       const validation = validationMap.get(id);
       if (validation === undefined) {
         throw Error(`"${id}" validation in if condition doesn't exist.`);
       }
-      return evaluateValidation(validation, values);
+      return evaluateValidation(validation.rule, values);
     },
     evaluateComputedValueRuleForField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
       if (validation === undefined)
         throw Error(`"${id}" computedValue in field "${fieldName}" doesn't exist.`);
 
-      return evaluateComputedValueRule(validation, values);
+      return evaluateValidation(validation.rule, values);
     },
     evaluateComputedValueRuleInCondition(id, values) {
       const validation = computedValuesMap.get(id);
       if (validation === undefined)
         throw Error(`"${id}" computedValue in if condition doesn't exist.`);
 
-      return evaluateComputedValueRule(validation, values);
+      return evaluateValidation(validation.rule, values);
     },
   };
 }
@@ -140,12 +137,25 @@ export function yupSchemaWithCustomJSONLogic({ field, validations, config, id })
     );
 }
 
-function replaceHandlebarsTemplates(string, validations, formValues, parentID, fieldName) {
-  return string.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-    return validations
-      .getScope(parentID)
-      .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
-  });
+function replaceHandlebarsTemplates({
+  value: toReplace,
+  validations,
+  formValues,
+  parentID,
+  name: fieldName,
+}) {
+  if (typeof toReplace === 'string') {
+    return toReplace.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+      return validations
+        .getScope(parentID)
+        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+    });
+  } else if (typeof toReplace === 'object') {
+    const { rule, value } = toReplace;
+    const computedInlineValue = validations.getScope(parentID).evaluateValidation(rule, formValues);
+    if (value) return value.replaceAll('{{rule}}', computedInlineValue);
+    else return computedInlineValue;
+  }
 }
 
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
@@ -162,10 +172,13 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
 function handleComputedAttribute(validations, formValues, parentID, name) {
   return ([key, value]) => {
     if (key === 'description')
-      return [key, replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+      return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
 
     if (key === 'title') {
-      return ['label', replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+      return [
+        'label',
+        replaceHandlebarsTemplates({ value, validations, formValues, parentID, name }),
+      ];
     }
 
     if (key === 'const' || key === 'value')
@@ -198,7 +211,7 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
 function handleComputedErrorMessages(values, formValues, parentID, validations, name) {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => {
-      return [key, replaceHandlebarsTemplates(value, validations, formValues, parentID, name)];
+      return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
     })
   );
 }
