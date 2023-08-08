@@ -32,7 +32,8 @@ it('Nested properties check passes with correct value', () => {
       { if: { properties: { parent: { properties: { child: { const: 'hello from child' } } } } } },
       {
         parent: { child: 'hello from child' },
-      }
+      },
+      [{ name: 'parent', fields: [] }]
     )
   ).toBe(true);
 });
@@ -43,7 +44,8 @@ it('Nested properties check passes with correct value', () => {
       { if: { properties: { parent: { properties: { child: { const: 'hello from child' } } } } } },
       {
         parent: { child: 'goodbye from child' },
-      }
+      },
+      [{ name: 'parent', fields: [] }]
     )
   ).toBe(false);
 });
