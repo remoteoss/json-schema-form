@@ -507,8 +507,9 @@ describe('cross-value validations', () => {
         }
       );
 
-      //TODO: this should fail because we have a const: 10, it should have an error from yup saying only 10 is accepted.
-      expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual();
+      expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual({
+        field_b: 'The only accepted value is 10.',
+      });
 
       const [, fieldB] = fields;
       expect(fieldB.value).toEqual(10);
