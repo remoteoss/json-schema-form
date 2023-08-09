@@ -22,6 +22,7 @@ import {
   schemaWithGreaterThanChecksForThreeFields,
   schemaWithIfStatementWithComputedValuesAndValidationChecks,
   schemaWithInlineRuleForComputedAttributeWithCopy,
+  schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithMissingRule,
   schemaWithMultipleComputedValueChecks,
   schemaWithNativeAndJSONLogicChecks,
@@ -178,9 +179,17 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo(
-      'On an inline rule for a computedAttribute, error if theres a value referenced that does not exist'
-    );
+    it('On an inline rule for a computedAttribute, error if theres a value referenced that does not exist', () => {
+      createHeadlessForm(schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(
+          '"IdontExist" in inline rule in property "field_a.x-jsf-computedAttributes.title" does not exist as a JSON schema property.'
+        )
+      );
+    });
   });
 
   describe('Relative: <, >, =', () => {
@@ -515,7 +524,7 @@ describe('cross-value validations', () => {
         }
       );
       const [, fieldB] = fields;
-      expect(handleValidation({ field_a: 0 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 0, field_b: null }).formErrors).toEqual(undefined);
       expect(fieldB.label).toEqual('I need this to work using the 10.');
       expect(handleValidation({ field_a: 10 }).formErrors).toEqual(undefined);
       expect(fieldB.label).toEqual('I need this to work using the 20.');

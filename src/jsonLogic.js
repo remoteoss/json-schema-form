@@ -22,6 +22,7 @@ export function createValidationChecker(schema) {
   const scopes = new Map();
 
   function createScopes(jsonSchema, key = 'root') {
+    const sampleEmptyObject = buildSampleEmptyObject(schema);
     scopes.set(key, createValidationsScope(jsonSchema));
     Object.entries(jsonSchema?.properties ?? {})
       .filter(([, property]) => property.type === 'object' || property.type === 'array')
@@ -31,6 +32,8 @@ export function createValidationChecker(schema) {
         }
         createScopes(property, key);
       });
+
+    validateInlineRules(jsonSchema, sampleEmptyObject);
   }
 
   createScopes(schema);
@@ -297,7 +300,31 @@ function buildSampleEmptyObject(schema = {}) {
   return sample;
 }
 
-function checkRuleIntegrity(rule, id, data) {
+function validateInlineRules(jsonSchema, sampleEmptyObject) {
+  const properties = (jsonSchema?.properties || jsonSchema?.items?.properties) ?? {};
+  Object.entries(properties)
+    .filter(([, property]) => property['x-jsf-computedAttributes'] !== undefined)
+    .forEach(([fieldName, property]) => {
+      Object.entries(property['x-jsf-computedAttributes'])
+        .filter(([, value]) => typeof value === 'object')
+        .forEach(([key, { rule }]) => {
+          checkRuleIntegrity(
+            rule,
+            fieldName,
+            sampleEmptyObject,
+            (item) =>
+              `"${item.var}" in inline rule in property "${fieldName}.x-jsf-computedAttributes.${key}" does not exist as a JSON schema property.`
+          );
+        });
+    });
+}
+
+function checkRuleIntegrity(
+  rule,
+  id,
+  data,
+  errorMessage = (item) => `"${item.var}" in rule "${id}" does not exist as a JSON schema property.`
+) {
   Object.values(rule ?? {}).map((subRule) => {
     if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
     subRule.map((item) => {
@@ -305,7 +332,7 @@ function checkRuleIntegrity(rule, id, data) {
       if (isVar) {
         const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, data);
         if (exists === null) {
-          throw Error(`"${item.var}" in rule "${id}" does not exist as a JSON schema property.`);
+          throw Error(errorMessage(item));
         }
       } else {
         checkRuleIntegrity(item, id, data);
