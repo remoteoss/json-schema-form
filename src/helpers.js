@@ -5,6 +5,7 @@ import omitBy from 'lodash/omitBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
+import { checkIfConditionMatches } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
@@ -29,7 +30,7 @@ function hasType(type, typeName) {
  * @param {Object[]} fields - form fields
  * @returns
  */
-function getField(fieldName, fields) {
+export function getField(fieldName, fields) {
   return fields.find(({ name }) => name === fieldName);
 }
 
@@ -39,7 +40,7 @@ function getField(fieldName, fields) {
  * @param {any} value
  * @returns
  */
-function validateFieldSchema(field, value) {
+export function validateFieldSchema(field, value) {
   const validator = buildYupSchema(field);
   return validator().isValidSync(value);
 }
@@ -52,7 +53,7 @@ function validateFieldSchema(field, value) {
  * @param {any} schemaValue - value specified in the schema
  * @returns {Boolean}
  */
-function compareFormValueWithSchemaValue(formValue, schemaValue) {
+export function compareFormValueWithSchemaValue(formValue, schemaValue) {
   // If the value is a number, we can use it directly, otherwise we need to
   //  fallback to undefined since JSON-schemas empty values come represented as null
   const currentPropertyValue =
@@ -60,66 +61,6 @@ function compareFormValueWithSchemaValue(formValue, schemaValue) {
   // We're using the stringified version of both values since numeric values from forms come represented as Strings.
   // By doing this, we're sure that we're comparing the same type.
   return String(formValue) === String(currentPropertyValue);
-}
-
-/**
- * Checks if a "IF" condition matches given the current form state
- * @param {Object} node - JSON schema node
- * @param {Object} formValues - form state
- * @returns {Boolean}
- */
-function checkIfConditionMatches(node, formValues, formFields) {
-  return Object.keys(node.if.properties).every((name) => {
-    const currentProperty = node.if.properties[name];
-    const value = formValues[name];
-    const hasEmptyValue =
-      typeof value === 'undefined' ||
-      // NOTE: This is a "Remote API" dependency, as empty fields are sent as "null".
-      value === null;
-    const hasIfExplicit = node.if.required?.includes(name);
-
-    if (hasEmptyValue && !hasIfExplicit) {
-      // A property with empty value in a "if" will always match (lead to "then"),
-      // even if the actual conditional isn't true. Unless it's explicit in the if.required.
-      // WRONG:: if: { properties: { foo: {...} } }
-      // CORRECT:: if: { properties: { foo: {...} }, required: ['foo'] }
-      // Check MR !14408 for further explanation about the official specs
-      // https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else
-      return true;
-    }
-
-    if (hasProperty(currentProperty, 'const')) {
-      return compareFormValueWithSchemaValue(value, currentProperty.const);
-    }
-
-    if (currentProperty.contains?.pattern) {
-      // TODO: remove this || after D#4098 is merged and transformValue does not run for the parser anymore
-      const formValue = value || [];
-
-      // Making sure the form value type matches the expected type (array) when theres' a "contains" condition
-      if (Array.isArray(formValue)) {
-        const pattern = new RegExp(currentProperty.contains.pattern);
-        return (value || []).some((item) => pattern.test(item));
-      }
-    }
-
-    if (currentProperty.enum) {
-      return currentProperty.enum.includes(value);
-    }
-
-    const field = getField(name, formFields);
-
-    return validateFieldSchema(
-      {
-        options: field.options,
-        // @TODO/CODE SMELL. We are passing the property (raw field), but buildYupSchema() expected the output field.
-        ...currentProperty,
-        inputType: field.inputType,
-        required: true,
-      },
-      value
-    );
-  });
 }
 
 /**
