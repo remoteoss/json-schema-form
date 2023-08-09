@@ -473,8 +473,8 @@ export function extractParametersFromNode(schemaNode) {
 
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
-  const requiredValidations = schemaNode['x-jsf-requiredValidations'];
-  const computedAttributes = schemaNode['x-jsf-computedAttributes'];
+  const requiredValidations = schemaNode['x-jsf-logic-validations'];
+  const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
 
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 

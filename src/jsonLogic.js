@@ -303,9 +303,9 @@ function buildSampleEmptyObject(schema = {}) {
 function validateInlineRules(jsonSchema, sampleEmptyObject) {
   const properties = (jsonSchema?.properties || jsonSchema?.items?.properties) ?? {};
   Object.entries(properties)
-    .filter(([, property]) => property['x-jsf-computedAttributes'] !== undefined)
+    .filter(([, property]) => property['x-jsf-logic-computedAttrs'] !== undefined)
     .forEach(([fieldName, property]) => {
-      Object.entries(property['x-jsf-computedAttributes'])
+      Object.entries(property['x-jsf-logic-computedAttrs'])
         .filter(([, value]) => typeof value === 'object')
         .forEach(([key, { rule }]) => {
           checkRuleIntegrity(
@@ -313,7 +313,7 @@ function validateInlineRules(jsonSchema, sampleEmptyObject) {
             fieldName,
             sampleEmptyObject,
             (item) =>
-              `"${item.var}" in inline rule in property "${fieldName}.x-jsf-computedAttributes.${key}" does not exist as a JSON schema property.`
+              `"${item.var}" in inline rule in property "${fieldName}.x-jsf-logic-computedAttrs.${key}" does not exist as a JSON schema property.`
           );
         });
     });

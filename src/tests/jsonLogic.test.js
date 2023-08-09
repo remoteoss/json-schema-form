@@ -129,7 +129,7 @@ describe('cross-value validations', () => {
       );
     });
 
-    it('On x-jsf-computedAttributes, error if theres a value that does not exist.', () => {
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist.', () => {
       createHeadlessForm(schemaWithComputedAttributeThatDoesntExist, {
         strictInputType: false,
       });
@@ -139,7 +139,7 @@ describe('cross-value validations', () => {
       );
     });
 
-    it('On x-jsf-computedAttributes, error if theres a value that does not exist on a title.', () => {
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a title.', () => {
       createHeadlessForm(schemaWithComputedAttributeThatDoesntExistTitle, {
         strictInputType: false,
       });
@@ -149,7 +149,7 @@ describe('cross-value validations', () => {
       );
     });
 
-    it('On x-jsf-computedAttributes, error if theres a value that does not exist on a description.', () => {
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a description.', () => {
       createHeadlessForm(schemaWithComputedAttributeThatDoesntExistDescription, {
         strictInputType: false,
       });
@@ -186,7 +186,7 @@ describe('cross-value validations', () => {
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error(
-          '"IdontExist" in inline rule in property "field_a.x-jsf-computedAttributes.title" does not exist as a JSON schema property.'
+          '"IdontExist" in inline rule in property "field_a.x-jsf-logic-computedAttrs.title" does not exist as a JSON schema property.'
         )
       );
     });
