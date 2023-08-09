@@ -1,10 +1,10 @@
 import jsonLogic from 'json-logic-js';
 
-import { processNode } from './helpers';
 import {
   checkIfConditionMatches,
   checkIfMatchesValidationsAndComputedValues,
-} from './nodeProcessing/checkIfConditionMatches';
+} from './checkIfConditionMatches';
+import { processNode } from './helpers';
 
 jsonLogic.add_operation('Number.toFixed', (a, b) => {
   if (typeof a === 'number') return a.toFixed(b);

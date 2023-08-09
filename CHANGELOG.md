@@ -1,3 +1,15 @@
+#### 0.4.3-beta.0 (2023-08-09)
+
+##### Bug fixes
+
+* **conditions:** Validate a deeply nested if (e.g. checking an object with a number property) in an if property now doesn't break the form. ([#33](https://github.com/remoteoss/json-schema-form/pull/33)) ([e34cfcc](https://github.com/remoteoss/json-schema-form/commit/e34cfccaf45f1460b346f3cff0c797b3d11259e3))
+
+#### 0.4.2-beta.0 (2023-07-20)
+
+##### Bug Fixes
+
+* **date:**  Validate based on minDate and maxDate ([#30](https://github.com/remoteoss/json-schema-form/pull/30)) ([01c0143e](https://github.com/remoteoss/json-schema-form/commit/01c0143ea4a3775f9489ae6cb8fd99a90b3f1394))
+
 #### 0.4.1-beta.0 (2023-07-03)
 
 ##### Bug Fixes

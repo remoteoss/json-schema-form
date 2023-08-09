@@ -33,6 +33,31 @@ const validateOnlyStrings = string()
     }
   );
 
+const compareDates = (d1, d2) => {
+  let date1 = new Date(d1).getTime();
+  let date2 = new Date(d2).getTime();
+
+  if (date1 < date2) {
+    return 'LESSER';
+  } else if (date1 > date2) {
+    return 'GREATER';
+  } else {
+    return 'EQUAL';
+  }
+};
+
+const validateMinDate = (value, minDate) => {
+  const compare = compareDates(value, minDate);
+
+  return compare === 'GREATER' || compare === 'EQUAL' ? true : false;
+};
+
+const validateMaxDate = (value, minDate) => {
+  const compare = compareDates(value, minDate);
+
+  return compare === 'LESSER' || compare === 'EQUAL' ? true : false;
+};
+
 const yupSchemas = {
   text: validateOnlyStrings,
   radioOrSelect: (options) =>
@@ -74,13 +99,38 @@ const yupSchemas = {
       .oneOf(options, ({ value }) => {
         return `The option ${JSON.stringify(value)} is not valid.`;
       }),
-  date: string()
-    .nullable()
-    .trim()
-    .matches(
-      /(?:\d){4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9]|3[0-1])/,
-      `Must be a valid date in ${DEFAULT_DATE_FORMAT.toLocaleLowerCase()} format. e.g. ${todayDateHint}`
-    ),
+  date: ({ minDate, maxDate }) => {
+    let dateString = string()
+      .nullable()
+      .transform((value) => {
+        // @BUG RMT-518 - Same reason to radioOrSelect above.
+        if (value === '') {
+          return undefined;
+        }
+
+        return value === null ? undefined : value;
+      })
+      .trim()
+      .matches(
+        /(?:\d){4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|1[0-9]|2[0-9]|3[0-1])/,
+        `Must be a valid date in ${DEFAULT_DATE_FORMAT.toLocaleLowerCase()} format. e.g. ${todayDateHint}`
+      );
+
+    if (minDate) {
+      dateString = dateString.test('minDate', `The date must be ${minDate} or after.`, (value) =>
+        validateMinDate(value, minDate)
+      );
+    }
+
+    if (maxDate) {
+      dateString = dateString.test('maxDate', `The date must be ${maxDate} or before.`, (value) =>
+        validateMaxDate(value, maxDate)
+      );
+    }
+
+    return dateString;
+  },
+
   number: number().typeError('The value must be a number').nullable(),
   file: array().nullable(),
   email: string().trim().email('Please enter a valid email address').nullable(),
@@ -134,6 +184,10 @@ const getYupSchema = ({ inputType, ...field }) => {
   if (field.options?.length > 0) {
     const optionValues = getOptions(field);
     return yupSchemas.radioOrSelect(optionValues);
+  }
+
+  if (field.format === 'date') {
+    return yupSchemas.date({ minDate: field.minDate, maxDate: field.maxDate });
   }
 
   return yupSchemas[inputType] || yupSchemasToJsonTypes[jsonType];

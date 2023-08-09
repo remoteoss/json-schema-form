@@ -1,5 +1,5 @@
-import { compareFormValueWithSchemaValue, getField, validateFieldSchema } from '../helpers';
-import { hasProperty } from '../utils';
+import { compareFormValueWithSchemaValue, getField, validateFieldSchema } from './helpers';
+import { hasProperty } from './utils';
 
 /**
  * Checks if a "IF" condition matches given the current form state
@@ -46,6 +46,15 @@ export function checkIfConditionMatches(node, formValues, formFields, validation
       return currentProperty.enum.includes(value);
     }
 
+    if (currentProperty.properties) {
+      return checkIfConditionMatches(
+        { if: currentProperty },
+        formValues[name],
+        getField(name, formFields).fields,
+        validations
+      );
+    }
+
     const field = getField(name, formFields);
 
     return validateFieldSchema(
@@ -56,8 +65,7 @@ export function checkIfConditionMatches(node, formValues, formFields, validation
         inputType: field.inputType,
         required: true,
       },
-      value,
-      validations
+      value
     );
   });
 }

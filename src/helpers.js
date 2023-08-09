@@ -5,10 +5,10 @@ import omitBy from 'lodash/omitBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
+import { checkIfConditionMatches } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { processJSONLogicNode } from './jsonLogic';
-import { checkIfConditionMatches } from './nodeProcessing/checkIfConditionMatches';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
@@ -504,6 +504,7 @@ export function extractParametersFromNode(schemaNode) {
       maximum: node.maximum,
       maxFileSize: node.maxFileSize, // @deprecated in favor of presentation.maxFileSize
       default: node.default,
+      format: node.format,
       // Checkboxes conditions
       // — For checkboxes that only accept one value (string)
       ...(presentation?.inputType === 'checkbox' && { checkboxValue: node.const }),
