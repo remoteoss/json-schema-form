@@ -272,18 +272,6 @@ export const mockSelectInputMultipleOptional = {
   type: ['array', 'null'],
 };
 
-export const mockDateInput = {
-  'x-jsf-presentation': {
-    inputType: 'date',
-    maxDate: '2022-03-01',
-    minDate: '1922-03-01',
-  },
-  title: 'Birthdate',
-  type: 'string',
-  format: 'date',
-  maxLength: 10,
-};
-
 export const mockFileInput = {
   description: 'File Input Description',
   'x-jsf-presentation': {
@@ -998,12 +986,19 @@ export const schemaInputTypeNumberWithPercentage = JSONSchemaBuilder()
   .setRequiredFields(['shares'])
   .build();
 
-export const schemaInputTypeDate = JSONSchemaBuilder()
-  .addInput({
-    birthdate: mockDateInput,
-  })
-  .setRequiredFields(['birthdate'])
-  .build();
+export const schemaInputTypeDate = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    birthdate: {
+      'x-jsf-presentation': { inputType: 'date', maxDate: '2022-03-17', minDate: '1922-03-01' },
+      title: 'Birthdate',
+      type: 'string',
+      format: 'date',
+    },
+  },
+  required: ['birthdate'],
+};
 
 export const schemaInputTypeEmail = JSONSchemaBuilder()
   .addInput({
