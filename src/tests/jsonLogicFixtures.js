@@ -167,7 +167,7 @@ export const schemaWithComputedAttributeThatDoesntExist = {
     field_a: {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
-        value: 'iDontExist',
+        default: 'iDontExist',
       },
     },
   },
@@ -645,7 +645,8 @@ export const schemaWithComputedAttributes = {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
         title: 'This is {{a_times_two}}!',
-        value: 'a_times_two',
+        const: 'a_times_two',
+        default: 'a_times_two',
         description: 'This field is 2 times bigger than field_a with value of {{a_times_two}}.',
       },
     },
@@ -794,7 +795,8 @@ export const fieldsetWithComputedAttributes = {
           type: 'number',
           readOnly: true,
           'x-jsf-logic-computedAttrs': {
-            value: 'child_times_10',
+            default: 'child_times_10',
+            const: 'child_times_10',
             description: 'this is {{child_times_10}}',
           },
         },
@@ -1087,7 +1089,7 @@ export const aConditionallyAppliedComputedAttributeValue = {
             readOnly: true,
             'x-jsf-logic-computedAttrs': {
               const: 'a_divided_by_two',
-              value: 'a_divided_by_two',
+              default: 'a_divided_by_two',
             },
           },
         },

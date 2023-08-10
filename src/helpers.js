@@ -476,6 +476,14 @@ export function extractParametersFromNode(schemaNode) {
   const requiredValidations = schemaNode['x-jsf-logic-validations'];
   const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
 
+  // This is when a forced value is computed.
+  const decoratedComputedAttributes = {
+    ...(computedAttributes ?? {}),
+    ...(computedAttributes?.const && computedAttributes?.default
+      ? { value: computedAttributes.const }
+      : {}),
+  };
+
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
   const description = presentation?.description || node.description;
@@ -486,6 +494,8 @@ export function extractParametersFromNode(schemaNode) {
   return omitBy(
     {
       const: node.const,
+      // This is a "forced value" when both const and default are present.
+      ...(node.const && node.default ? { value: node.const } : {}),
       label: node.title,
       readOnly: node.readOnly,
       ...(node.deprecated && {
@@ -522,7 +532,7 @@ export function extractParametersFromNode(schemaNode) {
       // Handle [name].presentation
       ...presentation,
       requiredValidations,
-      computedAttributes,
+      computedAttributes: decoratedComputedAttributes,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
             class: 'jsf-description',

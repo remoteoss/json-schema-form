@@ -481,6 +481,7 @@ describe('cross-value validations', () => {
       expect(fieldB.description).toEqual(
         'This field is 2 times bigger than field_a with value of 4.'
       );
+      expect(fieldB.default).toEqual(4);
       expect(fieldB.value).toEqual(4);
       expect(fieldB.label).toEqual('This is 4!');
     });
