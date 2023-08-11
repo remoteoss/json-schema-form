@@ -88,10 +88,6 @@ function createValidationsScope(schema) {
     validationMap,
     computedValuesMap,
     evaluateValidation,
-    evaluateValidationRule(id, values) {
-      const validation = validationMap.get(id);
-      return evaluateValidation(validation.rule, values);
-    },
     evaluateValidationRuleInCondition(id, values) {
       const validation = validationMap.get(id);
       if (validation === undefined) {

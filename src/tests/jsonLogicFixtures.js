@@ -91,6 +91,42 @@ export const schemaWithMissingRule = {
   required: [],
 };
 
+export const schemaWithMissingComputedValue = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: '{{a_plus_ten}}',
+      },
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      a_plus_ten: {},
+    },
+  },
+  required: [],
+};
+
+export const schemaWithMissingValueInlineRule = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: {
+          ruleOne: {
+            '+': [1, 2],
+          },
+          ruleTwo: {
+            '+': [3, 4],
+          },
+        },
+      },
+    },
+  },
+  required: [],
+};
+
 export const schemaWithVarThatDoesNotExist = {
   properties: {
     field_a: {
