@@ -577,6 +577,55 @@ export const schemaWithIfStatementWithComputedValuesAndValidationChecks = {
   },
 };
 
+export const schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      a_plus_ten: {
+        rule: {
+          '+': [{ var: 'field_a' }, 10],
+        },
+      },
+    },
+    validations: {
+      greater_than_a_plus_ten: {
+        errorMessage: 'Must be greater than Field A + 10',
+        rule: {
+          '>': [{ var: 'field_b' }, { '+': [{ var: 'field_a' }, 10] }],
+        },
+      },
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          field_a: {
+            const: 20,
+          },
+        },
+      },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-logic-computedAttrs': {
+              title: 'Must be greater than {{a_plus_ten}}.',
+            },
+            'x-jsf-logic-validations': ['greater_than_a_plus_ten'],
+          },
+        },
+      },
+    },
+  ],
+};
+
 export const multiRuleSchema = {
   properties: {
     field_a: {

@@ -11,6 +11,7 @@ import {
   ifConditionWithMissingValidation,
   multiRuleSchema,
   nestedFieldsetWithValidationSchema,
+  schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
   schemaWithChecksAndThenValidationsOnThen,
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
@@ -438,7 +439,20 @@ describe('cross-value validations', () => {
       );
     });
 
-    it.todo('Apply validations and computed values on normal if statement.');
+    it('Apply validations and computed values on normal if statement.', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
+        { strictInputType: false }
+      );
+      expect(handleValidation({ field_a: 0, field_b: 0 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 20, field_b: 0 }).formErrors).toEqual({
+        field_b: 'Must be greater than Field A + 10',
+      });
+      const [, fieldB] = fields;
+      expect(fieldB.label).toEqual('Must be greater than 30.');
+      expect(handleValidation({ field_a: 20, field_b: 31 }).formErrors).toEqual(undefined);
+    });
+
     it.todo(
       'When we have a required validation on a top level property and another validation is added, both should be accounted for.'
     );
