@@ -1130,7 +1130,7 @@ export const conditionalAppliedInAnItem = {
   },
 };
 
-export const aConditionallyAppliedComputedAttributeMinimum = {
+export const aConditionallyAppliedComputedAttributeMinimumAndMaximum = {
   properties: {
     field_a: {
       type: 'number',
@@ -1147,8 +1147,10 @@ export const aConditionallyAppliedComputedAttributeMinimum = {
           field_b: {
             'x-jsf-logic-computedAttrs': {
               minimum: 'a_divided_by_two',
+              maximum: 'a_multiplied_by_two',
               'x-jsf-errorMessage': {
                 minimum: 'use {{a_divided_by_two}} or more',
+                maximum: 'use less than {{a_multiplied_by_two}}',
               },
             },
           },
@@ -1161,6 +1163,11 @@ export const aConditionallyAppliedComputedAttributeMinimum = {
       a_divided_by_two: {
         rule: {
           '/': [{ var: 'field_a' }, 2],
+        },
+      },
+      a_multiplied_by_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
         },
       },
     },

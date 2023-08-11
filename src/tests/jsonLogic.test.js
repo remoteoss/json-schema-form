@@ -1,7 +1,7 @@
 import { createHeadlessForm } from '../createHeadlessForm';
 
 import {
-  aConditionallyAppliedComputedAttributeMinimum,
+  aConditionallyAppliedComputedAttributeMinimumAndMaximum,
   aConditionallyAppliedComputedAttributeValue,
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
@@ -516,9 +516,9 @@ describe('cross-value validations', () => {
       expect(fieldB.label).toEqual('This is 4!');
     });
 
-    it('computedAttribute test that minimum, errorMessages.minimum is working', () => {
+    it('computedAttribute test that minimum, maximum, errorMessages.minimum, errorMessage.maximum is working', () => {
       const { handleValidation } = createHeadlessForm(
-        aConditionallyAppliedComputedAttributeMinimum,
+        aConditionallyAppliedComputedAttributeMinimumAndMaximum,
         {
           strictInputType: false,
         }
@@ -526,9 +526,11 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual({
         field_b: 'use 10 or more',
       });
+      expect(handleValidation({ field_a: 20, field_b: 60 }).formErrors).toEqual({
+        field_b: 'use less than 40',
+      });
+      expect(handleValidation({ field_a: 20, field_b: 30 }).formErrors).toEqual(undefined);
     });
-
-    it.todo('computedAttribute test that maximum, errorMessages.maximum is working');
 
     it('Apply a conditional computed Attrbute value', () => {
       const { fields, handleValidation } = createHeadlessForm(
