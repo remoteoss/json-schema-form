@@ -104,6 +104,11 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
         ? calculateComputedAttributes(newFieldParams, config)({ validations, formValues })
         : {};
 
+      const requiredValidations = [
+        ...(fieldParams.requiredValidations ?? []),
+        ...(restNewFieldParams.requiredValidations ?? []),
+      ];
+
       const base = {
         isVisible: true,
         required: isRequired,
@@ -117,6 +122,7 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
             ...fieldParams,
             ...restNewFieldParams,
             ...caclulatedComputedAttributes,
+            requiredValidations,
             // If there are inner fields (case of fieldset) they need to be updated based on the condition
             fields: fieldSetFields,
             required: isRequired,

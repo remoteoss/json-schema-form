@@ -626,6 +626,53 @@ export const schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement
   ],
 };
 
+export const schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally = {
+  required: ['field_a', 'field_b'],
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-validations': ['greater_than_field_a'],
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      greater_than_field_a: {
+        errorMessage: 'Must be greater than A',
+        rule: {
+          '>': [{ var: 'field_b' }, { var: 'field_a' }],
+        },
+      },
+      greater_than_two_times_a: {
+        errorMessage: 'Must be greater than two times A',
+        rule: {
+          '>': [{ var: 'field_b' }, { '*': [{ var: 'field_a' }, 2] }],
+        },
+      },
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          field_a: {
+            const: 20,
+          },
+        },
+      },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-logic-validations': ['greater_than_two_times_a'],
+          },
+        },
+      },
+    },
+  ],
+};
+
 export const multiRuleSchema = {
   properties: {
     field_a: {

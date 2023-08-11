@@ -32,6 +32,7 @@ import {
   schemaWithPropertiesCheckAndValidationsInAIf,
   schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
+  schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally,
   schemaWithValidationThatDoesNotExistOnProperty,
   schemaWithVarThatDoesNotExist,
   simpleArrayValidationSchema,
@@ -453,9 +454,22 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 20, field_b: 31 }).formErrors).toEqual(undefined);
     });
 
-    it.todo(
-      'When we have a required validation on a top level property and another validation is added, both should be accounted for.'
-    );
+    it('When we have a required validation on a top level property and another validation is added, both should be accounted for.', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally,
+        { strictInputType: false }
+      );
+      expect(handleValidation({ field_a: 10, field_b: 0 }).formErrors).toEqual({
+        field_b: 'Must be greater than A',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 20 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 20, field_b: 10 }).formErrors).toEqual({
+        field_b: 'Must be greater than A',
+      });
+      expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toEqual({
+        field_b: 'Must be greater than two times A',
+      });
+    });
   });
 
   describe('Multiple validations', () => {
