@@ -469,6 +469,7 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toEqual({
         field_b: 'Must be greater than two times A',
       });
+      expect(handleValidation({ field_a: 20, field_b: 41 }).formErrors).toEqual();
     });
   });
 
