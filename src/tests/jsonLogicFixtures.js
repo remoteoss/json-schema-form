@@ -1316,7 +1316,46 @@ export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
   },
 };
 
-export const schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema = {};
+export const schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      description: 'Hello world',
+      type: 'number',
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          field_a: {
+            const: 20,
+          },
+        },
+        required: ['field_a'],
+      },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-logic-computedAttrs': {
+              description: {
+                value: 'Must be between {{half_a}} and {{double_a}}.',
+                half_a: {
+                  '/': [{ var: 'field_a' }, 2],
+                },
+                double_a: {
+                  '*': [{ var: 'field_a' }, 2],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
+};
 
 export const schemaWithInlineMultipleRulesForComputedAttributes = {
   properties: {

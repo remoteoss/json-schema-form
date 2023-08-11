@@ -100,7 +100,7 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
       }
 
       const { computedAttributes, ...restNewFieldParams } = newFieldParams;
-      const caclulatedComputedAttributes = computedAttributes
+      const calculatedComputedAttributes = computedAttributes
         ? calculateComputedAttributes(newFieldParams, config)({ validations, formValues })
         : {};
 
@@ -113,15 +113,15 @@ export function calculateConditionalProperties(fieldParams, customProperties, va
         isVisible: true,
         required: isRequired,
         ...(presentation?.inputType && { type: presentation.inputType }),
-        ...caclulatedComputedAttributes,
-        ...(caclulatedComputedAttributes.value
-          ? { value: caclulatedComputedAttributes.value }
+        ...calculatedComputedAttributes,
+        ...(calculatedComputedAttributes.value
+          ? { value: calculatedComputedAttributes.value }
           : { value: undefined }),
         schema: buildYupSchema(
           {
             ...fieldParams,
             ...restNewFieldParams,
-            ...caclulatedComputedAttributes,
+            ...calculatedComputedAttributes,
             requiredValidations,
             // If there are inner fields (case of fieldset) they need to be updated based on the condition
             fields: fieldSetFields,

@@ -25,6 +25,7 @@ import {
   schemaWithGreaterThanChecksForThreeFields,
   schemaWithIfStatementWithComputedValuesAndValidationChecks,
   schemaWithInlineMultipleRulesForComputedAttributes,
+  schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema,
   schemaWithInlineRuleForComputedAttributeWithCopy,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithJSFLogicAndInlineRule,
@@ -626,7 +627,18 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toEqual(undefined);
     });
 
-    it.todo('Use a self contained rule for a conditionally applied schema');
+    it('Use a self contained rule for a conditionally applied schema', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(fieldB.description).toEqual('Hello world');
+      handleValidation({ field_a: 20, field_b: 0 });
+      expect(fieldB.description).toEqual('Must be between 10 and 40.');
+    });
 
     it('Mix use of multiple inline rules and an external rule', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaWithJSFLogicAndInlineRule, {
