@@ -154,10 +154,25 @@ function replaceHandlebarsTemplates({
         .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
     });
   } else if (typeof toReplace === 'object') {
-    const { rule, value } = toReplace;
-    const computedInlineValue = validations.getScope(parentID).evaluateValidation(rule, formValues);
-    if (value) return value.replaceAll('{{rule}}', computedInlineValue);
-    else return computedInlineValue;
+    const { value, ...rules } = toReplace;
+
+    const ruleNames = Object.keys(rules);
+    if (ruleNames.length > 1 && !value)
+      throw Error('Cannot define multiple rules without a template string with key `value`.');
+
+    if (!value)
+      return validations.getScope(parentID).evaluateValidation(rules[ruleNames[0]], formValues);
+
+    const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
+      const computedValue = validations.getScope(parentID).evaluateValidation(rule, formValues);
+      return prev.replaceAll(`{{${key}}}`, computedValue);
+    }, value);
+
+    return computedTemplateValue.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+      return validations
+        .getScope(parentID)
+        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+    });
   }
 }
 
@@ -184,7 +199,7 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
       ];
     }
 
-    if (key === 'const' || key === 'value')
+    if (key === 'const')
       return [
         key,
         validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
@@ -307,14 +322,16 @@ function validateInlineRules(jsonSchema, sampleEmptyObject) {
     .forEach(([fieldName, property]) => {
       Object.entries(property['x-jsf-logic-computedAttrs'])
         .filter(([, value]) => typeof value === 'object')
-        .forEach(([key, { rule }]) => {
-          checkRuleIntegrity(
-            rule,
-            fieldName,
-            sampleEmptyObject,
-            (item) =>
-              `"${item.var}" in inline rule in property "${fieldName}.x-jsf-logic-computedAttrs.${key}" does not exist as a JSON schema property.`
-          );
+        .forEach(([key, item]) => {
+          Object.values(item).forEach((rule) => {
+            checkRuleIntegrity(
+              rule,
+              fieldName,
+              sampleEmptyObject,
+              (item) =>
+                `"${item.var}" in inline rule in property "${fieldName}.x-jsf-logic-computedAttrs.${key}" does not exist as a JSON schema property.`
+            );
+          });
         });
     });
 }

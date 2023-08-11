@@ -21,6 +21,7 @@ import {
   schemaWithDeepVarThatDoesNotExistOnFieldset,
   schemaWithGreaterThanChecksForThreeFields,
   schemaWithIfStatementWithComputedValuesAndValidationChecks,
+  schemaWithInlineMultipleRulesForComputedAttributes,
   schemaWithInlineRuleForComputedAttributeWithCopy,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithMissingRule,
@@ -532,9 +533,23 @@ describe('cross-value validations', () => {
       expect(fieldB.label).toEqual('I need this to work using the 20.');
     });
 
+    it('Use multiple inline rules with different identifiers', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithInlineMultipleRulesForComputedAttributes,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+      expect(fieldB.description).toEqual('Must be between 5 and 20.');
+    });
+
     it.todo('Use a self contained rule in a schema for a title but it just uses the value');
     it.todo('Use a self contained rule for a minimum value');
     it.todo('Use a self contained rule for a conditionally applied schema');
+    it.todo('Throw if you have multiple inline rules with no template string.');
+    it.todo('Mix use of multiple inline rules and an external rule');
   });
 
   describe('Nested fieldsets', () => {

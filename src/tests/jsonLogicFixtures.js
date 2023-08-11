@@ -1178,3 +1178,25 @@ export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
 };
 
 export const schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema = {};
+
+export const schemaWithInlineMultipleRulesForComputedAttributes = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        description: {
+          value: 'Must be between {{half_a}} and {{double_a}}.',
+          half_a: {
+            '/': [{ var: 'field_a' }, 2],
+          },
+          double_a: {
+            '*': [{ var: 'field_a' }, 2],
+          },
+        },
+      },
+    },
+  },
+};
