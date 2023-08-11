@@ -153,12 +153,8 @@ function replaceHandlebarsTemplates({
   } else if (typeof toReplace === 'object') {
     const { value, ...rules } = toReplace;
 
-    const ruleNames = Object.keys(rules);
-    if (ruleNames.length > 1 && !value)
+    if (Object.keys(rules).length > 1 && !value)
       throw Error('Cannot define multiple rules without a template string with key `value`.');
-
-    if (!value)
-      return validations.getScope(parentID).evaluateValidation(rules[ruleNames[0]], formValues);
 
     const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
       const computedValue = validations.getScope(parentID).evaluateValidation(rule, formValues);

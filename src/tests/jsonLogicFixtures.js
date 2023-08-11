@@ -1381,3 +1381,31 @@ export const schemaSelfContainedValueForMaximumMinimumValues = {
     },
   },
 };
+
+export const schemaWithJSFLogicAndInlineRule = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: {
+          value: 'Going to use {{rule}} and {{not_inline}}',
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+      },
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      not_inline: {
+        rule: {
+          '+': [1, 3],
+        },
+      },
+    },
+  },
+};

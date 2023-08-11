@@ -27,6 +27,7 @@ import {
   schemaWithInlineMultipleRulesForComputedAttributes,
   schemaWithInlineRuleForComputedAttributeWithCopy,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
+  schemaWithJSFLogicAndInlineRule,
   schemaWithMissingComputedValue,
   schemaWithMissingRule,
   schemaWithMissingValueInlineRule,
@@ -626,8 +627,15 @@ describe('cross-value validations', () => {
     });
 
     it.todo('Use a self contained rule for a conditionally applied schema');
-    it.todo('Throw if you have multiple inline rules with no template string.');
-    it.todo('Mix use of multiple inline rules and an external rule');
+
+    it('Mix use of multiple inline rules and an external rule', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaWithJSFLogicAndInlineRule, {
+        strictInputType: false,
+      });
+      handleValidation({ field_a: 10 });
+      const [, fieldB] = fields;
+      expect(fieldB.label).toEqual('Going to use 20 and 4');
+    });
   });
 
   describe('Nested fieldsets', () => {
