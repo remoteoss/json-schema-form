@@ -11,6 +11,8 @@ import {
   ifConditionWithMissingValidation,
   multiRuleSchema,
   nestedFieldsetWithValidationSchema,
+  schemaSelfContainedValueForMaximumMinimumValues,
+  schemaSelfContainedValueForTitleWithNoTemplate,
   schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
   schemaWithChecksAndThenValidationsOnThen,
   schemaWithComputedAttributeThatDoesntExist,
@@ -532,7 +534,7 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 20, field_b: 30 }).formErrors).toEqual(undefined);
     });
 
-    it('Apply a conditional computed Attrbute value', () => {
+    it('Apply a conditional computed attribute value', () => {
       const { fields, handleValidation } = createHeadlessForm(
         aConditionallyAppliedComputedAttributeValue,
         {
@@ -576,8 +578,35 @@ describe('cross-value validations', () => {
       expect(fieldB.description).toEqual('Must be between 5 and 20.');
     });
 
-    it.todo('Use a self contained rule in a schema for a title but it just uses the value');
-    it.todo('Use a self contained rule for a minimum value');
+    it('Use a self contained rule in a schema for a title but it just uses the value', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaSelfContainedValueForTitleWithNoTemplate,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+      expect(fieldB.label).toEqual('20');
+    });
+
+    it('Use a self contained rule for a minimum, maximum value', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaSelfContainedValueForMaximumMinimumValues,
+        {
+          strictInputType: false,
+        }
+      );
+      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 50, field_b: 20 }).formErrors).toEqual({
+        field_b: 'Must be greater or equal to 40',
+      });
+      expect(handleValidation({ field_a: 50, field_b: 70 }).formErrors).toEqual({
+        field_b: 'Must be smaller or equal to 60',
+      });
+      expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toEqual(undefined);
+    });
+
     it.todo('Use a self contained rule for a conditionally applied schema');
     it.todo('Throw if you have multiple inline rules with no template string.');
     it.todo('Mix use of multiple inline rules and an external rule');

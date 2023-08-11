@@ -1262,7 +1262,7 @@ export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
     field_b: {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
-        minumum: {
+        minimum: {
           rule: {
             '+': [{ var: 'field_a' }, 10],
           },
@@ -1297,6 +1297,48 @@ export const schemaWithInlineMultipleRulesForComputedAttributes = {
           },
           double_a: {
             '*': [{ var: 'field_a' }, 2],
+          },
+        },
+      },
+    },
+  },
+};
+
+export const schemaSelfContainedValueForTitleWithNoTemplate = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: {
+          value: '{{rule}}',
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+      },
+    },
+  },
+};
+
+export const schemaSelfContainedValueForMaximumMinimumValues = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        maximum: {
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+        minimum: {
+          rule: {
+            '-': [{ var: 'field_a' }, 10],
           },
         },
       },

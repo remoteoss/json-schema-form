@@ -5,6 +5,7 @@ import {
   checkIfMatchesValidationsAndComputedValues,
 } from './checkIfConditionMatches';
 import { processNode } from './helpers';
+import { buildYupSchema } from './yupSchema';
 
 jsonLogic.add_operation('Number.toFixed', (a, b) => {
   if (typeof a === 'number') return a.toFixed(b);
@@ -177,13 +178,22 @@ function replaceHandlebarsTemplates({
 }
 
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
-  return ({ validations, formValues }) => {
+  return ({ validations, isRequired, config, formValues }) => {
     const { name, computedAttributes } = fieldParams;
-    return Object.fromEntries(
+    const attributes = Object.fromEntries(
       Object.entries(computedAttributes)
         .map(handleComputedAttribute(validations, formValues, parentID, name))
         .filter(([, value]) => value !== null)
     );
+
+    return {
+      ...attributes,
+      schema: buildYupSchema(
+        { ...fieldParams, ...attributes, required: isRequired },
+        config,
+        validations
+      ),
+    };
   };
 }
 
@@ -212,6 +222,13 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
       ];
     }
 
+    if (typeof value === 'string') {
+      return [
+        key,
+        validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
+      ];
+    }
+
     if (key === 'x-jsf-presentation' && value.statement) {
       return [
         'statement',
@@ -219,10 +236,9 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
       ];
     }
 
-    return [
-      key,
-      validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
-    ];
+    if (typeof value === 'object' && value.rule) {
+      return [key, validations.getScope(parentID).evaluateValidation(value.rule, formValues)];
+    }
   };
 }
 

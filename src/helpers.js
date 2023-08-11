@@ -217,6 +217,18 @@ function updateField(field, requiredFields, node, formValues, validations, confi
       }
     });
 
+  if (field.getComputedAttributes) {
+    const computedFieldValues = field.getComputedAttributes({
+      field,
+      isRequired: fieldIsRequired,
+      node,
+      formValues,
+      config,
+      validations,
+    });
+    updateValues(computedFieldValues);
+  }
+
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
     const newFieldValues = field.calculateConditionalProperties(
@@ -236,17 +248,6 @@ function updateField(field, requiredFields, node, formValues, validations, confi
       formValues
     );
     updateValues(newFieldValues);
-  }
-
-  if (field.caclulateComputedAttributes) {
-    const computedFieldValues = field.caclulateComputedAttributes({
-      field,
-      isRequired: fieldIsRequired,
-      node,
-      formValues,
-      validations,
-    });
-    updateValues(computedFieldValues);
   }
 }
 
