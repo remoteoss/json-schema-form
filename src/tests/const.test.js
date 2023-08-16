@@ -56,3 +56,23 @@ it('Should work for a conditionally applied const', () => {
   });
   expect(handleValidation({ answer: 'yes', amount: 10 }).formErrors).toEqual(undefined);
 });
+
+it('Should show the custom error message', () => {
+  const { handleValidation } = createHeadlessForm(
+    {
+      properties: {
+        string: {
+          type: 'string',
+          const: 'hello',
+          'x-jsf-errorMessage': { const: 'You must say hello!!!' },
+        },
+      },
+    },
+    { strictInputType: false }
+  );
+  expect(handleValidation({}).formErrors).toEqual(undefined);
+  expect(handleValidation({ string: 'hi' }).formErrors).toEqual({
+    string: 'You must say hello!!!',
+  });
+  expect(handleValidation({ string: 'hello' }).formErrors).toEqual(undefined);
+});
