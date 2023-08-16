@@ -305,6 +305,19 @@ export function buildYupSchema(field, config, validations) {
     );
   }
 
+  function withConst(yupSchema) {
+    return yupSchema.test(
+      'isConst',
+      errorMessage.const ??
+        errorMessageFromConfig.const ??
+        `The only accepted value is ${propertyFields.const}.`,
+      (value) =>
+        (propertyFields.required === false && value === undefined) ||
+        value === null ||
+        value === propertyFields.const
+    );
+  }
+
   function withBaseSchema() {
     const customErrorMsg = errorMessage.type || errorMessageFromConfig.type;
     if (customErrorMsg) {
@@ -388,6 +401,10 @@ export function buildYupSchema(field, config, validations) {
 
   if (propertyFields.accept) {
     validators.push(withFileFormat);
+  }
+
+  if (propertyFields.const) {
+    validators.push(withConst);
   }
 
   if (propertyFields.requiredValidations) {
