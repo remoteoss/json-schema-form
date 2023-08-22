@@ -133,6 +133,33 @@ export const schemaWithTwoRules = {
   },
 };
 
+export const schemaWithComputedAttributes = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        // title: 'This is {{a_times_two}}!', // Will be added in next part.
+        const: 'a_times_two',
+        default: 'a_times_two',
+        // description: 'This field is 2 times bigger than field_a with value of {{a_times_two}}.', // Will be added in next part.
+      },
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    computedValues: {
+      a_times_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
+        },
+      },
+    },
+  },
+};
+
 export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
   properties: {
     field_a: {

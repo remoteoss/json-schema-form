@@ -169,7 +169,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues) {
+function updateField(field, requiredFields, node, formValues, validations, config) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -216,6 +216,18 @@ function updateField(field, requiredFields, node, formValues) {
       }
     });
 
+  if (field.getComputedAttributes) {
+    const computedFieldValues = field.getComputedAttributes({
+      field,
+      isRequired: fieldIsRequired,
+      node,
+      formValues,
+      config,
+      validations,
+    });
+    updateValues(computedFieldValues);
+  }
+
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
     const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
@@ -260,13 +272,15 @@ export function processNode({
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues);
+    updateField(field, requiredFields, node, formValues, validations, { parentID });
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues);
+    updateField(getField(fieldName, formFields), requiredFields, node, formValues, validations, {
+      parentID,
+    });
   });
 
   if (node.if) {
@@ -306,7 +320,7 @@ export function processNode({
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues);
+        updateField(field, requiredFields, node, formValues, validations, { parentID });
       });
     });
   }
@@ -442,6 +456,15 @@ export function extractParametersFromNode(schemaNode) {
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
   const requiredValidations = schemaNode['x-jsf-logic-validations'];
+  const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
+
+  // This is when a forced value is computed.
+  const decoratedComputedAttributes = {
+    ...(computedAttributes ?? {}),
+    ...(computedAttributes?.const && computedAttributes?.default
+      ? { value: computedAttributes.const }
+      : {}),
+  };
 
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
@@ -488,6 +511,7 @@ export function extractParametersFromNode(schemaNode) {
       // Handle [name].presentation
       ...presentation,
       requiredValidations,
+      computedAttributes: decoratedComputedAttributes,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
             class: 'jsf-description',
