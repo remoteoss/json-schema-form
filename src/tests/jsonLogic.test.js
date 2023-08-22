@@ -1,9 +1,16 @@
 import { createHeadlessForm } from '../createHeadlessForm';
 
 import {
+  aConditionallyAppliedComputedAttributeMinimumAndMaximum,
+  aConditionallyAppliedComputedAttributeValue,
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
+  fieldsetWithAConditionalToApplyExtraValidations,
+  fieldsetWithComputedAttributes,
+  ifConditionWithMissingComputedValue,
+  ifConditionWithMissingValidation,
   multiRuleSchema,
+  nestedFieldsetWithValidationSchema,
   schemaSelfContainedValueForMaximumMinimumValues,
   schemaSelfContainedValueForTitleWithNoTemplate,
   schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
@@ -19,6 +26,7 @@ import {
   schemaWithGreaterThanChecksForThreeFields,
   schemaWithIfStatementWithComputedValuesAndValidationChecks,
   schemaWithInlineMultipleRulesForComputedAttributes,
+  schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema,
   schemaWithInlineRuleForComputedAttributeWithCopy,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithJSFLogicAndInlineRule,
@@ -34,6 +42,10 @@ import {
   schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally,
   schemaWithValidationThatDoesNotExistOnProperty,
   schemaWithVarThatDoesNotExist,
+  simpleArrayValidationSchema,
+  twoLevelsOfJSONLogicSchema,
+  validatingASingleItemInTheArray,
+  validatingTwoNestedFieldsSchema,
 } from './jsonLogicFixtures';
 
 describe('cross-value validations', () => {
@@ -63,6 +75,146 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 5 }).formErrors).toEqual({
         field_a: 'Must be greater than 10',
       });
+    });
+  });
+
+  describe('Incorrectly written schemas', () => {
+    beforeEach(() => {
+      jest.spyOn(console, 'error').mockImplementation(() => {});
+    });
+
+    afterEach(() => {
+      console.error.mockRestore();
+    });
+
+    it('Should throw when theres a missing rule', () => {
+      createHeadlessForm(schemaWithMissingRule, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('Missing rule for validation with id of: "a_greater_than_ten".')
+      );
+    });
+
+    it('Should throw when theres a missing computed value', () => {
+      createHeadlessForm(schemaWithMissingComputedValue, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('Missing rule for computedValue with id of: "a_plus_ten".')
+      );
+    });
+
+    it('Should throw when theres an inline computed ruleset with no value.', () => {
+      createHeadlessForm(schemaWithMissingValueInlineRule, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('Cannot define multiple rules without a template string with key `value`.')
+      );
+    });
+
+    it('Should throw when a var does not exist in a rule.', () => {
+      createHeadlessForm(schemaWithVarThatDoesNotExist, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
+
+    it('Should throw when a var does not exist in a deeply nested rule', () => {
+      createHeadlessForm(schemaWithDeepVarThatDoesNotExist, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
+
+    it('Should throw when a var does not exist in a fieldset.', () => {
+      createHeadlessForm(schemaWithDeepVarThatDoesNotExistOnFieldset, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_a" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
+
+    it('On a property, it should throw an error for a requiredValidation that does not exist', () => {
+      createHeadlessForm(schemaWithValidationThatDoesNotExistOnProperty, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`Validation "iDontExist" required for "field_a" doesn't exist.`)
+      );
+    });
+
+    it('A top level logic keyword will not be able to reference fieldset properties', () => {
+      createHeadlessForm(schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"child" in rule "validation_parent" does not exist as a JSON schema property.')
+      );
+    });
+
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExist, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+      );
+    });
+
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a title.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistTitle, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+      );
+    });
+
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a description.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistDescription, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+      );
+    });
+
+    it('Error for a missing computed value in an if', () => {
+      createHeadlessForm(ifConditionWithMissingComputedValue, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" computedValue in if condition doesn't exist.`)
+      );
+    });
+
+    it('Error for a missing validation in an if', () => {
+      createHeadlessForm(ifConditionWithMissingValidation, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" validation in if condition doesn't exist.`)
+      );
+    });
+
+    it('On an inline rule for a computedAttribute, error if theres a value referenced that does not exist', () => {
+      createHeadlessForm(schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(
+          '"IdontExist" in inline rule in property "field_a.x-jsf-logic-computedAttrs.title" does not exist as a JSON schema property.'
+        )
+      );
     });
   });
 
@@ -524,6 +676,40 @@ describe('cross-value validations', () => {
       expect(fieldB.statement).toEqual({ description: 'Must be bigger than 4 and smaller than 8' });
     });
 
+    it('computedAttribute test that minimum, maximum, errorMessages.minimum, errorMessage.maximum is working', () => {
+      const { handleValidation } = createHeadlessForm(
+        aConditionallyAppliedComputedAttributeMinimumAndMaximum,
+        {
+          strictInputType: false,
+        }
+      );
+      expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual({
+        field_b: 'use 10 or more',
+      });
+      expect(handleValidation({ field_a: 20, field_b: 60 }).formErrors).toEqual({
+        field_b: 'use less than 40',
+      });
+      expect(handleValidation({ field_a: 20, field_b: 30 }).formErrors).toEqual(undefined);
+    });
+
+    it('Apply a conditional computed attribute value', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        aConditionallyAppliedComputedAttributeValue,
+        {
+          strictInputType: false,
+        }
+      );
+
+      expect(handleValidation({ field_a: 20, field_b: 1 }).formErrors).toEqual({
+        field_b: 'The only accepted value is 10.',
+      });
+
+      const [, fieldB] = fields;
+      expect(fieldB.value).toEqual(10);
+      expect(handleValidation({ field_a: 10, field_b: 1 }).formErrors).toEqual();
+      expect(fieldB.value).toEqual(undefined);
+    });
+
     it('Use a self contained rule in a schema for a title attribute', () => {
       const { fields, handleValidation } = createHeadlessForm(
         schemaWithInlineRuleForComputedAttributeWithCopy,
@@ -579,6 +765,19 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toEqual(undefined);
     });
 
+    it('Use a self contained rule for a conditionally applied schema', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(fieldB.description).toEqual('Hello world');
+      handleValidation({ field_a: 20, field_b: 0 });
+      expect(fieldB.description).toEqual('Must be between 10 and 40.');
+    });
+
     it('Mix use of multiple inline rules and an external rule', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaWithJSFLogicAndInlineRule, {
         strictInputType: false,
@@ -587,5 +786,149 @@ describe('cross-value validations', () => {
       const [, fieldB] = fields;
       expect(fieldB.label).toEqual('Going to use 20 and 4');
     });
+  });
+
+  describe('Nested fieldsets', () => {
+    it('Basic nested validation works', () => {
+      const { handleValidation } = createHeadlessForm(nestedFieldsetWithValidationSchema, {
+        strictInputType: false,
+      });
+      expect(handleValidation({}).formErrors).toEqual({ field_a: { child: 'Required field' } });
+      expect(handleValidation({ field_a: { child: 0 } }).formErrors).toEqual({
+        field_a: { child: 'Must be greater than 10!' },
+      });
+      expect(handleValidation({ field_a: { child: 11 } }).formErrors).toEqual(undefined);
+    });
+
+    it('Validating two nested fields together', () => {
+      const { handleValidation } = createHeadlessForm(validatingTwoNestedFieldsSchema, {
+        strictInputType: false,
+      });
+      expect(handleValidation({}).formErrors).toEqual({
+        field_a: { child: 'Required field', other_child: 'Required field' },
+      });
+      expect(handleValidation({ field_a: { child: 0, other_child: 0 } }).formErrors).toEqual({
+        field_a: { child: 'Must be greater than 10!', other_child: 'Must be greater than child' },
+      });
+      expect(handleValidation({ field_a: { child: 11, other_child: 12 } }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('Validate a field and a nested field together', () => {
+      const { handleValidation } = createHeadlessForm(twoLevelsOfJSONLogicSchema, {
+        strictInputType: false,
+      });
+      expect(handleValidation({}).formErrors).toEqual({
+        field_a: { child: 'Required field' },
+        field_b: 'Required field',
+      });
+      expect(handleValidation({ field_a: { child: 0 }, field_b: 0 }).formErrors).toEqual({
+        field_a: { child: 'Must be greater than 10!' },
+        field_b: 'Must be greater than 10!',
+      });
+      expect(handleValidation({ field_a: { child: 11 }, field_b: 11 }).formErrors).toEqual({
+        field_b: 'child must be greater than 15!',
+      });
+      expect(handleValidation({ field_a: { child: 16 }, field_b: 11 }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('compute a nested field attribute', () => {
+      const { fields, handleValidation } = createHeadlessForm(fieldsetWithComputedAttributes, {
+        strictInputType: false,
+      });
+      const [fieldA] = fields;
+      const [, computedField] = fieldA.fields;
+      expect(handleValidation({}).formErrors).toEqual({
+        field_a: { child: 'Required field' },
+      });
+      expect(computedField.value).toEqual(NaN);
+
+      expect(handleValidation({ field_a: { child: 10 } }).formErrors).toEqual(undefined);
+      expect(computedField.value).toEqual(100);
+      expect(computedField.description).toEqual('this is 100');
+
+      expect(handleValidation({ field_a: { child: 11 } }).formErrors).toEqual(undefined);
+      expect(computedField.value).toEqual(110);
+      expect(computedField.description).toEqual('this is 110');
+    });
+
+    it('Apply a conditional value in a nested field with a conditional extra validation.', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        fieldsetWithAConditionalToApplyExtraValidations,
+        {
+          strictInputType: false,
+        }
+      );
+      const [fieldA] = fields;
+      const [, , thirdChild] = fieldA.fields;
+      expect(thirdChild.isVisible).toEqual(false);
+      expect(thirdChild.required).toEqual(false);
+
+      expect(handleValidation({ field_a: {} }).formErrors).toEqual({
+        field_a: { child: 'Required field', other_child: 'Required field' },
+      });
+      expect(handleValidation({ field_a: { child: 0, other_child: 0 } }).formErrors).toEqual(
+        undefined
+      );
+      expect(handleValidation({ field_a: { child: 10, other_child: 0 } }).formErrors).toEqual(
+        undefined
+      );
+      expect(handleValidation({ field_a: { child: 10, other_child: 20 } }).formErrors).toEqual({
+        field_a: { third_child: 'Required field' },
+      });
+      expect(thirdChild.isVisible).toEqual(true);
+      expect(thirdChild.required).toEqual(true);
+
+      expect(
+        handleValidation({ field_a: { child: 10, other_child: 20, third_child: 10 } }).formErrors
+      ).toEqual({
+        field_a: { third_child: 'Must be greater than other child.' },
+      });
+
+      expect(
+        handleValidation({ field_a: { child: 10, other_child: 20, third_child: 30 } }).formErrors
+      ).toEqual(undefined);
+    });
+  });
+
+  describe('Array validation', () => {
+    it('Should apply the json logic on an individual array item', () => {
+      const { handleValidation } = createHeadlessForm(simpleArrayValidationSchema, {
+        strictInputType: false,
+      });
+      expect(handleValidation({ field_array: [] }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_array: [{}] }).formErrors).toEqual({
+        field_array: [{ array_item: 'Required field' }],
+      });
+      expect(handleValidation({ field_array: [{ array_item: 1 }] }).formErrors).toEqual({
+        field_array: [{ array_item: 'Must be divisible by two' }],
+      });
+      expect(handleValidation({ field_array: [{ array_item: 2 }] }).formErrors).toEqual(undefined);
+      expect(
+        handleValidation({ field_array: [{ array_item: 2 }, { array_item: 1 }] }).formErrors
+      ).toEqual({
+        field_array: [undefined, { array_item: 'Must be divisible by two' }],
+      });
+      expect(
+        handleValidation({ field_array: [{ array_item: 2 }, { array_item: 2 }] }).formErrors
+      ).toEqual(undefined);
+    });
+
+    it('Validating a single item in an array should work', () => {
+      const { handleValidation } = createHeadlessForm(validatingASingleItemInTheArray, {
+        strictInputType: false,
+      });
+      expect(handleValidation({ field_array: [] }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_array: [{ item: 0 }] }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_array: [{ item: 0 }, { item: 3 }] }).formErrors).toEqual({
+        field_array: 'Second item in array must be divisible by 4',
+      });
+    });
+
+    // FIXME: This doesn't work because conditionals in items are not supported.
+    it.todo('Should be able to use conditionals in items');
   });
 });

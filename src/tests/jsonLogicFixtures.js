@@ -246,6 +246,48 @@ export const schemaWithComputedAttributeThatDoesntExistDescription = {
   },
 };
 
+export const ifConditionWithMissingComputedValue = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+  },
+  'x-jsf-logic': {
+    allOf: [
+      {
+        if: {
+          computedValues: {
+            iDontExist: {
+              const: 10,
+            },
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const ifConditionWithMissingValidation = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+  },
+  'x-jsf-logic': {
+    allOf: [
+      {
+        if: {
+          validations: {
+            iDontExist: {
+              const: true,
+            },
+          },
+        },
+      },
+    ],
+  },
+};
+
 export const schemaWithGreaterThanChecksForThreeFields = {
   properties: {
     field_a: {
@@ -753,6 +795,239 @@ export const schemaWithComputedAttributes = {
   },
 };
 
+export const nestedFieldsetWithValidationSchema = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+          'x-jsf-logic-validations': ['child_greater_than_10'],
+        },
+      },
+      required: ['child'],
+      'x-jsf-logic': {
+        validations: {
+          child_greater_than_10: {
+            errorMessage: 'Must be greater than 10!',
+            rule: {
+              '>': [{ var: 'child' }, 10],
+            },
+          },
+        },
+      },
+    },
+  },
+  required: ['field_a'],
+};
+
+export const validatingTwoNestedFieldsSchema = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+          'x-jsf-logic-validations': ['child_greater_than_10'],
+        },
+        other_child: {
+          type: 'number',
+          'x-jsf-logic-validations': ['greater_than_child'],
+        },
+      },
+      required: ['child', 'other_child'],
+      'x-jsf-logic': {
+        validations: {
+          child_greater_than_10: {
+            errorMessage: 'Must be greater than 10!',
+            rule: {
+              '>': [{ var: 'child' }, 10],
+            },
+          },
+          greater_than_child: {
+            errorMessage: 'Must be greater than child',
+            rule: {
+              '>': [{ var: 'other_child' }, { var: 'child' }],
+            },
+          },
+        },
+      },
+    },
+  },
+  required: ['field_a'],
+};
+
+export const twoLevelsOfJSONLogicSchema = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+          'x-jsf-logic-validations': ['child_greater_than_10'],
+        },
+      },
+      required: ['child'],
+      'x-jsf-logic': {
+        validations: {
+          child_greater_than_10: {
+            errorMessage: 'Must be greater than 10!',
+            rule: {
+              '>': [{ var: 'child' }, 10],
+            },
+          },
+        },
+      },
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-validations': ['validation_parent', 'peek_to_nested'],
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      validation_parent: {
+        errorMessage: 'Must be greater than 10!',
+        rule: {
+          '>': [{ var: 'field_b' }, 10],
+        },
+      },
+      peek_to_nested: {
+        errorMessage: 'child must be greater than 15!',
+        rule: {
+          '>': [{ var: 'field_a.child' }, 15],
+        },
+      },
+    },
+  },
+  required: ['field_a', 'field_b'],
+};
+
+export const fieldsetWithComputedAttributes = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+        },
+        other_child: {
+          type: 'number',
+          readOnly: true,
+          'x-jsf-logic-computedAttrs': {
+            default: 'child_times_10',
+            const: 'child_times_10',
+            description: 'this is {{child_times_10}}',
+          },
+        },
+      },
+      required: ['child'],
+      'x-jsf-logic': {
+        computedValues: {
+          child_times_10: {
+            rule: {
+              '*': [{ var: 'child' }, 10],
+            },
+          },
+        },
+      },
+    },
+  },
+  required: ['field_a'],
+};
+
+export const fieldsetWithAConditionalToApplyExtraValidations = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+        },
+        other_child: {
+          type: 'number',
+        },
+        third_child: {
+          type: 'number',
+        },
+      },
+      required: ['child', 'other_child'],
+      'x-jsf-logic': {
+        validations: {
+          child_is_greater_than_other_child: {
+            rule: {
+              '>': [{ var: 'child' }, { var: 'other_child' }],
+            },
+          },
+          third_child_is_greater_than_other_child: {
+            errorMessage: 'Must be greater than other child.',
+            rule: {
+              '>': [{ var: 'third_child' }, { var: 'other_child' }],
+            },
+          },
+        },
+        computedValues: {
+          child_times_10: {
+            rule: {
+              '*': [{ var: 'child' }, 10],
+            },
+          },
+        },
+        allOf: [
+          {
+            if: {
+              computedValues: {
+                child_times_10: {
+                  const: 100,
+                },
+              },
+              validations: {
+                child_is_greater_than_other_child: {
+                  const: false,
+                },
+              },
+              properties: {
+                child: {
+                  const: 10,
+                },
+              },
+            },
+            then: {
+              required: ['third_child'],
+              properties: {
+                third_child: {
+                  'x-jsf-logic-validations': ['third_child_is_greater_than_other_child'],
+                },
+              },
+            },
+            else: {
+              properties: {
+                third_child: false,
+              },
+            },
+          },
+        ],
+      },
+    },
+  },
+  required: ['field_a'],
+};
+
 export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
   properties: {
     field_a: {
@@ -792,6 +1067,192 @@ export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
   required: ['field_a'],
 };
 
+export const simpleArrayValidationSchema = {
+  properties: {
+    field_array: {
+      type: 'array',
+      items: {
+        properties: {
+          array_item: {
+            type: 'number',
+            'x-jsf-logic-validations': ['divisible_by_two'],
+          },
+        },
+        required: ['array_item'],
+        'x-jsf-logic': {
+          validations: {
+            divisible_by_two: {
+              errorMessage: 'Must be divisible by two',
+              rule: {
+                '===': [{ '%': [{ var: 'array_item' }, 2] }, 0],
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const validatingASingleItemInTheArray = {
+  properties: {
+    field_array: {
+      type: 'array',
+      'x-jsf-logic-validations': ['second_item_is_divisible_by_four'],
+      items: {
+        properties: {
+          item: {
+            type: 'number',
+          },
+        },
+        required: ['item'],
+      },
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      second_item_is_divisible_by_four: {
+        errorMessage: 'Second item in array must be divisible by 4',
+        rule: {
+          '===': [{ '%': [{ var: 'field_array.1.item' }, 4] }, 0],
+        },
+      },
+    },
+  },
+};
+
+// FIXME: This doesn't work because conditionals in items are not supported.
+export const conditionalAppliedInAnItem = {
+  properties: {
+    field_array: {
+      type: 'array',
+      items: {
+        properties: {
+          item: {
+            type: 'number',
+          },
+          other_item: {
+            type: 'number',
+          },
+        },
+        required: ['item'],
+        'x-jsf-logic': {
+          validations: {
+            divisible_by_three: {
+              rule: {
+                '===': [{ '%': [{ var: 'item' }, 3] }, 0],
+              },
+            },
+            other_item_divisible_by_three: {
+              errorMessage: 'Must be disivisble_by_three',
+              rule: {
+                '===': [{ '%': [{ var: 'other_item' }, 3] }, 0],
+              },
+            },
+          },
+          allOf: [
+            {
+              if: { validations: { divisible_by_three: { cosnt: true } } },
+              then: {
+                required: ['other_item'],
+                other_item: { 'x-jsf-logic-validations': ['other_item_divisible_by_three'] },
+              },
+              else: { properties: { other_item: false } },
+            },
+          ],
+        },
+      },
+    },
+  },
+};
+
+export const aConditionallyAppliedComputedAttributeMinimumAndMaximum = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+  },
+  allOf: [
+    {
+      if: { properties: { field_a: { const: 20 } } },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-logic-computedAttrs': {
+              minimum: 'a_divided_by_two',
+              maximum: 'a_multiplied_by_two',
+              'x-jsf-errorMessage': {
+                minimum: 'use {{a_divided_by_two}} or more',
+                maximum: 'use less than {{a_multiplied_by_two}}',
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
+  'x-jsf-logic': {
+    computedValues: {
+      a_divided_by_two: {
+        rule: {
+          '/': [{ var: 'field_a' }, 2],
+        },
+      },
+      a_multiplied_by_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
+        },
+      },
+    },
+  },
+};
+
+export const aConditionallyAppliedComputedAttributeValue = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+  },
+  allOf: [
+    {
+      if: { properties: { field_a: { const: 20 } } },
+      then: {
+        properties: {
+          field_b: {
+            readOnly: true,
+            'x-jsf-logic-computedAttrs': {
+              const: 'a_divided_by_two',
+              default: 'a_divided_by_two',
+            },
+          },
+        },
+      },
+      else: {
+        properties: {
+          field_b: {
+            readOnly: false,
+          },
+        },
+      },
+    },
+  ],
+  'x-jsf-logic': {
+    computedValues: {
+      a_divided_by_two: {
+        rule: {
+          '/': [{ var: 'field_a' }, 2],
+        },
+      },
+    },
+  },
+};
+
 export const schemaWithInlineRuleForComputedAttributeWithCopy = {
   properties: {
     field_a: {
@@ -827,6 +1288,73 @@ export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
       },
     },
   },
+};
+
+export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        minimum: {
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+        'x-jsf-errorMessage': {
+          minimum: {
+            value: 'This should be greater than {{rule}}.',
+            rule: {
+              '+': [{ var: 'field_a' }, 10],
+            },
+          },
+        },
+      },
+    },
+  },
+};
+
+export const schemaWithInlineRuleForComputedAttributeInConditionallyAppliedSchema = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      description: 'Hello world',
+      type: 'number',
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          field_a: {
+            const: 20,
+          },
+        },
+        required: ['field_a'],
+      },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-logic-computedAttrs': {
+              description: {
+                value: 'Must be between {{half_a}} and {{double_a}}.',
+                half_a: {
+                  '/': [{ var: 'field_a' }, 2],
+                },
+                double_a: {
+                  '*': [{ var: 'field_a' }, 2],
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
 };
 
 export const schemaWithInlineMultipleRulesForComputedAttributes = {

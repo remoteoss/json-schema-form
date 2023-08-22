@@ -42,7 +42,7 @@ export function getField(fieldName, fields) {
  * @returns
  */
 export function validateFieldSchema(field, value, validations) {
-  const validator = buildYupSchema(field, {}, validations);
+  const validator = buildYupSchema(field, undefined, validations);
   return validator().isValidSync(value);
 }
 

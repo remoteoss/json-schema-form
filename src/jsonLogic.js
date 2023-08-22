@@ -216,7 +216,7 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
     if (key === 'x-jsf-errorMessage') {
       return [
         'errorMessage',
-        handleNestedObjectForComputedValues(value, formValues, parentID, validations, name),
+        handleComputedObjectValue(value, formValues, parentID, validations, name),
       ];
     }
 
@@ -230,13 +230,7 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
     if (key === 'x-jsf-presentation' && value.statement) {
       return [
         'statement',
-        handleNestedObjectForComputedValues(
-          value.statement,
-          formValues,
-          parentID,
-          validations,
-          name
-        ),
+        handleComputedObjectValue(value.statement, formValues, parentID, validations, name),
       ];
     }
 
@@ -246,7 +240,7 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
   };
 }
 
-function handleNestedObjectForComputedValues(values, formValues, parentID, validations, name) {
+function handleComputedObjectValue(values, formValues, parentID, validations, name) {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => {
       return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];

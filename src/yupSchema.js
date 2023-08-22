@@ -305,6 +305,19 @@ export function buildYupSchema(field, config, validations) {
     );
   }
 
+  function withConst(yupSchema) {
+    return yupSchema.test(
+      'isConst',
+      errorMessage.const ??
+        errorMessageFromConfig.const ??
+        `The only accepted value is ${propertyFields.const}.`,
+      (value) =>
+        (propertyFields.required === false && value === undefined) ||
+        value === null ||
+        value === propertyFields.const
+    );
+  }
+
   function withBaseSchema() {
     const customErrorMsg = errorMessage.type || errorMessageFromConfig.type;
     if (customErrorMsg) {
@@ -326,7 +339,8 @@ export function buildYupSchema(field, config, validations) {
             ...fieldSetfield,
             inputType: fieldSetfield.type,
           },
-          config
+          { ...config, parentID: field.name },
+          validations
         )();
       }
     });
@@ -338,7 +352,11 @@ export function buildYupSchema(field, config, validations) {
       propertyFields.nthFieldGroup.fields().reduce(
         (schema, groupArrayField) => ({
           ...schema,
-          [groupArrayField.name]: buildYupSchema(groupArrayField, config)(),
+          [groupArrayField.name]: buildYupSchema(
+            groupArrayField,
+            { ...config, parentID: `${propertyFields.nthFieldGroup.name}[]` },
+            validations
+          )(),
         }),
         {}
       )
@@ -390,6 +408,10 @@ export function buildYupSchema(field, config, validations) {
     validators.push(withFileFormat);
   }
 
+  if (propertyFields.const) {
+    validators.push(withConst);
+  }
+
   if (propertyFields.requiredValidations) {
     propertyFields.requiredValidations.forEach((id) =>
       validators.push(yupSchemaWithCustomJSONLogic({ field, id, validations, config }))
@@ -412,7 +434,7 @@ export function getNoSortEdges(fields = []) {
   }, []);
 }
 
-function getSchema(fields = [], config) {
+function getSchema(fields = [], config, validations) {
   const newSchema = {};
 
   fields.forEach((field) => {
@@ -421,13 +443,17 @@ function getSchema(fields = [], config) {
         if (field.inputType === supportedTypes.FIELDSET) {
           // Fieldset validation schemas depend on the inner schemas of their fields,
           // so we need to rebuild it to take into account any of those updates.
-          const fieldsetSchema = buildYupSchema(field, config)();
+          const fieldsetSchema = buildYupSchema(
+            field,
+            { ...config, parentID: field.name },
+            validations
+          )();
           newSchema[field.name] = fieldsetSchema;
         } else {
           newSchema[field.name] = field.schema;
         }
       } else {
-        Object.assign(newSchema, getSchema(field.fields, config));
+        Object.assign(newSchema, getSchema(field.fields, config, validations));
       }
     }
   });
@@ -443,6 +469,6 @@ function getSchema(fields = [], config) {
  * @param {JsfConfig} config - Config
  * @returns
  */
-export function buildCompleteYupSchema(fields, config) {
-  return object().shape(getSchema(fields, config), getNoSortEdges(fields));
+export function buildCompleteYupSchema(fields, config, validations) {
+  return object().shape(getSchema(fields, config, validations), getNoSortEdges(fields));
 }
