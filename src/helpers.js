@@ -569,8 +569,8 @@ export function yupToFormErrors(yupError) {
  * @param {JsfConfig} config - jsf config
  * @returns {Function(values: Object): { YupError: YupObject, formErrors: Object }} Callback that returns Yup errors <YupObject>
  */
-export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
-  updateFieldsProperties(fields, values, jsonSchema);
+export const handleValuesChange = (fields, jsonSchema, config, validations) => (values) => {
+  updateFieldsProperties(fields, values, jsonSchema, validations);
 
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
   let errors;

@@ -1,5 +1,7 @@
 import jsonLogic from 'json-logic-js';
 
+import { buildYupSchema } from './yupSchema';
+
 /**
  * Parses the JSON schema to extract the advanced validation logic and returns a set of functionality to check the current status of said rules.
  * @param {Object} schema - JSON schema node
@@ -107,8 +109,37 @@ export function yupSchemaWithCustomJSONLogic({ field, validations, config, id })
     );
 }
 
+function replaceHandlebarsTemplates({
+  value: toReplace,
+  validations,
+  formValues,
+  parentID,
+  name: fieldName,
+}) {
+  if (typeof toReplace === 'string') {
+    return toReplace.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+      return validations
+        .getScope(parentID)
+        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+    });
+  } else if (typeof toReplace === 'object') {
+    const { value, ...rules } = toReplace;
+
+    const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
+      const computedValue = validations.getScope(parentID).evaluateValidation(rule, formValues);
+      return prev.replaceAll(`{{${key}}}`, computedValue);
+    }, value);
+
+    return computedTemplateValue.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
+      return validations
+        .getScope(parentID)
+        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+    });
+  }
+}
+
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
-  return ({ validations, formValues }) => {
+  return ({ validations, isRequired, config, formValues }) => {
     const { name, computedAttributes } = fieldParams;
     const attributes = Object.fromEntries(
       Object.entries(computedAttributes)
@@ -116,17 +147,41 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
         .filter(([, value]) => value !== null)
     );
 
-    return attributes;
+    return {
+      ...attributes,
+      schema: buildYupSchema(
+        { ...fieldParams, ...attributes, required: isRequired },
+        config,
+        validations
+      ),
+    };
   };
 }
 
 function handleComputedAttribute(validations, formValues, parentID, name) {
   return ([key, value]) => {
+    if (key === 'description')
+      return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
+
+    if (key === 'title') {
+      return [
+        'label',
+        replaceHandlebarsTemplates({ value, validations, formValues, parentID, name }),
+      ];
+    }
+
     if (key === 'const')
       return [
         key,
         validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
       ];
+
+    if (key === 'x-jsf-errorMessage') {
+      return [
+        'errorMessage',
+        handleNestedObjectForComputedValues(value, formValues, parentID, validations, name),
+      ];
+    }
 
     if (typeof value === 'string') {
       return [
@@ -134,5 +189,26 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
         validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
       ];
     }
+
+    if (key === 'x-jsf-presentation' && value.statement) {
+      return [
+        'statement',
+        handleNestedObjectForComputedValues(
+          value.statement,
+          formValues,
+          parentID,
+          validations,
+          name
+        ),
+      ];
+    }
   };
+}
+
+function handleNestedObjectForComputedValues(values, formValues, parentID, validations, name) {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => {
+      return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
+    })
+  );
 }
