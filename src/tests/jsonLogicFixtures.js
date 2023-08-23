@@ -141,10 +141,10 @@ export const schemaWithComputedAttributes = {
     field_b: {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
-        // title: 'This is {{a_times_two}}!', // Will be added in next part.
+        title: 'This is {{a_times_two}}!',
         const: 'a_times_two',
         default: 'a_times_two',
-        // description: 'This field is 2 times bigger than field_a with value of {{a_times_two}}.', // Will be added in next part.
+        description: 'This field is 2 times bigger than field_a with value of {{a_times_two}}.',
       },
     },
   },
@@ -198,6 +198,45 @@ export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
               '+': [{ var: 'field_a' }, 10],
             },
           },
+        },
+      },
+    },
+  },
+};
+
+export const schemaWithComputedAttributesAndErrorMessages = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        minimum: 'a_times_two',
+        maximum: 'a_times_four',
+        'x-jsf-errorMessage': {
+          minimum: 'Must be bigger than {{a_times_two}}',
+          maximum: 'Must be smaller than {{a_times_four}}',
+        },
+        'x-jsf-presentation': {
+          statement: {
+            description: 'Must be bigger than {{a_times_two}} and smaller than {{a_times_four}}',
+          },
+        },
+      },
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    computedValues: {
+      a_times_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
+        },
+      },
+      a_times_four: {
+        rule: {
+          '*': [{ var: 'field_a' }, 4],
         },
       },
     },

@@ -5,6 +5,7 @@ import {
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
   schemaWithComputedAttributes,
+  schemaWithComputedAttributesAndErrorMessages,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithTwoRules,
@@ -221,10 +222,31 @@ describe('jsonLogic: cross-values validations', () => {
         initialValues: { field_a: 2 },
       });
       const fieldB = fields.find((i) => i.name === 'field_b');
+      expect(fieldB.description).toEqual(
+        'This field is 2 times bigger than field_a with value of 4.'
+      );
       expect(fieldB.default).toEqual(4);
       expect(fieldB.value).toEqual(4);
       handleValidation({ field_a: 4 });
       expect(fieldB.default).toEqual(8);
+      expect(fieldB.label).toEqual('This is 4!');
+    });
+
+    it('Derived errorMessages and statements work', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithComputedAttributesAndErrorMessages,
+        { strictInputType: false }
+      );
+      const fieldB = fields.find((i) => i.name === 'field_b');
+      expect(handleValidation({ field_a: 2, field_b: 0 }).formErrors).toEqual({
+        field_b: 'Must be bigger than 4',
+      });
+      expect(handleValidation({ field_a: 2, field_b: 100 }).formErrors).toEqual({
+        field_b: 'Must be smaller than 8',
+      });
+      expect(fieldB.minimum).toEqual(4);
+      expect(fieldB.maximum).toEqual(8);
+      expect(fieldB.statement).toEqual({ description: 'Must be bigger than 4 and smaller than 8' });
     });
   });
 });
