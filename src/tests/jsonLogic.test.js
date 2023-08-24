@@ -144,6 +144,14 @@ describe('cross-value validations', () => {
       );
     });
 
+    it('Should throw when a var does not exist in a rule.', () => {
+      createHeadlessForm(schemaWithVarThatDoesNotExist, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
+
     it('Should throw when theres an inline computed ruleset with no value.', () => {
       createHeadlessForm(schemaWithMissingValueInlineRule, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
@@ -152,11 +160,33 @@ describe('cross-value validations', () => {
       );
     });
 
-    it('Should throw when a var does not exist in a rule.', () => {
-      createHeadlessForm(schemaWithVarThatDoesNotExist, { strictInputType: false });
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExist, {
+        strictInputType: false,
+      });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+      );
+    });
+
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a title.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistTitle, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+      );
+    });
+
+    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a description.', () => {
+      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistDescription, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
       );
     });
 
@@ -193,36 +223,6 @@ describe('cross-value validations', () => {
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('"child" in rule "validation_parent" does not exist as a JSON schema property.')
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExist, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a title.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistTitle, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a description.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistDescription, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
       );
     });
 
