@@ -8,6 +8,7 @@ import { lazy } from 'yup';
 import { checkIfConditionMatches } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
+import { processJSONLogicNode } from './jsonLogic';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
@@ -230,7 +231,13 @@ function updateField(field, requiredFields, node, formValues, validations, confi
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
+    const newFieldValues = field.calculateConditionalProperties(
+      fieldIsRequired,
+      node,
+      validations,
+      config,
+      formValues
+    );
     updateValues(newFieldValues);
   }
 
@@ -284,7 +291,7 @@ export function processNode({
   });
 
   if (node.if) {
-    const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
+    const matchesCondition = checkIfConditionMatches(node, formValues, formFields, validations);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
@@ -356,6 +363,18 @@ export function processNode({
         });
       }
     });
+  }
+
+  if (node['x-jsf-logic']) {
+    const { required: requiredFromLogic } = processJSONLogicNode({
+      node: node['x-jsf-logic'],
+      formValues,
+      formFields,
+      accRequired: requiredFields,
+      parentID,
+      validations,
+    });
+    requiredFromLogic.forEach((field) => requiredFields.add(field));
   }
 
   return {
@@ -475,6 +494,9 @@ export function extractParametersFromNode(schemaNode) {
 
   return omitBy(
     {
+      const: node.const,
+      // This is a "forced value" when both const and default are present.
+      ...(node.const && node.default ? { value: node.const } : {}),
       label: node.title,
       readOnly: node.readOnly,
       ...(node.deprecated && {
@@ -572,7 +594,7 @@ export function yupToFormErrors(yupError) {
 export const handleValuesChange = (fields, jsonSchema, config, validations) => (values) => {
   updateFieldsProperties(fields, values, jsonSchema, validations);
 
-  const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
+  const lazySchema = lazy(() => buildCompleteYupSchema(fields, config, validations));
   let errors;
 
   try {

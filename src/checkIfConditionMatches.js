@@ -7,8 +7,8 @@ import { hasProperty } from './utils';
  * @param {Object} formValues - form state
  * @returns {Boolean}
  */
-export function checkIfConditionMatches(node, formValues, formFields) {
-  return Object.keys(node.if.properties).every((name) => {
+export function checkIfConditionMatches(node, formValues, formFields, validations) {
+  return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
     const value = formValues[name];
     const hasEmptyValue =
@@ -50,7 +50,8 @@ export function checkIfConditionMatches(node, formValues, formFields) {
       return checkIfConditionMatches(
         { if: currentProperty },
         formValues[name],
-        getField(name, formFields).fields
+        getField(name, formFields).fields,
+        validations
       );
     }
 
@@ -67,4 +68,31 @@ export function checkIfConditionMatches(node, formValues, formFields) {
       value
     );
   });
+}
+
+export function checkIfMatchesValidationsAndComputedValues(
+  node,
+  formValues,
+  validations,
+  parentID
+) {
+  const validationsMatch = Object.entries(node.if.validations ?? {}).every(([name, property]) => {
+    const currentValue = validations
+      .getScope(parentID)
+      .evaluateValidationRuleInCondition(name, formValues);
+    if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
+    return false;
+  });
+
+  const computedValuesMatch = Object.entries(node.if.computedValues ?? {}).every(
+    ([name, property]) => {
+      const currentValue = validations
+        .getScope(parentID)
+        .evaluateComputedValueRuleInCondition(name, formValues);
+      if (Object.hasOwn(property, 'const') && currentValue === property.const) return true;
+      return false;
+    }
+  );
+
+  return computedValuesMatch && validationsMatch;
 }

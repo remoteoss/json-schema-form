@@ -100,7 +100,7 @@ function removeInvalidAttributes(fields) {
  *
  * @returns {FieldParameters}
  */
-function buildFieldParameters(name, fieldProperties, required = [], config = {}) {
+function buildFieldParameters(name, fieldProperties, required = [], config = {}, validations) {
   const { position } = pickXKey(fieldProperties, 'presentation') ?? {};
   let fields;
 
@@ -108,9 +108,14 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
 
   if (inputType === supportedTypes.FIELDSET) {
     // eslint-disable-next-line no-use-before-define
-    fields = getFieldsFromJSONSchema(fieldProperties, {
-      customProperties: get(config, `customProperties.${name}`, {}),
-    });
+    fields = getFieldsFromJSONSchema(
+      fieldProperties,
+      {
+        customProperties: get(config, `customProperties.${name}`, {}),
+        parentID: name,
+      },
+      validations
+    );
   }
 
   const result = {
@@ -137,7 +142,8 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
  */
 function convertJSONSchemaPropertiesToFieldParameters(
   { properties, required, 'x-jsf-order': order },
-  config = {}
+  config = {},
+  validations
 ) {
   const sortFields = (a, b) => sortByOrderOrPosition(a, b, order);
 
@@ -145,7 +151,7 @@ function convertJSONSchemaPropertiesToFieldParameters(
   // their position and then remove the position property (since it's no longer needed)
   return Object.entries(properties)
     .filter(([, value]) => typeof value === 'object')
-    .map(([key, value]) => buildFieldParameters(key, value, required, config))
+    .map(([key, value]) => buildFieldParameters(key, value, required, config, validations))
     .sort(sortFields)
     .map(({ position, ...fieldParams }) => fieldParams);
 }
@@ -233,7 +239,8 @@ function buildField(fieldParams, config, scopedJsonSchema, validations) {
 
   const yupSchema = buildYupSchema(fieldParams, config, validations);
   const calculateConditionalFieldsClosure =
-    fieldParams.isDynamic && calculateConditionalProperties(fieldParams, customProperties);
+    fieldParams.isDynamic &&
+    calculateConditionalProperties(fieldParams, customProperties, validations, config);
 
   const calculateCustomValidationPropertiesClosure = calculateCustomValidationProperties(
     fieldParams,
@@ -283,7 +290,11 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, validations) {
     return [];
   }
 
-  const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(scopedJsonSchema, config);
+  const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(
+    scopedJsonSchema,
+    config,
+    validations
+  );
 
   applyFieldsDependencies(fieldParamsList, scopedJsonSchema);
 

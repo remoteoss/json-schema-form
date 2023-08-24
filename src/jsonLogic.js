@@ -1,5 +1,10 @@
 import jsonLogic from 'json-logic-js';
 
+import {
+  checkIfConditionMatches,
+  checkIfMatchesValidationsAndComputedValues,
+} from './checkIfConditionMatches';
+import { processNode } from './helpers';
 import { buildYupSchema } from './yupSchema';
 
 /**
@@ -247,6 +252,67 @@ function handleNestedObjectForComputedValues(values, formValues, parentID, valid
       return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
     })
   );
+}
+
+export function processJSONLogicNode({
+  node,
+  formFields,
+  formValues,
+  accRequired,
+  parentID,
+  validations,
+}) {
+  const requiredFields = new Set(accRequired);
+
+  if (node.allOf) {
+    node.allOf
+      .map((allOfNode) =>
+        processJSONLogicNode({ node: allOfNode, formValues, formFields, validations, parentID })
+      )
+      .forEach(({ required: allOfItemRequired }) => {
+        allOfItemRequired.forEach(requiredFields.add, requiredFields);
+      });
+  }
+
+  if (node.if) {
+    const matchesPropertyCondition = checkIfConditionMatches(
+      node,
+      formValues,
+      formFields,
+      validations
+    );
+    const matchesValidationsAndComputedValues = checkIfMatchesValidationsAndComputedValues(
+      node,
+      formValues,
+      validations,
+      parentID
+    );
+
+    const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
+
+    if (isConditionMatch && node.then) {
+      const { required: branchRequired } = processNode({
+        node: node.then,
+        formValues,
+        formFields,
+        accRequired,
+        validations,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+    if (!isConditionMatch && node.else) {
+      const { required: branchRequired } = processNode({
+        node: node.else,
+        formValues,
+        formFields,
+        accRequired: requiredFields,
+        validations,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+  }
+
+  return { required: requiredFields };
 }
 
 function buildSampleEmptyObject(schema = {}) {
