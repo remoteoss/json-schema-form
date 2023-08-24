@@ -100,7 +100,7 @@ function removeInvalidAttributes(fields) {
  *
  * @returns {FieldParameters}
  */
-function buildFieldParameters(name, fieldProperties, required = [], config = {}, validations) {
+function buildFieldParameters(name, fieldProperties, required = [], config = {}) {
   const { position } = pickXKey(fieldProperties, 'presentation') ?? {};
   let fields;
 
@@ -108,14 +108,9 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {},
 
   if (inputType === supportedTypes.FIELDSET) {
     // eslint-disable-next-line no-use-before-define
-    fields = getFieldsFromJSONSchema(
-      fieldProperties,
-      {
-        customProperties: get(config, `customProperties.${name}`, {}),
-        parentID: name,
-      },
-      validations
-    );
+    fields = getFieldsFromJSONSchema(fieldProperties, {
+      customProperties: get(config, `customProperties.${name}`, {}),
+    });
   }
 
   const result = {
@@ -290,11 +285,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, validations) {
     return [];
   }
 
-  const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(
-    scopedJsonSchema,
-    config,
-    validations
-  );
+  const fieldParamsList = convertJSONSchemaPropertiesToFieldParameters(scopedJsonSchema, config);
 
   applyFieldsDependencies(fieldParamsList, scopedJsonSchema);
 
