@@ -9,13 +9,18 @@ import {
   schemaWithComputedAttributeThatDoesntExistTitle,
   schemaWithComputedAttributes,
   schemaWithComputedAttributesAndErrorMessages,
+  schemaWithDeepVarThatDoesNotExist,
+  schemaWithDeepVarThatDoesNotExistOnFieldset,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithMissingComputedValue,
   schemaWithMissingRule,
   schemaWithMissingValueInlineRule,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
+  schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
+  schemaWithValidationThatDoesNotExistOnProperty,
+  schemaWithVarThatDoesNotExist,
 } from './jsonLogicFixtures';
 
 describe('cross-value validations', () => {
@@ -96,6 +101,50 @@ describe('cross-value validations', () => {
 
     afterEach(() => {
       console.error.mockRestore();
+    });
+
+    it('Should throw when a var does not exist in a rule.', () => {
+      createHeadlessForm(schemaWithVarThatDoesNotExist, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
+
+    it('Should throw when a var does not exist in a deeply nested rule', () => {
+      createHeadlessForm(schemaWithDeepVarThatDoesNotExist, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
+
+    it('Should throw when a var does not exist in a fieldset.', () => {
+      createHeadlessForm(schemaWithDeepVarThatDoesNotExistOnFieldset, { strictInputType: false });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"field_a" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
+      );
+    });
+
+    it('On a property, it should throw an error for a requiredValidation that does not exist', () => {
+      createHeadlessForm(schemaWithValidationThatDoesNotExistOnProperty, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error(`Validation "iDontExist" required for "field_a" doesn't exist.`)
+      );
+    });
+
+    it('A top level logic keyword will not be able to reference fieldset properties', () => {
+      createHeadlessForm(schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset, {
+        strictInputType: false,
+      });
+      expect(console.error).toHaveBeenCalledWith(
+        'JSON Schema invalid!',
+        Error('"child" in rule "validation_parent" does not exist as a JSON schema property.')
+      );
     });
 
     it('Should throw when theres a missing rule', () => {

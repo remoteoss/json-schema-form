@@ -79,6 +79,9 @@ function createValidationsScope(schema) {
     evaluateValidation,
     evaluateValidationRuleInCondition(id, values) {
       const validation = validationMap.get(id);
+      if (validation === undefined)
+        throw Error(`"${id}" validation in if condition doesn't exist.`);
+
       return evaluateValidation(validation.rule, values);
     },
     evaluateComputedValueRuleForField(id, values, fieldName) {
@@ -90,6 +93,9 @@ function createValidationsScope(schema) {
     },
     evaluateComputedValueRuleInCondition(id, values) {
       const validation = computedValuesMap.get(id);
+      if (validation === undefined)
+        throw Error(`"${id}" computedValue in if condition doesn't exist.`);
+
       return evaluateValidation(validation.rule, values);
     },
   };
@@ -116,6 +122,10 @@ function clean(values = {}) {
 export function yupSchemaWithCustomJSONLogic({ field, validations, config, id }) {
   const { parentID = 'root' } = config;
   const validation = validations.getScope(parentID).validationMap.get(id);
+
+  if (validation === undefined) {
+    throw Error(`Validation "${id}" required for "${field.name}" doesn't exist.`);
+  }
 
   return (yupSchema) =>
     yupSchema.test(
