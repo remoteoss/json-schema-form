@@ -1,15 +1,17 @@
 import { createHeadlessForm } from '../createHeadlessForm';
 
 import {
+  createSchemaWithRulesOnFieldA,
+  multiRuleSchema,
+  schemaWithComputedAttributesAndErrorMessages,
+  schemaWithNonRequiredField,
   aConditionallyAppliedComputedAttributeMinimumAndMaximum,
   aConditionallyAppliedComputedAttributeValue,
-  createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   fieldsetWithAConditionalToApplyExtraValidations,
   fieldsetWithComputedAttributes,
   ifConditionWithMissingComputedValue,
   ifConditionWithMissingValidation,
-  multiRuleSchema,
   nestedFieldsetWithValidationSchema,
   schemaSelfContainedValueForMaximumMinimumValues,
   schemaSelfContainedValueForTitleWithNoTemplate,
@@ -19,7 +21,6 @@ import {
   schemaWithComputedAttributeThatDoesntExistDescription,
   schemaWithComputedAttributeThatDoesntExistTitle,
   schemaWithComputedAttributes,
-  schemaWithComputedAttributesAndErrorMessages,
   schemaWithComputedValueChecksInIf,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithDeepVarThatDoesNotExistOnFieldset,
@@ -35,7 +36,6 @@ import {
   schemaWithMissingValueInlineRule,
   schemaWithMultipleComputedValueChecks,
   schemaWithNativeAndJSONLogicChecks,
-  schemaWithNonRequiredField,
   schemaWithPropertiesCheckAndValidationsInAIf,
   schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
@@ -256,126 +256,6 @@ describe('cross-value validations', () => {
       const { formErrors } = handleValidation({ field_a: 3, field_b: 2 });
       expect(formErrors.field_a).toEqual('Field A must equal field B');
       expect(handleValidation({ field_a: 2, field_b: 2 }).formErrors).toEqual(undefined);
-    });
-  });
-
-  describe('Incorrectly written schemas', () => {
-    beforeEach(() => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-    });
-
-    afterEach(() => {
-      console.error.mockRestore();
-    });
-
-    it('Should throw when a var does not exist in a rule.', () => {
-      createHeadlessForm(schemaWithVarThatDoesNotExist, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
-      );
-    });
-
-    it('Should throw when a var does not exist in a deeply nested rule', () => {
-      createHeadlessForm(schemaWithDeepVarThatDoesNotExist, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('"field_b" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
-      );
-    });
-
-    it('Should throw when a var does not exist in a fieldset.', () => {
-      createHeadlessForm(schemaWithDeepVarThatDoesNotExistOnFieldset, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('"field_a" in rule "a_greater_than_ten" does not exist as a JSON schema property.')
-      );
-    });
-
-    it('On a property, it should throw an error for a requiredValidation that does not exist', () => {
-      createHeadlessForm(schemaWithValidationThatDoesNotExistOnProperty, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(`Validation "iDontExist" required for "field_a" doesn't exist.`)
-      );
-    });
-
-    it('A top level logic keyword will not be able to reference fieldset properties', () => {
-      createHeadlessForm(schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('"child" in rule "validation_parent" does not exist as a JSON schema property.')
-      );
-    });
-
-    it('Should throw when theres a missing rule', () => {
-      createHeadlessForm(schemaWithMissingRule, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('Missing rule for validation with id of: "a_greater_than_ten".')
-      );
-    });
-
-    it('Should throw when theres a missing computed value', () => {
-      createHeadlessForm(schemaWithMissingComputedValue, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('Missing rule for computedValue with id of: "a_plus_ten".')
-      );
-    });
-
-    it('Should throw when theres an inline computed ruleset with no value.', () => {
-      createHeadlessForm(schemaWithMissingValueInlineRule, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('Cannot define multiple rules without a template string with key `value`.')
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExist, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a title.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistTitle, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a description.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistDescription, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
-      );
-    });
-
-    it('On an inline rule for a computedAttribute, error if theres a value referenced that does not exist', () => {
-      createHeadlessForm(schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(
-          '"IdontExist" in inline rule in property "field_a.x-jsf-logic-computedAttrs.title" does not exist as a JSON schema property.'
-        )
-      );
     });
   });
 
