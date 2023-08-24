@@ -234,6 +234,10 @@ function handleComputedAttribute(validations, formValues, parentID, name) {
         ),
       ];
     }
+
+    if (typeof value === 'object' && value.rule) {
+      return [key, validations.getScope(parentID).evaluateValidation(value.rule, formValues)];
+    }
   };
 }
 
