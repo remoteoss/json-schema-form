@@ -78,6 +78,47 @@ describe('cross-value validations', () => {
     });
   });
 
+  describe('Relative: <, >, =', () => {
+    it('bigger: field_a > field_b', () => {
+      const schema = createSchemaWithRulesOnFieldA({
+        a_greater_than_b: {
+          errorMessage: 'Field A must be bigger than field B',
+          rule: { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+        },
+      });
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { formErrors } = handleValidation({ field_a: 1, field_b: 2 });
+      expect(formErrors.field_a).toEqual('Field A must be bigger than field B');
+      expect(handleValidation({ field_a: 2, field_b: 0 }).formErrors).toEqual(undefined);
+    });
+
+    it('smaller: field_a < field_b', () => {
+      const schema = createSchemaWithRulesOnFieldA({
+        a_less_than_b: {
+          errorMessage: 'Field A must be smaller than field B',
+          rule: { '<': [{ var: 'field_a' }, { var: 'field_b' }] },
+        },
+      });
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { formErrors } = handleValidation({ field_a: 2, field_b: 2 });
+      expect(formErrors.field_a).toEqual('Field A must be smaller than field B');
+      expect(handleValidation({ field_a: 0, field_b: 2 }).formErrors).toEqual(undefined);
+    });
+
+    it('equal: field_a = field_b', () => {
+      const schema = createSchemaWithRulesOnFieldA({
+        a_equals_b: {
+          errorMessage: 'Field A must equal field B',
+          rule: { '==': [{ var: 'field_a' }, { var: 'field_b' }] },
+        },
+      });
+      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+      const { formErrors } = handleValidation({ field_a: 3, field_b: 2 });
+      expect(formErrors.field_a).toEqual('Field A must equal field B');
+      expect(handleValidation({ field_a: 2, field_b: 2 }).formErrors).toEqual(undefined);
+    });
+  });
+
   describe('Incorrectly written schemas', () => {
     beforeEach(() => {
       jest.spyOn(console, 'error').mockImplementation(() => {});
@@ -215,47 +256,6 @@ describe('cross-value validations', () => {
           '"IdontExist" in inline rule in property "field_a.x-jsf-logic-computedAttrs.title" does not exist as a JSON schema property.'
         )
       );
-    });
-  });
-
-  describe('Relative: <, >, =', () => {
-    it('bigger: field_a > field_b', () => {
-      const schema = createSchemaWithRulesOnFieldA({
-        a_greater_than_b: {
-          errorMessage: 'Field A must be bigger than field B',
-          rule: { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-        },
-      });
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
-      const { formErrors } = handleValidation({ field_a: 1, field_b: 2 });
-      expect(formErrors.field_a).toEqual('Field A must be bigger than field B');
-      expect(handleValidation({ field_a: 2, field_b: 0 }).formErrors).toEqual(undefined);
-    });
-
-    it('smaller: field_a < field_b', () => {
-      const schema = createSchemaWithRulesOnFieldA({
-        a_less_than_b: {
-          errorMessage: 'Field A must be smaller than field B',
-          rule: { '<': [{ var: 'field_a' }, { var: 'field_b' }] },
-        },
-      });
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
-      const { formErrors } = handleValidation({ field_a: 2, field_b: 2 });
-      expect(formErrors.field_a).toEqual('Field A must be smaller than field B');
-      expect(handleValidation({ field_a: 0, field_b: 2 }).formErrors).toEqual(undefined);
-    });
-
-    it('equal: field_a = field_b', () => {
-      const schema = createSchemaWithRulesOnFieldA({
-        a_equals_b: {
-          errorMessage: 'Field A must equal field B',
-          rule: { '==': [{ var: 'field_a' }, { var: 'field_b' }] },
-        },
-      });
-      const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
-      const { formErrors } = handleValidation({ field_a: 3, field_b: 2 });
-      expect(formErrors.field_a).toEqual('Field A must equal field B');
-      expect(handleValidation({ field_a: 2, field_b: 2 }).formErrors).toEqual(undefined);
     });
   });
 
