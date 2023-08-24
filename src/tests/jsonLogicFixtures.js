@@ -74,6 +74,40 @@ export const schemaWithNativeAndJSONLogicChecks = {
   required: ['field_a'],
 };
 
+export const schemaWithMissingRule = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-validations': ['a_greater_than_ten'],
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      a_greater_than_ten: {
+        errorMessage: 'Must be greater than 10',
+      },
+    },
+  },
+  required: [],
+};
+
+export const schemaWithMissingComputedValue = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: '{{a_plus_ten}}',
+      },
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      a_plus_ten: {},
+    },
+  },
+  required: [],
+};
+
 export const multiRuleSchema = {
   properties: {
     field_a: {
@@ -101,6 +135,25 @@ export const multiRuleSchema = {
       },
     },
   },
+};
+
+export const schemaWithMissingValueInlineRule = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: {
+          ruleOne: {
+            '+': [1, 2],
+          },
+          ruleTwo: {
+            '+': [3, 4],
+          },
+        },
+      },
+    },
+  },
+  required: [],
 };
 
 export const schemaWithTwoRules = {
@@ -173,6 +226,54 @@ export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
             '+': [{ var: 'field_a' }, 10],
           },
         },
+      },
+    },
+  },
+};
+
+export const schemaWithComputedAttributeThatDoesntExist = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        default: 'iDontExist',
+      },
+    },
+  },
+};
+
+export const schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: {
+          rule: {
+            '+': [{ var: 'IdontExist' }],
+          },
+        },
+      },
+    },
+  },
+};
+
+export const schemaWithComputedAttributeThatDoesntExistTitle = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: `this doesn't exist {{iDontExist}}`,
+      },
+    },
+  },
+};
+
+export const schemaWithComputedAttributeThatDoesntExistDescription = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        description: `this doesn't exist {{iDontExist}}`,
       },
     },
   },

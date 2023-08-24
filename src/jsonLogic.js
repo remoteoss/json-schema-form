@@ -12,6 +12,7 @@ export function createValidationChecker(schema) {
   const scopes = new Map();
 
   function createScopes(jsonSchema, key = 'root') {
+    const sampleEmptyObject = buildSampleEmptyObject(schema);
     scopes.set(key, createValidationsScope(jsonSchema));
     Object.entries(jsonSchema?.properties ?? {})
       .filter(([, property]) => property.type === 'object' || property.type === 'array')
@@ -21,6 +22,8 @@ export function createValidationChecker(schema) {
         }
         createScopes(property, key);
       });
+
+    validateInlineRules(jsonSchema, sampleEmptyObject);
   }
 
   createScopes(schema);
@@ -44,12 +47,25 @@ function createValidationsScope(schema) {
 
   const validations = Object.entries(logic.validations ?? {});
   const computedValues = Object.entries(logic.computedValues ?? {});
+  const sampleEmptyObject = buildSampleEmptyObject(schema);
 
   validations.forEach(([id, validation]) => {
+    if (!validation.rule) {
+      throw Error(`Missing rule for validation with id of: "${id}".`);
+    }
+
+    checkRuleIntegrity(validation.rule, id, sampleEmptyObject);
+
     validationMap.set(id, validation);
   });
 
   computedValues.forEach(([id, computedValue]) => {
+    if (!computedValue.rule) {
+      throw Error(`Missing rule for computedValue with id of: "${id}".`);
+    }
+
+    checkRuleIntegrity(computedValue.rule, id, sampleEmptyObject);
+
     computedValuesMap.set(id, computedValue);
   });
 
@@ -65,8 +81,11 @@ function createValidationsScope(schema) {
       const validation = validationMap.get(id);
       return evaluateValidation(validation.rule, values);
     },
-    evaluateComputedValueRuleForField(id, values) {
+    evaluateComputedValueRuleForField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
+      if (validation === undefined)
+        throw Error(`"${id}" computedValue in field "${fieldName}" doesn't exist.`);
+
       return evaluateValidation(validation.rule, values);
     },
     evaluateComputedValueRuleInCondition(id, values) {
@@ -124,6 +143,9 @@ function replaceHandlebarsTemplates({
     });
   } else if (typeof toReplace === 'object') {
     const { value, ...rules } = toReplace;
+
+    if (Object.keys(rules).length > 1 && !value)
+      throw Error('Cannot define multiple rules without a template string with key `value`.');
 
     const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
       const computedValue = validations.getScope(parentID).evaluateValidation(rule, formValues);
@@ -211,4 +233,72 @@ function handleNestedObjectForComputedValues(values, formValues, parentID, valid
       return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
     })
   );
+}
+
+function buildSampleEmptyObject(schema = {}) {
+  const sample = {};
+  if (typeof schema !== 'object' || !schema.properties) {
+    return schema;
+  }
+
+  for (const key in schema.properties) {
+    if (schema.properties[key].type === 'object') {
+      sample[key] = buildSampleEmptyObject(schema.properties[key]);
+    } else if (schema.properties[key].type === 'array') {
+      const itemSchema = schema.properties[key].items;
+      sample[key] = buildSampleEmptyObject(itemSchema);
+    } else {
+      sample[key] = true;
+    }
+  }
+
+  return sample;
+}
+
+function validateInlineRules(jsonSchema, sampleEmptyObject) {
+  const properties = (jsonSchema?.properties || jsonSchema?.items?.properties) ?? {};
+  Object.entries(properties)
+    .filter(([, property]) => property['x-jsf-logic-computedAttrs'] !== undefined)
+    .forEach(([fieldName, property]) => {
+      Object.entries(property['x-jsf-logic-computedAttrs'])
+        .filter(([, value]) => typeof value === 'object')
+        .forEach(([key, item]) => {
+          Object.values(item).forEach((rule) => {
+            checkRuleIntegrity(
+              rule,
+              fieldName,
+              sampleEmptyObject,
+              (item) =>
+                `"${item.var}" in inline rule in property "${fieldName}.x-jsf-logic-computedAttrs.${key}" does not exist as a JSON schema property.`
+            );
+          });
+        });
+    });
+}
+
+function checkRuleIntegrity(
+  rule,
+  id,
+  data,
+  errorMessage = (item) => `"${item.var}" in rule "${id}" does not exist as a JSON schema property.`
+) {
+  Object.values(rule ?? {}).map((subRule) => {
+    if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
+    subRule.map((item) => {
+      const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
+      if (isVar) {
+        const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, data);
+        if (exists === null) {
+          throw Error(errorMessage(item));
+        }
+      } else {
+        checkRuleIntegrity(item, id, data);
+      }
+    });
+  });
+}
+
+function removeIndicesFromPath(path) {
+  const intermediatePath = path.replace(/\.\d+\./g, '.');
+  return intermediatePath.replace(/\.\d+$/, '');
 }
