@@ -127,8 +127,9 @@ function getPrefillSubFieldValues(field, defaultValues, parentFieldKeyPath) {
       console.warn(
         `Field "${parentFieldKeyPath}"'s value is "${initialValue}", but should be type object.`
       );
-      // CONTINUE HERE
-      initialValue = getPrefillValues([field], {});
+      initialValue = getPrefillValues([field], {
+        // TODO nested fieldsets are not handled
+      });
     } else {
       initialValue = getPrefillValues([field], initialValue);
     }

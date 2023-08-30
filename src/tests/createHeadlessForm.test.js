@@ -99,9 +99,9 @@ beforeEach(() => {
 
 afterEach(() => {
   expect(console.error).not.toHaveBeenCalled();
+  console.error.mockRestore();
   expect(console.warn).not.toHaveBeenCalled();
   console.warn.mockRestore();
-  console.error.mockRestore();
 });
 
 describe('createHeadlessForm', () => {
@@ -3450,30 +3450,27 @@ describe('createHeadlessForm', () => {
           ],
         });
       });
-    });
 
-    it('ignores initial values that do not match the field type (eg string vs object)', () => {
-      const result = createHeadlessForm(schemaInputTypeFieldset, {
-        initialValues: {
-          a_fieldset: 'foo', // should be an object instead of string
-        },
+      it('should ignore initial values that do not match the field type (eg string vs object)', () => {
+        const result = createHeadlessForm(schemaInputTypeFieldset, {
+          initialValues: {
+            a_fieldset: 'foo', // should be an object instead of string
+          },
+        });
+
+        // It returns fields without errors
+        expect(result.fields).toBeDefined();
+        expect(result.fields[0].fields[0].name).toBe('id_number');
+        expect(result.fields[0].fields[1].name).toBe('tabs');
+
+        // Warn about those missmatched values
+        expect(console.warn).toHaveBeenCalledWith(
+          `Field "a_fieldset"'s value is "foo", but should be type object.`
+        );
+        console.warn.mockClear();
+
+        expect(console.error).not.toHaveBeenCalled();
       });
-
-      // It returns fields without errors
-      expect(result.fields).toBeDefined();
-      expect(result.fields[0].fields[0].name).toBe('id_number');
-      expect(result.fields[0].fields[1].name).toBe('tabs');
-
-      // Warn about those missmatched values
-      expect(console.warn).toHaveBeenCalledWith(
-        `Field "a_fieldset"'s value is "foo", but should be type object.`
-      );
-      expect(console.warn).toHaveBeenCalledWith(
-        `Field "a_fieldset"'s value is "foo", but should be type object.`
-      );
-      console.warn.mockClear();
-
-      expect(console.error).not.toHaveBeenCalled();
     });
   });
 
