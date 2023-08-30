@@ -1,3 +1,9 @@
+#### 0.4.4-beta.0 (2023-08-30)
+
+##### Chores
+
+* **fieldset:**  ignore values not matching the field type ([#44](https://github.com/remoteoss/json-schema-form/pull/44)) ([f0af54e5](https://github.com/remoteoss/json-schema-form/commit/f0af54e5d425fb78524ab150bb31629d00369a61))
+
 #### 0.4.3-beta.0 (2023-08-09)
 
 ##### Bug fixes
