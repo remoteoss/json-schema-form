@@ -1020,12 +1020,12 @@ export const schemaInputTypeFileWithSkippable = JSONSchemaBuilder()
   })
   .build();
 
-export const schemaInputTypeFieldset = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputTypeFieldset = {
+  properties: {
     a_fieldset: mockFieldset,
-  })
-  .setRequiredFields(['a_fieldset'])
-  .build();
+  },
+  required: ['a_fieldset'],
+};
 
 export const schemaInputTypeFocusedFieldset = JSONSchemaBuilder()
   .addInput({

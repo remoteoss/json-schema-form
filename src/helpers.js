@@ -122,7 +122,17 @@ function getPrefillSubFieldValues(field, defaultValues, parentFieldKeyPath) {
     // getDefaultValues and getPrefillSubFieldValues have a circluar dependency, resulting in one having to be used before defined.
     // As function declarations are hoisted this should not be a problem.
     // eslint-disable-next-line no-use-before-define
-    initialValue = getPrefillValues([field], initialValue);
+
+    if (typeof initialValue !== 'object') {
+      console.warn(
+        `Field "${parentFieldKeyPath}"'s value is "${initialValue}", but should be type object.`
+      );
+      initialValue = getPrefillValues([field], {
+        // TODO nested fieldsets are not handled
+      });
+    } else {
+      initialValue = getPrefillValues([field], initialValue);
+    }
   }
 
   return initialValue;
