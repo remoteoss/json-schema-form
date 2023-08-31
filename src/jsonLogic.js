@@ -9,9 +9,9 @@ import jsonLogic from 'json-logic-js';
  * @returns {Object} An object containing:
  * - scopes {Map} - A Map of the validation scopes (with IDs as keys)
  * - getScope {Function} - Function to retrieve a scope by name/ID
- * - evaluateValidation {Function} - Function to evaluate a validation rule
+ * - validate {Function} - Function to evaluate a validation rule
  * - evaluateValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
- * - evaluateComputedValueRuleForField {Function} - Evaluate a computed value rule for a field
+ * - applyComputedValueInField {Function} - Evaluate a computed value rule for a field
  * - evaluateComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
  */
 export function createValidationChecker(schema) {
@@ -60,25 +60,25 @@ function createValidationsScope(schema) {
     computedValuesMap.set(id, computedValue);
   });
 
-  function evaluateValidation(rule, values) {
+  function validate(rule, values) {
     return jsonLogic.apply(rule, replaceUndefinedValuesWithNulls(values));
   }
 
   return {
     validationMap,
     computedValuesMap,
-    evaluateValidation,
+    validate,
     evaluateValidationRuleInCondition(id, values) {
       const validation = validationMap.get(id);
-      return evaluateValidation(validation.rule, values);
+      return validate(validation.rule, values);
     },
-    evaluateComputedValueRuleForField(id, values) {
+    applyComputedValueInField(id, values) {
       const validation = computedValuesMap.get(id);
-      return evaluateValidation(validation.rule, values);
+      return validate(validation.rule, values);
     },
     evaluateComputedValueRuleInCondition(id, values) {
       const validation = computedValuesMap.get(id);
-      return evaluateValidation(validation.rule, values);
+      return validate(validation.rule, values);
     },
   };
 }
