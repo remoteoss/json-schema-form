@@ -25,7 +25,7 @@ describe('cross-value validations', () => {
       expect(handleValidation({ field_a: 11 }).formErrors).toEqual(undefined);
     });
 
-    it('Native validations always appear first', () => {
+    it('Native validations have higher precedence than jsonLogic validations', () => {
       const { handleValidation } = createHeadlessForm(schemaWithNativeAndJSONLogicChecks, {
         strictInputType: false,
       });
@@ -105,8 +105,9 @@ describe('cross-value validations', () => {
         }),
         { strictInputType: false }
       );
-      const { formErrors } = handleValidation({ field_a: 2, field_b: 4 });
-      expect(formErrors.field_a).toEqual('Field A must be greater than field_b / 2');
+      expect(handleValidation({ field_a: 2, field_b: 4 }).formErrors).toEqual({
+        field_a: 'Field A must be greater than field_b / 2',
+      });
       expect(handleValidation({ field_a: 3, field_b: 5 }).formErrors).toEqual(undefined);
     });
 
@@ -184,7 +185,7 @@ describe('cross-value validations', () => {
   });
 
   describe('Multiple validations', () => {
-    it('2 rules where A must be bigger than B and not an even number in another rule', () => {
+    it('two rules: A > B; A is even', () => {
       const { handleValidation } = createHeadlessForm(multiRuleSchema, { strictInputType: false });
       expect(handleValidation({ field_a: 1 }).formErrors).toEqual({
         field_a: 'A must be even',
