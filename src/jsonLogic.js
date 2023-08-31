@@ -10,9 +10,9 @@ import jsonLogic from 'json-logic-js';
  * - scopes {Map} - A Map of the validation scopes (with IDs as keys)
  * - getScope {Function} - Function to retrieve a scope by name/ID
  * - validate {Function} - Function to evaluate a validation rule
- * - evaluateValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
+ * - applyValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
  * - applyComputedValueInField {Function} - Evaluate a computed value rule for a field
- * - evaluateComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
+ * - applyComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
  */
 export function createValidationChecker(schema) {
   const scopes = new Map();
@@ -68,7 +68,7 @@ function createValidationsScope(schema) {
     validationMap,
     computedValuesMap,
     validate,
-    evaluateValidationRuleInCondition(id, values) {
+    applyValidationRuleInCondition(id, values) {
       const validation = validationMap.get(id);
       return validate(validation.rule, values);
     },
@@ -76,7 +76,7 @@ function createValidationsScope(schema) {
       const validation = computedValuesMap.get(id);
       return validate(validation.rule, values);
     },
-    evaluateComputedValueRuleInCondition(id, values) {
+    applyComputedValueRuleInCondition(id, values) {
       const validation = computedValuesMap.get(id);
       return validate(validation.rule, values);
     },
