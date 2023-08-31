@@ -221,13 +221,15 @@ function getComposeFunctionForField(fieldParams, hasCustomizations) {
  * Create field object using a compose function
  * @param {FieldParameters} fieldParams - field parameters
  * @param {JsfConfig} config - parser config
+ * @param {Object} scopedJsonSchema - the matching JSON schema
+ * @param {Object} logic - logic used for validation json-logic
  * @returns {Object} field object
  */
-function buildField(fieldParams, config, scopedJsonSchema, validations) {
+function buildField(fieldParams, config, scopedJsonSchema, logic) {
   const customProperties = getCustomPropertiesForField(fieldParams, config);
   const composeFn = getComposeFunctionForField(fieldParams, !!customProperties);
 
-  const yupSchema = buildYupSchema(fieldParams, config, validations);
+  const yupSchema = buildYupSchema(fieldParams, config, logic);
   const calculateConditionalFieldsClosure =
     fieldParams.isDynamic && calculateConditionalProperties(fieldParams, customProperties);
 
@@ -268,7 +270,7 @@ function buildField(fieldParams, config, scopedJsonSchema, validations) {
  * @param {JsfConfig} config - JSON-schema-form config
  * @returns {ParserFields} ParserFields
  */
-function getFieldsFromJSONSchema(scopedJsonSchema, config, validations) {
+function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
   if (!scopedJsonSchema) {
     // NOTE: other type of verifications might be needed.
     return [];
@@ -304,7 +306,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, validations) {
         fields.push(groupField);
       });
     } else {
-      fields.push(buildField(fieldParams, config, scopedJsonSchema, validations));
+      fields.push(buildField(fieldParams, config, scopedJsonSchema, logic));
     }
   });
 
@@ -324,10 +326,10 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
   };
 
   try {
-    const validations = createValidationChecker(jsonSchema);
-    const fields = getFieldsFromJSONSchema(jsonSchema, config, validations);
+    const logic = createValidationChecker(jsonSchema);
+    const fields = getFieldsFromJSONSchema(jsonSchema, config, logic);
 
-    const handleValidation = handleValuesChange(fields, jsonSchema, config, validations);
+    const handleValidation = handleValuesChange(fields, jsonSchema, config, logic);
 
     updateFieldsProperties(fields, getPrefillValues(fields, config.initialValues), jsonSchema);
 
