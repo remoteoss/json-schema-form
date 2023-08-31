@@ -135,3 +135,28 @@ export const schemaWithTwoRules = {
     },
   },
 };
+
+export const schemaWithComputedAttributes = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        const: 'a_times_two',
+        default: 'a_times_two',
+      },
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    computedValues: {
+      a_times_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
+        },
+      },
+    },
+  },
+};

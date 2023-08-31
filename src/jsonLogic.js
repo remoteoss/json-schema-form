@@ -139,16 +139,10 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
 function handleComputedAttribute(logic, formValues, parentID, name) {
   return ([key, value]) => {
     if (key === 'const')
-      return [
-        key,
-        logic.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
-      ];
+      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
 
     if (typeof value === 'string') {
-      return [
-        key,
-        logic.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
-      ];
+      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
     }
   };
 }
