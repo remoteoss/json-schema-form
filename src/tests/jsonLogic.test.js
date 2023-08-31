@@ -9,9 +9,9 @@ import {
   schemaWithTwoRules,
 } from './jsonLogicFixtures';
 
-describe('cross-value validations', () => {
+describe('jsonLogic: cross-values validations', () => {
   describe('Does not conflict with native JSON schema', () => {
-    it('When a field is not required, validations should not block submitting when its an empty value', () => {
+    it('Given an optional field and empty value, jsonLogic validations are ignored', () => {
       const { handleValidation } = createHeadlessForm(schemaWithNonRequiredField, {
         strictInputType: false,
       });
