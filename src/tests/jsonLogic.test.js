@@ -15,14 +15,14 @@ describe('cross-value validations', () => {
       const { handleValidation } = createHeadlessForm(schemaWithNonRequiredField, {
         strictInputType: false,
       });
-      expect(handleValidation({}).formErrors).toEqual(undefined);
-      expect(handleValidation({ field_a: 0 }).formErrors).toEqual({
-        field_a: 'Must be greater than 10',
+      expect(handleValidation({}).formErrors).toBeUndefined();
+      expect(handleValidation({ field_a: 0, field_b: 10 }).formErrors).toEqual({
+        field_b: 'Must be greater than field_a',
       });
       expect(handleValidation({ field_a: 'incorrect value' }).formErrors).toEqual({
         field_a: 'The value must be a number',
       });
-      expect(handleValidation({ field_a: 11 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 11 }).formErrors).toBeUndefined();
     });
 
     it('Native validations have higher precedence than jsonLogic validations', () => {
@@ -31,11 +31,12 @@ describe('cross-value validations', () => {
       });
       expect(handleValidation({}).formErrors).toEqual({ field_a: 'Required field' });
       expect(handleValidation({ field_a: 0 }).formErrors).toEqual({
-        field_a: 'Must be greater or equal to 5',
+        field_a: 'Must be greater or equal to 100',
       });
-      expect(handleValidation({ field_a: 5 }).formErrors).toEqual({
-        field_a: 'Must be greater than 10',
+      expect(handleValidation({ field_a: 101 }).formErrors).toEqual({
+        field_a: 'Must be a multiple of 10',
       });
+      expect(handleValidation({ field_a: 110 }).formErrors).toBeUndefined();
     });
   });
 

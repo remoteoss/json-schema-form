@@ -37,15 +37,18 @@ export const schemaWithNonRequiredField = {
   properties: {
     field_a: {
       type: 'number',
-      'x-jsf-logic-validations': ['a_greater_than_ten'],
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-validations': ['a_greater_than_field_b'],
     },
   },
   'x-jsf-logic': {
     validations: {
-      a_greater_than_ten: {
-        errorMessage: 'Must be greater than 10',
+      a_greater_than_field_b: {
+        errorMessage: 'Must be greater than field_a',
         rule: {
-          '>': [{ var: 'field_a' }, 10],
+          '>': [{ var: 'field_a' }, { var: 'field_b' }],
         },
       },
     },
@@ -57,16 +60,16 @@ export const schemaWithNativeAndJSONLogicChecks = {
   properties: {
     field_a: {
       type: 'number',
-      minimum: 5,
+      minimum: 100,
       'x-jsf-logic-validations': ['a_greater_than_ten'],
     },
   },
   'x-jsf-logic': {
     validations: {
       a_greater_than_ten: {
-        errorMessage: 'Must be greater than 10',
+        errorMessage: 'Must be a multiple of 10',
         rule: {
-          '>': [{ var: 'field_a' }, 10],
+          '===': [{ '%': [{ var: 'field_a' }, 10] }, 0],
         },
       },
     },
