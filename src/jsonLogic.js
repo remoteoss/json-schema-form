@@ -60,7 +60,7 @@ function createValidationsScope(schema) {
   });
 
   function evaluateValidation(rule, values) {
-    return jsonLogic.apply(rule, clean(values));
+    return jsonLogic.apply(rule, replaceUndefinedValuesWithNulls(values));
   }
 
   return {
@@ -89,7 +89,7 @@ function createValidationsScope(schema) {
  * @param {Object} values - a set of values from a form
  * @returns {Object} values object without any undefined
  */
-function clean(values = {}) {
+function replaceUndefinedValuesWithNulls(values = {}) {
   return Object.entries(values).reduce((prev, [key, value]) => {
     return { ...prev, [key]: value === undefined ? null : value };
   }, {});
