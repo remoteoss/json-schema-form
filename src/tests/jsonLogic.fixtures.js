@@ -61,12 +61,12 @@ export const schemaWithNativeAndJSONLogicChecks = {
     field_a: {
       type: 'number',
       minimum: 100,
-      'x-jsf-logic-validations': ['a_greater_than_ten'],
+      'x-jsf-logic-validations': ['a_multiple_of_ten'],
     },
   },
   'x-jsf-logic': {
     validations: {
-      a_greater_than_ten: {
+      a_multiple_of_ten: {
         errorMessage: 'Must be a multiple of 10',
         rule: {
           '===': [{ '%': [{ var: 'field_a' }, 10] }, 0],
@@ -130,50 +130,6 @@ export const schemaWithTwoRules = {
         errorMessage: 'B must be even',
         rule: {
           '===': [{ '%': [{ var: 'field_b' }, 2] }, 0],
-        },
-      },
-    },
-  },
-};
-
-export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-      'x-jsf-logic-computedAttrs': {
-        title: {
-          rule: {
-            '+': [{ var: 'field_a' }, 10],
-          },
-        },
-      },
-    },
-  },
-};
-
-export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-      'x-jsf-logic-computedAttrs': {
-        minimum: {
-          rule: {
-            '+': [{ var: 'field_a' }, 10],
-          },
-        },
-        'x-jsf-errorMessage': {
-          minimum: {
-            value: 'This should be greater than {{rule}}.',
-            rule: {
-              '+': [{ var: 'field_a' }, 10],
-            },
-          },
         },
       },
     },

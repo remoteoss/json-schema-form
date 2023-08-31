@@ -7,7 +7,7 @@ import {
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithTwoRules,
-} from './jsonLogicFixtures';
+} from './jsonLogic.fixtures';
 
 describe('jsonLogic: cross-values validations', () => {
   describe('Does not conflict with native JSON schema', () => {
