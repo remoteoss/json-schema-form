@@ -1,3 +1,9 @@
+#### 0.4.5-beta.0 (2023-08-31)
+
+##### Changes
+
+* Allow validation of consts to support single values ([#34](https://github.com/remoteoss/json-schema-form/pull/34)) ([bf07870d](https://github.com/remoteoss/json-schema-form/commit/bf07870d407d9b9b078882a078b9e4c7928df868))
+
 #### 0.4.4-beta.0 (2023-08-30)
 
 ##### Chores
