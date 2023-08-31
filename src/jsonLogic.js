@@ -24,8 +24,9 @@ export function createValidationChecker(schema) {
       .forEach(([key, property]) => {
         if (property.type === 'array') {
           createScopes(property.items, `${key}[]`);
+        } else {
+          createScopes(property, key);
         }
-        createScopes(property, key);
       });
   }
 
