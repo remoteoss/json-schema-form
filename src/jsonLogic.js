@@ -1,7 +1,7 @@
 import jsonLogic from 'json-logic-js';
 
 /**
- * Parses the JSON schema to extract the advanced validation logic and returns an object
+ * Parses the JSON schema to extract the json-logic rules and returns an object
  * containing the validation scopes, functions to retrieve the scopes, and evaluate the
  * validation rules.
  *
