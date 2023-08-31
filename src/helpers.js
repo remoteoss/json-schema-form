@@ -347,8 +347,8 @@ export function processNode({
           node: nestedNode,
           formValues: formValues[name] || {},
           formFields: getField(name, formFields).fields,
-          validations,
           parentID: name,
+          validations,
         });
       }
     });

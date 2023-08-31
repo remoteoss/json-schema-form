@@ -1,10 +1,18 @@
 import jsonLogic from 'json-logic-js';
 
 /**
- * Parses the JSON schema to extract the advanced validation logic and returns a set of functionality to check the current status of said rules.
+ * Parses the JSON schema to extract the advanced validation logic and returns an object
+ * containing the validation scopes, functions to retrieve the scopes, and evaluate the
+ * validation rules.
+ *
  * @param {Object} schema - JSON schema node
- * @param {Object} initialValues - form state
- * @returns {Object}
+ * @returns {Object} An object containing:
+ * - scopes {Map} - A Map of the validation scopes (with IDs as keys)
+ * - getScope {Function} - Function to retrieve a scope by name/ID
+ * - evaluateValidation {Function} - Function to evaluate a validation rule
+ * - evaluateValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
+ * - evaluateComputedValueRuleForField {Function} - Evaluate a computed value rule for a field
+ * - evaluateComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
  */
 export function createValidationChecker(schema) {
   const scopes = new Map();
@@ -74,6 +82,13 @@ function createValidationsScope(schema) {
   };
 }
 
+/**
+ * We removed undefined values in this function as `json-logic` ignores them.
+ * Means we will always check against a value for validations.
+ *
+ * @param {Object} values - a set of values from a form
+ * @returns {Object} values object without any undefined
+ */
 function clean(values = {}) {
   return Object.entries(values).reduce((prev, [key, value]) => {
     return { ...prev, [key]: value === undefined ? null : value };
