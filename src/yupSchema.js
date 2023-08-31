@@ -197,7 +197,7 @@ const getYupSchema = ({ inputType, ...field }) => {
  * @param {FieldParameters} field Input fields
  * @returns {Function} Yup schema
  */
-export function buildYupSchema(field, config, validations) {
+export function buildYupSchema(field, config, logic) {
   const { inputType, jsonType: jsonTypeValue, errorMessage = {}, ...propertyFields } = field;
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
@@ -409,7 +409,7 @@ export function buildYupSchema(field, config, validations) {
 
   if (propertyFields.requiredValidations) {
     propertyFields.requiredValidations.forEach((id) =>
-      validators.push(yupSchemaWithCustomJSONLogic({ field, id, validations, config }))
+      validators.push(yupSchemaWithCustomJSONLogic({ field, id, logic, config }))
     );
   }
 

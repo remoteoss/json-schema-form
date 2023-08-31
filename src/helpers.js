@@ -40,8 +40,8 @@ export function getField(fieldName, fields) {
  * @param {any} value
  * @returns
  */
-export function validateFieldSchema(field, value, validations) {
-  const validator = buildYupSchema(field, {}, validations);
+export function validateFieldSchema(field, value, logic) {
+  const validator = buildYupSchema(field, {}, logic);
   return validator().isValidSync(value);
 }
 
@@ -262,7 +262,7 @@ export function processNode({
   formFields,
   accRequired = new Set(),
   parentID = 'root',
-  validations,
+  logic,
 }) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
@@ -290,7 +290,7 @@ export function processNode({
         formFields,
         accRequired: requiredFields,
         parentID,
-        validations,
+        logic,
       });
 
       branchRequired.forEach((field) => requiredFields.add(field));
@@ -301,7 +301,7 @@ export function processNode({
         formFields,
         accRequired: requiredFields,
         parentID,
-        validations,
+        logic,
       });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
@@ -330,7 +330,7 @@ export function processNode({
           formFields,
           accRequired: requiredFields,
           parentID,
-          validations,
+          logic,
         })
       )
       .forEach(({ required: allOfItemRequired }) => {
@@ -348,7 +348,7 @@ export function processNode({
           formValues: formValues[name] || {},
           formFields: getField(name, formFields).fields,
           parentID: name,
-          validations,
+          logic,
         });
       }
     });
@@ -384,11 +384,11 @@ function clearValuesIfNotVisible(fields, formValues) {
  * @param {Object} formValues - current values of the form
  * @param {Object} jsonSchema - JSON schema object
  */
-export function updateFieldsProperties(fields, formValues, jsonSchema, validations) {
+export function updateFieldsProperties(fields, formValues, jsonSchema, logic) {
   if (!jsonSchema?.properties) {
     return;
   }
-  processNode({ node: jsonSchema, formValues, formFields: fields, validations });
+  processNode({ node: jsonSchema, formValues, formFields: fields, logic });
   clearValuesIfNotVisible(fields, formValues);
 }
 

@@ -102,15 +102,15 @@ function replaceUndefinedValuesWithNulls(values = {}) {
  * @param {Object} options - The options for creating the validation function.
  * @param {Object} options.field - The field configuration object.
  * @param {string} options.field.name - The name of the field.
- * @param {Object} options.validations - The validations object containing validation scopes and rules.
+ * @param {Object} options.logic - The logic object containing validation scopes and rules.
  * @param {Object} options.config - Additional configuration options.
  * @param {string} options.config.id - The ID of the validation rule.
  * @param {string} [options.config.parentID='root'] - The ID of the validation rule scope.
  * @returns {Function} A Yup validation test function.
  */
-export function yupSchemaWithCustomJSONLogic({ field, validations, config, id }) {
+export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
   const { parentID = 'root' } = config;
-  const validation = validations.getScope(parentID).validationMap.get(id);
+  const validation = logic.getScope(parentID).validationMap.get(id);
 
   return (yupSchema) =>
     yupSchema.test(
