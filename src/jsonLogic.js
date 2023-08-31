@@ -104,7 +104,7 @@ function replaceUndefinedValuesWithNulls(values = {}) {
  * @param {string} options.field.name - The name of the field.
  * @param {Object} options.logic - The logic object containing validation scopes and rules.
  * @param {Object} options.config - Additional configuration options.
- * @param {string} options.config.id - The ID of the validation rule.
+ * @param {string} options.id - The ID of the validation rule.
  * @param {string} [options.config.parentID='root'] - The ID of the validation rule scope.
  * @returns {Function} A Yup validation test function.
  */
