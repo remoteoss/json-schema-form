@@ -124,11 +124,11 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
 }
 
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
-  return ({ validations, formValues }) => {
+  return ({ logic, formValues }) => {
     const { name, computedAttributes } = fieldParams;
     const attributes = Object.fromEntries(
       Object.entries(computedAttributes)
-        .map(handleComputedAttribute(validations, formValues, parentID, name))
+        .map(handleComputedAttribute(logic, formValues, parentID, name))
         .filter(([, value]) => value !== null)
     );
 
@@ -136,18 +136,18 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
   };
 }
 
-function handleComputedAttribute(validations, formValues, parentID, name) {
+function handleComputedAttribute(logic, formValues, parentID, name) {
   return ([key, value]) => {
     if (key === 'const')
       return [
         key,
-        validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
+        logic.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
       ];
 
     if (typeof value === 'string') {
       return [
         key,
-        validations.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
+        logic.getScope(parentID).evaluateComputedValueRuleForField(value, formValues, name),
       ];
     }
   };

@@ -179,7 +179,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues, validations, config) {
+function updateField(field, requiredFields, node, formValues, logic, config) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -233,7 +233,7 @@ function updateField(field, requiredFields, node, formValues, validations, confi
       node,
       formValues,
       config,
-      validations,
+      logic,
     });
     updateValues(computedFieldValues);
   }
@@ -282,13 +282,13 @@ export function processNode({
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues, validations, { parentID });
+    updateField(field, requiredFields, node, formValues, logic, { parentID });
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues, validations, {
+    updateField(getField(fieldName, formFields), requiredFields, node, formValues, logic, {
       parentID,
     });
   });
@@ -330,7 +330,7 @@ export function processNode({
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues, validations, { parentID });
+        updateField(field, requiredFields, node, formValues, logic, { parentID });
       });
     });
   }
