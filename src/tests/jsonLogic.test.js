@@ -216,13 +216,15 @@ describe('jsonLogic: cross-values validations', () => {
 
   describe('Derive values', () => {
     it('field_b is field_a * 2', () => {
-      const { fields } = createHeadlessForm(schemaWithComputedAttributes, {
+      const { fields, handleValidation } = createHeadlessForm(schemaWithComputedAttributes, {
         strictInputType: false,
         initialValues: { field_a: 2 },
       });
       const fieldB = fields.find((i) => i.name === 'field_b');
       expect(fieldB.default).toEqual(4);
       expect(fieldB.value).toEqual(4);
+      handleValidation({ field_a: 4 });
+      expect(fieldB.default).toEqual(8);
     });
   });
 });
