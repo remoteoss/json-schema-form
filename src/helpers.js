@@ -469,13 +469,7 @@ export function extractParametersFromNode(schemaNode) {
   const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
 
   // This is when a forced value is computed.
-  const decoratedComputedAttributes = {
-    ...(computedAttributes ?? {}),
-    ...(computedAttributes?.const && computedAttributes?.default
-      ? { value: computedAttributes.const }
-      : {}),
-  };
-
+  const decoratedComputedAttributes = getDecoratedComputedAttributes(computedAttributes);
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
   const description = presentation?.description || node.description;
@@ -604,3 +598,12 @@ export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
     formErrors: yupToFormErrors(errors),
   };
 };
+
+function getDecoratedComputedAttributes(computedAttributes) {
+  return {
+    ...(computedAttributes ?? {}),
+    ...(computedAttributes?.const && computedAttributes?.default
+      ? { value: computedAttributes.const }
+      : {}),
+  };
+}
