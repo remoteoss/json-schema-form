@@ -102,7 +102,9 @@ describe('jsonLogic: cross-values validations', () => {
       createHeadlessForm(schemaWithMissingRule, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error('Missing rule for validation with id of: "a_greater_than_ten".')
+        Error(
+          '[json-schema-form] json-logic error: Validation "a_greater_than_ten" has missing rule.'
+        )
       );
     });
 
@@ -110,7 +112,7 @@ describe('jsonLogic: cross-values validations', () => {
       createHeadlessForm(schemaWithMissingComputedValue, { strictInputType: false });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error('Missing rule for computedValue with id of: "a_plus_ten".')
+        Error('[json-schema-form] json-logic error: Computed value "a_plus_ten" has missing rule.')
       );
     });
 
@@ -120,7 +122,9 @@ describe('jsonLogic: cross-values validations', () => {
       });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+        Error(
+          `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`
+        )
       );
     });
 
@@ -130,7 +134,9 @@ describe('jsonLogic: cross-values validations', () => {
       });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+        Error(
+          `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`
+        )
       );
     });
 
@@ -140,7 +146,9 @@ describe('jsonLogic: cross-values validations', () => {
       });
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
-        Error(`"iDontExist" computedValue in field "field_a" doesn't exist.`)
+        Error(
+          `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`
+        )
       );
     });
 
@@ -151,7 +159,7 @@ describe('jsonLogic: cross-values validations', () => {
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error(
-          '"IdontExist" in inline rule in property "field_a.x-jsf-logic-computedAttrs.title" does not exist as a JSON schema property.'
+          `[json-schema-form] json-logic error: fieldName "IdontExist" doesn't exist in field "field_a.x-jsf-logic-computedAttrs.title".`
         )
       );
     });

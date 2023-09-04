@@ -60,7 +60,7 @@ function createValidationsScope(schema) {
 
   validations.forEach(([id, validation]) => {
     if (!validation.rule) {
-      throw Error(`Missing rule for validation with id of: "${id}".`);
+      throw Error(`[json-schema-form] json-logic error: Validation "${id}" has missing rule.`);
     }
 
     checkRuleIntegrity(validation.rule, id, sampleEmptyObject);
@@ -70,7 +70,7 @@ function createValidationsScope(schema) {
 
   computedValues.forEach(([id, computedValue]) => {
     if (!computedValue.rule) {
-      throw Error(`Missing rule for computedValue with id of: "${id}".`);
+      throw Error(`[json-schema-form] json-logic error: Computed value "${id}" has missing rule.`);
     }
 
     checkRuleIntegrity(computedValue.rule, id, sampleEmptyObject);
@@ -93,7 +93,9 @@ function createValidationsScope(schema) {
     applyComputedValueInField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
       if (validation === undefined) {
-        throw Error(`"${id}" computedValue in field "${fieldName}" doesn't exist.`);
+        throw Error(
+          `[json-schema-form] json-logic error: Computed value "${id}" doesn't exist in field "${fieldName}".`
+        );
       }
       return validate(validation.rule, values);
     },
@@ -264,7 +266,7 @@ function validateInlineRules(jsonSchema, sampleEmptyObject) {
               fieldName,
               sampleEmptyObject,
               (item) =>
-                `"${item.var}" in inline rule in property "${fieldName}.x-jsf-logic-computedAttrs.${key}" does not exist as a JSON schema property.`
+                `[json-schema-form] json-logic error: fieldName "${item.var}" doesn't exist in field "${fieldName}.x-jsf-logic-computedAttrs.${key}".`
             );
           });
         });
