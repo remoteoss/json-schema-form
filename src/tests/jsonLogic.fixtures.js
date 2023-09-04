@@ -263,32 +263,6 @@ export const schemaWithComputedAttributeThatDoesntExistDescription = {
   },
 };
 
-export const schemaWithInlineRuleForComputedAttributeWithOnlyTheRule = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-      'x-jsf-logic-computedAttrs': {
-        minimum: {
-          rule: {
-            '+': [{ var: 'field_a' }, 10],
-          },
-        },
-        'x-jsf-errorMessage': {
-          minimum: {
-            value: 'This should be greater than {{rule}}.',
-            rule: {
-              '+': [{ var: 'field_a' }, 10],
-            },
-          },
-        },
-      },
-    },
-  },
-};
-
 export const schemaWithComputedAttributesAndErrorMessages = {
   properties: {
     field_a: {
