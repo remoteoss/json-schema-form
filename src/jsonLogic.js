@@ -125,31 +125,29 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
     );
 }
 
+const HANDLEBARS_REGEX = /\{\{([^{}]+)\}\}/g;
+
 function replaceHandlebarsTemplates({
   value: toReplace,
-  validations,
+  logic,
   formValues,
   parentID,
   name: fieldName,
 }) {
   if (typeof toReplace === 'string') {
-    return toReplace.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-      return validations
-        .getScope(parentID)
-        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+    return toReplace.replace(HANDLEBARS_REGEX, (match, key) => {
+      return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
     });
   } else if (typeof toReplace === 'object') {
     const { value, ...rules } = toReplace;
 
     const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
-      const computedValue = validations.getScope(parentID).evaluateValidation(rule, formValues);
+      const computedValue = logic.getScope(parentID).evaluateValidation(rule, formValues);
       return prev.replaceAll(`{{${key}}}`, computedValue);
     }, value);
 
     return computedTemplateValue.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-      return validations
-        .getScope(parentID)
-        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+      return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
     });
   }
 }
@@ -168,7 +166,7 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
       schema: buildYupSchema(
         { ...fieldParams, ...attributes, required: isRequired },
         config,
-        validations
+        logic
       ),
     };
   };
@@ -177,13 +175,10 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
 function handleComputedAttribute(logic, formValues, parentID) {
   return ([key, value]) => {
     if (key === 'description')
-      return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
+      return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
 
     if (key === 'title') {
-      return [
-        'label',
-        replaceHandlebarsTemplates({ value, validations, formValues, parentID, name }),
-      ];
+      return ['label', replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
     }
 
     if (key === 'const')
@@ -192,7 +187,7 @@ function handleComputedAttribute(logic, formValues, parentID) {
     if (key === 'x-jsf-errorMessage') {
       return [
         'errorMessage',
-        handleNestedObjectForComputedValues(value, formValues, parentID, validations, name),
+        handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
       ];
     }
 
@@ -203,22 +198,16 @@ function handleComputedAttribute(logic, formValues, parentID) {
     if (key === 'x-jsf-presentation' && value.statement) {
       return [
         'statement',
-        handleNestedObjectForComputedValues(
-          value.statement,
-          formValues,
-          parentID,
-          validations,
-          name
-        ),
+        handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
       ];
     }
   };
 }
 
-function handleNestedObjectForComputedValues(values, formValues, parentID, validations, name) {
+function handleNestedObjectForComputedValues(values, formValues, parentID, logic, name) {
   return Object.fromEntries(
     Object.entries(values).map(([key, value]) => {
-      return [key, replaceHandlebarsTemplates({ value, validations, formValues, parentID, name })];
+      return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
     })
   );
 }

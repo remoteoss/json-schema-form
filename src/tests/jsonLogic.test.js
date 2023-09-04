@@ -229,7 +229,7 @@ describe('jsonLogic: cross-values validations', () => {
       expect(fieldB.value).toEqual(4);
       handleValidation({ field_a: 4 });
       expect(fieldB.default).toEqual(8);
-      expect(fieldB.label).toEqual('This is 4!');
+      expect(fieldB.label).toEqual('This is 8!');
     });
 
     it('Derived errorMessages and statements work', () => {
