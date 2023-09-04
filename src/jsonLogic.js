@@ -163,6 +163,19 @@ function replaceHandlebarsTemplates({
   return toReplace;
 }
 
+/**
+ * Builds computed attributes for a field based on jsonLogic rules.
+ *
+ * Processes rules defined in the schema's x-jsf-logic section to build
+ * computed attributes like label, description, etc.
+ *
+ * Handles replacing handlebars templates in strings with computed values.
+ *
+ * @param {Object} fieldParams - The field configuration parameters
+ * @param {Object} options - Options
+ * @param {string} [options.parentID='root'] - ID of the validation scope
+ * @returns {Function} A function to build the computed attributes
+ */
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
   return ({ logic, isRequired, config, formValues }) => {
     const { name, computedAttributes } = fieldParams;
@@ -183,6 +196,17 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
   };
 }
 
+/**
+ * Handles computing a single attribute value.
+ *
+ * Evaluates jsonLogic rules to build the computed value.
+ *
+ * @param {Object} logic - Validation logic
+ * @param {Object} formValues - Current form values
+ * @param {string} parentID - ID of the validation scope
+ * @param {string} name - Name of the field
+ * @returns {Function} Function to compute the attribute value
+ */
 function handleComputedAttribute(logic, formValues, parentID, name) {
   return ([key, value]) => {
     if (key === 'description') {
@@ -232,6 +256,17 @@ function handleNestedObjectForComputedValues(values, formValues, parentID, logic
   );
 }
 
+/**
+ * Builds a sample empty object for the given schema.
+ *
+ * Recursively builds an object with empty values for each property in the schema.
+ * Used to provide a valid data structure to test jsonLogic validation rules against.
+ *
+ * Handles objects, arrays, and nested schemas.
+ *
+ * @param {Object} schema - The JSON schema
+ * @returns {Object} Sample empty object based on the schema
+ */
 function buildSampleEmptyObject(schema = {}) {
   const sample = {};
   if (typeof schema !== 'object' || !schema.properties) {
@@ -252,6 +287,17 @@ function buildSampleEmptyObject(schema = {}) {
   return sample;
 }
 
+/**
+ * Validates inline jsonLogic rules defined in the schema's x-jsf-logic-computedAttrs.
+ *
+ * For each field with computed attributes, checks that the variables
+ * referenced in the rules exist in the schema.
+ *
+ * Throws if any variable in a computed attribute rule does not exist.
+ *
+ * @param {Object} jsonSchema - The JSON schema object
+ * @param {Object} sampleEmptyObject - Sample empty object based on the schema
+ */
 function validateInlineRules(jsonSchema, sampleEmptyObject) {
   const properties = (jsonSchema?.properties || jsonSchema?.items?.properties) ?? {};
   Object.entries(properties)
@@ -273,6 +319,17 @@ function validateInlineRules(jsonSchema, sampleEmptyObject) {
     });
 }
 
+/**
+ * Checks the integrity of a jsonLogic rule by validating that all referenced variables exist in the provided data object.
+ *
+ * Throws an error if any variable in the rule does not exist in the data.
+ *
+ * @param {Object|Array} rule - The jsonLogic rule object or array to validate
+ * @param {string} id - The ID of the rule (used in error messages)
+ * @param {Object} data - The data object to check the rule variables against
+ * @param {Function} errorMessage - Function to generate custom error message.
+ *                                  Receives the invalid rule part and should throw an error message string.
+ */
 function checkRuleIntegrity(
   rule,
   id,
@@ -295,6 +352,14 @@ function checkRuleIntegrity(
   });
 }
 
+/**
+ * Removes array indices from a json schema path string.
+ * Converts paths like "foo.0.bar" to "foo.bar".
+ * This allows checking if a variable exists in an array item schema without needing the specific index.
+ *
+ * @param {string} path - The json schema path potentially containing array indices
+ * @returns {string} The path with array indices removed
+ */
 function removeIndicesFromPath(path) {
   const intermediatePath = path.replace(/\.\d+\./g, '.');
   return intermediatePath.replace(/\.\d+$/, '');
