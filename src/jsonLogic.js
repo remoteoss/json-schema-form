@@ -150,6 +150,7 @@ function replaceHandlebarsTemplates({
       return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
     });
   }
+  return toReplace;
 }
 
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
@@ -174,15 +175,17 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
 
 function handleComputedAttribute(logic, formValues, parentID) {
   return ([key, value]) => {
-    if (key === 'description')
+    if (key === 'description') {
       return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+    }
 
     if (key === 'title') {
       return ['label', replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
     }
 
-    if (key === 'const')
+    if (key === 'const') {
       return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
+    }
 
     if (key === 'x-jsf-errorMessage') {
       return [
