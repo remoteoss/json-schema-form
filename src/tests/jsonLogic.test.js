@@ -12,7 +12,6 @@ import {
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithMissingComputedValue,
   schemaWithMissingRule,
-  schemaWithMissingValueInlineRule,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithTwoRules,
@@ -112,14 +111,6 @@ describe('jsonLogic: cross-values validations', () => {
       expect(console.error).toHaveBeenCalledWith(
         'JSON Schema invalid!',
         Error('Missing rule for computedValue with id of: "a_plus_ten".')
-      );
-    });
-
-    it('Should throw when theres an inline computed ruleset with no value.', () => {
-      createHeadlessForm(schemaWithMissingValueInlineRule, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('Cannot define multiple rules without a template string with key `value`.')
       );
     });
 

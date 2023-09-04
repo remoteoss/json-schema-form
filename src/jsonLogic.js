@@ -90,7 +90,7 @@ function createValidationsScope(schema) {
       const validation = validationMap.get(id);
       return validate(validation.rule, values);
     },
-    applyComputedValueInField(id, values) {
+    applyComputedValueInField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
       if (validation === undefined) {
         throw Error(`"${id}" computedValue in field "${fieldName}" doesn't exist.`);
@@ -163,10 +163,10 @@ function replaceHandlebarsTemplates({
 
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
   return ({ logic, isRequired, config, formValues }) => {
-    const { computedAttributes } = fieldParams;
+    const { name, computedAttributes } = fieldParams;
     const attributes = Object.fromEntries(
       Object.entries(computedAttributes)
-        .map(handleComputedAttribute(logic, formValues, parentID))
+        .map(handleComputedAttribute(logic, formValues, parentID, name))
         .filter(([, value]) => value !== null)
     );
 
@@ -181,7 +181,7 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
   };
 }
 
-function handleComputedAttribute(logic, formValues, parentID) {
+function handleComputedAttribute(logic, formValues, parentID, name) {
   return ([key, value]) => {
     if (key === 'description') {
       return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
@@ -192,7 +192,7 @@ function handleComputedAttribute(logic, formValues, parentID) {
     }
 
     if (key === 'const') {
-      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
+      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
     }
 
     if (key === 'x-jsf-errorMessage') {
@@ -205,31 +205,18 @@ function handleComputedAttribute(logic, formValues, parentID) {
     if (key === 'x-jsf-errorMessage') {
       return [
         'errorMessage',
-        handleNestedObjectForComputedValues(value, formValues, parentID, validations, name),
+        handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
       ];
     }
 
     if (typeof value === 'string') {
-      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
+      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
     }
 
     if (key === 'x-jsf-presentation' && value.statement) {
       return [
         'statement',
         handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
-      ];
-    }
-
-    if (key === 'x-jsf-presentation' && value.statement) {
-      return [
-        'statement',
-        handleNestedObjectForComputedValues(
-          value.statement,
-          formValues,
-          parentID,
-          validations,
-          name
-        ),
       ];
     }
   };
