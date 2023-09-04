@@ -138,17 +138,6 @@ function replaceHandlebarsTemplates({
     return toReplace.replace(HANDLEBARS_REGEX, (match, key) => {
       return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
     });
-  } else if (typeof toReplace === 'object') {
-    const { value, ...rules } = toReplace;
-
-    const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
-      const computedValue = logic.getScope(parentID).evaluateValidation(rule, formValues);
-      return prev.replaceAll(`{{${key}}}`, computedValue);
-    }, value);
-
-    return computedTemplateValue.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-      return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
-    });
   }
   return toReplace;
 }
