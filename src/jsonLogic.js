@@ -321,8 +321,15 @@ function validateInlineRules(jsonSchema, sampleEmptyObject) {
 
 /**
  * Checks the integrity of a jsonLogic rule by validating that all referenced variables exist in the provided data object.
- *
  * Throws an error if any variable in the rule does not exist in the data.
+ *
+ * @example
+ *
+ * const rule = { "+": [{ "var": "iDontExist"}, 10 ]}
+ * const badData = { a: 1 }
+ * checkRuleIntegrity(rule, "add_ten_to_field", badData)
+ * // throws Error(`"iDontExist" in rule "add_ten_to_field" does not exist as a JSON schema property.`)
+ *
  *
  * @param {Object|Array} rule - The jsonLogic rule object or array to validate
  * @param {string} id - The ID of the rule (used in error messages)
