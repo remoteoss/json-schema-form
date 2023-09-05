@@ -88,6 +88,7 @@ export const schemaWithMissingRule = {
     validations: {
       a_greater_than_ten: {
         errorMessage: 'Must be greater than 10',
+        // rule: { '>': [{ var: 'field_a' }, 10] }, this missing causes test to fail.
       },
     },
   },
@@ -95,7 +96,9 @@ export const schemaWithMissingRule = {
 };
 
 export const schemaWithUnknownVariableInValidations = {
-  properties: {},
+  properties: {
+    // field_a: { type: 'number' }, this missing causes test to fail.
+  },
   'x-jsf-logic': {
     validations: {
       a_equals_ten: {
@@ -107,7 +110,9 @@ export const schemaWithUnknownVariableInValidations = {
 };
 
 export const schemaWithUnknownVariableInComputedValues = {
-  properties: {},
+  properties: {
+    // field_a: { type: 'number' }, this missing causes test to fail.
+  },
   'x-jsf-logic': {
     computedValues: {
       a_times_ten: {
@@ -128,7 +133,9 @@ export const schemaWithMissingComputedValue = {
   },
   'x-jsf-logic': {
     computedValues: {
-      a_plus_ten: {},
+      a_plus_ten: {
+        // rule: { '+': [{ var: 'field_a' }, 10 ]} this missing causes test to fail.
+      },
     },
   },
   required: [],
@@ -247,16 +254,18 @@ export const schemaWithComputedAttributeThatDoesntExist = {
       },
     },
   },
+  // x-jsf-logic: { computedValues: { iDontExist: { rule: 10 }} this missing causes test to fail.
 };
 
 export const schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar = {
   properties: {
+    // iDontExist: { type: 'number' } this missing causes test to fail.
     field_a: {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
         title: {
           rule: {
-            '+': [{ var: 'IdontExist' }],
+            '+': [{ var: 'IdontExist' }, 10],
           },
         },
       },
@@ -277,6 +286,7 @@ export const schemaWithComputedAttributeThatDoesntExistTitle = {
 
 export const schemaWithComputedAttributeThatDoesntExistDescription = {
   properties: {
+    // iDontExist: { type: 'number'}, this missing causes test to fail
     field_a: {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
