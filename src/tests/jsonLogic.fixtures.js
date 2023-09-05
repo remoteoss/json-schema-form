@@ -343,8 +343,8 @@ export const schemaWithDeepVarThatDoesNotExist = {
   },
   'x-jsf-logic': {
     validations: {
-      a_greater_than_ten: {
-        errorMessage: 'Must be greater than 10',
+      dummy_rule: {
+        errorMessage: 'Random stuff to illustrate a deeply nested rule.',
         rule: {
           '>': [{ var: 'field_a' }, { '*': [2, { '/': [2, { '*': [1, { var: 'field_b' }] }] }] }],
         },
@@ -365,7 +365,7 @@ export const schemaWithDeepVarThatDoesNotExistOnFieldset = {
       },
       'x-jsf-logic': {
         validations: {
-          a_greater_than_ten: {
+          dummy_rule: {
             errorMessage: 'Must be greater than 10',
             rule: {
               '>': [{ var: 'child' }, { '*': [2, { '/': [2, { '*': [1, { var: 'field_a' }] }] }] }],

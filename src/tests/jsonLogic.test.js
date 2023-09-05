@@ -147,12 +147,12 @@ describe('jsonLogic: cross-values validations', () => {
       [
         'x-jsf-logic.validations: error if a field does not exist in a deeply nested rule',
         schemaWithDeepVarThatDoesNotExist,
-        '[json-schema-form] json-logic error: rule "a_greater_than_ten" has no variable "field_b".',
+        '[json-schema-form] json-logic error: rule "dummy_rule" has no variable "field_b".',
       ],
       [
         'x-jsf-logic.validations: error if rule does not exist on a fieldset property',
         schemaWithDeepVarThatDoesNotExistOnFieldset,
-        '[json-schema-form] json-logic error: rule "a_greater_than_ten" has no variable "field_a".',
+        '[json-schema-form] json-logic error: rule "dummy_rule" has no variable "field_a".',
       ],
       [
         'x-jsf-validations: error if a validation name does not exist',
