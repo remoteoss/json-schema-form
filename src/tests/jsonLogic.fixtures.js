@@ -504,6 +504,7 @@ export const schemaSelfContainedValueForMaximumMinimumValues = {
   properties: {
     field_a: {
       type: 'number',
+      default: 0,
     },
     field_b: {
       type: 'number',

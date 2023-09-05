@@ -390,20 +390,26 @@ describe('jsonLogic: cross-values validations', () => {
   });
 
   it('Use a self contained rule for a minimum, maximum value', () => {
-    const { handleValidation } = createHeadlessForm(
+    const { fields, handleValidation } = createHeadlessForm(
       schemaSelfContainedValueForMaximumMinimumValues,
       {
         strictInputType: false,
       }
     );
-    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+    const [, fieldB] = fields;
+    expect(fieldB).toMatchObject({ minimum: -10, maximum: 10 });
+    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toBeUndefined();
+    expect(fieldB).toMatchObject({ minimum: 0, maximum: 20 });
     expect(handleValidation({ field_a: 50, field_b: 20 }).formErrors).toEqual({
       field_b: 'Must be greater or equal to 40',
     });
+    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
     expect(handleValidation({ field_a: 50, field_b: 70 }).formErrors).toEqual({
       field_b: 'Must be smaller or equal to 60',
     });
-    expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toEqual(undefined);
+    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
+    expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toBeUndefined();
+    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
   });
 
   it('Mix use of multiple inline rules and an external rule', () => {
