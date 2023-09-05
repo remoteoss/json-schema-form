@@ -96,70 +96,44 @@ describe('jsonLogic: cross-values validations', () => {
   describe('Incorrectly written schemas', () => {
     afterEach(() => console.error.mockClear());
 
-    it('Should throw when theres a missing rule', () => {
-      createHeadlessForm(schemaWithMissingRule, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(
-          '[json-schema-form] json-logic error: Validation "a_greater_than_ten" has missing rule.'
-        )
-      );
-    });
+    const cases = [
+      [
+        'x-jsf-logic.validations: throw when theres a missing rule',
+        schemaWithMissingRule,
+        '[json-schema-form] json-logic error: Validation "a_greater_than_ten" has missing rule.',
+      ],
+      [
+        'x-jsf-logic.computedValues: throw when theres a missing computed value',
+        schemaWithMissingComputedValue,
+        '[json-schema-form] json-logic error: Computed value "a_plus_ten" has missing rule.',
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on an attribute.',
+        schemaWithComputedAttributeThatDoesntExist,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on a template string (title).',
+        schemaWithComputedAttributeThatDoesntExistTitle,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on a template string (description).',
+        schemaWithComputedAttributeThatDoesntExistDescription,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs:, error if theres a value referenced that does not exist on an inline rule.',
+        schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
+        `[json-schema-form] json-logic error: fieldName "IdontExist" doesn't exist in field "field_a.x-jsf-logic-computedAttrs.title".`,
+      ],
+    ];
 
-    it('Should throw when theres a missing computed value', () => {
-      createHeadlessForm(schemaWithMissingComputedValue, { strictInputType: false });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error('[json-schema-form] json-logic error: Computed value "a_plus_ten" has missing rule.')
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExist, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(
-          `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`
-        )
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a title.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistTitle, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(
-          `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`
-        )
-      );
-    });
-
-    it('On x-jsf-logic-computedAttrs, error if theres a value that does not exist on a description.', () => {
-      createHeadlessForm(schemaWithComputedAttributeThatDoesntExistDescription, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(
-          `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`
-        )
-      );
-    });
-
-    it('On an inline rule for a computedAttribute, error if theres a value referenced that does not exist', () => {
-      createHeadlessForm(schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar, {
-        strictInputType: false,
-      });
-      expect(console.error).toHaveBeenCalledWith(
-        'JSON Schema invalid!',
-        Error(
-          `[json-schema-form] json-logic error: fieldName "IdontExist" doesn't exist in field "field_a.x-jsf-logic-computedAttrs.title".`
-        )
-      );
+    test.each(cases)('%p', (_, schema, expectedErrorString) => {
+      const { error } = createHeadlessForm(schema, { strictInputType: false });
+      const expectedError = new Error(expectedErrorString);
+      expect(console.error).toHaveBeenCalledWith('JSON Schema invalid!', expectedError);
+      expect(error).toEqual(expectedError);
     });
   });
 
