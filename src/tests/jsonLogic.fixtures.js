@@ -227,24 +227,6 @@ export const schemaWithComputedAttributes = {
   },
 };
 
-export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-      'x-jsf-logic-computedAttrs': {
-        title: {
-          rule: {
-            '+': [{ var: 'field_a' }, 10],
-          },
-        },
-      },
-    },
-  },
-};
-
 export const schemaWithComputedAttributeThatDoesntExist = {
   properties: {
     field_a: {
