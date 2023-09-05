@@ -60,7 +60,7 @@ function createValidationsScope(schema) {
 
   validations.forEach(([id, validation]) => {
     if (!validation.rule) {
-      throw Error(`Missing rule for validation with id of: "${id}".`);
+      throw Error(`[json-schema-form] json-logic error: Validation "${id}" has missing rule.`);
     }
 
     checkRuleIntegrity(validation.rule, id, sampleEmptyObject);
@@ -70,7 +70,7 @@ function createValidationsScope(schema) {
 
   computedValues.forEach(([id, computedValue]) => {
     if (!computedValue.rule) {
-      throw Error(`Missing rule for computedValue with id of: "${id}".`);
+      throw Error(`[json-schema-form] json-logic error: Computed value "${id}" has missing rule.`);
     }
 
     checkRuleIntegrity(computedValue.rule, id, sampleEmptyObject);
@@ -88,24 +88,20 @@ function createValidationsScope(schema) {
     validate,
     applyValidationRuleInCondition(id, values) {
       const validation = validationMap.get(id);
-      if (validation === undefined)
-        throw Error(`"${id}" validation in if condition doesn't exist.`);
-
-      return evaluateValidation(validation.rule, values);
+      return validate(validation.rule, values);
     },
-    evaluateComputedValueRuleForField(id, values, fieldName) {
+    applyComputedValueInField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
-      if (validation === undefined)
-        throw Error(`"${id}" computedValue in field "${fieldName}" doesn't exist.`);
-
-      return evaluateValidation(validation.rule, values);
+      if (validation === undefined) {
+        throw Error(
+          `[json-schema-form] json-logic error: Computed value "${id}" doesn't exist in field "${fieldName}".`
+        );
+      }
+      return validate(validation.rule, values);
     },
     applyComputedValueRuleInCondition(id, values) {
       const validation = computedValuesMap.get(id);
-      if (validation === undefined)
-        throw Error(`"${id}" computedValue in if condition doesn't exist.`);
-
-      return evaluateValidation(validation.rule, values);
+      return validate(validation.rule, values);
     },
   };
 }
@@ -140,7 +136,9 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
   const validation = logic.getScope(parentID).validationMap.get(id);
 
   if (validation === undefined) {
-    throw Error(`Validation "${id}" required for "${field.name}" doesn't exist.`);
+    throw Error(
+      `[json-schema-form] json-logic error: "${field.name}" required validation "${id}" doesn't exist.`
+    );
   }
 
   return (yupSchema) =>
@@ -164,26 +162,22 @@ function replaceHandlebarsTemplates({
   name: fieldName,
 }) {
   if (typeof toReplace === 'string') {
-    return toReplace.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-      return validations
-        .getScope(parentID)
-        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+    return toReplace.replace(HANDLEBARS_REGEX, (match, key) => {
+      return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
     });
   } else if (typeof toReplace === 'object') {
     const { value, ...rules } = toReplace;
 
     if (Object.keys(rules).length > 1 && !value)
-      throw Error('Cannot define multiple rules without a template string with key `value`.');
+      {throw Error('Cannot define multiple rules without a template string with key `value`.');}
 
     const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
-      const computedValue = validations.getScope(parentID).evaluateValidation(rule, formValues);
+      const computedValue = logic.getScope(parentID).evaluateValidation(rule, formValues);
       return prev.replaceAll(`{{${key}}}`, computedValue);
     }, value);
 
     return computedTemplateValue.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
-      return validations
-        .getScope(parentID)
-        .evaluateComputedValueRuleForField(key.trim(), formValues, fieldName);
+      return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
     });
   }
   return toReplace;
@@ -328,7 +322,7 @@ function validateInlineRules(jsonSchema, sampleEmptyObject) {
               fieldName,
               sampleEmptyObject,
               (item) =>
-                `"${item.var}" in inline rule in property "${fieldName}.x-jsf-logic-computedAttrs.${key}" does not exist as a JSON schema property.`
+                `[json-schema-form] json-logic error: fieldName "${item.var}" doesn't exist in field "${fieldName}.x-jsf-logic-computedAttrs.${key}".`
             );
           });
         });
@@ -357,7 +351,8 @@ function checkRuleIntegrity(
   rule,
   id,
   data,
-  errorMessage = (item) => `"${item.var}" in rule "${id}" does not exist as a JSON schema property.`
+  errorMessage = (item) =>
+    `[json-schema-form] json-logic error: rule "${id}" has no variable "${item.var}".`
 ) {
   Object.values(rule ?? {}).map((subRule) => {
     if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;

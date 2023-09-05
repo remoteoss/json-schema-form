@@ -179,7 +179,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues, validations, config) {
+function updateField(field, requiredFields, node, formValues, logic, config) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -233,7 +233,7 @@ function updateField(field, requiredFields, node, formValues, validations, confi
       node,
       formValues,
       config,
-      validations,
+      logic,
     });
     updateValues(computedFieldValues);
   }
@@ -330,7 +330,7 @@ export function processNode({
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues, validations, { parentID });
+        updateField(field, requiredFields, node, formValues, logic, { parentID });
       });
     });
   }
@@ -467,14 +467,6 @@ export function extractParametersFromNode(schemaNode) {
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
   const requiredValidations = schemaNode['x-jsf-logic-validations'];
   const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
-
-  // This is when a forced value is computed.
-  const decoratedComputedAttributes = {
-    ...(computedAttributes ?? {}),
-    ...(computedAttributes?.const && computedAttributes?.default
-      ? { value: computedAttributes.const }
-      : {}),
-  };
 
   // This is when a forced value is computed.
   const decoratedComputedAttributes = getDecoratedComputedAttributes(computedAttributes);
