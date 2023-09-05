@@ -94,6 +94,29 @@ export const schemaWithMissingRule = {
   required: [],
 };
 
+export const schemaWithUnknownVariableInValidations = {
+  properties: {},
+  'x-jsf-logic': {
+    validations: {
+      a_equals_ten: {
+        errorMessage: 'Must equal 10',
+        rule: { '===': [{ var: 'field_a' }, 10] },
+      },
+    },
+  },
+};
+
+export const schemaWithUnknownVariableInComputedValues = {
+  properties: {},
+  'x-jsf-logic': {
+    computedValues: {
+      a_times_ten: {
+        rule: { '*': [{ var: 'field_a' }, 10] },
+      },
+    },
+  },
+};
+
 export const schemaWithMissingComputedValue = {
   properties: {
     field_a: {

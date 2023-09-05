@@ -15,6 +15,8 @@ import {
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithTwoRules,
+  schemaWithUnknownVariableInComputedValues,
+  schemaWithUnknownVariableInValidations,
 } from './jsonLogic.fixtures';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -101,6 +103,16 @@ describe('jsonLogic: cross-values validations', () => {
         'x-jsf-logic.validations: throw when theres a missing rule',
         schemaWithMissingRule,
         '[json-schema-form] json-logic error: Validation "a_greater_than_ten" has missing rule.',
+      ],
+      [
+        'x-jsf-validations: throw when theres a value that does not exist in a rule',
+        schemaWithUnknownVariableInValidations,
+        '"field_a" in rule "a_equals_ten" does not exist as a JSON schema property.',
+      ],
+      [
+        'x-jsf-validations: throw when theres a value that does not exist in a rule',
+        schemaWithUnknownVariableInComputedValues,
+        '"field_a" in rule "a_times_ten" does not exist as a JSON schema property.',
       ],
       [
         'x-jsf-logic.computedValues: throw when theres a missing computed value',
