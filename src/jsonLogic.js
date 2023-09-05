@@ -209,41 +209,31 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
  */
 function handleComputedAttribute(logic, formValues, parentID, name) {
   return ([key, value]) => {
-    if (key === 'description') {
-      return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
-    }
-
-    if (key === 'title') {
-      return ['label', replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
-    }
-
-    if (key === 'const') {
-      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
-    }
-
-    if (key === 'x-jsf-errorMessage') {
-      return [
-        'errorMessage',
-        handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
-      ];
-    }
-
-    if (key === 'x-jsf-errorMessage') {
-      return [
-        'errorMessage',
-        handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
-      ];
-    }
-
-    if (typeof value === 'string') {
-      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
-    }
-
-    if (key === 'x-jsf-presentation' && value.statement) {
-      return [
-        'statement',
-        handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
-      ];
+    switch (key) {
+      case 'description':
+        return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+      case 'title':
+        return ['label', replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+      case 'x-jsf-errorMessage':
+        return [
+          'errorMessage',
+          handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
+        ];
+      case 'x-jsf-presentation': {
+        if (value.statement) {
+          return [
+            'statement',
+            handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
+          ];
+        }
+        return [
+          key,
+          handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
+        ];
+      }
+      case 'const':
+      default:
+        return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
     }
   };
 }
