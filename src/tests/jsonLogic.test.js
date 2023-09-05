@@ -5,7 +5,7 @@ import {
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
   schemaSelfContainedValueForMaximumMinimumValues,
-  schemaSelfContainedValueForTitleWithNoTemplate,
+  schemaSelfContainedValueForTitle,
   schemaWithBadOperation,
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
@@ -378,12 +378,9 @@ describe('jsonLogic: cross-values validations', () => {
   });
 
   it('Use a self contained rule in a schema for a title but it just uses the value', () => {
-    const { fields, handleValidation } = createHeadlessForm(
-      schemaSelfContainedValueForTitleWithNoTemplate,
-      {
-        strictInputType: false,
-      }
-    );
+    const { fields, handleValidation } = createHeadlessForm(schemaSelfContainedValueForTitle, {
+      strictInputType: false,
+    });
     const [, fieldB] = fields;
     expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
     expect(fieldB.label).toEqual('20');

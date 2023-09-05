@@ -463,7 +463,7 @@ export const schemaWithInlineMultipleRulesForComputedAttributes = {
   },
 };
 
-export const schemaSelfContainedValueForTitleWithNoTemplate = {
+export const schemaSelfContainedValueForTitle = {
   properties: {
     field_a: {
       type: 'number',
