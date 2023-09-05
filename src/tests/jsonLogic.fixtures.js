@@ -426,3 +426,16 @@ export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
   },
   required: ['field_a'],
 };
+
+export const schemaWithBadOperation = {
+  properties: {},
+  'x-jsf-logic': {
+    validations: {
+      badOperator: {
+        rule: {
+          '++': [10, 2],
+        },
+      },
+    },
+  },
+};

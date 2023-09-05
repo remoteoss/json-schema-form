@@ -4,6 +4,7 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
+  schemaWithBadOperation,
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
   schemaWithComputedAttributeThatDoesntExistTitle,
@@ -159,9 +160,14 @@ describe('jsonLogic: cross-values validations', () => {
         `[json-schema-form] json-logic error: "field_a" required validation "iDontExist" doesn't exist.`,
       ],
       [
-        'A top level logic keyword will not be able to reference fieldset properties',
+        'x-jsf-logic.validations: A top level logic keyword will not be able to reference fieldset properties',
         schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
         '[json-schema-form] json-logic error: rule "validation_parent" has no variable "child".',
+      ],
+      [
+        'x-jsf-logic.validations: error if unknown operation',
+        schemaWithBadOperation,
+        '[json-schema-form] json-logic error: in "badOperator" rule there is an unknown operator "++".',
       ],
     ];
 

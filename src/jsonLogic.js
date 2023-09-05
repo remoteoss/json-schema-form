@@ -168,8 +168,9 @@ function replaceHandlebarsTemplates({
   } else if (typeof toReplace === 'object') {
     const { value, ...rules } = toReplace;
 
-    if (Object.keys(rules).length > 1 && !value)
-      {throw Error('Cannot define multiple rules without a template string with key `value`.');}
+    if (Object.keys(rules).length > 1 && !value) {
+      throw Error('Cannot define multiple rules without a template string with key `value`.');
+    }
 
     const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
       const computedValue = logic.getScope(parentID).evaluateValidation(rule, formValues);
@@ -354,8 +355,10 @@ function checkRuleIntegrity(
   errorMessage = (item) =>
     `[json-schema-form] json-logic error: rule "${id}" has no variable "${item.var}".`
 ) {
-  Object.values(rule ?? {}).map((subRule) => {
+  Object.entries(rule ?? {}).map(([operator, subRule]) => {
     if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
+    throwIfUnknownOperator(operator, subRule, id);
+
     subRule.map((item) => {
       const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
       if (isVar) {
@@ -368,6 +371,18 @@ function checkRuleIntegrity(
       }
     });
   });
+}
+
+function throwIfUnknownOperator(operator, subRule, id) {
+  try {
+    jsonLogic.apply({ [operator]: subRule });
+  } catch (e) {
+    if (e.message === `Unrecognized operation ${operator}`) {
+      throw Error(
+        `[json-schema-form] json-logic error: in "${id}" rule there is an unknown operator "${operator}".`
+      );
+    }
+  }
 }
 
 function removeIndicesFromPath(path) {
