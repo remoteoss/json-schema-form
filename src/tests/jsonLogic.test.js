@@ -16,6 +16,10 @@ import {
   schemaWithNonRequiredField,
   schemaWithTwoRules,
 } from './jsonLogic.fixtures';
+import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
+
+beforeEach(mockConsole);
+afterEach(restoreConsoleAndEnsureItWasNotCalled);
 
 describe('jsonLogic: cross-values validations', () => {
   describe('Does not conflict with native JSON schema', () => {
@@ -90,13 +94,7 @@ describe('jsonLogic: cross-values validations', () => {
   });
 
   describe('Incorrectly written schemas', () => {
-    beforeEach(() => {
-      jest.spyOn(console, 'error').mockImplementation(() => {});
-    });
-
-    afterEach(() => {
-      console.error.mockRestore();
-    });
+    afterEach(() => console.error.mockClear());
 
     it('Should throw when theres a missing rule', () => {
       createHeadlessForm(schemaWithMissingRule, { strictInputType: false });
