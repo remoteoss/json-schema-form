@@ -5,7 +5,7 @@ import omitBy from 'lodash/omitBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
-import { checkIfConditionMatches } from './checkIfConditionMatches';
+import { checkIfConditionMatchesProperties } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { processJSONLogicNode } from './jsonLogic';
@@ -299,7 +299,7 @@ export function processNode({
   });
 
   if (node.if) {
-    const matchesCondition = checkIfConditionMatches(node, formValues, formFields, logic);
+    const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {

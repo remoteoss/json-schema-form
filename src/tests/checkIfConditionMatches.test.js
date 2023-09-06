@@ -1,12 +1,12 @@
-import { checkIfConditionMatches } from '../checkIfConditionMatches';
+import { checkIfConditionMatchesProperties } from '../checkIfConditionMatches';
 
 it('Empty if is always going to be true', () => {
-  expect(checkIfConditionMatches({ if: { properties: {} } })).toBe(true);
+  expect(checkIfConditionMatchesProperties({ if: { properties: {} } })).toBe(true);
 });
 
 it('Basic if check passes with correct value', () => {
   expect(
-    checkIfConditionMatches(
+    checkIfConditionMatchesProperties(
       { if: { properties: { a: { const: 'hello' } } } },
       {
         a: 'hello',
@@ -17,7 +17,7 @@ it('Basic if check passes with correct value', () => {
 
 it('Basic if check fails with incorrect value', () => {
   expect(
-    checkIfConditionMatches(
+    checkIfConditionMatchesProperties(
       { if: { properties: { a: { const: 'hello' } } } },
       {
         a: 'goodbye',
@@ -28,7 +28,7 @@ it('Basic if check fails with incorrect value', () => {
 
 it('Nested properties check passes with correct value', () => {
   expect(
-    checkIfConditionMatches(
+    checkIfConditionMatchesProperties(
       { if: { properties: { parent: { properties: { child: { const: 'hello from child' } } } } } },
       {
         parent: { child: 'hello from child' },
@@ -40,7 +40,7 @@ it('Nested properties check passes with correct value', () => {
 
 it('Nested properties check passes with correct value', () => {
   expect(
-    checkIfConditionMatches(
+    checkIfConditionMatchesProperties(
       { if: { properties: { parent: { properties: { child: { const: 'hello from child' } } } } } },
       {
         parent: { child: 'goodbye from child' },

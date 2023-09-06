@@ -1,7 +1,7 @@
 import jsonLogic from 'json-logic-js';
 
 import {
-  checkIfConditionMatches,
+  checkIfConditionMatchesProperties,
   checkIfMatchesValidationsAndComputedValues,
 } from './checkIfConditionMatches';
 import { processNode } from './helpers';
@@ -420,13 +420,15 @@ export function processJSONLogicNode({
   }
 
   if (node.if) {
-    const matchesPropertyCondition = checkIfConditionMatches(node, formValues, formFields, logic);
-    const matchesValidationsAndComputedValues = checkIfMatchesValidationsAndComputedValues(
+    const matchesPropertyCondition = checkIfConditionMatchesProperties(
       node,
       formValues,
-      logic,
-      parentID
+      formFields,
+      logic
     );
+    const matchesValidationsAndComputedValues =
+      matchesPropertyCondition &&
+      checkIfMatchesValidationsAndComputedValues(node, formValues, logic, parentID);
 
     const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
 

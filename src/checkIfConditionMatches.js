@@ -7,7 +7,7 @@ import { hasProperty } from './utils';
  * @param {Object} formValues - form state
  * @returns {Boolean}
  */
-export function checkIfConditionMatches(node, formValues, formFields, logic) {
+export function checkIfConditionMatchesProperties(node, formValues, formFields, logic) {
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
     const value = formValues[name];
@@ -47,7 +47,7 @@ export function checkIfConditionMatches(node, formValues, formFields, logic) {
     }
 
     if (currentProperty.properties) {
-      return checkIfConditionMatches(
+      return checkIfConditionMatchesProperties(
         { if: currentProperty },
         formValues[name],
         getField(name, formFields).fields,
