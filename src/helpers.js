@@ -482,7 +482,7 @@ export function extractParametersFromNode(schemaNode) {
 
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
-  const requiredValidations = schemaNode['x-jsf-logic-validations'];
+  const jsonLogicValidations = schemaNode['x-jsf-logic-validations'];
   const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
 
   // This is when a forced value is computed.
@@ -532,7 +532,7 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
-      requiredValidations,
+      jsonLogicValidations,
       computedAttributes: decoratedComputedAttributes,
       description: containsHTML(description)
         ? wrapWithSpan(description, {

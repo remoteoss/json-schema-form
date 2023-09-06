@@ -407,8 +407,8 @@ export function buildYupSchema(field, config, logic) {
     validators.push(withConst);
   }
 
-  if (propertyFields.requiredValidations) {
-    propertyFields.requiredValidations.forEach((id) =>
+  if (propertyFields.jsonLogicValidations) {
+    propertyFields.jsonLogicValidations.forEach((id) =>
       validators.push(yupSchemaWithCustomJSONLogic({ field, id, logic, config }))
     );
   }

@@ -114,9 +114,9 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
         ? calculateComputedAttributes(newFieldParams, config)({ logic, formValues })
         : {};
 
-      const requiredValidations = [
-        ...(fieldParams.requiredValidations ?? []),
-        ...(restNewFieldParams.requiredValidations ?? []),
+      const jsonLogicValidations = [
+        ...(fieldParams.jsonLogicValidations ?? []),
+        ...(restNewFieldParams.jsonLogicValidations ?? []),
       ];
 
       const base = {
@@ -132,7 +132,7 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
             ...fieldParams,
             ...restNewFieldParams,
             ...calculatedComputedAttributes,
-            requiredValidations,
+            jsonLogicValidations,
             // If there are inner fields (case of fieldset) they need to be updated based on the condition
             fields: fieldSetFields,
             required: isRequired,
