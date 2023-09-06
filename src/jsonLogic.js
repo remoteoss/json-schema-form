@@ -1,5 +1,10 @@
 import jsonLogic from 'json-logic-js';
 
+import {
+  checkIfConditionMatches,
+  checkIfMatchesValidationsAndComputedValues,
+} from './checkIfConditionMatches';
+import { processNode } from './helpers';
 import { buildYupSchema } from './yupSchema';
 
 /**
@@ -392,4 +397,62 @@ function throwIfUnknownOperator(operator, subRule, id) {
 function removeIndicesFromPath(path) {
   const intermediatePath = path.replace(/\.\d+\./g, '.');
   return intermediatePath.replace(/\.\d+$/, '');
+}
+
+export function processJSONLogicNode({
+  node,
+  formFields,
+  formValues,
+  accRequired,
+  parentID,
+  logic,
+}) {
+  const requiredFields = new Set(accRequired);
+
+  if (node.allOf) {
+    node.allOf
+      .map((allOfNode) =>
+        processJSONLogicNode({ node: allOfNode, formValues, formFields, logic, parentID })
+      )
+      .forEach(({ required: allOfItemRequired }) => {
+        allOfItemRequired.forEach(requiredFields.add, requiredFields);
+      });
+  }
+
+  if (node.if) {
+    const matchesPropertyCondition = checkIfConditionMatches(node, formValues, formFields, logic);
+    const matchesValidationsAndComputedValues = checkIfMatchesValidationsAndComputedValues(
+      node,
+      formValues,
+      logic,
+      parentID
+    );
+
+    const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
+
+    if (isConditionMatch && node.then) {
+      const { required: branchRequired } = processNode({
+        node: node.then,
+        formValues,
+        formFields,
+        accRequired,
+        logic,
+        parentID,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+    if (!isConditionMatch && node.else) {
+      const { required: branchRequired } = processNode({
+        node: node.else,
+        formValues,
+        formFields,
+        accRequired: requiredFields,
+        parentID,
+        logic,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+  }
+
+  return { required: requiredFields };
 }

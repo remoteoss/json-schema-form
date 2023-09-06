@@ -6,24 +6,32 @@ import {
   multiRuleSchema,
   schemaSelfContainedValueForMaximumMinimumValues,
   schemaSelfContainedValueForTitle,
+  schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
   schemaWithBadOperation,
+  schemaWithChecksAndThenValidationsOnThen,
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
   schemaWithComputedAttributeThatDoesntExistTitle,
   schemaWithComputedAttributes,
   schemaWithComputedAttributesAndErrorMessages,
+  schemaWithComputedValueChecksInIf,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithDeepVarThatDoesNotExistOnFieldset,
+  schemaWithGreaterThanChecksForThreeFields,
+  schemaWithIfStatementWithComputedValuesAndValidationChecks,
   schemaWithInlineMultipleRulesForComputedAttributes,
   schemaWithInlineRuleForComputedAttributeWithCopy,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithJSFLogicAndInlineRule,
   schemaWithMissingComputedValue,
   schemaWithMissingRule,
+  schemaWithMultipleComputedValueChecks,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
+  schemaWithPropertiesCheckAndValidationsInAIf,
   schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
+  schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally,
   schemaWithUnknownVariableInComputedValues,
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
@@ -363,58 +371,192 @@ describe('jsonLogic: cross-values validations', () => {
       expect(handleValidation({ field_a: 10 }).formErrors).toEqual(undefined);
       expect(fieldB.label).toEqual('I need this to work using the 20.');
     });
-  });
 
-  it('Use multiple inline rules with different identifiers', () => {
-    const { fields, handleValidation } = createHeadlessForm(
-      schemaWithInlineMultipleRulesForComputedAttributes,
-      {
+    it('Use multiple inline rules with different identifiers', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithInlineMultipleRulesForComputedAttributes,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+      expect(fieldB.description).toEqual('Must be between 5 and 20.');
+    });
+
+    it('Use a self contained rule in a schema for a title but it just uses the value', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaSelfContainedValueForTitle, {
         strictInputType: false,
-      }
-    );
-    const [, fieldB] = fields;
-    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
-    expect(fieldB.description).toEqual('Must be between 5 and 20.');
-  });
-
-  it('Use a self contained rule in a schema for a title but it just uses the value', () => {
-    const { fields, handleValidation } = createHeadlessForm(schemaSelfContainedValueForTitle, {
-      strictInputType: false,
+      });
+      const [, fieldB] = fields;
+      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+      expect(fieldB.label).toEqual('20');
     });
-    const [, fieldB] = fields;
-    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
-    expect(fieldB.label).toEqual('20');
-  });
 
-  it('Use a self contained rule for a minimum, maximum value', () => {
-    const { fields, handleValidation } = createHeadlessForm(
-      schemaSelfContainedValueForMaximumMinimumValues,
-      {
+    it('Use a self contained rule for a minimum, maximum value', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaSelfContainedValueForMaximumMinimumValues,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(fieldB).toMatchObject({ minimum: -10, maximum: 10 });
+      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toBeUndefined();
+      expect(fieldB).toMatchObject({ minimum: 0, maximum: 20 });
+      expect(handleValidation({ field_a: 50, field_b: 20 }).formErrors).toEqual({
+        field_b: 'Must be greater or equal to 40',
+      });
+      expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
+      expect(handleValidation({ field_a: 50, field_b: 70 }).formErrors).toEqual({
+        field_b: 'Must be smaller or equal to 60',
+      });
+      expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
+      expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toBeUndefined();
+      expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
+    });
+
+    it('Mix use of multiple inline rules and an external rule', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaWithJSFLogicAndInlineRule, {
         strictInputType: false,
-      }
-    );
-    const [, fieldB] = fields;
-    expect(fieldB).toMatchObject({ minimum: -10, maximum: 10 });
-    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toBeUndefined();
-    expect(fieldB).toMatchObject({ minimum: 0, maximum: 20 });
-    expect(handleValidation({ field_a: 50, field_b: 20 }).formErrors).toEqual({
-      field_b: 'Must be greater or equal to 40',
+      });
+      handleValidation({ field_a: 10 });
+      const [, fieldB] = fields;
+      expect(fieldB.label).toEqual('Going to use 20 and 4');
     });
-    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
-    expect(handleValidation({ field_a: 50, field_b: 70 }).formErrors).toEqual({
-      field_b: 'Must be smaller or equal to 60',
-    });
-    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
-    expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toBeUndefined();
-    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
   });
 
-  it('Mix use of multiple inline rules and an external rule', () => {
-    const { fields, handleValidation } = createHeadlessForm(schemaWithJSFLogicAndInlineRule, {
-      strictInputType: false,
+  describe('Conditionals', () => {
+    it('when field_a > field_b, show field_c', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithGreaterThanChecksForThreeFields,
+        { strictInputType: false }
+      );
+      expect(fields.find((i) => i.name === 'field_c').isVisible).toEqual(false);
+
+      expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 1, field_b: null }).formErrors).toEqual({
+        field_b: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 3, field_c: 0 }).formErrors).toEqual(
+        undefined
+      );
     });
-    handleValidation({ field_a: 10 });
-    const [, fieldB] = fields;
-    expect(fieldB.label).toEqual('Going to use 20 and 4');
+
+    it('A schema with both a `x-jsf-validations` and `properties` check', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaWithPropertiesCheckAndValidationsInAIf,
+        { strictInputType: false }
+      );
+      expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 5, field_b: 3 }).formErrors).toEqual(undefined);
+    });
+
+    it('Conditionally apply a validation on a property depending on values', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithChecksAndThenValidationsOnThen,
+        { strictInputType: false }
+      );
+      const cField = fields.find((i) => i.name === 'field_c');
+      expect(cField.isVisible).toEqual(false);
+      expect(cField.description).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 5 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 0 }).formErrors).toEqual({
+        field_c: 'Needs more numbers',
+      });
+      expect(cField.description).toBe('I am a description!');
+      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('Should apply a conditional based on a true computedValue', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaWithComputedValueChecksInIf, {
+        strictInputType: false,
+      });
+      const cField = fields.find((i) => i.name === 'field_c');
+      expect(cField.isVisible).toEqual(false);
+      expect(cField.description).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 5 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('Handle multiple computedValue checks by ANDing them together', () => {
+      const { handleValidation } = createHeadlessForm(schemaWithMultipleComputedValueChecks, {
+        strictInputType: false,
+      });
+      expect(handleValidation({}).formErrors).toEqual({
+        field_a: 'Required field',
+        field_b: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 8 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 8, field_c: 0 }).formErrors).toEqual({
+        field_c: 'Must be two times B',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 8, field_c: 17 }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('Handle having a true condition with both validations and computedValue checks', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaWithIfStatementWithComputedValuesAndValidationChecks,
+        { strictInputType: false }
+      );
+      expect(handleValidation({ field_a: 1, field_b: 1 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 20 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 10, field_b: 9 }).formErrors).toEqual({
+        field_c: 'Required field',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 9, field_c: 10 }).formErrors).toEqual(
+        undefined
+      );
+    });
+
+    it('Apply validations and computed values on normal if statement.', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
+        { strictInputType: false }
+      );
+      expect(handleValidation({ field_a: 0, field_b: 0 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 20, field_b: 0 }).formErrors).toEqual({
+        field_b: 'Must be greater than Field A + 10',
+      });
+      const [, fieldB] = fields;
+      expect(fieldB.label).toEqual('Must be greater than 30.');
+      expect(handleValidation({ field_a: 20, field_b: 31 }).formErrors).toEqual(undefined);
+    });
+
+    it('When we have a required validation on a top level property and another validation is added, both should be accounted for.', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally,
+        { strictInputType: false }
+      );
+      expect(handleValidation({ field_a: 10, field_b: 0 }).formErrors).toEqual({
+        field_b: 'Must be greater than A',
+      });
+      expect(handleValidation({ field_a: 10, field_b: 20 }).formErrors).toEqual(undefined);
+      expect(handleValidation({ field_a: 20, field_b: 10 }).formErrors).toEqual({
+        field_b: 'Must be greater than A',
+      });
+      expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toEqual({
+        field_b: 'Must be greater than two times A',
+      });
+      expect(handleValidation({ field_a: 20, field_b: 41 }).formErrors).toEqual();
+    });
   });
 });

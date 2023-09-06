@@ -8,6 +8,7 @@ import { lazy } from 'yup';
 import { checkIfConditionMatches } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
+import { processJSONLogicNode } from './jsonLogic';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
@@ -240,7 +241,13 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
+    const newFieldValues = field.calculateConditionalProperties(
+      fieldIsRequired,
+      node,
+      logic,
+      config,
+      formValues
+    );
     updateValues(newFieldValues);
   }
 
@@ -366,6 +373,18 @@ export function processNode({
         });
       }
     });
+  }
+
+  if (node['x-jsf-logic']) {
+    const { required: requiredFromLogic } = processJSONLogicNode({
+      node: node['x-jsf-logic'],
+      formValues,
+      formFields,
+      accRequired: requiredFields,
+      parentID,
+      logic,
+    });
+    requiredFromLogic.forEach((field) => requiredFields.add(field));
   }
 
   return {

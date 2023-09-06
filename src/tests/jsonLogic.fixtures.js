@@ -533,3 +533,424 @@ export const schemaWithJSFLogicAndInlineRule = {
     },
   },
 };
+
+export const schemaWithGreaterThanChecksForThreeFields = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+    field_c: {
+      type: 'number',
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    validations: {
+      require_c: {
+        rule: {
+          and: [
+            { '!==': [{ var: 'field_b' }, null] },
+            { '!==': [{ var: 'field_a' }, null] },
+            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+          ],
+        },
+      },
+    },
+    allOf: [
+      {
+        if: {
+          validations: {
+            require_c: {
+              const: true,
+            },
+          },
+        },
+        then: {
+          required: ['field_c'],
+        },
+        else: {
+          properties: {
+            field_c: false,
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const schemaWithPropertiesCheckAndValidationsInAIf = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+    field_c: {
+      type: 'number',
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    validations: {
+      require_c: {
+        rule: {
+          and: [
+            { '!==': [{ var: 'field_b' }, null] },
+            { '!==': [{ var: 'field_a' }, null] },
+            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+          ],
+        },
+      },
+    },
+    allOf: [
+      {
+        if: {
+          validations: {
+            require_c: {
+              const: true,
+            },
+          },
+          properties: {
+            field_a: {
+              const: 10,
+            },
+          },
+        },
+        then: {
+          required: ['field_c'],
+        },
+        else: {
+          properties: {
+            field_c: false,
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const schemaWithChecksAndThenValidationsOnThen = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+    field_c: {
+      type: 'number',
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    validations: {
+      c_must_be_large: {
+        errorMessage: 'Needs more numbers',
+        rule: {
+          '>': [{ var: 'field_c' }, 200],
+        },
+      },
+      require_c: {
+        rule: {
+          and: [
+            { '!==': [{ var: 'field_b' }, null] },
+            { '!==': [{ var: 'field_a' }, null] },
+            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+          ],
+        },
+      },
+    },
+    allOf: [
+      {
+        if: {
+          validations: {
+            require_c: {
+              const: true,
+            },
+          },
+        },
+        then: {
+          required: ['field_c'],
+          properties: {
+            field_c: {
+              description: 'I am a description!',
+              'x-jsf-logic-validations': ['c_must_be_large'],
+            },
+          },
+        },
+        else: {
+          properties: {
+            field_c: false,
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const schemaWithComputedValueChecksInIf = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+    field_c: {
+      type: 'number',
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    computedValues: {
+      require_c: {
+        rule: {
+          and: [
+            { '!==': [{ var: 'field_b' }, null] },
+            { '!==': [{ var: 'field_a' }, null] },
+            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
+          ],
+        },
+      },
+    },
+    allOf: [
+      {
+        if: {
+          computedValues: {
+            require_c: {
+              const: true,
+            },
+          },
+        },
+        then: {
+          required: ['field_c'],
+        },
+        else: {
+          properties: {
+            field_c: false,
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const schemaWithMultipleComputedValueChecks = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+    field_c: {
+      type: 'number',
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    validations: {
+      double_b: {
+        errorMessage: 'Must be two times B',
+        rule: {
+          '>': [{ var: 'field_c' }, { '*': [{ var: 'field_b' }, 2] }],
+        },
+      },
+    },
+    computedValues: {
+      a_times_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
+        },
+      },
+      mod_by_five: {
+        rule: {
+          '%': [{ var: 'field_b' }, 5],
+        },
+      },
+    },
+    allOf: [
+      {
+        if: {
+          computedValues: {
+            a_times_two: {
+              const: 20,
+            },
+            mod_by_five: {
+              const: 3,
+            },
+          },
+        },
+        then: {
+          required: ['field_c'],
+          properties: {
+            field_c: {
+              'x-jsf-logic-validations': ['double_b'],
+              title: 'Adding a title.',
+            },
+          },
+        },
+        else: {
+          properties: {
+            field_c: false,
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const schemaWithIfStatementWithComputedValuesAndValidationChecks = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+    field_c: {
+      type: 'number',
+    },
+  },
+  required: ['field_a', 'field_b'],
+  'x-jsf-logic': {
+    validations: {
+      greater_than_b: {
+        rule: {
+          '>': [{ var: 'field_a' }, { var: 'field_b' }],
+        },
+      },
+    },
+    computedValues: {
+      a_times_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
+        },
+      },
+    },
+    allOf: [
+      {
+        if: {
+          computedValues: {
+            a_times_two: {
+              const: 20,
+            },
+          },
+          validations: {
+            greater_than_b: {
+              const: true,
+            },
+          },
+        },
+        then: {
+          required: ['field_c'],
+        },
+        else: {
+          properties: {
+            field_c: false,
+          },
+        },
+      },
+    ],
+  },
+};
+
+export const schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      a_plus_ten: {
+        rule: {
+          '+': [{ var: 'field_a' }, 10],
+        },
+      },
+    },
+    validations: {
+      greater_than_a_plus_ten: {
+        errorMessage: 'Must be greater than Field A + 10',
+        rule: {
+          '>': [{ var: 'field_b' }, { '+': [{ var: 'field_a' }, 10] }],
+        },
+      },
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          field_a: {
+            const: 20,
+          },
+        },
+      },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-logic-computedAttrs': {
+              title: 'Must be greater than {{a_plus_ten}}.',
+            },
+            'x-jsf-logic-validations': ['greater_than_a_plus_ten'],
+          },
+        },
+      },
+    },
+  ],
+};
+
+export const schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally = {
+  required: ['field_a', 'field_b'],
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-validations': ['greater_than_field_a'],
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      greater_than_field_a: {
+        errorMessage: 'Must be greater than A',
+        rule: {
+          '>': [{ var: 'field_b' }, { var: 'field_a' }],
+        },
+      },
+      greater_than_two_times_a: {
+        errorMessage: 'Must be greater than two times A',
+        rule: {
+          '>': [{ var: 'field_b' }, { '*': [{ var: 'field_a' }, 2] }],
+        },
+      },
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          field_a: {
+            const: 20,
+          },
+        },
+      },
+      then: {
+        properties: {
+          field_b: {
+            'x-jsf-logic-validations': ['greater_than_two_times_a'],
+          },
+        },
+      },
+    },
+  ],
+};
