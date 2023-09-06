@@ -432,25 +432,21 @@ export function processJSONLogicNode({
 
     const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
 
+    let nextNode;
     if (isConditionMatch && node.then) {
+      nextNode = node.then;
+    }
+    if (!isConditionMatch && node.else) {
+      nextNode = node.else;
+    }
+    if (nextNode) {
       const { required: branchRequired } = processNode({
-        node: node.then,
+        node: nextNode,
         formValues,
         formFields,
         accRequired,
         logic,
         parentID,
-      });
-      branchRequired.forEach((field) => requiredFields.add(field));
-    }
-    if (!isConditionMatch && node.else) {
-      const { required: branchRequired } = processNode({
-        node: node.else,
-        formValues,
-        formFields,
-        accRequired: requiredFields,
-        parentID,
-        logic,
       });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
