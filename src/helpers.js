@@ -241,13 +241,11 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties(
-      fieldIsRequired,
-      node,
-      logic,
-      config,
-      formValues
-    );
+    const newFieldValues = field.calculateConditionalProperties({
+      isRequired: fieldIsRequired,
+      conditionBranch: node,
+      formValues,
+    });
     updateValues(newFieldValues);
   }
 

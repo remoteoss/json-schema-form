@@ -65,19 +65,29 @@ function rebuildFieldset(fields, property) {
 }
 
 /**
- * Builds a function that updates the fields properties based on the form values and the
- * dependencies the field has on the current schema.
- * @param {FieldParameters} fieldParams - field parameters
- * @returns {Function}
+ * Builds a function that updates the field properties based on the form values,
+ * schema dependencies, and conditional logic.
+ *
+ * @param {Object} params - Parameters
+ * @param {Object} params.fieldParams - Current field parameters
+ * @param {Object} params.customProperties - Custom field properties from schema
+ * @param {Object} params.logic - JSON-logic
+ * @param {Object} params.config - Form configuration
+ *
+ * @returns {Function} A function that calculates conditional properties
  */
-export function calculateConditionalProperties(fieldParams, customProperties, logic, config) {
+export function calculateConditionalProperties({ fieldParams, customProperties, logic, config }) {
   /**
    * Runs dynamic property calculation on a field based on a conditional that has been calculated
-   * @param {Boolean} isRequired - if the field is required
-   * @param {Object} conditionBranch - condition branch being applied
-   * @returns {Object} updated field parameters
+   *
+   * @param {Object} params - Parameters
+   * @param {Boolean} params.isRequired - If field is required
+   * @param {Object} params.conditionBranch - Condition branch
+   * @param {Object} params.formValues - Current form values
+   *
+   * @returns {Object} Updated field parameters
    */
-  return (isRequired, conditionBranch, __, _, formValues) => {
+  return ({ isRequired, conditionBranch, formValues }) => {
     // Check if the current field is conditionally declared in the schema
 
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
