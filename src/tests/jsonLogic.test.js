@@ -432,7 +432,8 @@ describe('jsonLogic: cross-values validations', () => {
         schemaWithGreaterThanChecksForThreeFields,
         { strictInputType: false }
       );
-      expect(fields.find((i) => i.name === 'field_c').isVisible).toEqual(false);
+      const fieldC = fields.find((i) => i.name === 'field_c');
+      expect(fieldC.isVisible).toEqual(false);
 
       expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
       expect(handleValidation({ field_a: 1 }).formErrors).toEqual({
@@ -444,20 +445,24 @@ describe('jsonLogic: cross-values validations', () => {
       expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
         field_c: 'Required field',
       });
+      expect(fieldC.isVisible).toEqual(true);
       expect(handleValidation({ field_a: 10, field_b: 3, field_c: 0 }).formErrors).toEqual(
         undefined
       );
     });
 
     it('A schema with both a `x-jsf-validations` and `properties` check', () => {
-      const { handleValidation } = createHeadlessForm(
+      const { fields, handleValidation } = createHeadlessForm(
         schemaWithPropertiesCheckAndValidationsInAIf,
         { strictInputType: false }
       );
+      const fieldC = fields.find((i) => i.name === 'field_c');
       expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
+      expect(fieldC.isVisible).toEqual(false);
       expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
         field_c: 'Required field',
       });
+      expect(fieldC.isVisible).toEqual(true);
       expect(handleValidation({ field_a: 5, field_b: 3 }).formErrors).toEqual(undefined);
     });
 
