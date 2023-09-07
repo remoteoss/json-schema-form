@@ -551,11 +551,7 @@ export const schemaWithGreaterThanChecksForThreeFields = {
     validations: {
       require_c: {
         rule: {
-          and: [
-            { '!==': [{ var: 'field_b' }, null] },
-            { '!==': [{ var: 'field_a' }, null] },
-            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-          ],
+          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
         },
       },
     },
@@ -598,11 +594,7 @@ export const schemaWithPropertiesCheckAndValidationsInAIf = {
     validations: {
       require_c: {
         rule: {
-          and: [
-            { '!==': [{ var: 'field_b' }, null] },
-            { '!==': [{ var: 'field_a' }, null] },
-            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-          ],
+          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
         },
       },
     },
@@ -656,11 +648,7 @@ export const schemaWithChecksAndThenValidationsOnThen = {
       },
       require_c: {
         rule: {
-          and: [
-            { '!==': [{ var: 'field_b' }, null] },
-            { '!==': [{ var: 'field_a' }, null] },
-            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-          ],
+          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
         },
       },
     },
@@ -709,11 +697,7 @@ export const schemaWithComputedValueChecksInIf = {
     computedValues: {
       require_c: {
         rule: {
-          and: [
-            { '!==': [{ var: 'field_b' }, null] },
-            { '!==': [{ var: 'field_a' }, null] },
-            { '>': [{ var: 'field_a' }, { var: 'field_b' }] },
-          ],
+          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
         },
       },
     },

@@ -84,7 +84,10 @@ function createValidationsScope(schema) {
   });
 
   function validate(rule, values) {
-    return jsonLogic.apply(rule, replaceUndefinedValuesWithNulls(values));
+    return jsonLogic.apply(
+      rule,
+      replaceUndefinedValuesWithNulls({ ...sampleEmptyObject, ...values })
+    );
   }
 
   return {
@@ -120,7 +123,7 @@ function createValidationsScope(schema) {
  */
 function replaceUndefinedValuesWithNulls(values = {}) {
   return Object.entries(values).reduce((prev, [key, value]) => {
-    return { ...prev, [key]: value === undefined ? null : value };
+    return { ...prev, [key]: value === undefined || value === null ? NaN : value };
   }, {});
 }
 

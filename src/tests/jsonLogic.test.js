@@ -435,7 +435,10 @@ describe('jsonLogic: cross-values validations', () => {
       expect(fields.find((i) => i.name === 'field_c').isVisible).toEqual(false);
 
       expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined);
-      expect(handleValidation({ field_a: 1, field_b: null }).formErrors).toEqual({
+      expect(handleValidation({ field_a: 1 }).formErrors).toEqual({
+        field_b: 'Required field',
+      });
+      expect(handleValidation({ field_a: 1, field_b: undefined }).formErrors).toEqual({
         field_b: 'Required field',
       });
       expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
