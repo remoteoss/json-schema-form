@@ -484,6 +484,11 @@ describe('jsonLogic: cross-values validations', () => {
       expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
         undefined
       );
+      expect(handleValidation({ field_a: 5, field_b: 10 }).formErrors).toBeUndefined();
+      expect(cField).toMatchObject({
+        isVisible: false,
+        // description: null, the description will currently be `I am a description!`, how do we change it back to null from here?
+      });
     });
 
     it('Should apply a conditional based on a true computedValue', () => {
