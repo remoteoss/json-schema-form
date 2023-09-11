@@ -83,4 +83,16 @@ describe('validations: const', () => {
     });
     expect(handleValidation({ string: 'hello' }).formErrors).toEqual(undefined);
   });
+
+  it('Should have value attribute for when const & default is present', () => {
+    const { fields } = createHeadlessForm(
+      {
+        properties: {
+          ten_only: { type: 'number', const: 10, default: 10 },
+        },
+      },
+      { strictInputType: false }
+    );
+    expect(fields[0]).toMatchObject({ value: 10, const: 10, default: 10 });
+  });
 });

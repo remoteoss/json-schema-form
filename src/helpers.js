@@ -480,6 +480,7 @@ export function extractParametersFromNode(schemaNode) {
   return omitBy(
     {
       const: node.const,
+      ...(node.const && node.default ? { value: node.const } : {}),
       label: node.title,
       readOnly: node.readOnly,
       ...(node.deprecated && {
