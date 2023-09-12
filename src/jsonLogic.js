@@ -1,5 +1,7 @@
 import jsonLogic from 'json-logic-js';
 
+import { buildYupSchema } from './yupSchema';
+
 /**
  * Parses the JSON schema to extract the json-logic rules and returns an object
  * containing the validation scopes, functions to retrieve the scopes, and evaluate the
@@ -123,8 +125,25 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
     );
 }
 
+const HANDLEBARS_REGEX = /\{\{([^{}]+)\}\}/g;
+
+function replaceHandlebarsTemplates({
+  value: toReplace,
+  logic,
+  formValues,
+  parentID,
+  name: fieldName,
+}) {
+  if (typeof toReplace === 'string') {
+    return toReplace.replace(HANDLEBARS_REGEX, (match, key) => {
+      return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
+    });
+  }
+  return toReplace;
+}
+
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
-  return ({ logic, formValues }) => {
+  return ({ logic, isRequired, config, formValues }) => {
     const { computedAttributes } = fieldParams;
     const attributes = Object.fromEntries(
       Object.entries(computedAttributes)
@@ -132,17 +151,55 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
         .filter(([, value]) => value !== null)
     );
 
-    return attributes;
+    return {
+      ...attributes,
+      schema: buildYupSchema(
+        { ...fieldParams, ...attributes, required: isRequired },
+        config,
+        logic
+      ),
+    };
   };
 }
 
 function handleComputedAttribute(logic, formValues, parentID) {
   return ([key, value]) => {
-    if (key === 'const')
+    if (key === 'description') {
+      return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+    }
+
+    if (key === 'title') {
+      return ['label', replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+    }
+
+    if (key === 'const') {
       return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
+    }
+
+    if (key === 'x-jsf-errorMessage') {
+      return [
+        'errorMessage',
+        handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
+      ];
+    }
 
     if (typeof value === 'string') {
       return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
     }
+
+    if (key === 'x-jsf-presentation' && value.statement) {
+      return [
+        'statement',
+        handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
+      ];
+    }
   };
+}
+
+function handleNestedObjectForComputedValues(values, formValues, parentID, logic, name) {
+  return Object.fromEntries(
+    Object.entries(values).map(([key, value]) => {
+      return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+    })
+  );
 }
