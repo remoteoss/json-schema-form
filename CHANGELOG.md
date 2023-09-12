@@ -1,3 +1,10 @@
+#### 0.5.0-beta.0 (2023-09-12)
+
+##### Changes
+
+- Computed Attributes ([#36](https://github.com/remoteoss/json-schema-form/pull/36)) ([80c29589](https://github.com/remoteoss/json-schema-form/commit/80c29589ac0972e0f33add70a59df15a46db1b43))
+- JSON Logic Skeleton ([#35](https://github.com/remoteoss/json-schema-form/pull/35)) ([63149ae8](https://github.com/remoteoss/json-schema-form/commit/63149ae863cf1b5ad76a3b2a49c7f343e55ce07b))
+
 #### 0.4.5-beta.0 (2023-08-31)
 
 ##### Changes
