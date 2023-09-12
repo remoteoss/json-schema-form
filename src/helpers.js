@@ -179,7 +179,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues) {
+function updateField(field, requiredFields, node, formValues, logic, config) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -226,6 +226,18 @@ function updateField(field, requiredFields, node, formValues) {
       }
     });
 
+  if (field.getComputedAttributes) {
+    const computedFieldValues = field.getComputedAttributes({
+      field,
+      isRequired: fieldIsRequired,
+      node,
+      formValues,
+      config,
+      logic,
+    });
+    updateValues(computedFieldValues);
+  }
+
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
     const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
@@ -270,17 +282,19 @@ export function processNode({
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues);
+    updateField(field, requiredFields, node, formValues, logic, { parentID });
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues);
+    updateField(getField(fieldName, formFields), requiredFields, node, formValues, logic, {
+      parentID,
+    });
   });
 
   if (node.if) {
-    const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
+    const matchesCondition = checkIfConditionMatches(node, formValues, formFields, logic);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
@@ -316,7 +330,7 @@ export function processNode({
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues);
+        updateField(field, requiredFields, node, formValues, logic, { parentID });
       });
     });
   }
@@ -452,7 +466,10 @@ export function extractParametersFromNode(schemaNode) {
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
   const requiredValidations = schemaNode['x-jsf-logic-validations'];
+  const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
 
+  // This is when a forced value is computed.
+  const decoratedComputedAttributes = getDecoratedComputedAttributes(computedAttributes);
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
   const description = presentation?.description || node.description;
@@ -463,6 +480,7 @@ export function extractParametersFromNode(schemaNode) {
   return omitBy(
     {
       const: node.const,
+      ...(node.const && node.default ? { value: node.const } : {}),
       label: node.title,
       readOnly: node.readOnly,
       ...(node.deprecated && {
@@ -499,6 +517,7 @@ export function extractParametersFromNode(schemaNode) {
       // Handle [name].presentation
       ...presentation,
       requiredValidations,
+      computedAttributes: decoratedComputedAttributes,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
             class: 'jsf-description',
@@ -556,8 +575,8 @@ export function yupToFormErrors(yupError) {
  * @param {JsfConfig} config - jsf config
  * @returns {Function(values: Object): { YupError: YupObject, formErrors: Object }} Callback that returns Yup errors <YupObject>
  */
-export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
-  updateFieldsProperties(fields, values, jsonSchema);
+export const handleValuesChange = (fields, jsonSchema, config, logic) => (values) => {
+  updateFieldsProperties(fields, values, jsonSchema, logic);
 
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
   let errors;
@@ -580,3 +599,12 @@ export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
     formErrors: yupToFormErrors(errors),
   };
 };
+
+function getDecoratedComputedAttributes(computedAttributes) {
+  return {
+    ...(computedAttributes ?? {}),
+    ...(computedAttributes?.const && computedAttributes?.default
+      ? { value: computedAttributes.const }
+      : {}),
+  };
+}

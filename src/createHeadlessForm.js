@@ -24,7 +24,7 @@ import {
   getInputType,
 } from './internals/fields';
 import { pickXKey } from './internals/helpers';
-import { createValidationChecker } from './jsonLogic';
+import { calculateComputedAttributes, createValidationChecker } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
 
 // Some type definitions (to be migrated into .d.ts file or TS Interfaces)
@@ -188,6 +188,10 @@ function applyFieldsDependencies(fieldsParameters, node) {
       applyFieldsDependencies(fieldsParameters, condition);
     });
   }
+
+  if (node?.['x-jsf-logic']) {
+    applyFieldsDependencies(fieldsParameters, node['x-jsf-logic']);
+  }
 }
 
 /**
@@ -238,6 +242,10 @@ function buildField(fieldParams, config, scopedJsonSchema, logic) {
     customProperties
   );
 
+  const getComputedAttributes =
+    Object.keys(fieldParams.computedAttributes).length > 0 &&
+    calculateComputedAttributes(fieldParams, config);
+
   const hasCustomValidations =
     !!customProperties &&
     size(pick(customProperties, SUPPORTED_CUSTOM_VALIDATION_FIELD_PARAMS)) > 0;
@@ -253,6 +261,7 @@ function buildField(fieldParams, config, scopedJsonSchema, logic) {
     ...(hasCustomValidations && {
       calculateCustomValidationProperties: calculateCustomValidationPropertiesClosure,
     }),
+    ...(getComputedAttributes && { getComputedAttributes }),
     // field customization properties
     ...(customProperties && { fieldCustomization: customProperties }),
     // base schema
@@ -302,7 +311,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
         addFieldText: fieldParams.addFieldText,
       };
 
-      buildField(fieldParams, config, scopedJsonSchema).forEach((groupField) => {
+      buildField(fieldParams, config, scopedJsonSchema, logic).forEach((groupField) => {
         fields.push(groupField);
       });
     } else {
@@ -331,7 +340,12 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
 
     const handleValidation = handleValuesChange(fields, jsonSchema, config, logic);
 
-    updateFieldsProperties(fields, getPrefillValues(fields, config.initialValues), jsonSchema);
+    updateFieldsProperties(
+      fields,
+      getPrefillValues(fields, config.initialValues),
+      jsonSchema,
+      logic
+    );
 
     return {
       fields,

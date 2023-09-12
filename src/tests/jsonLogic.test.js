@@ -4,6 +4,7 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
+  schemaWithComputedAttributes,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithTwoRules,
@@ -210,6 +211,20 @@ describe('jsonLogic: cross-values validations', () => {
         field_b: 'B must be even',
       });
       expect(handleValidation({ field_a: 4, field_b: 2 }).formErrors).toEqual(undefined);
+    });
+  });
+
+  describe('Derive values', () => {
+    it('field_b is field_a * 2', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaWithComputedAttributes, {
+        strictInputType: false,
+        initialValues: { field_a: 2 },
+      });
+      const fieldB = fields.find((i) => i.name === 'field_b');
+      expect(fieldB.default).toEqual(4);
+      expect(fieldB.value).toEqual(4);
+      handleValidation({ field_a: 4 });
+      expect(fieldB.default).toEqual(8);
     });
   });
 });

@@ -122,3 +122,27 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
       }
     );
 }
+
+export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
+  return ({ logic, formValues }) => {
+    const { computedAttributes } = fieldParams;
+    const attributes = Object.fromEntries(
+      Object.entries(computedAttributes)
+        .map(handleComputedAttribute(logic, formValues, parentID))
+        .filter(([, value]) => value !== null)
+    );
+
+    return attributes;
+  };
+}
+
+function handleComputedAttribute(logic, formValues, parentID) {
+  return ([key, value]) => {
+    if (key === 'const')
+      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
+
+    if (typeof value === 'string') {
+      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
+    }
+  };
+}
