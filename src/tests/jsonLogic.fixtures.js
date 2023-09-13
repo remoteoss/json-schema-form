@@ -227,6 +227,24 @@ export const schemaWithComputedAttributes = {
   },
 };
 
+export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        title: {
+          rule: {
+            '+': [{ var: 'field_a' }, 10],
+          },
+        },
+      },
+    },
+  },
+};
+
 export const schemaWithComputedAttributeThatDoesntExist = {
   properties: {
     field_a: {
@@ -463,7 +481,7 @@ export const schemaWithInlineMultipleRulesForComputedAttributes = {
   },
 };
 
-export const schemaSelfContainedValueForTitle = {
+export const schemaInlineComputedAttrForTitle = {
   properties: {
     field_a: {
       type: 'number',
@@ -482,7 +500,7 @@ export const schemaSelfContainedValueForTitle = {
   },
 };
 
-export const schemaSelfContainedValueForMaximumMinimumValues = {
+export const schemaInlineComputedAttrForMaximumMinimumValues = {
   properties: {
     field_a: {
       type: 'number',

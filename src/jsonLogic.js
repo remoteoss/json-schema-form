@@ -16,10 +16,6 @@ import { buildYupSchema } from './yupSchema';
  * @returns {Object} An object containing:
  * - scopes {Map} - A Map of the validation scopes (with IDs as keys)
  * - getScope {Function} - Function to retrieve a scope by name/ID
- * - validate {Function} - Function to evaluate a validation rule
- * - applyValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
- * - applyComputedValueInField {Function} - Evaluate a computed value rule for a field
- * - applyComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
  */
 export function createValidationChecker(schema) {
   const scopes = new Map();
@@ -50,6 +46,21 @@ export function createValidationChecker(schema) {
   };
 }
 
+/**
+ * Creates a validation scope object for a schema.
+ *
+ * Builds maps of validations and computed values defined in the schema's
+ * x-jsf-logic section. Includes functions to evaluate the rules.
+ *
+ * @param {Object} schema - The JSON schema
+ * @returns {Object} The validation scope object containing:
+ * - validationMap - Map of validation rules
+ * - computedValuesMap - Map of computed value rules
+ * - validate {Function} - Function to evaluate a validation rule
+ * - applyValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
+ * - applyComputedValueInField {Function} - Evaluate a computed value rule for a field
+ * - applyComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
+ */
 function createValidationsScope(schema) {
   const validationMap = new Map();
   const computedValuesMap = new Map();
@@ -162,6 +173,20 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
 
 const HANDLEBARS_REGEX = /\{\{([^{}]+)\}\}/g;
 
+/**
+ * Replaces Handlebars templates in a value with computed values.
+ *
+ * Handles recursively replacing Handlebars templates "{{var}}" in strings
+ * with computed values looked up from the validation logic.
+ *
+ * @param {Object} options - Options object
+ * @param {*} options.value - The value to replace templates in
+ * @param {Object} options.logic - The validation logic object
+ * @param {Object} options.formValues - The current form values
+ * @param {string} options.parentID - The ID of the validation scope
+ * @param {string} options.name - The name of the field
+ * @returns {*} The value with templates replaced with computed values
+ */
 function replaceHandlebarsTemplates({
   value: toReplace,
   logic,
@@ -397,8 +422,18 @@ function throwIfUnknownOperator(operator, subRule, id) {
   }
 }
 
+const regexToGetIndices = /\.\d+\./g; // eg. .0., .10.
+
+/**
+ * Removes array indices from a json schema path string.
+ * Converts paths like "foo.0.bar" to "foo.bar".
+ * This allows checking if a variable exists in an array item schema without needing the specific index.
+ *
+ * @param {string} path - The json schema path potentially containing array indices
+ * @returns {string} The path with array indices removed
+ */
 function removeIndicesFromPath(path) {
-  const intermediatePath = path.replace(/\.\d+\./g, '.');
+  const intermediatePath = path.replace(regexToGetIndices, '.');
   return intermediatePath.replace(/\.\d+$/, '');
 }
 
