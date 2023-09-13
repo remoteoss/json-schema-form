@@ -1,6 +1,8 @@
-#### 0.6.0-beta.0 (2023-09-13)
+#### 0.6.1-beta.0 (2023-09-13)
 
-##### Other Changes
+##### Changes
+
+
 
 - Computed string based values for json-logic ([#37](https://github.com/remoteoss/json-schema-form/pull/37)) ([6e042ea5](https://github.com/remoteoss/json-schema-form/commit/6e042ea579497ea573710c307a6ff7ee2f19b931))
 
