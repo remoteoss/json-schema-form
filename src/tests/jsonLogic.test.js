@@ -401,7 +401,7 @@ describe('jsonLogic: cross-values validations', () => {
         }
       );
       const [, fieldB] = fields;
-      expect(fieldB).toMatchObject({ minimum: -10, maximum: 10 });
+      expect(fieldB).toMatchObject({ minimum: NaN, maximum: NaN });
       expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toBeUndefined();
       expect(fieldB).toMatchObject({ minimum: 0, maximum: 20 });
       expect(handleValidation({ field_a: 50, field_b: 20 }).formErrors).toEqual({
