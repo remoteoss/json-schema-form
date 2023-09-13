@@ -146,6 +146,12 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
   const { parentID = 'root' } = config;
   const validation = logic.getScope(parentID).validationMap.get(id);
 
+  if (validation === undefined) {
+    throw Error(
+      `[json-schema-form] json-logic error: "${field.name}" required validation "${id}" doesn't exist.`
+    );
+  }
+
   return (yupSchema) =>
     yupSchema.test(
       `${field.name}-validation-${id}`,
@@ -182,6 +188,21 @@ function replaceHandlebarsTemplates({
 }) {
   if (typeof toReplace === 'string') {
     return toReplace.replace(HANDLEBARS_REGEX, (match, key) => {
+      return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
+    });
+  } else if (typeof toReplace === 'object') {
+    const { value, ...rules } = toReplace;
+
+    if (Object.keys(rules).length > 1 && !value) {
+      throw Error('Cannot define multiple rules without a template string with key `value`.');
+    }
+
+    const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
+      const computedValue = logic.getScope(parentID).evaluateValidation(rule, formValues);
+      return prev.replaceAll(`{{${key}}}`, computedValue);
+    }, value);
+
+    return computedTemplateValue.replace(/\{\{([^{}]+)\}\}/g, (match, key) => {
       return logic.getScope(parentID).applyComputedValueInField(key.trim(), formValues, fieldName);
     });
   }
@@ -356,10 +377,13 @@ function checkRuleIntegrity(
   rule,
   id,
   data,
-  errorMessage = (item) => `"${item.var}" in rule "${id}" does not exist as a JSON schema property.`
+  errorMessage = (item) =>
+    `[json-schema-form] json-logic error: rule "${id}" has no variable "${item.var}".`
 ) {
-  Object.values(rule ?? {}).map((subRule) => {
+  Object.entries(rule ?? {}).map(([operator, subRule]) => {
     if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
+    throwIfUnknownOperator(operator, subRule, id);
+
     subRule.map((item) => {
       const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
       if (isVar) {
@@ -372,6 +396,18 @@ function checkRuleIntegrity(
       }
     });
   });
+}
+
+function throwIfUnknownOperator(operator, subRule, id) {
+  try {
+    jsonLogic.apply({ [operator]: subRule });
+  } catch (e) {
+    if (e.message === `Unrecognized operation ${operator}`) {
+      throw Error(
+        `[json-schema-form] json-logic error: in "${id}" rule there is an unknown operator "${operator}".`
+      );
+    }
+  }
 }
 
 const regexToGetIndices = /\.\d+\./g; // eg. .0., .10.

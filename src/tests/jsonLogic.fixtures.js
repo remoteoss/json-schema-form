@@ -334,3 +334,108 @@ export const schemaWithComputedAttributesAndErrorMessages = {
     },
   },
 };
+
+export const schemaWithDeepVarThatDoesNotExist = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      dummy_rule: {
+        errorMessage: 'Random stuff to illustrate a deeply nested rule.',
+        rule: {
+          '>': [{ var: 'field_a' }, { '*': [2, { '/': [2, { '*': [1, { var: 'field_b' }] }] }] }],
+        },
+      },
+    },
+  },
+  required: [],
+};
+
+export const schemaWithDeepVarThatDoesNotExistOnFieldset = {
+  properties: {
+    field_a: {
+      type: 'object',
+      properties: {
+        child: {
+          type: 'number',
+        },
+      },
+      'x-jsf-logic': {
+        validations: {
+          dummy_rule: {
+            errorMessage: 'Must be greater than 10',
+            rule: {
+              '>': [{ var: 'child' }, { '*': [2, { '/': [2, { '*': [1, { var: 'field_a' }] }] }] }],
+            },
+          },
+        },
+      },
+    },
+  },
+  required: [],
+};
+
+export const schemaWithValidationThatDoesNotExistOnProperty = {
+  properties: {
+    field_a: {
+      type: 'number',
+      'x-jsf-logic-validations': ['iDontExist'],
+    },
+  },
+};
+
+export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
+  properties: {
+    field_a: {
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+      properties: {
+        child: {
+          type: 'number',
+          'x-jsf-logic-validations': ['child_greater_than_10'],
+        },
+        other_child: {
+          type: 'number',
+          'x-jsf-logic-validations': ['greater_than_child'],
+        },
+      },
+      required: ['child', 'other_child'],
+    },
+  },
+  // the issue here is that this should be nested inside `field_a` in order to not fail.
+  'x-jsf-logic': {
+    validations: {
+      validation_parent: {
+        errorMessage: 'Must be greater than 10!',
+        rule: {
+          '>': [{ var: 'child' }, 10],
+        },
+      },
+      greater_than_child: {
+        errorMessage: 'Must be greater than child',
+        rule: {
+          '>': [{ var: 'other_child' }, { var: 'child' }],
+        },
+      },
+    },
+  },
+  required: ['field_a'],
+};
+
+export const schemaWithBadOperation = {
+  properties: {},
+  'x-jsf-logic': {
+    validations: {
+      badOperator: {
+        rule: {
+          '++': [10, 2],
+        },
+      },
+    },
+  },
+};

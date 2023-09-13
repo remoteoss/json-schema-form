@@ -4,19 +4,24 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
+  schemaWithBadOperation,
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
   schemaWithComputedAttributeThatDoesntExistTitle,
   schemaWithComputedAttributes,
   schemaWithComputedAttributesAndErrorMessages,
+  schemaWithDeepVarThatDoesNotExist,
+  schemaWithDeepVarThatDoesNotExistOnFieldset,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithMissingComputedValue,
   schemaWithMissingRule,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
+  schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
   schemaWithUnknownVariableInComputedValues,
   schemaWithUnknownVariableInValidations,
+  schemaWithValidationThatDoesNotExistOnProperty,
 } from './jsonLogic.fixtures';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -105,14 +110,14 @@ describe('jsonLogic: cross-values validations', () => {
         '[json-schema-form] json-logic error: Validation "a_greater_than_ten" has missing rule.',
       ],
       [
-        'x-jsf-validations: throw when theres a value that does not exist in a rule',
+        'x-jsf-logic.validations: throw when theres a value that does not exist in a rule',
         schemaWithUnknownVariableInValidations,
-        '"field_a" in rule "a_equals_ten" does not exist as a JSON schema property.',
+        '[json-schema-form] json-logic error: rule "a_equals_ten" has no variable "field_a".',
       ],
       [
-        'x-jsf-validations: throw when theres a value that does not exist in a rule',
+        'x-jsf-logic.computedValues: throw when theres a value that does not exist in a rule',
         schemaWithUnknownVariableInComputedValues,
-        '"field_a" in rule "a_times_ten" does not exist as a JSON schema property.',
+        '[json-schema-form] json-logic error: rule "a_times_ten" has no variable "field_a".',
       ],
       [
         'x-jsf-logic.computedValues: throw when theres a missing computed value',
@@ -138,6 +143,31 @@ describe('jsonLogic: cross-values validations', () => {
         'x-jsf-logic-computedAttrs:, error if theres a value referenced that does not exist on an inline rule.',
         schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
         `[json-schema-form] json-logic error: fieldName "IdontExist" doesn't exist in field "field_a.x-jsf-logic-computedAttrs.title".`,
+      ],
+      [
+        'x-jsf-logic.validations: error if a field does not exist in a deeply nested rule',
+        schemaWithDeepVarThatDoesNotExist,
+        '[json-schema-form] json-logic error: rule "dummy_rule" has no variable "field_b".',
+      ],
+      [
+        'x-jsf-logic.validations: error if rule does not exist on a fieldset property',
+        schemaWithDeepVarThatDoesNotExistOnFieldset,
+        '[json-schema-form] json-logic error: rule "dummy_rule" has no variable "field_a".',
+      ],
+      [
+        'x-jsf-validations: error if a validation name does not exist',
+        schemaWithValidationThatDoesNotExistOnProperty,
+        `[json-schema-form] json-logic error: "field_a" required validation "iDontExist" doesn't exist.`,
+      ],
+      [
+        'x-jsf-logic.validations: A top level logic keyword will not be able to reference fieldset properties',
+        schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
+        '[json-schema-form] json-logic error: rule "validation_parent" has no variable "child".',
+      ],
+      [
+        'x-jsf-logic.validations: error if unknown operation',
+        schemaWithBadOperation,
+        '[json-schema-form] json-logic error: in "badOperator" rule there is an unknown operator "++".',
       ],
     ];
 
