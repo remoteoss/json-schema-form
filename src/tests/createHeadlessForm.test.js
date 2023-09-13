@@ -57,6 +57,7 @@ import {
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
 } from './helpers';
+import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
 function buildJSONSchemaInput({ presentationFields, inputFields = {}, required }) {
   return {
@@ -92,17 +93,8 @@ const getField = (fields, name, ...subNames) => {
   return field;
 };
 
-beforeEach(() => {
-  jest.spyOn(console, 'warn').mockImplementation(() => {});
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
-
-afterEach(() => {
-  expect(console.error).not.toHaveBeenCalled();
-  console.error.mockRestore();
-  expect(console.warn).not.toHaveBeenCalled();
-  console.warn.mockRestore();
-});
+beforeEach(mockConsole);
+afterEach(restoreConsoleAndEnsureItWasNotCalled);
 
 describe('createHeadlessForm', () => {
   it('returns empty result given no schema', () => {

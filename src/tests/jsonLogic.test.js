@@ -4,11 +4,29 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
+  schemaWithBadOperation,
+  schemaWithComputedAttributeThatDoesntExist,
+  schemaWithComputedAttributeThatDoesntExistDescription,
+  schemaWithComputedAttributeThatDoesntExistTitle,
   schemaWithComputedAttributes,
+  schemaWithComputedAttributesAndErrorMessages,
+  schemaWithDeepVarThatDoesNotExist,
+  schemaWithDeepVarThatDoesNotExistOnFieldset,
+  schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
+  schemaWithMissingComputedValue,
+  schemaWithMissingRule,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
+  schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
   schemaWithTwoRules,
+  schemaWithUnknownVariableInComputedValues,
+  schemaWithUnknownVariableInValidations,
+  schemaWithValidationThatDoesNotExistOnProperty,
 } from './jsonLogic.fixtures';
+import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
+
+beforeEach(mockConsole);
+afterEach(restoreConsoleAndEnsureItWasNotCalled);
 
 describe('jsonLogic: cross-values validations', () => {
   describe('Does not conflict with native JSON schema', () => {
@@ -79,6 +97,85 @@ describe('jsonLogic: cross-values validations', () => {
       const { formErrors } = handleValidation({ field_a: 3, field_b: 2 });
       expect(formErrors.field_a).toEqual('Field A must equal field B');
       expect(handleValidation({ field_a: 2, field_b: 2 }).formErrors).toEqual(undefined);
+    });
+  });
+
+  describe('Incorrectly written schemas', () => {
+    afterEach(() => console.error.mockClear());
+
+    const cases = [
+      [
+        'x-jsf-logic.validations: throw when theres a missing rule',
+        schemaWithMissingRule,
+        '[json-schema-form] json-logic error: Validation "a_greater_than_ten" has missing rule.',
+      ],
+      [
+        'x-jsf-logic.validations: throw when theres a value that does not exist in a rule',
+        schemaWithUnknownVariableInValidations,
+        '[json-schema-form] json-logic error: rule "a_equals_ten" has no variable "field_a".',
+      ],
+      [
+        'x-jsf-logic.computedValues: throw when theres a value that does not exist in a rule',
+        schemaWithUnknownVariableInComputedValues,
+        '[json-schema-form] json-logic error: rule "a_times_ten" has no variable "field_a".',
+      ],
+      [
+        'x-jsf-logic.computedValues: throw when theres a missing computed value',
+        schemaWithMissingComputedValue,
+        '[json-schema-form] json-logic error: Computed value "a_plus_ten" has missing rule.',
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on an attribute.',
+        schemaWithComputedAttributeThatDoesntExist,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on a template string (title).',
+        schemaWithComputedAttributeThatDoesntExistTitle,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on a template string (description).',
+        schemaWithComputedAttributeThatDoesntExistDescription,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs:, error if theres a value referenced that does not exist on an inline rule.',
+        schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
+        `[json-schema-form] json-logic error: fieldName "IdontExist" doesn't exist in field "field_a.x-jsf-logic-computedAttrs.title".`,
+      ],
+      [
+        'x-jsf-logic.validations: error if a field does not exist in a deeply nested rule',
+        schemaWithDeepVarThatDoesNotExist,
+        '[json-schema-form] json-logic error: rule "dummy_rule" has no variable "field_b".',
+      ],
+      [
+        'x-jsf-logic.validations: error if rule does not exist on a fieldset property',
+        schemaWithDeepVarThatDoesNotExistOnFieldset,
+        '[json-schema-form] json-logic error: rule "dummy_rule" has no variable "field_a".',
+      ],
+      [
+        'x-jsf-validations: error if a validation name does not exist',
+        schemaWithValidationThatDoesNotExistOnProperty,
+        `[json-schema-form] json-logic error: "field_a" required validation "iDontExist" doesn't exist.`,
+      ],
+      [
+        'x-jsf-logic.validations: A top level logic keyword will not be able to reference fieldset properties',
+        schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset,
+        '[json-schema-form] json-logic error: rule "validation_parent" has no variable "child".',
+      ],
+      [
+        'x-jsf-logic.validations: error if unknown operation',
+        schemaWithBadOperation,
+        '[json-schema-form] json-logic error: in "badOperator" rule there is an unknown operator "++".',
+      ],
+    ];
+
+    test.each(cases)('%p', (_, schema, expectedErrorString) => {
+      const { error } = createHeadlessForm(schema, { strictInputType: false });
+      const expectedError = new Error(expectedErrorString);
+      expect(console.error).toHaveBeenCalledWith('JSON Schema invalid!', expectedError);
+      expect(error).toEqual(expectedError);
     });
   });
 
@@ -221,10 +318,31 @@ describe('jsonLogic: cross-values validations', () => {
         initialValues: { field_a: 2 },
       });
       const fieldB = fields.find((i) => i.name === 'field_b');
+      expect(fieldB.description).toEqual(
+        'This field is 2 times bigger than field_a with value of 4.'
+      );
       expect(fieldB.default).toEqual(4);
       expect(fieldB.value).toEqual(4);
       handleValidation({ field_a: 4 });
       expect(fieldB.default).toEqual(8);
+      expect(fieldB.label).toEqual('This is 8!');
+    });
+
+    it('Derived errorMessages and statements work', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithComputedAttributesAndErrorMessages,
+        { strictInputType: false }
+      );
+      const fieldB = fields.find((i) => i.name === 'field_b');
+      expect(handleValidation({ field_a: 2, field_b: 0 }).formErrors).toEqual({
+        field_b: 'Must be bigger than 4',
+      });
+      expect(handleValidation({ field_a: 2, field_b: 100 }).formErrors).toEqual({
+        field_b: 'Must be smaller than 8',
+      });
+      expect(fieldB.minimum).toEqual(4);
+      expect(fieldB.maximum).toEqual(8);
+      expect(fieldB.statement).toEqual({ description: 'Must be bigger than 4 and smaller than 8' });
     });
   });
 });

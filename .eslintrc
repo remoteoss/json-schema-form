@@ -11,6 +11,7 @@
   },
   "rules": {
     "jest/no-focused-tests": "error",
+    "curly": ["error", "multi-line"],
     "arrow-body-style": 0,
     "default-case": 0,
     "import/order": [
