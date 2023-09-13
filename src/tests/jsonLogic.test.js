@@ -4,12 +4,24 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
+  schemaWithComputedAttributeThatDoesntExist,
+  schemaWithComputedAttributeThatDoesntExistDescription,
+  schemaWithComputedAttributeThatDoesntExistTitle,
   schemaWithComputedAttributes,
   schemaWithComputedAttributesAndErrorMessages,
+  schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
+  schemaWithMissingComputedValue,
+  schemaWithMissingRule,
   schemaWithNativeAndJSONLogicChecks,
   schemaWithNonRequiredField,
   schemaWithTwoRules,
+  schemaWithUnknownVariableInComputedValues,
+  schemaWithUnknownVariableInValidations,
 } from './jsonLogic.fixtures';
+import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
+
+beforeEach(mockConsole);
+afterEach(restoreConsoleAndEnsureItWasNotCalled);
 
 describe('jsonLogic: cross-values validations', () => {
   describe('Does not conflict with native JSON schema', () => {
@@ -80,6 +92,60 @@ describe('jsonLogic: cross-values validations', () => {
       const { formErrors } = handleValidation({ field_a: 3, field_b: 2 });
       expect(formErrors.field_a).toEqual('Field A must equal field B');
       expect(handleValidation({ field_a: 2, field_b: 2 }).formErrors).toEqual(undefined);
+    });
+  });
+
+  describe('Incorrectly written schemas', () => {
+    afterEach(() => console.error.mockClear());
+
+    const cases = [
+      [
+        'x-jsf-logic.validations: throw when theres a missing rule',
+        schemaWithMissingRule,
+        '[json-schema-form] json-logic error: Validation "a_greater_than_ten" has missing rule.',
+      ],
+      [
+        'x-jsf-validations: throw when theres a value that does not exist in a rule',
+        schemaWithUnknownVariableInValidations,
+        '"field_a" in rule "a_equals_ten" does not exist as a JSON schema property.',
+      ],
+      [
+        'x-jsf-validations: throw when theres a value that does not exist in a rule',
+        schemaWithUnknownVariableInComputedValues,
+        '"field_a" in rule "a_times_ten" does not exist as a JSON schema property.',
+      ],
+      [
+        'x-jsf-logic.computedValues: throw when theres a missing computed value',
+        schemaWithMissingComputedValue,
+        '[json-schema-form] json-logic error: Computed value "a_plus_ten" has missing rule.',
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on an attribute.',
+        schemaWithComputedAttributeThatDoesntExist,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on a template string (title).',
+        schemaWithComputedAttributeThatDoesntExistTitle,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs: error if theres a value that does not exist on a template string (description).',
+        schemaWithComputedAttributeThatDoesntExistDescription,
+        `[json-schema-form] json-logic error: Computed value "iDontExist" doesn't exist in field "field_a".`,
+      ],
+      [
+        'x-jsf-logic-computedAttrs:, error if theres a value referenced that does not exist on an inline rule.',
+        schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
+        `[json-schema-form] json-logic error: fieldName "IdontExist" doesn't exist in field "field_a.x-jsf-logic-computedAttrs.title".`,
+      ],
+    ];
+
+    test.each(cases)('%p', (_, schema, expectedErrorString) => {
+      const { error } = createHeadlessForm(schema, { strictInputType: false });
+      const expectedError = new Error(expectedErrorString);
+      expect(console.error).toHaveBeenCalledWith('JSON Schema invalid!', expectedError);
+      expect(error).toEqual(expectedError);
     });
   });
 

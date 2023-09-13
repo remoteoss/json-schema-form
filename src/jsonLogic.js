@@ -11,15 +11,12 @@ import { buildYupSchema } from './yupSchema';
  * @returns {Object} An object containing:
  * - scopes {Map} - A Map of the validation scopes (with IDs as keys)
  * - getScope {Function} - Function to retrieve a scope by name/ID
- * - validate {Function} - Function to evaluate a validation rule
- * - applyValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
- * - applyComputedValueInField {Function} - Evaluate a computed value rule for a field
- * - applyComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
  */
 export function createValidationChecker(schema) {
   const scopes = new Map();
 
   function createScopes(jsonSchema, key = 'root') {
+    const sampleEmptyObject = buildSampleEmptyObject(schema);
     scopes.set(key, createValidationsScope(jsonSchema));
     Object.entries(jsonSchema?.properties ?? {})
       .filter(([, property]) => property.type === 'object' || property.type === 'array')
@@ -30,6 +27,8 @@ export function createValidationChecker(schema) {
           createScopes(property, key);
         }
       });
+
+    validateInlineRules(jsonSchema, sampleEmptyObject);
   }
 
   createScopes(schema);
@@ -42,6 +41,21 @@ export function createValidationChecker(schema) {
   };
 }
 
+/**
+ * Creates a validation scope object for a schema.
+ *
+ * Builds maps of validations and computed values defined in the schema's
+ * x-jsf-logic section. Includes functions to evaluate the rules.
+ *
+ * @param {Object} schema - The JSON schema
+ * @returns {Object} The validation scope object containing:
+ * - validationMap - Map of validation rules
+ * - computedValuesMap - Map of computed value rules
+ * - validate {Function} - Function to evaluate a validation rule
+ * - applyValidationRuleInCondition {Function} - Evaluate a validation rule used in a condition
+ * - applyComputedValueInField {Function} - Evaluate a computed value rule for a field
+ * - applyComputedValueRuleInCondition {Function} - Evaluate a computed value rule used in a condition
+ */
 function createValidationsScope(schema) {
   const validationMap = new Map();
   const computedValuesMap = new Map();
@@ -53,12 +67,25 @@ function createValidationsScope(schema) {
 
   const validations = Object.entries(logic.validations ?? {});
   const computedValues = Object.entries(logic.computedValues ?? {});
+  const sampleEmptyObject = buildSampleEmptyObject(schema);
 
   validations.forEach(([id, validation]) => {
+    if (!validation.rule) {
+      throw Error(`[json-schema-form] json-logic error: Validation "${id}" has missing rule.`);
+    }
+
+    checkRuleIntegrity(validation.rule, id, sampleEmptyObject);
+
     validationMap.set(id, validation);
   });
 
   computedValues.forEach(([id, computedValue]) => {
+    if (!computedValue.rule) {
+      throw Error(`[json-schema-form] json-logic error: Computed value "${id}" has missing rule.`);
+    }
+
+    checkRuleIntegrity(computedValue.rule, id, sampleEmptyObject);
+
     computedValuesMap.set(id, computedValue);
   });
 
@@ -74,8 +101,13 @@ function createValidationsScope(schema) {
       const validation = validationMap.get(id);
       return validate(validation.rule, values);
     },
-    applyComputedValueInField(id, values) {
+    applyComputedValueInField(id, values, fieldName) {
       const validation = computedValuesMap.get(id);
+      if (validation === undefined) {
+        throw Error(
+          `[json-schema-form] json-logic error: Computed value "${id}" doesn't exist in field "${fieldName}".`
+        );
+      }
       return validate(validation.rule, values);
     },
     applyComputedValueRuleInCondition(id, values) {
@@ -127,6 +159,20 @@ export function yupSchemaWithCustomJSONLogic({ field, logic, config, id }) {
 
 const HANDLEBARS_REGEX = /\{\{([^{}]+)\}\}/g;
 
+/**
+ * Replaces Handlebars templates in a value with computed values.
+ *
+ * Handles recursively replacing Handlebars templates "{{var}}" in strings
+ * with computed values looked up from the validation logic.
+ *
+ * @param {Object} options - Options object
+ * @param {*} options.value - The value to replace templates in
+ * @param {Object} options.logic - The validation logic object
+ * @param {Object} options.formValues - The current form values
+ * @param {string} options.parentID - The ID of the validation scope
+ * @param {string} options.name - The name of the field
+ * @returns {*} The value with templates replaced with computed values
+ */
 function replaceHandlebarsTemplates({
   value: toReplace,
   logic,
@@ -142,12 +188,25 @@ function replaceHandlebarsTemplates({
   return toReplace;
 }
 
+/**
+ * Builds computed attributes for a field based on jsonLogic rules.
+ *
+ * Processes rules defined in the schema's x-jsf-logic section to build
+ * computed attributes like label, description, etc.
+ *
+ * Handles replacing handlebars templates in strings with computed values.
+ *
+ * @param {Object} fieldParams - The field configuration parameters
+ * @param {Object} options - Options
+ * @param {string} [options.parentID='root'] - ID of the validation scope
+ * @returns {Function} A function to build the computed attributes
+ */
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
   return ({ logic, isRequired, config, formValues }) => {
-    const { computedAttributes } = fieldParams;
+    const { name, computedAttributes } = fieldParams;
     const attributes = Object.fromEntries(
       Object.entries(computedAttributes)
-        .map(handleComputedAttribute(logic, formValues, parentID))
+        .map(handleComputedAttribute(logic, formValues, parentID, name))
         .filter(([, value]) => value !== null)
     );
 
@@ -162,36 +221,44 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
   };
 }
 
-function handleComputedAttribute(logic, formValues, parentID) {
+/**
+ * Handles computing a single attribute value.
+ *
+ * Evaluates jsonLogic rules to build the computed value.
+ *
+ * @param {Object} logic - Validation logic
+ * @param {Object} formValues - Current form values
+ * @param {string} parentID - ID of the validation scope
+ * @param {string} name - Name of the field
+ * @returns {Function} Function to compute the attribute value
+ */
+function handleComputedAttribute(logic, formValues, parentID, name) {
   return ([key, value]) => {
-    if (key === 'description') {
-      return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
-    }
-
-    if (key === 'title') {
-      return ['label', replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
-    }
-
-    if (key === 'const') {
-      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
-    }
-
-    if (key === 'x-jsf-errorMessage') {
-      return [
-        'errorMessage',
-        handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
-      ];
-    }
-
-    if (typeof value === 'string') {
-      return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues)];
-    }
-
-    if (key === 'x-jsf-presentation' && value.statement) {
-      return [
-        'statement',
-        handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
-      ];
+    switch (key) {
+      case 'description':
+        return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+      case 'title':
+        return ['label', replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
+      case 'x-jsf-errorMessage':
+        return [
+          'errorMessage',
+          handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
+        ];
+      case 'x-jsf-presentation': {
+        if (value.statement) {
+          return [
+            'statement',
+            handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
+          ];
+        }
+        return [
+          key,
+          handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
+        ];
+      }
+      case 'const':
+      default:
+        return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
     }
   };
 }
@@ -202,4 +269,122 @@ function handleNestedObjectForComputedValues(values, formValues, parentID, logic
       return [key, replaceHandlebarsTemplates({ value, logic, formValues, parentID, name })];
     })
   );
+}
+
+/**
+ * Builds a sample empty object for the given schema.
+ *
+ * Recursively builds an object with empty values for each property in the schema.
+ * Used to provide a valid data structure to test jsonLogic validation rules against.
+ *
+ * Handles objects, arrays, and nested schemas.
+ *
+ * @param {Object} schema - The JSON schema
+ * @returns {Object} Sample empty object based on the schema
+ */
+function buildSampleEmptyObject(schema = {}) {
+  const sample = {};
+  if (typeof schema !== 'object' || !schema.properties) {
+    return schema;
+  }
+
+  for (const key in schema.properties) {
+    if (schema.properties[key].type === 'object') {
+      sample[key] = buildSampleEmptyObject(schema.properties[key]);
+    } else if (schema.properties[key].type === 'array') {
+      const itemSchema = schema.properties[key].items;
+      sample[key] = buildSampleEmptyObject(itemSchema);
+    } else {
+      sample[key] = true;
+    }
+  }
+
+  return sample;
+}
+
+/**
+ * Validates inline jsonLogic rules defined in the schema's x-jsf-logic-computedAttrs.
+ *
+ * For each field with computed attributes, checks that the variables
+ * referenced in the rules exist in the schema.
+ *
+ * Throws if any variable in a computed attribute rule does not exist.
+ *
+ * @param {Object} jsonSchema - The JSON schema object
+ * @param {Object} sampleEmptyObject - Sample empty object based on the schema
+ */
+function validateInlineRules(jsonSchema, sampleEmptyObject) {
+  const properties = (jsonSchema?.properties || jsonSchema?.items?.properties) ?? {};
+  Object.entries(properties)
+    .filter(([, property]) => property['x-jsf-logic-computedAttrs'] !== undefined)
+    .forEach(([fieldName, property]) => {
+      Object.entries(property['x-jsf-logic-computedAttrs'])
+        .filter(([, value]) => typeof value === 'object')
+        .forEach(([key, item]) => {
+          Object.values(item).forEach((rule) => {
+            checkRuleIntegrity(
+              rule,
+              fieldName,
+              sampleEmptyObject,
+              (item) =>
+                `[json-schema-form] json-logic error: fieldName "${item.var}" doesn't exist in field "${fieldName}.x-jsf-logic-computedAttrs.${key}".`
+            );
+          });
+        });
+    });
+}
+
+/**
+ * Checks the integrity of a jsonLogic rule by validating that all referenced variables exist in the provided data object.
+ * Throws an error if any variable in the rule does not exist in the data.
+ *
+ * @example
+ *
+ * const rule = { "+": [{ "var": "iDontExist"}, 10 ]}
+ * const badData = { a: 1 }
+ * checkRuleIntegrity(rule, "add_ten_to_field", badData)
+ * // throws Error(`"iDontExist" in rule "add_ten_to_field" does not exist as a JSON schema property.`)
+ *
+ *
+ * @param {Object|Array} rule - The jsonLogic rule object or array to validate
+ * @param {string} id - The ID of the rule (used in error messages)
+ * @param {Object} data - The data object to check the rule variables against
+ * @param {Function} errorMessage - Function to generate custom error message.
+ *                                  Receives the invalid rule part and should throw an error message string.
+ */
+function checkRuleIntegrity(
+  rule,
+  id,
+  data,
+  errorMessage = (item) => `"${item.var}" in rule "${id}" does not exist as a JSON schema property.`
+) {
+  Object.values(rule ?? {}).map((subRule) => {
+    if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
+    subRule.map((item) => {
+      const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
+      if (isVar) {
+        const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, data);
+        if (exists === null) {
+          throw Error(errorMessage(item));
+        }
+      } else {
+        checkRuleIntegrity(item, id, data);
+      }
+    });
+  });
+}
+
+const regexToGetIndices = /\.\d+\./g; // eg. .0., .10.
+
+/**
+ * Removes array indices from a json schema path string.
+ * Converts paths like "foo.0.bar" to "foo.bar".
+ * This allows checking if a variable exists in an array item schema without needing the specific index.
+ *
+ * @param {string} path - The json schema path potentially containing array indices
+ * @returns {string} The path with array indices removed
+ */
+function removeIndicesFromPath(path) {
+  const intermediatePath = path.replace(regexToGetIndices, '.');
+  return intermediatePath.replace(/\.\d+$/, '');
 }
