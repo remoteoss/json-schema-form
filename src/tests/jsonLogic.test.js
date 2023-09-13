@@ -4,8 +4,8 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
-  schemaSelfContainedValueForMaximumMinimumValues,
-  schemaSelfContainedValueForTitle,
+  schemaInlineComputedAttrForMaximumMinimumValues,
+  schemaInlineComputedAttrForTitle,
   schemaWithBadOperation,
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
@@ -377,8 +377,8 @@ describe('jsonLogic: cross-values validations', () => {
     expect(fieldB.description).toEqual('Must be between 5 and 20.');
   });
 
-  it('Use a self contained rule in a schema for a title but it just uses the value', () => {
-    const { fields, handleValidation } = createHeadlessForm(schemaSelfContainedValueForTitle, {
+  it('Use an inline rule in a schema for a title but it just uses the value', () => {
+    const { fields, handleValidation } = createHeadlessForm(schemaInlineComputedAttrForTitle, {
       strictInputType: false,
     });
     const [, fieldB] = fields;
@@ -386,9 +386,9 @@ describe('jsonLogic: cross-values validations', () => {
     expect(fieldB.label).toEqual('20');
   });
 
-  it('Use a self contained rule for a minimum, maximum value', () => {
+  it('Use an inline rule for a minimum, maximum value', () => {
     const { fields, handleValidation } = createHeadlessForm(
-      schemaSelfContainedValueForMaximumMinimumValues,
+      schemaInlineComputedAttrForMaximumMinimumValues,
       {
         strictInputType: false,
       }

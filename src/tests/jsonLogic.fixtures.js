@@ -481,7 +481,7 @@ export const schemaWithInlineMultipleRulesForComputedAttributes = {
   },
 };
 
-export const schemaSelfContainedValueForTitle = {
+export const schemaInlineComputedAttrForTitle = {
   properties: {
     field_a: {
       type: 'number',
@@ -500,7 +500,7 @@ export const schemaSelfContainedValueForTitle = {
   },
 };
 
-export const schemaSelfContainedValueForMaximumMinimumValues = {
+export const schemaInlineComputedAttrForMaximumMinimumValues = {
   properties: {
     field_a: {
       type: 'number',
