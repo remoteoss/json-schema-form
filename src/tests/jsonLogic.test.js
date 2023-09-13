@@ -487,7 +487,7 @@ describe('jsonLogic: cross-values validations', () => {
       expect(handleValidation({ field_a: 5, field_b: 10 }).formErrors).toBeUndefined();
       expect(cField).toMatchObject({
         isVisible: false,
-        // description: null, the description will currently be `I am a description!`, how do we change it back to null from here?
+        // description: null, the description will currently be `I am a description!`, how do we change it back to null from here? Needs to be fixed by RMT-58
       });
     });
 
