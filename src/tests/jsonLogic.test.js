@@ -4,6 +4,8 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
+  schemaInlineComputedAttrForMaximumMinimumValues,
+  schemaInlineComputedAttrForTitle,
   schemaWithBadOperation,
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
@@ -12,7 +14,10 @@ import {
   schemaWithComputedAttributesAndErrorMessages,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithDeepVarThatDoesNotExistOnFieldset,
+  schemaWithInlineMultipleRulesForComputedAttributes,
+  schemaWithInlineRuleForComputedAttributeWithCopy,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
+  schemaWithJSFLogicAndInlineRule,
   schemaWithMissingComputedValue,
   schemaWithMissingRule,
   schemaWithNativeAndJSONLogicChecks,
@@ -344,5 +349,72 @@ describe('jsonLogic: cross-values validations', () => {
       expect(fieldB.maximum).toEqual(8);
       expect(fieldB.statement).toEqual({ description: 'Must be bigger than 4 and smaller than 8' });
     });
+
+    it('Use a inline-rule in a schema for a title attribute', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithInlineRuleForComputedAttributeWithCopy,
+        {
+          strictInputType: false,
+        }
+      );
+      const [, fieldB] = fields;
+      expect(handleValidation({ field_a: 0, field_b: null }).formErrors).toEqual(undefined);
+      expect(fieldB.label).toEqual('I need this to work using the 10.');
+      expect(handleValidation({ field_a: 10 }).formErrors).toEqual(undefined);
+      expect(fieldB.label).toEqual('I need this to work using the 20.');
+    });
+  });
+
+  it('Use multiple inline rules with different identifiers', () => {
+    const { fields, handleValidation } = createHeadlessForm(
+      schemaWithInlineMultipleRulesForComputedAttributes,
+      {
+        strictInputType: false,
+      }
+    );
+    const [, fieldB] = fields;
+    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+    expect(fieldB.description).toEqual('Must be between 5 and 20.');
+  });
+
+  it('Use an inline rule in a schema for a title but it just uses the value', () => {
+    const { fields, handleValidation } = createHeadlessForm(schemaInlineComputedAttrForTitle, {
+      strictInputType: false,
+    });
+    const [, fieldB] = fields;
+    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined);
+    expect(fieldB.label).toEqual('20');
+  });
+
+  it('Use an inline rule for a minimum, maximum value', () => {
+    const { fields, handleValidation } = createHeadlessForm(
+      schemaInlineComputedAttrForMaximumMinimumValues,
+      {
+        strictInputType: false,
+      }
+    );
+    const [, fieldB] = fields;
+    expect(fieldB).toMatchObject({ minimum: -10, maximum: 10 });
+    expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toBeUndefined();
+    expect(fieldB).toMatchObject({ minimum: 0, maximum: 20 });
+    expect(handleValidation({ field_a: 50, field_b: 20 }).formErrors).toEqual({
+      field_b: 'Must be greater or equal to 40',
+    });
+    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
+    expect(handleValidation({ field_a: 50, field_b: 70 }).formErrors).toEqual({
+      field_b: 'Must be smaller or equal to 60',
+    });
+    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
+    expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toBeUndefined();
+    expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 });
+  });
+
+  it('Mix use of multiple inline rules and an external rule', () => {
+    const { fields, handleValidation } = createHeadlessForm(schemaWithJSFLogicAndInlineRule, {
+      strictInputType: false,
+    });
+    handleValidation({ field_a: 10 });
+    const [, fieldB] = fields;
+    expect(fieldB.label).toEqual('Going to use 20 and 4');
   });
 });

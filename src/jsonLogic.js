@@ -198,7 +198,7 @@ function replaceHandlebarsTemplates({
     }
 
     const computedTemplateValue = Object.entries(rules).reduce((prev, [key, rule]) => {
-      const computedValue = logic.getScope(parentID).evaluateValidation(rule, formValues);
+      const computedValue = logic.getScope(parentID).validate(rule, formValues);
       return prev.replaceAll(`{{${key}}}`, computedValue);
     }, value);
 
@@ -278,8 +278,12 @@ function handleComputedAttribute(logic, formValues, parentID, name) {
         ];
       }
       case 'const':
-      default:
+      default: {
+        if (typeof value === 'object' && value.rule) {
+          return [key, logic.getScope(parentID).validate(value.rule, formValues)];
+        }
         return [key, logic.getScope(parentID).applyComputedValueInField(value, formValues, name)];
+      }
     }
   };
 }
