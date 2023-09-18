@@ -1,3 +1,9 @@
+#### 0.6.5-beta.0 (2023-09-18)
+
+##### Changes
+
+- Add conditional logic checking for json-logic ([#41](https://github.com/remoteoss/json-schema-form/pull/41)) ([6292b01e](https://github.com/remoteoss/json-schema-form/commit/6292b01e3f77a9038328d7375080ffc4cb30dbc8))
+
 #### 0.6.4-beta.0 (2023-09-15)
 
 
