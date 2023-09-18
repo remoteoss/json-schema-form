@@ -4,6 +4,23 @@
 
 - Add conditional logic checking for json-logic ([#41](https://github.com/remoteoss/json-schema-form/pull/41)) ([6292b01e](https://github.com/remoteoss/json-schema-form/commit/6292b01e3f77a9038328d7375080ffc4cb30dbc8))
 
+###### Full API additions now supported from 0.6.5 onwards.
+
+
+- New custom JSON Schema keyword `x-jsf-logic` added to support cross-field validations.
+- `x-jsf-logic` can contain:
+
+  - `validations` - JsonLogic rules that validate fields and return booleans
+  - `computedValues` - JsonLogic rules that compute dynamic values
+  - `allOf.if/then/else` - Conditional logic using validations and computedValues
+
+- New property `x-jsf-logic-validations` added to individual schema properties. Lists the validation names that should run on that property.
+- New property `x-jsf-logic-computedAttrs` added to individual schema properties. Allows computed values to be used for attributes like `title`, `description`, `const`, etc.
+- Computed values and validations defined in `x-jsf-logic` can reference schema properties using `vars` and any syntax supported from [JSON Logic](https://jsonlogic.com/).
+- Conditional logic blocks allow selectively requiring fields or applying attributes based on validations/computed values.
+
+In short: `x-jsf-logic` is added to support complex conditional cross-field validations, and properties like `x-jsf-logic-validations` allow hooking those up to individual fields.
+
 #### 0.6.4-beta.0 (2023-09-15)
 
 
