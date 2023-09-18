@@ -401,6 +401,10 @@ describe('jsonLogic: cross-values validations', () => {
         }
       );
       const [, fieldB] = fields;
+
+      // FIXME: We are currently setting NaN here because of how the data clean up works for json-logic
+      // We should probably set this as undefined when theres no values set?
+      // tracked in INF-53.
       expect(fieldB).toMatchObject({ minimum: NaN, maximum: NaN });
       expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toBeUndefined();
       expect(fieldB).toMatchObject({ minimum: 0, maximum: 20 });
