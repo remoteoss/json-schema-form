@@ -1,3 +1,11 @@
+#### 0.6.4-beta.0 (2023-09-15)
+
+
+
+##### Changes
+
+*  Inline rule handling for computedAttrs ([#40](https://github.com/remoteoss/json-schema-form/pull/40)) ([860ad91b](https://github.com/remoteoss/json-schema-form/commit/860ad91b034ab35d4d4bc51c0c04675f102bf278))
+
 #### 0.6.1-beta.0 (2023-09-13)
 
 ##### Changes
