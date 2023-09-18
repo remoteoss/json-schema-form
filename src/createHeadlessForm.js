@@ -100,7 +100,7 @@ function removeInvalidAttributes(fields) {
  *
  * @returns {FieldParameters}
  */
-function buildFieldParameters(name, fieldProperties, required = [], config = {}) {
+function buildFieldParameters(name, fieldProperties, required = [], config = {}, logic) {
   const { position } = pickXKey(fieldProperties, 'presentation') ?? {};
   let fields;
 
@@ -108,9 +108,14 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
 
   if (inputType === supportedTypes.FIELDSET) {
     // eslint-disable-next-line no-use-before-define
-    fields = getFieldsFromJSONSchema(fieldProperties, {
-      customProperties: get(config, `customProperties.${name}`, {}),
-    });
+    fields = getFieldsFromJSONSchema(
+      fieldProperties,
+      {
+        customProperties: get(config, `customProperties.${name}`, {}),
+        parentID: name,
+      },
+      logic
+    );
   }
 
   const result = {
@@ -235,7 +240,8 @@ function buildField(fieldParams, config, scopedJsonSchema, logic) {
 
   const yupSchema = buildYupSchema(fieldParams, config, logic);
   const calculateConditionalFieldsClosure =
-    fieldParams.isDynamic && calculateConditionalProperties(fieldParams, customProperties);
+    fieldParams.isDynamic &&
+    calculateConditionalProperties({ fieldParams, customProperties, logic, config });
 
   const calculateCustomValidationPropertiesClosure = calculateCustomValidationProperties(
     fieldParams,

@@ -1,5 +1,10 @@
 import jsonLogic from 'json-logic-js';
 
+import {
+  checkIfConditionMatchesProperties,
+  checkIfMatchesValidationsAndComputedValues,
+} from './checkIfConditionMatches';
+import { processNode } from './helpers';
 import { buildYupSchema } from './yupSchema';
 
 /**
@@ -90,7 +95,10 @@ function createValidationsScope(schema) {
   });
 
   function validate(rule, values) {
-    return jsonLogic.apply(rule, replaceUndefinedValuesWithNulls(values));
+    return jsonLogic.apply(
+      rule,
+      replaceUndefinedValuesWithNulls({ ...sampleEmptyObject, ...values })
+    );
   }
 
   return {
@@ -126,7 +134,7 @@ function createValidationsScope(schema) {
  */
 function replaceUndefinedValuesWithNulls(values = {}) {
   return Object.entries(values).reduce((prev, [key, value]) => {
-    return { ...prev, [key]: value === undefined ? null : value };
+    return { ...prev, [key]: value === undefined || value === null ? NaN : value };
   }, {});
 }
 
@@ -427,4 +435,60 @@ const regexToGetIndices = /\.\d+\./g; // eg. .0., .10.
 function removeIndicesFromPath(path) {
   const intermediatePath = path.replace(regexToGetIndices, '.');
   return intermediatePath.replace(/\.\d+$/, '');
+}
+
+export function processJSONLogicNode({
+  node,
+  formFields,
+  formValues,
+  accRequired,
+  parentID,
+  logic,
+}) {
+  const requiredFields = new Set(accRequired);
+
+  if (node.allOf) {
+    node.allOf
+      .map((allOfNode) =>
+        processJSONLogicNode({ node: allOfNode, formValues, formFields, logic, parentID })
+      )
+      .forEach(({ required: allOfItemRequired }) => {
+        allOfItemRequired.forEach(requiredFields.add, requiredFields);
+      });
+  }
+
+  if (node.if) {
+    const matchesPropertyCondition = checkIfConditionMatchesProperties(
+      node,
+      formValues,
+      formFields,
+      logic
+    );
+    const matchesValidationsAndComputedValues =
+      matchesPropertyCondition &&
+      checkIfMatchesValidationsAndComputedValues(node, formValues, logic, parentID);
+
+    const isConditionMatch = matchesPropertyCondition && matchesValidationsAndComputedValues;
+
+    let nextNode;
+    if (isConditionMatch && node.then) {
+      nextNode = node.then;
+    }
+    if (!isConditionMatch && node.else) {
+      nextNode = node.else;
+    }
+    if (nextNode) {
+      const { required: branchRequired } = processNode({
+        node: nextNode,
+        formValues,
+        formFields,
+        accRequired,
+        logic,
+        parentID,
+      });
+      branchRequired.forEach((field) => requiredFields.add(field));
+    }
+  }
+
+  return { required: requiredFields };
 }

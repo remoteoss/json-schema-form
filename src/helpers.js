@@ -5,9 +5,10 @@ import omitBy from 'lodash/omitBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
-import { checkIfConditionMatches } from './checkIfConditionMatches';
+import { checkIfConditionMatchesProperties } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
+import { processJSONLogicNode } from './jsonLogic';
 import { containsHTML, hasProperty, wrapWithSpan } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
@@ -240,7 +241,11 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
+    const newFieldValues = field.calculateConditionalProperties({
+      isRequired: fieldIsRequired,
+      conditionBranch: node,
+      formValues,
+    });
     updateValues(newFieldValues);
   }
 
@@ -294,7 +299,7 @@ export function processNode({
   });
 
   if (node.if) {
-    const matchesCondition = checkIfConditionMatches(node, formValues, formFields, logic);
+    const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
@@ -366,6 +371,18 @@ export function processNode({
         });
       }
     });
+  }
+
+  if (node['x-jsf-logic']) {
+    const { required: requiredFromLogic } = processJSONLogicNode({
+      node: node['x-jsf-logic'],
+      formValues,
+      formFields,
+      accRequired: requiredFields,
+      parentID,
+      logic,
+    });
+    requiredFromLogic.forEach((field) => requiredFields.add(field));
   }
 
   return {
@@ -465,7 +482,7 @@ export function extractParametersFromNode(schemaNode) {
 
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
-  const requiredValidations = schemaNode['x-jsf-logic-validations'];
+  const jsonLogicValidations = schemaNode['x-jsf-logic-validations'];
   const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
 
   // This is when a forced value is computed.
@@ -516,7 +533,7 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
-      requiredValidations,
+      jsonLogicValidations,
       computedAttributes: decoratedComputedAttributes,
       description: containsHTML(description)
         ? wrapWithSpan(description, {
