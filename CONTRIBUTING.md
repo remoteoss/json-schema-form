@@ -76,7 +76,12 @@ You can create as many dev releases as you need during the PRs, by running the s
 
 A PR needs all CI checks to pass.
 
-By default, prefer to "Squash and Merge" giving it a message that follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
+By default, prefer to "Squash and Merge" giving it a message that follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).  
+
+```bash
+- <type>[optional scope]: <description>
+- feat(parser): add ability to parse arrays
+```
 
 The final release is done after merge.
 
