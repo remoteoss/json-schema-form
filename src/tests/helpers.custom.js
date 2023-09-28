@@ -207,7 +207,6 @@ export const schemaInputTypeHidden = {
       title: 'Select multi hidden',
       default: ['Albania, Algeria'],
       'x-jsf-presentation': { inputType: 'hidden' },
-      const: ['Albania, Algeria'],
       type: 'array',
     },
   },

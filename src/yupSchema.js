@@ -4,6 +4,7 @@ import { randexp } from 'randexp';
 import { string, number, boolean, object, array } from 'yup';
 
 import { supportedTypes } from './internals/fields';
+import { yupSchemaWithCustomJSONLogic } from './jsonLogic';
 import { convertDiskSizeFromTo } from './utils';
 
 /**
@@ -196,7 +197,7 @@ const getYupSchema = ({ inputType, ...field }) => {
  * @param {FieldParameters} field Input fields
  * @returns {Function} Yup schema
  */
-export function buildYupSchema(field, config) {
+export function buildYupSchema(field, config, logic) {
   const { inputType, jsonType: jsonTypeValue, errorMessage = {}, ...propertyFields } = field;
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
@@ -304,6 +305,19 @@ export function buildYupSchema(field, config) {
     );
   }
 
+  function withConst(yupSchema) {
+    return yupSchema.test(
+      'isConst',
+      errorMessage.const ??
+        errorMessageFromConfig.const ??
+        `The only accepted value is ${propertyFields.const}.`,
+      (value) =>
+        (propertyFields.required === false && value === undefined) ||
+        value === null ||
+        value === propertyFields.const
+    );
+  }
+
   function withBaseSchema() {
     const customErrorMsg = errorMessage.type || errorMessageFromConfig.type;
     if (customErrorMsg) {
@@ -388,6 +402,17 @@ export function buildYupSchema(field, config) {
   if (propertyFields.accept) {
     validators.push(withFileFormat);
   }
+
+  if (propertyFields.const) {
+    validators.push(withConst);
+  }
+
+  if (propertyFields.jsonLogicValidations) {
+    propertyFields.jsonLogicValidations.forEach((id) =>
+      validators.push(yupSchemaWithCustomJSONLogic({ field, id, logic, config }))
+    );
+  }
+
   return flow(validators);
 }
 

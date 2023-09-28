@@ -18,6 +18,7 @@ import {
   schemaInputTypeSelectMultipleDeprecated,
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
+  schemaInputTypeFieldset,
   schemaInputTypeNumber,
   schemaInputTypeNumberZeroMaximum,
   schemaInputTypeDate,
@@ -56,6 +57,7 @@ import {
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
 } from './helpers';
+import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
 function buildJSONSchemaInput({ presentationFields, inputFields = {}, required }) {
   return {
@@ -91,14 +93,8 @@ const getField = (fields, name, ...subNames) => {
   return field;
 };
 
-beforeEach(() => {
-  jest.spyOn(console, 'error').mockImplementation(() => {});
-});
-
-afterEach(() => {
-  expect(console.error).not.toHaveBeenCalled();
-  console.error.mockRestore();
-});
+beforeEach(mockConsole);
+afterEach(restoreConsoleAndEnsureItWasNotCalled);
 
 describe('createHeadlessForm', () => {
   it('returns empty result given no schema', () => {
@@ -2503,7 +2499,7 @@ describe('createHeadlessForm', () => {
   });
 
   describe('when a field has conditional presentation properties', () => {
-    it('adds the html to nested statement markup when visible', () => {
+    it('returns the nested properties when the conditional matches', () => {
       const { fields } = createHeadlessForm(schemaWithConditionalPresentationProperties, {
         initialValues: {
           // show the hidden statement
@@ -3440,6 +3436,27 @@ describe('createHeadlessForm', () => {
             },
           ],
         });
+      });
+
+      it('should ignore initial values that do not match the field type (eg string vs object)', () => {
+        const result = createHeadlessForm(schemaInputTypeFieldset, {
+          initialValues: {
+            a_fieldset: 'foo', // should be an object instead of string
+          },
+        });
+
+        // It returns fields without errors
+        expect(result.fields).toBeDefined();
+        expect(result.fields[0].fields[0].name).toBe('id_number');
+        expect(result.fields[0].fields[1].name).toBe('tabs');
+
+        // Warn about those missmatched values
+        expect(console.warn).toHaveBeenCalledWith(
+          `Field "a_fieldset"'s value is "foo", but should be type object.`
+        );
+        console.warn.mockClear();
+
+        expect(console.error).not.toHaveBeenCalled();
       });
     });
   });

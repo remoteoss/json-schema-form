@@ -24,6 +24,7 @@ import {
   getInputType,
 } from './internals/fields';
 import { pickXKey } from './internals/helpers';
+import { calculateComputedAttributes, createValidationChecker } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
 
 // Some type definitions (to be migrated into .d.ts file or TS Interfaces)
@@ -99,7 +100,7 @@ function removeInvalidAttributes(fields) {
  *
  * @returns {FieldParameters}
  */
-function buildFieldParameters(name, fieldProperties, required = [], config = {}) {
+function buildFieldParameters(name, fieldProperties, required = [], config = {}, logic) {
   const { position } = pickXKey(fieldProperties, 'presentation') ?? {};
   let fields;
 
@@ -107,9 +108,14 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {})
 
   if (inputType === supportedTypes.FIELDSET) {
     // eslint-disable-next-line no-use-before-define
-    fields = getFieldsFromJSONSchema(fieldProperties, {
-      customProperties: get(config, `customProperties.${name}`, {}),
-    });
+    fields = getFieldsFromJSONSchema(
+      fieldProperties,
+      {
+        customProperties: get(config, `customProperties.${name}`, {}),
+        parentID: name,
+      },
+      logic
+    );
   }
 
   const result = {
@@ -187,6 +193,10 @@ function applyFieldsDependencies(fieldsParameters, node) {
       applyFieldsDependencies(fieldsParameters, condition);
     });
   }
+
+  if (node?.['x-jsf-logic']) {
+    applyFieldsDependencies(fieldsParameters, node['x-jsf-logic']);
+  }
 }
 
 /**
@@ -220,20 +230,27 @@ function getComposeFunctionForField(fieldParams, hasCustomizations) {
  * Create field object using a compose function
  * @param {FieldParameters} fieldParams - field parameters
  * @param {JsfConfig} config - parser config
+ * @param {Object} scopedJsonSchema - the matching JSON schema
+ * @param {Object} logic - logic used for validation json-logic
  * @returns {Object} field object
  */
-function buildField(fieldParams, config, scopedJsonSchema) {
+function buildField(fieldParams, config, scopedJsonSchema, logic) {
   const customProperties = getCustomPropertiesForField(fieldParams, config);
   const composeFn = getComposeFunctionForField(fieldParams, !!customProperties);
 
-  const yupSchema = buildYupSchema(fieldParams, config);
+  const yupSchema = buildYupSchema(fieldParams, config, logic);
   const calculateConditionalFieldsClosure =
-    fieldParams.isDynamic && calculateConditionalProperties(fieldParams, customProperties);
+    fieldParams.isDynamic &&
+    calculateConditionalProperties({ fieldParams, customProperties, logic, config });
 
   const calculateCustomValidationPropertiesClosure = calculateCustomValidationProperties(
     fieldParams,
     customProperties
   );
+
+  const getComputedAttributes =
+    Object.keys(fieldParams.computedAttributes).length > 0 &&
+    calculateComputedAttributes(fieldParams, config);
 
   const hasCustomValidations =
     !!customProperties &&
@@ -250,6 +267,7 @@ function buildField(fieldParams, config, scopedJsonSchema) {
     ...(hasCustomValidations && {
       calculateCustomValidationProperties: calculateCustomValidationPropertiesClosure,
     }),
+    ...(getComputedAttributes && { getComputedAttributes }),
     // field customization properties
     ...(customProperties && { fieldCustomization: customProperties }),
     // base schema
@@ -267,7 +285,7 @@ function buildField(fieldParams, config, scopedJsonSchema) {
  * @param {JsfConfig} config - JSON-schema-form config
  * @returns {ParserFields} ParserFields
  */
-function getFieldsFromJSONSchema(scopedJsonSchema, config) {
+function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
   if (!scopedJsonSchema) {
     // NOTE: other type of verifications might be needed.
     return [];
@@ -299,11 +317,11 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config) {
         addFieldText: fieldParams.addFieldText,
       };
 
-      buildField(fieldParams, config, scopedJsonSchema).forEach((groupField) => {
+      buildField(fieldParams, config, scopedJsonSchema, logic).forEach((groupField) => {
         fields.push(groupField);
       });
     } else {
-      fields.push(buildField(fieldParams, config, scopedJsonSchema));
+      fields.push(buildField(fieldParams, config, scopedJsonSchema, logic));
     }
   });
 
@@ -323,11 +341,17 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
   };
 
   try {
-    const fields = getFieldsFromJSONSchema(jsonSchema, config);
+    const logic = createValidationChecker(jsonSchema);
+    const fields = getFieldsFromJSONSchema(jsonSchema, config, logic);
 
-    const handleValidation = handleValuesChange(fields, jsonSchema, config);
+    const handleValidation = handleValuesChange(fields, jsonSchema, config, logic);
 
-    updateFieldsProperties(fields, getPrefillValues(fields, config.initialValues), jsonSchema);
+    updateFieldsProperties(
+      fields,
+      getPrefillValues(fields, config.initialValues),
+      jsonSchema,
+      logic
+    );
 
     return {
       fields,

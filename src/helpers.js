@@ -5,9 +5,10 @@ import omitBy from 'lodash/omitBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
-import { checkIfConditionMatches } from './checkIfConditionMatches';
+import { checkIfConditionMatchesProperties } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
+import { processJSONLogicNode } from './jsonLogic';
 import { hasProperty } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
@@ -40,8 +41,8 @@ export function getField(fieldName, fields) {
  * @param {any} value
  * @returns
  */
-export function validateFieldSchema(field, value) {
-  const validator = buildYupSchema(field);
+export function validateFieldSchema(field, value, logic) {
+  const validator = buildYupSchema(field, {}, logic);
   return validator().isValidSync(value);
 }
 
@@ -122,7 +123,17 @@ function getPrefillSubFieldValues(field, defaultValues, parentFieldKeyPath) {
     // getDefaultValues and getPrefillSubFieldValues have a circluar dependency, resulting in one having to be used before defined.
     // As function declarations are hoisted this should not be a problem.
     // eslint-disable-next-line no-use-before-define
-    initialValue = getPrefillValues([field], initialValue);
+
+    if (typeof initialValue !== 'object') {
+      console.warn(
+        `Field "${parentFieldKeyPath}"'s value is "${initialValue}", but should be type object.`
+      );
+      initialValue = getPrefillValues([field], {
+        // TODO nested fieldsets are not handled
+      });
+    } else {
+      initialValue = getPrefillValues([field], initialValue);
+    }
   }
 
   return initialValue;
@@ -169,7 +180,7 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues) {
+function updateField(field, requiredFields, node, formValues, logic, config) {
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -216,9 +227,25 @@ function updateField(field, requiredFields, node, formValues) {
       }
     });
 
+  if (field.getComputedAttributes) {
+    const computedFieldValues = field.getComputedAttributes({
+      field,
+      isRequired: fieldIsRequired,
+      node,
+      formValues,
+      config,
+      logic,
+    });
+    updateValues(computedFieldValues);
+  }
+
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties(fieldIsRequired, node);
+    const newFieldValues = field.calculateConditionalProperties({
+      isRequired: fieldIsRequired,
+      conditionBranch: node,
+      formValues,
+    });
     updateValues(newFieldValues);
   }
 
@@ -246,42 +273,55 @@ function updateField(field, requiredFields, node, formValues) {
  * @param {Set} accRequired - set of required field names gathered by traversing the tree
  * @returns {Object}
  */
-function processNode(node, formValues, formFields, accRequired = new Set()) {
+export function processNode({
+  node,
+  formValues,
+  formFields,
+  accRequired = new Set(),
+  parentID = 'root',
+  logic,
+}) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
 
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues);
+    updateField(field, requiredFields, node, formValues, logic, { parentID });
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues);
+    updateField(getField(fieldName, formFields), requiredFields, node, formValues, logic, {
+      parentID,
+    });
   });
 
   if (node.if) {
-    const matchesCondition = checkIfConditionMatches(node, formValues, formFields);
+    const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
-      const { required: branchRequired } = processNode(
-        node.then,
+      const { required: branchRequired } = processNode({
+        node: node.then,
         formValues,
         formFields,
-        requiredFields
-      );
+        accRequired: requiredFields,
+        parentID,
+        logic,
+      });
 
       branchRequired.forEach((field) => requiredFields.add(field));
     } else if (node.else) {
-      const { required: branchRequired } = processNode(
-        node.else,
+      const { required: branchRequired } = processNode({
+        node: node.else,
         formValues,
         formFields,
-        requiredFields
-      );
+        accRequired: requiredFields,
+        parentID,
+        logic,
+      });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
   }
@@ -295,14 +335,23 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues);
+        updateField(field, requiredFields, node, formValues, logic, { parentID });
       });
     });
   }
 
   if (node.allOf) {
     node.allOf
-      .map((allOfNode) => processNode(allOfNode, formValues, formFields, requiredFields))
+      .map((allOfNode) =>
+        processNode({
+          node: allOfNode,
+          formValues,
+          formFields,
+          accRequired: requiredFields,
+          parentID,
+          logic,
+        })
+      )
       .forEach(({ required: allOfItemRequired }) => {
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
@@ -313,9 +362,27 @@ function processNode(node, formValues, formFields, accRequired = new Set()) {
       const inputType = getInputType(nestedNode);
       if (inputType === supportedTypes.FIELDSET) {
         // It's a fieldset, which might contain scoped conditions
-        processNode(nestedNode, formValues[name] || {}, getField(name, formFields).fields);
+        processNode({
+          node: nestedNode,
+          formValues: formValues[name] || {},
+          formFields: getField(name, formFields).fields,
+          parentID: name,
+          logic,
+        });
       }
     });
+  }
+
+  if (node['x-jsf-logic']) {
+    const { required: requiredFromLogic } = processJSONLogicNode({
+      node: node['x-jsf-logic'],
+      formValues,
+      formFields,
+      accRequired: requiredFields,
+      parentID,
+      logic,
+    });
+    requiredFromLogic.forEach((field) => requiredFields.add(field));
   }
 
   return {
@@ -348,11 +415,11 @@ function clearValuesIfNotVisible(fields, formValues) {
  * @param {Object} formValues - current values of the form
  * @param {Object} jsonSchema - JSON schema object
  */
-export function updateFieldsProperties(fields, formValues, jsonSchema) {
+export function updateFieldsProperties(fields, formValues, jsonSchema, logic) {
   if (!jsonSchema?.properties) {
     return;
   }
-  processNode(jsonSchema, formValues, fields);
+  processNode({ node: jsonSchema, formValues, formFields: fields, logic });
   clearValuesIfNotVisible(fields, formValues);
 }
 
@@ -415,7 +482,11 @@ export function extractParametersFromNode(schemaNode) {
 
   const presentation = pickXKey(schemaNode, 'presentation') ?? {};
   const errorMessage = pickXKey(schemaNode, 'errorMessage') ?? {};
+  const jsonLogicValidations = schemaNode['x-jsf-logic-validations'];
+  const computedAttributes = schemaNode['x-jsf-logic-computedAttrs'];
 
+  // This is when a forced value is computed.
+  const decoratedComputedAttributes = getDecoratedComputedAttributes(computedAttributes);
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
   const description = presentation?.description || node.description;
@@ -423,6 +494,8 @@ export function extractParametersFromNode(schemaNode) {
 
   return omitBy(
     {
+      const: node.const,
+      ...(node.const && node.default ? { value: node.const } : {}),
       label: node.title,
       readOnly: node.readOnly,
       ...(node.deprecated && {
@@ -458,6 +531,8 @@ export function extractParametersFromNode(schemaNode) {
 
       // Handle [name].presentation
       ...presentation,
+      jsonLogicValidations,
+      computedAttributes: decoratedComputedAttributes,
       description,
       extra: presentation.extra,
       statement: presentation.statement && {
@@ -509,8 +584,8 @@ export function yupToFormErrors(yupError) {
  * @param {JsfConfig} config - jsf config
  * @returns {Function(values: Object): { YupError: YupObject, formErrors: Object }} Callback that returns Yup errors <YupObject>
  */
-export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
-  updateFieldsProperties(fields, values, jsonSchema);
+export const handleValuesChange = (fields, jsonSchema, config, logic) => (values) => {
+  updateFieldsProperties(fields, values, jsonSchema, logic);
 
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
   let errors;
@@ -533,3 +608,12 @@ export const handleValuesChange = (fields, jsonSchema, config) => (values) => {
     formErrors: yupToFormErrors(errors),
   };
 };
+
+function getDecoratedComputedAttributes(computedAttributes) {
+  return {
+    ...(computedAttributes ?? {}),
+    ...(computedAttributes?.const && computedAttributes?.default
+      ? { value: computedAttributes.const }
+      : {}),
+  };
+}

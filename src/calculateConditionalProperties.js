@@ -4,6 +4,7 @@ import omit from 'lodash/omit';
 import { extractParametersFromNode } from './helpers';
 import { supportedTypes } from './internals/fields';
 import { getFieldDescription, pickXKey } from './internals/helpers';
+import { calculateComputedAttributes } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
 /**
  * @typedef {import('./createHeadlessForm').FieldParameters} FieldParameters
@@ -64,19 +65,29 @@ function rebuildFieldset(fields, property) {
 }
 
 /**
- * Builds a function that updates the fields properties based on the form values and the
- * dependencies the field has on the current schema.
- * @param {FieldParameters} fieldParams - field parameters
- * @returns {Function}
+ * Builds a function that updates the field properties based on the form values,
+ * schema dependencies, and conditional logic.
+ *
+ * @param {Object} params - Parameters
+ * @param {Object} params.fieldParams - Current field parameters
+ * @param {Object} params.customProperties - Custom field properties from schema
+ * @param {Object} params.logic - JSON-logic
+ * @param {Object} params.config - Form configuration
+ *
+ * @returns {Function} A function that calculates conditional properties
  */
-export function calculateConditionalProperties(fieldParams, customProperties) {
+export function calculateConditionalProperties({ fieldParams, customProperties, logic, config }) {
   /**
    * Runs dynamic property calculation on a field based on a conditional that has been calculated
-   * @param {Boolean} isRequired - if the field is required
-   * @param {Object} conditionBranch - condition branch being applied
-   * @returns {Object} updated field parameters
+   *
+   * @param {Object} params - Parameters
+   * @param {Boolean} params.isRequired - If field is required
+   * @param {Object} params.conditionBranch - Condition branch
+   * @param {Object} params.formValues - Current form values
+   *
+   * @returns {Object} Updated field parameters
    */
-  return (isRequired, conditionBranch) => {
+  return ({ isRequired, conditionBranch, formValues }) => {
     // Check if the current field is conditionally declared in the schema
 
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
@@ -98,17 +109,37 @@ export function calculateConditionalProperties(fieldParams, customProperties) {
         newFieldParams.fields = fieldSetFields;
       }
 
+      const { computedAttributes, ...restNewFieldParams } = newFieldParams;
+      const calculatedComputedAttributes = computedAttributes
+        ? calculateComputedAttributes(newFieldParams, config)({ logic, formValues })
+        : {};
+
+      const jsonLogicValidations = [
+        ...(fieldParams.jsonLogicValidations ?? []),
+        ...(restNewFieldParams.jsonLogicValidations ?? []),
+      ];
+
       const base = {
         isVisible: true,
         required: isRequired,
         ...(presentation?.inputType && { type: presentation.inputType }),
-        schema: buildYupSchema({
-          ...fieldParams,
-          ...newFieldParams,
-          // If there are inner fields (case of fieldset) they need to be updated based on the condition
-          fields: fieldSetFields,
-          required: isRequired,
-        }),
+        ...calculatedComputedAttributes,
+        ...(calculatedComputedAttributes.value
+          ? { value: calculatedComputedAttributes.value }
+          : { value: undefined }),
+        schema: buildYupSchema(
+          {
+            ...fieldParams,
+            ...restNewFieldParams,
+            ...calculatedComputedAttributes,
+            jsonLogicValidations,
+            // If there are inner fields (case of fieldset) they need to be updated based on the condition
+            fields: fieldSetFields,
+            required: isRequired,
+          },
+          config,
+          logic
+        ),
       };
 
       return omit(merge(base, presentation, newFieldParams), ['inputType']);
