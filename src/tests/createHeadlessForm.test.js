@@ -57,6 +57,7 @@ import {
   schemaInputTypeNumberWithPercentage,
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
+  mockPatternOneOf,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -1483,6 +1484,45 @@ describe('createHeadlessForm', () => {
           },
         ],
       });
+    });
+
+    it('supports oneOf pattern validation', () => {
+      const result = createHeadlessForm(
+        JSONSchemaBuilder()
+          .addInput({
+            phone_number: mockPatternOneOf,
+          })
+          .build()
+      );
+
+      expect(result).toMatchObject({
+        fields: [
+          {
+            label: 'Phone number',
+            name: 'phone_number',
+            type: 'tel',
+            required: false,
+            options: [
+              {
+                label: 'Portugal',
+                pattern: '^(\\+351)[0-9]{9,}$',
+              },
+              {
+                label: 'United Kingdom (UK)',
+                pattern: '^(\\+44)[0-9]*',
+              },
+            ],
+          },
+        ],
+      });
+
+      const fieldValidator = result.fields[0].schema;
+
+      expect(fieldValidator.isValidSync('+351123123123')).toBe(true);
+      expect(() => fieldValidator.validateSync('+35100')).toThrowError(
+        'The option "+35100" is not valid.'
+      );
+      expect(fieldValidator.isValidSync(undefined)).toBe(true);
     });
 
     describe('supports "fieldset" field type', () => {
