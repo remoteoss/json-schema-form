@@ -453,6 +453,24 @@ export const mockCheckboxInput = {
   type: 'string',
 };
 
+export const mockPatternOneOf = {
+  title: 'Phone number',
+  type: 'string',
+  'x-jsf-presentation': {
+    inputType: 'tel',
+  },
+  oneOf: [
+    {
+      title: 'Portugal',
+      pattern: '^(\\+351)[0-9]{9,}$',
+    },
+    {
+      title: 'United Kingdom (UK)',
+      pattern: '^(\\+44)[0-9]*',
+    },
+  ],
+};
+
 /**
  * Compose a schema with lower chance of human error
  * @param {Object} schema version
