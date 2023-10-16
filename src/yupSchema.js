@@ -67,7 +67,7 @@ const yupSchemas = {
         if (value === '') {
           return undefined; // [1]
         }
-        if (options?.includes(null)) {
+        if (options?.some((option) => option.value === null)) {
           return value;
         }
         return value === null
@@ -96,9 +96,35 @@ const yupSchemas = {
           Check the PR#18 and tests for more details.
         */
       })
-      .oneOf(options, ({ value }) => {
-        return `The option ${JSON.stringify(value)} is not valid.`;
-      }),
+      .test(
+        /* 
+          Custom test determines if the value either:
+           - Matches a specific option by value
+           - Matches a pattern
+          If the option is undefined do not test, to allow for optional fields. 
+         */
+        'matchesOptionOrPattern',
+        ({ value }) => `The option ${JSON.stringify(value)} is not valid.`,
+        (value) => {
+          if (value === undefined) {
+            return true; // [2]
+          }
+
+          const exactMatch = options.some((option) => option.value === value);
+
+          if (exactMatch) {
+            return true;
+          }
+
+          const patternMatch = options.some((option) => option.pattern?.test(value));
+
+          if (patternMatch) {
+            return true;
+          }
+
+          return false;
+        }
+      ),
   date: ({ minDate, maxDate }) => {
     let dateString = string()
       .nullable()
@@ -166,7 +192,10 @@ const getJsonTypeInArray = (jsonType) =>
     : jsonType; // eg "string"
 
 const getOptions = (field) => {
-  const allValues = field.options?.map((option) => option.value);
+  const allValues = field.options?.map((option) => ({
+    value: option.value,
+    pattern: option.pattern ? new RegExp(option.pattern) : null,
+  }));
 
   const isOptionalWithNull =
     Array.isArray(field.jsonType) &&
@@ -175,7 +204,7 @@ const getOptions = (field) => {
     // Otherwise the JSON Schema validator will fail as explained in PR#18
     field.jsonType.includes('null');
 
-  return isOptionalWithNull ? [...allValues, null] : allValues;
+  return isOptionalWithNull ? [...allValues, { option: null }] : allValues;
 };
 
 const getYupSchema = ({ inputType, ...field }) => {
