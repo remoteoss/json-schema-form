@@ -494,10 +494,15 @@ export function extractParametersFromNode(schemaNode) {
     ? wrapWithSpan(presentation.statement.description, { class: 'jsf-statement' })
     : presentation.statement?.description;
 
+  const value =
+    typeof node.const !== 'undefined' && typeof node.default !== 'undefined'
+      ? { value: node.const }
+      : {};
+
   return omitBy(
     {
       const: node.const,
-      ...(node.const && node.default ? { value: node.const } : {}),
+      ...value,
       label: node.title,
       readOnly: node.readOnly,
       ...(node.deprecated && {
