@@ -1,3 +1,13 @@
+#### 0.6.6-beta.0 (2023-10-17)
+
+##### Chores
+
+- **github:** Add template for issues and pull requests ([#45](https://github.com/remoteoss/json-schema-form/pull/45)) ([621e3338](https://github.com/remoteoss/json-schema-form/commit/621e33389638541e771d2229c91655e430ea7ec4))
+
+##### Bug Fixes
+
+- allow 0 in const validation ([#48](https://github.com/remoteoss/json-schema-form/pull/48)) ([cde19fc9](https://github.com/remoteoss/json-schema-form/commit/cde19fc960c4eacdde476ddcdd8c650a4ff5ce96))
+
 #### 0.6.5-beta.0 (2023-09-18)
 
 ##### Changes
