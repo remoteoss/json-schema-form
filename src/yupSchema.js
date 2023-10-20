@@ -60,7 +60,7 @@ const validateMaxDate = (value, minDate) => {
 
 const yupSchemas = {
   text: validateOnlyStrings,
-  radioOrSelect: (options) =>
+  radioOrSelectString: (options) =>
     string()
       .nullable()
       .transform((value) => {
@@ -130,7 +130,13 @@ const yupSchemas = {
 
     return dateString;
   },
-
+  radioOrSelectNumber: (options) =>
+    number()
+      .typeError('The value must be a number')
+      .oneOf(options, ({ value }) => {
+        return `The option ${JSON.stringify(value)} is not valid.`;
+      })
+      .nullable(),
   number: number().typeError('The value must be a number').nullable(),
   file: array().nullable(),
   email: string().trim().email('Please enter a valid email address').nullable(),
@@ -160,10 +166,11 @@ function getRequiredErrorMessage(inputType, { inlineError, configError }) {
   return 'Required field';
 }
 
-const getJsonTypeInArray = (jsonType) =>
-  Array.isArray(jsonType)
+const getJsonTypeInArray = (jsonType) => {
+  return Array.isArray(jsonType)
     ? jsonType.find((val) => val !== 'null') // eg ["string", "null"] // optional fields - get the head type.
     : jsonType; // eg "string"
+};
 
 const getOptions = (field) => {
   const allValues = field.options?.map((option) => option.value);
@@ -181,9 +188,14 @@ const getOptions = (field) => {
 const getYupSchema = ({ inputType, ...field }) => {
   const jsonType = getJsonTypeInArray(field.jsonType);
 
-  if (field.options?.length > 0) {
+  if (field.options?.length > 0 && field.jsonType !== 'number') {
     const optionValues = getOptions(field);
-    return yupSchemas.radioOrSelect(optionValues);
+    return yupSchemas.radioOrSelectString(optionValues);
+  }
+
+  if (field.options?.length > 0 && field.jsonType === 'number') {
+    const optionValues = getOptions(field);
+    return yupSchemas.radioOrSelectNumber(optionValues);
   }
 
   if (field.format === 'date') {

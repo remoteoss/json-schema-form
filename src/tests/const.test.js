@@ -157,3 +157,21 @@ describe('const/default with forced values', () => {
     expect(handleValidation({ ten_only: null }).formErrors).toBeUndefined();
   });
 });
+
+describe('One of const', () => {
+  it('Should work for when the there is a list of numbers allowed', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          number: { type: 'number', oneOf: [{ const: 0 }, { const: 1 }, { const: 2 }] },
+        },
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({}).formErrors).toEqual(undefined);
+    expect(handleValidation({ number: 3 }).formErrors).toEqual({
+      number: 'The option 3 is not valid.',
+    });
+    expect(handleValidation({ number: 2 }).formErrors).toBeUndefined();
+  });
+});
