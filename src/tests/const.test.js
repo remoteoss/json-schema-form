@@ -156,4 +156,35 @@ describe('const/default with forced values', () => {
     // Expectation: To fail with error "The only accepted value is 10."
     expect(handleValidation({ ten_only: null }).formErrors).toBeUndefined();
   });
+
+  it('Should clear the default from number when removed from condition', () => {
+    const { fields, handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          apply_condition: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          number: { type: 'number' },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { apply_condition: { const: 'yes' } },
+              required: ['apply_condition'],
+            },
+            then: {
+              properties: { number: { const: 10, default: 10 } },
+            },
+          },
+        ],
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({}).formErrors).toEqual(undefined);
+    expect(handleValidation({ apply_condition: 'no', number: 1 }).formErrors).toEqual(undefined);
+    expect(handleValidation({ apply_condition: 'yes', number: 1 }).formErrors).toEqual({
+      number: 'The only accepted value is 10.',
+    });
+    expect(fields[1]).toMatchObject({ default: 10 });
+    expect(handleValidation({ apply_condition: 'no', number: 1 }).formErrors).toEqual(undefined);
+    expect(fields[1]).toMatchObject({ default: undefined, const: undefined });
+  });
 });

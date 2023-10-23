@@ -202,14 +202,20 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     field.isVisible = true;
   }
 
-  const updateValues = (fieldValues) =>
+  const updateValues = (fieldValues) => {
+    ['const', 'default', 'minimum', 'maximum', 'minLength', 'maxLength'].forEach((key) => {
+      if (fieldValues[key] === undefined) {
+        field[key] = undefined;
+      }
+    });
+
     Object.entries(fieldValues).forEach(([key, value]) => {
       // some values (eg "schema") are a function, so we need to call it here
       field[key] = typeof value === 'function' ? value() : value;
 
       if (key === 'value') {
         // The value of the field should not be driven by the json-schema,
-        // unless it's a read-only field
+        // unless it's a read-only field or a forced value
         // If the readOnly property has changed, use that updated value,
         // otherwise use the start value of the property
         const readOnlyPropertyWasUpdated = typeof fieldValues.readOnly !== 'undefined';
@@ -226,6 +232,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
         }
       }
     });
+  };
 
   if (field.getComputedAttributes) {
     const computedFieldValues = field.getComputedAttributes({
