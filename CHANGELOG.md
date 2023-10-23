@@ -1,3 +1,16 @@
+#### 0.7.0-beta.0 (2023-10-23)
+
+##### Chores
+
+BREAKING CHANGES:
+
+- **Description/Extra/Statement fields:** We have removed the sorrounding spans that we output in these fields ([#17](https://github.com/remoteoss/json-schema-form/pull/27)) ([6257533](https://github.com/remoteoss/json-schema-form/commit/6257533bead9c0f7391f240c2e5bacc801a90af7))
+
+```diff
+-description: '<span class="jsf-description">Write in <b>hh:ss</b> format</span>',
++description: 'Write in <b>hh:ss</b> format',
+```
+
 #### 0.6.6-beta.0 (2023-10-17)
 
 ##### Chores
