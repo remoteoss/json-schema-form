@@ -9,7 +9,7 @@ import { checkIfConditionMatchesProperties } from './checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { processJSONLogicNode } from './jsonLogic';
-import { containsHTML, hasProperty, wrapWithSpan } from './utils';
+import { hasProperty } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
 /**
@@ -490,9 +490,7 @@ export function extractParametersFromNode(schemaNode) {
   const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
 
   const description = presentation?.description || node.description;
-  const statementDescription = containsHTML(presentation.statement?.description)
-    ? wrapWithSpan(presentation.statement.description, { class: 'jsf-statement' })
-    : presentation.statement?.description;
+  const statementDescription = presentation.statement?.description;
 
   const value =
     typeof node.const !== 'undefined' && typeof node.default !== 'undefined'
@@ -540,14 +538,8 @@ export function extractParametersFromNode(schemaNode) {
       ...presentation,
       jsonLogicValidations,
       computedAttributes: decoratedComputedAttributes,
-      description: containsHTML(description)
-        ? wrapWithSpan(description, {
-            class: 'jsf-description',
-          })
-        : description,
-      extra: containsHTML(presentation.extra)
-        ? wrapWithSpan(presentation.extra, { class: 'jsf-extra' })
-        : presentation.extra,
+      description,
+      extra: presentation.extra,
       statement: presentation.statement && {
         ...presentation.statement,
         description: statementDescription,

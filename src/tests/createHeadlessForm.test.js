@@ -2040,10 +2040,7 @@ describe('createHeadlessForm', () => {
       });
 
       expect(result).toMatchObject({
-        fields: [
-          { description: 'I am regular' },
-          { description: '<span class="jsf-description">I am <b>bold</b>.</span>' },
-        ],
+        fields: [{ description: 'I am regular' }, { description: 'I am <b>bold</b>.' }],
       });
     });
 
@@ -2502,7 +2499,7 @@ describe('createHeadlessForm', () => {
   });
 
   describe('when a field has conditional presentation properties', () => {
-    it('adds .jsf-statement to nested statement markup when visible', () => {
+    it('returns the nested properties when the conditional matches', () => {
       const { fields } = createHeadlessForm(schemaWithConditionalPresentationProperties, {
         initialValues: {
           // show the hidden statement
@@ -2510,9 +2507,7 @@ describe('createHeadlessForm', () => {
         },
       });
 
-      expect(fields[0].statement.description).toBe(
-        `<span class="jsf-statement"><a href="">conditional statement markup</a></span>`
-      );
+      expect(fields[0].statement.description).toBe(`<a href="">conditional statement markup</a>`);
     });
   });
 
@@ -3710,7 +3705,7 @@ describe('createHeadlessForm', () => {
       expect(fields).toMatchObject([
         {
           name: 'time',
-          description: '<span class="jsf-description">Write in <b>hh:ss</b> format</span>', // from presentation
+          description: 'Write in <b>hh:ss</b> format', // from presentation
           inputType: 'clock', // arbitrary type from presentation
           deprecated: {
             description: 'In favor of X', // from presentation
