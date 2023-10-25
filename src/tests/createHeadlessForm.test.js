@@ -1444,13 +1444,11 @@ describe('createHeadlessForm', () => {
     });
 
     it('supports oneOf pattern validation', () => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            phone_number: mockPatternOneOf,
-          })
-          .build()
-      );
+      const result = createHeadlessForm({
+        properties: {
+          phone_number: mockPatternOneOf,
+        },
+      });
 
       expect(result).toMatchObject({
         fields: [
