@@ -664,12 +664,12 @@ export const schemaWithoutTypes = {
   },
 };
 
-export const schemaInputTypeText = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputTypeText = {
+  properties: {
     id_number: mockTextInput,
-  })
-  .setRequiredFields(['id_number'])
-  .build();
+  },
+  required: ['id_number'],
+};
 
 export const schemaInputWithStatement = JSONSchemaBuilder()
   .addInput({
@@ -759,8 +759,8 @@ export const schemaInputWithStatementDeprecated = JSONSchemaBuilder()
   })
   .build();
 
-export const schemaInputWithExtra = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputWithExtra = {
+  properties: {
     bonus: {
       title: 'Bonus',
       'x-jsf-presentation': {
@@ -778,11 +778,11 @@ export const schemaInputWithExtra = JSONSchemaBuilder()
         `,
       },
     },
-  })
-  .build();
+  },
+};
 
-export const schemaInputWithCustomDescription = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputWithCustomDescription = {
+  properties: {
     other: {
       title: 'Other',
       'x-jsf-presentation': {
@@ -791,8 +791,8 @@ export const schemaInputWithCustomDescription = JSONSchemaBuilder()
       },
       type: 'string',
     },
-  })
-  .build();
+  },
+};
 
 export const schemaInputDeprecated = JSONSchemaBuilder()
   .addInput({
