@@ -463,6 +463,12 @@ export const mockCheckboxInput = {
     })
     .build();
  */
+
+/**
+ * @deprecated in favor of normal JSON schema.
+ * Why? This adds extra complexity to read and to
+ * copy-paste into the Playground, validators, etc
+ * */
 export function JSONSchemaBuilder() {
   return {
     addInput: function addInput(input) {
