@@ -1947,9 +1947,9 @@ describe('createHeadlessForm', () => {
             },
           },
           {
-            name: 'a_or_b',
-            label: 'A dropdown',
-            type: 'select',
+            name: 'role',
+            label: 'Role',
+            type: 'text',
             statement: {
               description: 'This is another statement message, but more severe.',
               inputType: 'statement',
