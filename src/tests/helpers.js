@@ -671,8 +671,8 @@ export const schemaInputTypeText = {
   required: ['id_number'],
 };
 
-export const schemaInputWithStatement = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputWithStatement = {
+  properties: {
     bonus: {
       title: 'Bonus',
       'x-jsf-presentation': {
@@ -684,80 +684,19 @@ export const schemaInputWithStatement = JSONSchemaBuilder()
         },
       },
     },
-  })
-  .addInput({
-    a_or_b: {
-      title: 'A dropdown',
-      description: 'Some options to chose from',
-      items: {
-        enum: ['A', 'B'],
-      },
+    role: {
+      title: 'Role',
       'x-jsf-presentation': {
-        inputType: 'select',
-        options: [
-          {
-            label: 'A',
-            value: 'A',
-          },
-          {
-            label: 'B',
-            value: 'B',
-          },
-        ],
-        placeholder: 'Select...',
-        statement: {
-          description: 'This is another statement message, but more severe.',
-          inputType: 'statement',
-          severity: 'warning',
-        },
-      },
-    },
-  })
-  .build();
-
-export const schemaInputWithStatementDeprecated = JSONSchemaBuilder()
-  .addInput({
-    bonus: {
-      title: 'Bonus',
-      presentation: {
         inputType: 'text',
         statement: {
-          description: 'This is a custom statement message.',
-          inputType: 'statement',
-          severity: 'info',
-        },
-      },
-    },
-  })
-  .addInput({
-    a_or_b: {
-      title: 'A dropdown',
-      description: 'Some options to chose from',
-      items: {
-        enum: ['A', 'B'],
-      },
-      presentation: {
-        inputType: 'select',
-        options: [
-          {
-            label: 'A',
-            value: 'A',
-          },
-          {
-            label: 'B',
-            value: 'B',
-          },
-        ],
-        placeholder: 'Select...',
-        statement: {
           description: 'This is another statement message, but more severe.',
           inputType: 'statement',
           severity: 'warning',
         },
       },
     },
-  })
-  .build();
+  },
+};
 
 export const schemaInputWithExtra = {
   properties: {
