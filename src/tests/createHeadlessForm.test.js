@@ -38,6 +38,7 @@ import {
   mockFileInput,
   mockRadioCardInput,
   mockRadioCardExpandableInput,
+  mockTelWithPattern,
   mockTextInput,
   mockTextInputDeprecated,
   mockNumberInput,
@@ -56,7 +57,6 @@ import {
   schemaInputTypeNumberWithPercentage,
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
-  mockPatternOneOf,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -1444,11 +1444,7 @@ describe('createHeadlessForm', () => {
     });
 
     it('supports oneOf pattern validation', () => {
-      const result = createHeadlessForm({
-        properties: {
-          phone_number: mockPatternOneOf,
-        },
-      });
+      const result = createHeadlessForm(mockTelWithPattern);
 
       expect(result).toMatchObject({
         fields: [
@@ -1464,7 +1460,19 @@ describe('createHeadlessForm', () => {
               },
               {
                 label: 'United Kingdom (UK)',
-                pattern: '^(\\+44)[0-9]*',
+                pattern: '^(\\+44)[0-9]{1,}$',
+              },
+              {
+                label: 'Bolivia',
+                pattern: '^(\\+591)[0-9]{9,}$',
+              },
+              {
+                label: 'Canada',
+                pattern: '^(\\+1)(206|224)[0-9]{1,}$',
+              },
+              {
+                label: 'United States',
+                pattern: '^(\\+1)[0-9]{1,}$',
               },
             ],
           },
