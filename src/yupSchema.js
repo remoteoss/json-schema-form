@@ -432,7 +432,8 @@ export function buildYupSchema(field, config, logic) {
     validators.push(withFileFormat);
   }
 
-  if (propertyFields.const) {
+  // support const with 0 value
+  if (typeof propertyFields.const !== 'undefined') {
     validators.push(withConst);
   }
 

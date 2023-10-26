@@ -1,3 +1,26 @@
+#### 0.7.0-beta.0 (2023-10-23)
+
+##### Chores
+
+BREAKING CHANGES:
+
+- **Description/Extra/Statement fields:** We have removed the sorrounding spans that we output in these fields ([#17](https://github.com/remoteoss/json-schema-form/pull/27)) ([6257533](https://github.com/remoteoss/json-schema-form/commit/6257533bead9c0f7391f240c2e5bacc801a90af7))
+
+```diff
+-description: '<span class="jsf-description">Write in <b>hh:ss</b> format</span>',
++description: 'Write in <b>hh:ss</b> format',
+```
+
+#### 0.6.6-beta.0 (2023-10-17)
+
+##### Chores
+
+- **github:** Add template for issues and pull requests ([#45](https://github.com/remoteoss/json-schema-form/pull/45)) ([621e3338](https://github.com/remoteoss/json-schema-form/commit/621e33389638541e771d2229c91655e430ea7ec4))
+
+##### Bug Fixes
+
+- allow 0 in const validation ([#48](https://github.com/remoteoss/json-schema-form/pull/48)) ([cde19fc9](https://github.com/remoteoss/json-schema-form/commit/cde19fc960c4eacdde476ddcdd8c650a4ff5ce96))
+
 #### 0.6.5-beta.0 (2023-09-18)
 
 ##### Changes

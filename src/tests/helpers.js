@@ -503,6 +503,12 @@ export const mockTelWithPattern = {
     })
     .build();
  */
+
+/**
+ * @deprecated in favor of normal JSON schema.
+ * Why? This adds extra complexity to read and to
+ * copy-paste into the Playground, validators, etc
+ * */
 export function JSONSchemaBuilder() {
   return {
     addInput: function addInput(input) {
@@ -698,15 +704,15 @@ export const schemaWithoutTypes = {
   },
 };
 
-export const schemaInputTypeText = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputTypeText = {
+  properties: {
     id_number: mockTextInput,
-  })
-  .setRequiredFields(['id_number'])
-  .build();
+  },
+  required: ['id_number'],
+};
 
-export const schemaInputWithStatement = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputWithStatement = {
+  properties: {
     bonus: {
       title: 'Bonus',
       'x-jsf-presentation': {
@@ -718,83 +724,22 @@ export const schemaInputWithStatement = JSONSchemaBuilder()
         },
       },
     },
-  })
-  .addInput({
-    a_or_b: {
-      title: 'A dropdown',
-      description: 'Some options to chose from',
-      items: {
-        enum: ['A', 'B'],
-      },
+    role: {
+      title: 'Role',
       'x-jsf-presentation': {
-        inputType: 'select',
-        options: [
-          {
-            label: 'A',
-            value: 'A',
-          },
-          {
-            label: 'B',
-            value: 'B',
-          },
-        ],
-        placeholder: 'Select...',
-        statement: {
-          description: 'This is another statement message, but more severe.',
-          inputType: 'statement',
-          severity: 'warning',
-        },
-      },
-    },
-  })
-  .build();
-
-export const schemaInputWithStatementDeprecated = JSONSchemaBuilder()
-  .addInput({
-    bonus: {
-      title: 'Bonus',
-      presentation: {
         inputType: 'text',
         statement: {
-          description: 'This is a custom statement message.',
-          inputType: 'statement',
-          severity: 'info',
-        },
-      },
-    },
-  })
-  .addInput({
-    a_or_b: {
-      title: 'A dropdown',
-      description: 'Some options to chose from',
-      items: {
-        enum: ['A', 'B'],
-      },
-      presentation: {
-        inputType: 'select',
-        options: [
-          {
-            label: 'A',
-            value: 'A',
-          },
-          {
-            label: 'B',
-            value: 'B',
-          },
-        ],
-        placeholder: 'Select...',
-        statement: {
           description: 'This is another statement message, but more severe.',
           inputType: 'statement',
           severity: 'warning',
         },
       },
     },
-  })
-  .build();
+  },
+};
 
-export const schemaInputWithExtra = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputWithExtra = {
+  properties: {
     bonus: {
       title: 'Bonus',
       'x-jsf-presentation': {
@@ -812,11 +757,11 @@ export const schemaInputWithExtra = JSONSchemaBuilder()
         `,
       },
     },
-  })
-  .build();
+  },
+};
 
-export const schemaInputWithCustomDescription = JSONSchemaBuilder()
-  .addInput({
+export const schemaInputWithCustomDescription = {
+  properties: {
     other: {
       title: 'Other',
       'x-jsf-presentation': {
@@ -825,8 +770,8 @@ export const schemaInputWithCustomDescription = JSONSchemaBuilder()
       },
       type: 'string',
     },
-  })
-  .build();
+  },
+};
 
 export const schemaInputDeprecated = JSONSchemaBuilder()
   .addInput({

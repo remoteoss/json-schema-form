@@ -23,28 +23,6 @@ export function convertDiskSizeFromTo(from, to) {
 }
 
 /**
- * Check if a string contains HTML tags
- * @param {string} str
- * @returns {boolean}
- */
-export function containsHTML(str = '') {
-  return /<[a-z][\s\S]*>/i.test(str);
-}
-
-/**
- * Wraps a string with a span with attributes, if any.
- * @param {string} html Content to be wrapped
- * @param {Object.<string, string>} properties Object to be converted to HTML attributes
- * @returns {string}
- */
-export function wrapWithSpan(html, properties = {}) {
-  const attributes = Object.entries(properties)
-    .reduce((acc, [key, value]) => `${acc}${key}="${value}" `, '')
-    .trim();
-  return `<span ${attributes}>${html}</span>`;
-}
-
-/**
  * Checks if an object contains a property with a given name.
  * This util is needed because sometimes a condition coming from the schema could be something like
  * if { const: null;
