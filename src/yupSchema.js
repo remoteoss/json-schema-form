@@ -60,8 +60,11 @@ const validateMaxDate = (value, minDate) => {
 
 const yupSchemas = {
   text: validateOnlyStrings,
-  radioOrSelect: (options) =>
-    string()
+  radioOrSelect: (options, isCreatable) => {
+    if (isCreatable) {
+      return string().nullable();
+    }
+    return string()
       .nullable()
       .transform((value) => {
         if (value === '') {
@@ -98,7 +101,8 @@ const yupSchemas = {
       })
       .oneOf(options, ({ value }) => {
         return `The option ${JSON.stringify(value)} is not valid.`;
-      }),
+      });
+  },
   date: ({ minDate, maxDate }) => {
     let dateString = string()
       .nullable()
@@ -182,8 +186,9 @@ const getYupSchema = ({ inputType, ...field }) => {
   const jsonType = getJsonTypeInArray(field.jsonType);
 
   if (field.options?.length > 0) {
+    const isCreatable = field.options?.findIndex((option) => option.type === 'string') > -1;
     const optionValues = getOptions(field);
-    return yupSchemas.radioOrSelect(optionValues);
+    return yupSchemas.radioOrSelect(optionValues, isCreatable);
   }
 
   if (field.format === 'date') {
