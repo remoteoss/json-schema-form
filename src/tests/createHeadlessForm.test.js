@@ -431,12 +431,7 @@ describe('createHeadlessForm', () => {
   });
 
   describe('field support', () => {
-    function assertOptionsAllowed({
-      handleValidation,
-      fieldName,
-      validOptions,
-      isCreatable = false,
-    }) {
+    function assertOptionsAllowed({ handleValidation, fieldName, validOptions, isString = false }) {
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       // All allowed options are valid
@@ -444,7 +439,7 @@ describe('createHeadlessForm', () => {
         expect(validateForm({ [fieldName]: value })).toBeUndefined();
       });
 
-      if (!isCreatable) {
+      if (!isString) {
         // Any other arbitrary value is not valid.
         expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
           [fieldName]: 'The option "blah-blah" is not valid.',
@@ -468,7 +463,7 @@ describe('createHeadlessForm', () => {
         });
       }
 
-      if (isCreatable) {
+      if (isString) {
         // Any other arbitrary value is valid.
         expect(validateForm({ [fieldName]: 'blah-blah' })).toBeUndefined();
       }
@@ -646,7 +641,6 @@ describe('createHeadlessForm', () => {
     it('supports "select" field type with string option', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectString);
       const fieldSelect = fields[0];
-      console.log({ fieldSelect });
       expect(fieldSelect).toMatchObject({
         name: 'browsers',
         label: 'Browsers (solo)',
@@ -665,7 +659,7 @@ describe('createHeadlessForm', () => {
             label: 'Internet Explorer',
             disabled: true,
           },
-          { value: undefined, label: '{Create another}' },
+          { value: undefined, type: 'string', label: '{Create another}' },
         ],
       });
 
@@ -675,7 +669,7 @@ describe('createHeadlessForm', () => {
         handleValidation,
         fieldName: 'browsers',
         validOptions: ['chr', 'ff', 'ie'],
-        isCreatable: true,
+        isString: true,
       });
     });
 
