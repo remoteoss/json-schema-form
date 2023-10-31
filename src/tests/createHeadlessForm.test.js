@@ -15,6 +15,7 @@ import {
   schemaInputTypeRadioOptionsWithDetails,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
+  schemaInputTypeSelectString,
   schemaInputTypeSelectMultipleDeprecated,
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
@@ -430,7 +431,7 @@ describe('createHeadlessForm', () => {
   });
 
   describe('field support', () => {
-    function assertOptionsAllowed({ handleValidation, fieldName, validOptions }) {
+    function assertOptionsAllowed({ handleValidation, fieldName, validOptions, isString = false }) {
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       // All allowed options are valid
@@ -438,27 +439,34 @@ describe('createHeadlessForm', () => {
         expect(validateForm({ [fieldName]: value })).toBeUndefined();
       });
 
-      // Any other arbitrary value is not valid.
-      expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
-        [fieldName]: 'The option "blah-blah" is not valid.',
-      });
+      if (!isString) {
+        // Any other arbitrary value is not valid.
+        expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
+          [fieldName]: 'The option "blah-blah" is not valid.',
+        });
 
-      // Given undefined, it says it's a  required field.
-      expect(validateForm({})).toEqual({
-        [fieldName]: 'Required field',
-      });
+        // Given undefined, it says it's a  required field.
+        expect(validateForm({})).toEqual({
+          [fieldName]: 'Required field',
+        });
 
-      // As required field, empty string ("") is also considered empty. @BUG RMT-518
-      // Expectation: The error to be "The option '' is not valid."
-      expect(validateForm({ [fieldName]: '' })).toEqual({
-        [fieldName]: 'Required field',
-      });
+        // As required field, empty string ("") is also considered empty. @BUG RMT-518
+        // Expectation: The error to be "The option '' is not valid."
+        expect(validateForm({ [fieldName]: '' })).toEqual({
+          [fieldName]: 'Required field',
+        });
 
-      // As required field, null is also considered empty @BUG RMT-518
-      // Expectation: The error to be "The option null is not valid."
-      expect(validateForm({ [fieldName]: null })).toEqual({
-        [fieldName]: 'Required field',
-      });
+        // As required field, null is also considered empty @BUG RMT-518
+        // Expectation: The error to be "The option null is not valid."
+        expect(validateForm({ [fieldName]: null })).toEqual({
+          [fieldName]: 'Required field',
+        });
+      }
+
+      if (isString) {
+        // Any other arbitrary value is valid.
+        expect(validateForm({ [fieldName]: 'blah-blah' })).toBeUndefined();
+      }
     }
 
     it('support "text" field type', () => {
@@ -627,6 +635,41 @@ describe('createHeadlessForm', () => {
         handleValidation,
         fieldName: 'browsers',
         validOptions: ['chr', 'ff', 'ie'],
+      });
+    });
+
+    it('supports "select" field type with string option', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectString);
+      const fieldSelect = fields[0];
+      expect(fieldSelect).toMatchObject({
+        name: 'browsers',
+        label: 'Browsers (solo)',
+        description: 'This solo select also includes a disabled option.',
+        options: [
+          {
+            value: 'chr',
+            label: 'Chrome',
+          },
+          {
+            value: 'ff',
+            label: 'Firefox',
+          },
+          {
+            value: 'ie',
+            label: 'Internet Explorer',
+            disabled: true,
+          },
+          { value: undefined, type: 'string', label: '{Create another}' },
+        ],
+      });
+
+      expect(fieldSelect).not.toHaveProperty('multiple');
+
+      assertOptionsAllowed({
+        handleValidation,
+        fieldName: 'browsers',
+        validOptions: ['chr', 'ff', 'ie'],
+        isString: true,
       });
     });
 
