@@ -1,3 +1,9 @@
+#### 0.7.1-beta.0 (2023-10-31)
+
+##### Bug Fixes
+
+- **select:** support string type ([#54](https://github.com/remoteoss/json-schema-form/pull/54)) ([b00f8776](https://github.com/remoteoss/json-schema-form/commit/b00f8776aa244803375ba64fbdd52c8fff9b9bd8))
+
 #### 0.7.0-beta.0 (2023-10-23)
 
 ##### Chores
@@ -27,9 +33,7 @@ BREAKING CHANGES:
 
 - json-logic: Add conditional logic checking. ([#41](https://github.com/remoteoss/json-schema-form/pull/41)) ([6292b01e](https://github.com/remoteoss/json-schema-form/commit/6292b01e3f77a9038328d7375080ffc4cb30dbc8))
 
-
 ###### Full API additions now supported from 0.6.5 onwards.
-
 
 - New custom JSON Schema keyword `x-jsf-logic` added to support cross-field validations. Built on top of [JsonLogic](https://jsonlogic.com/).
 
@@ -49,16 +53,11 @@ While docs are underway, you can read examples from all the [tests](https://gith
 
 In short: `x-jsf-logic` is added to support complex conditional cross-field validations. Properties like `x-jsf-logic-validations` allow hooking those up to individual fields.
 
-
 #### 0.6.4-beta.0 (2023-09-15)
 
-
-
 ##### Changes
+
 - json-logic: computedAttrs - handle inline rules ([#40](https://github.com/remoteoss/json-schema-form/pull/40)) ([860ad91b](https://github.com/remoteoss/json-schema-form/commit/860ad91b034ab35d4d4bc51c0c04675f102bf278))
-
-
-
 
 #### 0.6.1-beta.0 (2023-09-13)
 
@@ -66,50 +65,43 @@ In short: `x-jsf-logic` is added to support complex conditional cross-field vali
 
 - json-logic: Computed string based values ([#37](https://github.com/remoteoss/json-schema-form/pull/37)) ([6e042ea5](https://github.com/remoteoss/json-schema-form/commit/6e042ea579497ea573710c307a6ff7ee2f19b931))
 
-
-
-
 #### 0.5.0-beta.0 (2023-09-12)
 
 ##### Changes
+
 - json-logic: Computed Attributes ([#36](https://github.com/remoteoss/json-schema-form/pull/36)) ([80c29589](https://github.com/remoteoss/json-schema-form/commit/80c29589ac0972e0f33add70a59df15a46db1b43))
 - json-logic: Initial skeleton implementation ([#35](https://github.com/remoteoss/json-schema-form/pull/35)) ([63149ae8](https://github.com/remoteoss/json-schema-form/commit/63149ae863cf1b5ad76a3b2a49c7f343e55ce07b))
 
-
-
-
 #### 0.4.5-beta.0 (2023-08-31)
+
 ##### Bug fixes
 
 - Validate values based on `const` key ([#34](https://github.com/remoteoss/json-schema-form/pull/34)) ([bf07870d](https://github.com/remoteoss/json-schema-form/commit/bf07870d407d9b9b078882a078b9e4c7928df868))
-
-
-
 
 #### 0.4.4-beta.0 (2023-08-30)
 
 ##### Chores
 
-* **fieldset:**  ignore values not matching the field type ([#44](https://github.com/remoteoss/json-schema-form/pull/44)) ([f0af54e5](https://github.com/remoteoss/json-schema-form/commit/f0af54e5d425fb78524ab150bb31629d00369a61))
+- **fieldset:** ignore values not matching the field type ([#44](https://github.com/remoteoss/json-schema-form/pull/44)) ([f0af54e5](https://github.com/remoteoss/json-schema-form/commit/f0af54e5d425fb78524ab150bb31629d00369a61))
 
 #### 0.4.3-beta.0 (2023-08-09)
 
 ##### Bug fixes
 
-* **conditions:** Validate a deeply nested if (e.g. checking an object with a number property) in an if property now doesn't break the form. ([#33](https://github.com/remoteoss/json-schema-form/pull/33)) ([e34cfcc](https://github.com/remoteoss/json-schema-form/commit/e34cfccaf45f1460b346f3cff0c797b3d11259e3))
+- **conditions:** Validate a deeply nested if (e.g. checking an object with a number property) in an if property now doesn't break the form. ([#33](https://github.com/remoteoss/json-schema-form/pull/33)) ([e34cfcc](https://github.com/remoteoss/json-schema-form/commit/e34cfccaf45f1460b346f3cff0c797b3d11259e3))
 
 #### 0.4.2-beta.0 (2023-07-20)
 
 ##### Bug Fixes
 
-* **date:**  Validate based on minDate and maxDate ([#30](https://github.com/remoteoss/json-schema-form/pull/30)) ([01c0143e](https://github.com/remoteoss/json-schema-form/commit/01c0143ea4a3775f9489ae6cb8fd99a90b3f1394))
+- **date:** Validate based on minDate and maxDate ([#30](https://github.com/remoteoss/json-schema-form/pull/30)) ([01c0143e](https://github.com/remoteoss/json-schema-form/commit/01c0143ea4a3775f9489ae6cb8fd99a90b3f1394))
 
 #### 0.4.1-beta.0 (2023-07-03)
 
 ##### Bug Fixes
 
-* **fieldset:**  support root conditionals for fieldsets ([#23](https://github.com/remoteoss/json-schema-form/pull/23)) ([65d87b3a](https://github.com/remoteoss/json-schema-form/commit/65d87b3a93018f0729aed565000eb2a2ce1f2ce7))
-* **select/radio:**  Accept just the values in options (plus `''` and `null` for backward-compatibility) ([#18](https://github.com/remoteoss/json-schema-form/pull/18)) ([37501d2d](https://github.com/remoteoss/json-schema-form/commit/37501d2ddafdd5e207b34d2ca3f6b7b7a1006e9d))
+- **fieldset:** support root conditionals for fieldsets ([#23](https://github.com/remoteoss/json-schema-form/pull/23)) ([65d87b3a](https://github.com/remoteoss/json-schema-form/commit/65d87b3a93018f0729aed565000eb2a2ce1f2ce7))
+- **select/radio:** Accept just the values in options (plus `''` and `null` for backward-compatibility) ([#18](https://github.com/remoteoss/json-schema-form/pull/18)) ([37501d2d](https://github.com/remoteoss/json-schema-form/commit/37501d2ddafdd5e207b34d2ca3f6b7b7a1006e9d))
 
 #### 0.4.0-beta.0 (2023-06-22)
 
