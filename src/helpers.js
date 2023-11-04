@@ -44,7 +44,6 @@ function removeStaleAttrsFromField(field, latestAttrs) {
       latestAttrs[key] === undefined &&
       fieldJsfAttrsObj[key] === undefined // ignore these because they are internal
     ) {
-      console.log(`${key} does not exist!`, field[key]);
       field[key] = undefined;
     }
   });
