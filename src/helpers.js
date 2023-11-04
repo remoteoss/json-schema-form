@@ -13,6 +13,43 @@ import { hasProperty } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
 /**
+ * List of attributes for each JSF' field
+ * that do not exist in JSON Schema directly
+ * */
+const fieldAttrsFromJsf = [
+  'name', // driven from json schema properties' name
+  'label', // driven from schema field title
+  'required', // driven from schema conditionals
+  'inputType', // driven from json type + presentation
+  'jsonType', // driven from json type
+  'getComputedAttributes', // for json-logic
+  'computedAttributes', // From json-logic
+  'calculateConditionalProperties', // driven from conditionals
+  'calculateCustomValidationProperties', // To be deprecated in favor of json-logic
+  'schema', // Yup schema validator based on json validations
+  'scopedJsonSchema', // The respective JSON Schema,
+  'isVisible', // Driven from conditionals state
+];
+const fieldJsfAttrsObj = Object.fromEntries(fieldAttrsFromJsf.map((k) => [k, true]));
+
+/**
+ *
+ * @param {*} finalField
+ * @param {*} branchAttrs
+ */
+function removeStaleAttrsFromField(field, latestAttrs) {
+  Object.keys(field).forEach((key) => {
+    if (
+      latestAttrs[key] === undefined &&
+      fieldJsfAttrsObj[key] === undefined // ignore these because they are internal
+    ) {
+      console.log(`${key} does not exist!`, field[key]);
+      field[key] = undefined;
+    }
+  });
+}
+
+/**
  * @typedef {import('./createHeadlessForm').FieldParameters} FieldParameters
  * @typedef {import('./createHeadlessForm').FieldValues} FieldValues
  * @typedef {import('./createHeadlessForm').YupErrors} YupErrors
@@ -202,7 +239,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     field.isVisible = true;
   }
 
-  const updateValues = (fieldValues) =>
+  const updateValues = (fieldValues) => {
+    removeStaleAttrsFromField(field, fieldValues);
+
     Object.entries(fieldValues).forEach(([key, value]) => {
       // some values (eg "schema") are a function, so we need to call it here
       field[key] = typeof value === 'function' ? value() : value;
@@ -226,6 +265,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
         }
       }
     });
+  };
 
   if (field.getComputedAttributes) {
     const computedFieldValues = field.getComputedAttributes({

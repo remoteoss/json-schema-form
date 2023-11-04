@@ -1762,11 +1762,8 @@ describe('createHeadlessForm', () => {
           expect(foodField.options).toHaveLength(4);
           // ...Food description was back to the original
           expect(foodField.description).toBeUndefined();
-
-          // @BUG RMT-58 PTO description should disappear, but it didn't.
-          expect(getField(fields, 'pto').description).toBe(
-            'Above 30 hours, the PTO needs to be at least 20 days.'
-          );
+          // ...PTO Description is removed too.
+          expect(getField(fields, 'pto').description).toBeUndefined();
 
           // Given again "low perks", the form valid.
           expect(
