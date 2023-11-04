@@ -53,31 +53,31 @@ it('Should allow check of a nested property in a conditional', () => {
 });
 
 describe('Conditional attributes - remove stale', () => {
-  it('Remove stale attributes: common case with const, default, minimum', () => {
+  it('Remove stale attributes: common case with const, default, maximum', () => {
     const { fields, handleValidation } = createHeadlessForm(
       {
         properties: {
-          apply_condition: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
-          tabs: { type: 'number' },
+          is_full_time: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          hours: { type: 'number' },
         },
         allOf: [
           {
             if: {
-              properties: { apply_condition: { const: 'yes' } },
-              required: ['apply_condition'],
+              properties: { is_full_time: { const: 'yes' } },
+              required: ['is_full_time'],
             },
             then: {
               properties: {
-                tabs: {
-                  const: 10,
-                  default: 10,
+                hours: {
+                  const: 8,
+                  default: 8,
                 },
               },
             },
             else: {
               properties: {
-                tabs: {
-                  minimum: 5,
+                hours: {
+                  maximum: 4,
                 },
               },
             },
@@ -88,44 +88,44 @@ describe('Conditional attributes - remove stale', () => {
     );
 
     // Given "Yes" it applies "const" and "default"
-    expect(handleValidation({ apply_condition: 'yes', tabs: 5 }).formErrors).toEqual({
-      tabs: 'The only accepted value is 10.',
+    expect(handleValidation({ is_full_time: 'yes', hours: 4 }).formErrors).toEqual({
+      hours: 'The only accepted value is 8.',
     });
-    expect(fields[1]).toMatchObject({ const: 10, default: 10 });
-    expect(fields[1].minimum).toBeUndefined();
+    expect(fields[1]).toMatchObject({ const: 8, default: 8 });
+    expect(fields[1].maximum).toBeUndefined();
 
-    // Changing to "No", applies the "minimum" and cleans "const" and "default"
-    expect(handleValidation({ apply_condition: 'no', tabs: 5 }).formErrors).toBeUndefined();
-    expect(fields[1]).toMatchObject({ minimum: 5 });
+    // Changing to "No", applies the "maximum" and cleans "const" and "default"
+    expect(handleValidation({ is_full_time: 'no', hours: 4 }).formErrors).toBeUndefined();
+    expect(fields[1]).toMatchObject({ maximum: 4 });
     expect(fields[1].const).toBeUndefined();
     expect(fields[1].default).toBeUndefined();
 
-    // Changing back to "Yes", it removes "minimum", and applies "const" and "default"
+    // Changing back to "Yes", it removes "maximum", and applies "const" and "default"
     expect(handleValidation({}).formErrors).toBeUndefined();
-    expect(handleValidation({ apply_condition: 'yes', tabs: 10 }).formErrors).toBeUndefined();
-    expect(fields[1].minimum).toBeUndefined();
-    expect(fields[1]).toMatchObject({ const: 10, default: 10 });
+    expect(handleValidation({ is_full_time: 'yes', hours: 8 }).formErrors).toBeUndefined();
+    expect(fields[1].maximum).toBeUndefined();
+    expect(fields[1]).toMatchObject({ const: 8, default: 8 });
   });
 
   it('Remove attributes: a new attribute (eg description)', () => {
     const { fields, handleValidation } = createHeadlessForm(
       {
         properties: {
-          apply_condition: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
-          tabs: {
+          is_full_time: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          hours: {
             type: 'number',
           },
         },
         allOf: [
           {
             if: {
-              properties: { apply_condition: { const: 'yes' } },
-              required: ['apply_condition'],
+              properties: { is_full_time: { const: 'yes' } },
+              required: ['is_full_time'],
             },
             then: {
               properties: {
-                tabs: {
-                  description: 'We recommend 10 tabs.',
+                hours: {
+                  description: 'We recommend 8 hours.',
                 },
               },
             },
@@ -139,24 +139,24 @@ describe('Conditional attributes - remove stale', () => {
     expect(fields[1].description).toBeUndefined();
 
     // Given "Yes" it applies the conditional attribute
-    expect(handleValidation({ apply_condition: 'yes' }).formErrors).toBeUndefined();
-    expect(fields[1].description).toBe('We recommend 10 tabs.');
+    expect(handleValidation({ is_full_time: 'yes' }).formErrors).toBeUndefined();
+    expect(fields[1].description).toBe('We recommend 8 hours.');
 
     // Changing to "No", removes the description
-    expect(handleValidation({ apply_condition: 'no' }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'no' }).formErrors).toBeUndefined();
     expect(fields[1].description).toBeUndefined();
 
     // Changing back to "Yes", it sets the attribute again
-    expect(handleValidation({ apply_condition: 'yes' }).formErrors).toBeUndefined();
-    expect(fields[1].description).toBe('We recommend 10 tabs.');
+    expect(handleValidation({ is_full_time: 'yes' }).formErrors).toBeUndefined();
+    expect(fields[1].description).toBe('We recommend 8 hours.');
   });
 
   it('Remove attributes: an existing attribute (eg description)', () => {
     const { fields, handleValidation } = createHeadlessForm(
       {
         properties: {
-          apply_condition: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
-          tabs: {
+          is_full_time: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          hours: {
             type: 'number',
             description: 'Any value works.',
           },
@@ -164,13 +164,13 @@ describe('Conditional attributes - remove stale', () => {
         allOf: [
           {
             if: {
-              properties: { apply_condition: { const: 'yes' } },
-              required: ['apply_condition'],
+              properties: { is_full_time: { const: 'yes' } },
+              required: ['is_full_time'],
             },
             then: {
               properties: {
-                tabs: {
-                  description: 'We recommend 10 tabs.',
+                hours: {
+                  description: 'We recommend 8 hours.',
                 },
               },
             },
@@ -184,24 +184,24 @@ describe('Conditional attributes - remove stale', () => {
     expect(fields[1].description).toBe('Any value works.');
 
     // Given "Yes" it applies the conditional attribute
-    expect(handleValidation({ apply_condition: 'yes', tabs: 5 }).formErrors).toBeUndefined();
-    expect(fields[1].description).toBe('We recommend 10 tabs.');
+    expect(handleValidation({ is_full_time: 'yes', hours: 4 }).formErrors).toBeUndefined();
+    expect(fields[1].description).toBe('We recommend 8 hours.');
 
     // Changing to "No", it applies the base value again.
-    expect(handleValidation({ apply_condition: 'no', tabs: 5 }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'no', hours: 4 }).formErrors).toBeUndefined();
     expect(fields[1].description).toBe('Any value works.');
 
     // Changing back to "Yes", it sets the attribute again
-    expect(handleValidation({ apply_condition: 'yes', tabs: 10 }).formErrors).toBeUndefined();
-    expect(fields[1].description).toBe('We recommend 10 tabs.');
+    expect(handleValidation({ is_full_time: 'yes', hours: 8 }).formErrors).toBeUndefined();
+    expect(fields[1].description).toBe('We recommend 8 hours.');
   });
 
   it('Remove attributes: a nested attribute', () => {
     const { fields, handleValidation } = createHeadlessForm(
       {
         properties: {
-          apply_condition: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
-          tabs: {
+          is_full_time: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          hours: {
             type: 'number',
             presentation: {
               inputType: 'number',
@@ -212,12 +212,12 @@ describe('Conditional attributes - remove stale', () => {
         allOf: [
           {
             if: {
-              properties: { apply_condition: { const: 'yes' } },
-              required: ['apply_condition'],
+              properties: { is_full_time: { const: 'yes' } },
+              required: ['is_full_time'],
             },
             then: {
               properties: {
-                tabs: {
+                hours: {
                   presentation: {
                     anything: 'danger',
                   },
@@ -234,15 +234,15 @@ describe('Conditional attributes - remove stale', () => {
     expect(fields[1].anything).toBe('info');
 
     // Given "Yes" it applies the conditional attribute
-    expect(handleValidation({ apply_condition: 'yes' }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'yes' }).formErrors).toBeUndefined();
     expect(fields[1].anything).toBe('danger');
 
     // Changing to "No", it applies the base value again.
-    expect(handleValidation({ apply_condition: 'no' }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'no' }).formErrors).toBeUndefined();
     expect(fields[1].anything).toBe('info');
 
     // Changing back to "Yes", it sets the attribute again
-    expect(handleValidation({ apply_condition: 'yes' }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'yes' }).formErrors).toBeUndefined();
     expect(fields[1].anything).toBe('danger');
   });
 
@@ -253,20 +253,20 @@ describe('Conditional attributes - remove stale', () => {
     const { fields, handleValidation } = createHeadlessForm(
       {
         properties: {
-          apply_condition: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
-          tabs: {
+          is_full_time: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          hours: {
             type: 'number',
           },
         },
         allOf: [
           {
             if: {
-              properties: { apply_condition: { const: 'yes' } },
-              required: ['apply_condition'],
+              properties: { is_full_time: { const: 'yes' } },
+              required: ['is_full_time'],
             },
             then: {
               properties: {
-                tabs: {
+                hours: {
                   maximum: 5,
                 },
               },
@@ -281,11 +281,11 @@ describe('Conditional attributes - remove stale', () => {
     expect(fields[1].type).toBe('number');
 
     // Given "Yes" it keeps the "type"
-    expect(handleValidation({ apply_condition: 'yes' }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'yes' }).formErrors).toBeUndefined();
     expect(fields[1].type).toBe('number');
 
     // Given "No" it also keeps the "type"
-    expect(handleValidation({ apply_condition: 'no' }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'no' }).formErrors).toBeUndefined();
     expect(fields[1].type).toBe('number');
   });
 });
