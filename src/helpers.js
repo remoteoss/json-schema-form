@@ -20,6 +20,7 @@ const fieldAttrsFromJsf = [
   'name', // driven from json schema properties' name
   'label', // driven from schema field title
   'required', // driven from schema conditionals
+  'type', // Type is @deprecated, but keep it until fully removed. Otherwise E2E tests (private) fail.
   'inputType', // driven from json type + presentation
   'jsonType', // driven from json type
   'getComputedAttributes', // for json-logic

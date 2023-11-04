@@ -245,4 +245,47 @@ describe('Conditional attributes - remove stale', () => {
     expect(handleValidation({ apply_condition: 'yes' }).formErrors).toBeUndefined();
     expect(fields[1].anything).toBe('danger');
   });
+
+  it('Keep "type" while it is in deprecated stage', () => {
+    // This is necessary while we keep supporting "type", even if deprecated
+    // otherwise our Remote app will break because it didn't migrate
+    // from "type" to "inputType" yet.
+    const { fields, handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          apply_condition: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          tabs: {
+            type: 'number',
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { apply_condition: { const: 'yes' } },
+              required: ['apply_condition'],
+            },
+            then: {
+              properties: {
+                tabs: {
+                  maximum: 5,
+                },
+              },
+            },
+          },
+        ],
+      },
+      { strictInputType: false }
+    );
+
+    // By default the type is present.
+    expect(fields[1].type).toBe('number');
+
+    // Given "Yes" it keeps the "type"
+    expect(handleValidation({ apply_condition: 'yes' }).formErrors).toBeUndefined();
+    expect(fields[1].type).toBe('number');
+
+    // Given "No" it also keeps the "type"
+    expect(handleValidation({ apply_condition: 'no' }).formErrors).toBeUndefined();
+    expect(fields[1].type).toBe('number');
+  });
 });
