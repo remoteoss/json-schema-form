@@ -250,7 +250,7 @@ export const schemaWithComputedAttributeThatDoesntExist = {
     field_a: {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
-        default: 'iDontExist',
+        minimum: 'iDontExist',
       },
     },
   },
