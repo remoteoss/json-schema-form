@@ -14,20 +14,24 @@ import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
 /**
  * List of attributes for each JSF' field
- * that do not exist in JSON Schema directly
- * */
+ * that do not exist in JSON Schema directly.
+ * [*1] These are not covered by any unit-test yet
+ */
 const fieldAttrsFromJsf = [
   'name', // driven from json schema properties' name
   'label', // driven from schema field title
-  'required', // driven from schema conditionals
+  'required', // [*1] driven from schema conditionals
   'type', // Type is @deprecated, but keep it until fully removed. Otherwise E2E tests (private) fail.
   'inputType', // driven from json type + presentation
   'jsonType', // driven from json type
-  'getComputedAttributes', // for json-logic
-  'computedAttributes', // From json-logic
+  'options', // driven from schema field oneOf/anyOf
+  'checkboxValue', // driven from const+inputType=checkbox
+  'fields', // driven from group-array
+  'getComputedAttributes', // 🐛 for json-logic
+  'computedAttributes', // [*1] From json-logic
   'calculateConditionalProperties', // driven from conditionals
   'calculateCustomValidationProperties', // To be deprecated in favor of json-logic
-  'schema', // Yup schema validator based on json validations
+  'schema', // [*1] Yup schema validator based on json validations
   'scopedJsonSchema', // The respective JSON Schema,
   'isVisible', // Driven from conditionals state
 ];
@@ -38,12 +42,15 @@ const fieldJsfAttrsObj = Object.fromEntries(fieldAttrsFromJsf.map((k) => [k, tru
  * @param {*} finalField
  * @param {*} branchAttrs
  */
-function removeStaleAttrsFromField(field, latestAttrs) {
+function removeStaleAttrsFromField(field, latestAttrs, node) {
   Object.keys(field).forEach((key) => {
     if (
       latestAttrs[key] === undefined &&
       fieldJsfAttrsObj[key] === undefined // ignore these because they are internal
     ) {
+      if (key === 'description') {
+        console.log(`Removing ${key} value:`, field[key], { field, latestAttrs, node });
+      }
       field[key] = undefined;
     }
   });
