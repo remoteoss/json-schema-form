@@ -13,8 +13,8 @@ import { hasProperty } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
 /**
- * List of attributes for each JSF' field
- * that are added dynamically and not exist in JSON Schema directly.
+ * List of custom JSF's attributes for field
+ * that are added dynamically after the first parsing.
  */
 const dynamicInternalJsfAttrs = [
   'isVisible', // Driven from conditionals state
@@ -39,7 +39,7 @@ function removeConditionalStaleAttributes(field, conditionalAttrs, rootAttrs) {
   Object.keys(field).forEach((key) => {
     if (
       conditionalAttrs[key] === undefined &&
-      rootAttrs[key] === undefined && // Don't remove fields that were declared in the root field.
+      rootAttrs[key] === undefined && // Don't remove attrs that were declared in the root field.
       dynamicInternalJsfAttrsObj[key] === undefined // ignore these because they are internal
     ) {
       field[key] = undefined;
