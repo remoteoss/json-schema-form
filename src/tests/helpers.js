@@ -458,6 +458,46 @@ export const mockCheckboxInput = {
   type: 'string',
 };
 
+export const mockTelWithPattern = {
+  properties: {
+    phone_number: {
+      title: 'Phone number',
+      description: 'Enter your telephone number',
+      type: 'string',
+      'x-jsf-presentation': {
+        inputType: 'tel',
+      },
+      oneOf: [
+        {
+          title: 'Portugal',
+          pattern: '^(\\+351)[0-9]{9,}$',
+          'x-jsf-presentation': { meta: { countryCode: '351' } },
+        },
+        {
+          title: 'United Kingdom (UK)',
+          pattern: '^(\\+44)[0-9]{1,}$',
+          'x-jsf-presentation': { meta: { countryCode: '44' } },
+        },
+        {
+          title: 'Bolivia',
+          pattern: '^(\\+591)[0-9]{9,}$',
+          'x-jsf-presentation': { meta: { countryCode: '591' } },
+        },
+        {
+          title: 'Canada',
+          pattern: '^(\\+1)(206|224)[0-9]{1,}$',
+          'x-jsf-presentation': { meta: { countryCode: '1' } },
+        },
+        {
+          title: 'United States',
+          pattern: '^(\\+1)[0-9]{1,}$',
+          'x-jsf-presentation': { meta: { countryCode: '1' } },
+        },
+      ],
+    },
+  },
+};
+
 /**
  * Compose a schema with lower chance of human error
  * @param {Object} schema version

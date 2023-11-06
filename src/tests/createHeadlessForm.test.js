@@ -39,6 +39,7 @@ import {
   mockFileInput,
   mockRadioCardInput,
   mockRadioCardExpandableInput,
+  mockTelWithPattern,
   mockTextInput,
   mockTextInputDeprecated,
   mockNumberInput,
@@ -1483,6 +1484,51 @@ describe('createHeadlessForm', () => {
           },
         ],
       });
+    });
+
+    it('supports oneOf pattern validation', () => {
+      const result = createHeadlessForm(mockTelWithPattern);
+
+      expect(result).toMatchObject({
+        fields: [
+          {
+            label: 'Phone number',
+            name: 'phone_number',
+            type: 'tel',
+            required: false,
+            options: [
+              {
+                label: 'Portugal',
+                pattern: '^(\\+351)[0-9]{9,}$',
+              },
+              {
+                label: 'United Kingdom (UK)',
+                pattern: '^(\\+44)[0-9]{1,}$',
+              },
+              {
+                label: 'Bolivia',
+                pattern: '^(\\+591)[0-9]{9,}$',
+              },
+              {
+                label: 'Canada',
+                pattern: '^(\\+1)(206|224)[0-9]{1,}$',
+              },
+              {
+                label: 'United States',
+                pattern: '^(\\+1)[0-9]{1,}$',
+              },
+            ],
+          },
+        ],
+      });
+
+      const fieldValidator = result.fields[0].schema;
+
+      expect(fieldValidator.isValidSync('+351123123123')).toBe(true);
+      expect(() => fieldValidator.validateSync('+35100')).toThrowError(
+        'The option "+35100" is not valid.'
+      );
+      expect(fieldValidator.isValidSync(undefined)).toBe(true);
     });
 
     describe('supports "fieldset" field type', () => {
