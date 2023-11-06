@@ -14,43 +14,34 @@ import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
 /**
  * List of attributes for each JSF' field
- * that do not exist in JSON Schema directly.
- * [*1] These are not covered by any unit-test yet
+ * that are added dynamically and not exist in JSON Schema directly.
  */
-const fieldAttrsFromJsf = [
-  'name', // driven from json schema properties' name
-  'label', // driven from schema field title
-  'required', // [*1] driven from schema conditionals
-  'type', // Type is @deprecated, but keep it until fully removed. Otherwise E2E tests (private) fail.
-  'inputType', // driven from json type + presentation
-  'jsonType', // driven from json type
-  'options', // driven from schema field oneOf/anyOf
-  'checkboxValue', // driven from const+inputType=checkbox
+const dynamicInternalJsfAttrs = [
+  'isVisible', // Driven from conditionals state
   'fields', // driven from group-array
-  'getComputedAttributes', // 🐛 for json-logic
-  'computedAttributes', // [*1] From json-logic
+  'getComputedAttributes', // From json-logic
+  'computedAttributes', // From json-logic
   'calculateConditionalProperties', // driven from conditionals
   'calculateCustomValidationProperties', // To be deprecated in favor of json-logic
-  'schema', // [*1] Yup schema validator based on json validations
-  'scopedJsonSchema', // The respective JSON Schema,
-  'isVisible', // Driven from conditionals state
+  'scopedJsonSchema', // The respective JSON Schema
 ];
-const fieldJsfAttrsObj = Object.fromEntries(fieldAttrsFromJsf.map((k) => [k, true]));
+const dynamicInternalJsfAttrsObj = Object.fromEntries(
+  dynamicInternalJsfAttrs.map((k) => [k, true])
+);
 
 /**
  *
- * @param {*} finalField
- * @param {*} branchAttrs
+ * @param {Object} field - Current field attributes
+ * @param {Object} conditionalAttrs - Attributes from the matched conditional
+ * @param {Object} rootAttrs - Original field attributes from the root.
  */
-function removeStaleAttrsFromField(field, latestAttrs, node) {
+function removeConditionalStaleAttributes(field, conditionalAttrs, rootAttrs) {
   Object.keys(field).forEach((key) => {
     if (
-      latestAttrs[key] === undefined &&
-      fieldJsfAttrsObj[key] === undefined // ignore these because they are internal
+      conditionalAttrs[key] === undefined &&
+      rootAttrs[key] === undefined && // Don't remove fields that were declared in the root field.
+      dynamicInternalJsfAttrsObj[key] === undefined // ignore these because they are internal
     ) {
-      if (key === 'description') {
-        console.log(`Removing ${key} value:`, field[key], { field, latestAttrs, node });
-      }
       field[key] = undefined;
     }
   });
@@ -246,11 +237,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     field.isVisible = true;
   }
 
-  const updateValues = (fieldValues) => {
-    removeStaleAttrsFromField(field, fieldValues);
-
-    Object.entries(fieldValues).forEach(([key, value]) => {
-      // some values (eg "schema") are a function, so we need to call it here
+  const updateAttributes = (fieldAttrs) => {
+    Object.entries(fieldAttrs).forEach(([key, value]) => {
+      // some attributes' value (eg "schema") are a function, so we need to call it here
       field[key] = typeof value === 'function' ? value() : value;
 
       if (key === 'value') {
@@ -258,9 +247,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
         // unless it's a read-only field
         // If the readOnly property has changed, use that updated value,
         // otherwise use the start value of the property
-        const readOnlyPropertyWasUpdated = typeof fieldValues.readOnly !== 'undefined';
+        const readOnlyPropertyWasUpdated = typeof fieldAttrs.readOnly !== 'undefined';
         const isReadonlyByDefault = field.readOnly;
-        const isReadonly = readOnlyPropertyWasUpdated ? fieldValues.readOnly : isReadonlyByDefault;
+        const isReadonly = readOnlyPropertyWasUpdated ? fieldAttrs.readOnly : isReadonlyByDefault;
 
         // Needs field.type check because otherwise checkboxes will have an initial
         // value of "true" when they should be not checked. !8755 for full context
@@ -275,7 +264,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
   };
 
   if (field.getComputedAttributes) {
-    const computedFieldValues = field.getComputedAttributes({
+    const newAttributes = field.getComputedAttributes({
       field,
       isRequired: fieldIsRequired,
       node,
@@ -283,26 +272,27 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       config,
       logic,
     });
-    updateValues(computedFieldValues);
+    updateAttributes(newAttributes);
   }
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties({
+    const { rootFieldAttrs, newAttributes } = field.calculateConditionalProperties({
       isRequired: fieldIsRequired,
       conditionBranch: node,
       formValues,
     });
-    updateValues(newFieldValues);
+    updateAttributes(newAttributes, rootFieldAttrs);
+    removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
   }
 
   if (field.calculateCustomValidationProperties) {
-    const newFieldValues = field.calculateCustomValidationProperties(
+    const newAttributes = field.calculateCustomValidationProperties(
       fieldIsRequired,
       node,
       formValues
     );
-    updateValues(newFieldValues);
+    updateAttributes(newAttributes);
   }
 }
 

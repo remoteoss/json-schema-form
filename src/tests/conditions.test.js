@@ -281,11 +281,14 @@ describe('Conditional attributes updated', () => {
     expect(fields[1].isVisible).toBe(false);
 
     // Given "Yes" it keeps the base value 🐛🐛 FAILING BUG
-    expect(handleValidation({ is_full_time: 'yes' }).formErrors).toBeUndefined();
+    expect(handleValidation({ is_full_time: 'yes' }).formErrors).toEqual({
+      hours: 'Required field',
+    });
     expect(fields[1].description).toBe('Any value works.');
     expect(fields[1].isVisible).toBe(true);
 
     // Changing to "No" it keeps the base value
+    expect(handleValidation({ is_full_time: 'no' }).formErrors).toBeUndefined();
     expect(fields[1].description).toBe('Any value works.');
     expect(fields[1].isVisible).toBe(false);
   });
