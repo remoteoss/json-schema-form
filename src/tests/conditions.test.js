@@ -280,7 +280,7 @@ describe('Conditional attributes updated', () => {
     expect(fields[1].description).toBe('Any value works.');
     expect(fields[1].isVisible).toBe(false);
 
-    // Given "Yes" it keeps the base value 🐛🐛 FAILING BUG
+    // Given "Yes" it keeps the base value
     expect(handleValidation({ is_full_time: 'yes' }).formErrors).toEqual({
       hours: 'Required field',
     });
