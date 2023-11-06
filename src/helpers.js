@@ -282,7 +282,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       conditionBranch: node,
       formValues,
     });
-    updateAttributes(newAttributes, rootFieldAttrs);
+    updateAttributes(newAttributes);
     removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
   }
 
