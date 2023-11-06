@@ -1,3 +1,9 @@
+#### 0.7.2-beta.0 (2023-11-06)
+
+##### Bug Fixes
+
+* **select/radio:**  Support oneOf[].pattern validation ([#47](https://github.com/remoteoss/json-schema-form/pull/47)) ([5a4bb592](https://github.com/remoteoss/json-schema-form/commit/5a4bb59266ff595a9cb65f5b261a4ae2f3ad279f))
+
 #### 0.7.1-beta.0 (2023-10-31)
 
 ##### Bug Fixes
