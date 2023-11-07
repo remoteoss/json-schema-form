@@ -1,3 +1,9 @@
+#### 0.7.3-beta.0 (2023-11-07)
+
+##### Bug Fixes
+
+*  Remove conditional attributes after the condition is unmatched ([#57](https://github.com/remoteoss/json-schema-form/pull/57)) ([8bac7145](https://github.com/remoteoss/json-schema-form/commit/8bac7145dfdd4136c0613044389666a614eb12f7))
+
 #### 0.7.2-beta.0 (2023-11-06)
 
 ##### Bug Fixes
