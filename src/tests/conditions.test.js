@@ -396,6 +396,7 @@ describe('Conditional attributes updated', () => {
         customProperties: {
           salary_period: {
             Component: '<A React Component>',
+            calculateDynamicProperties: () => true,
           },
         },
       }
@@ -403,13 +404,16 @@ describe('Conditional attributes updated', () => {
 
     // It's there by default
     expect(fields[1].Component).toBe('<A React Component>');
+    expect(fields[1].calculateDynamicProperties).toEqual(expect.any(Function));
 
     // Given "Yes", it stays there too.
     handleValidation({ is_full_time: 'yes' });
     expect(fields[1].Component).toBe('<A React Component>');
+    expect(fields[1].calculateDynamicProperties).toEqual(expect.any(Function));
 
     // Given "No", it stays there too.
     handleValidation({ is_full_time: 'no' });
     expect(fields[1].Component).toBe('<A React Component>');
+    expect(fields[1].calculateDynamicProperties).toEqual(expect.any(Function));
   });
 });

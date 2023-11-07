@@ -24,7 +24,10 @@ const dynamicInternalJsfAttrs = [
   'calculateConditionalProperties', // driven from conditionals
   'calculateCustomValidationProperties', // To be deprecated in favor of json-logic
   'scopedJsonSchema', // The respective JSON Schema
-  'Component', // HOTFIX/TODO Internal customizations, check test conditions.test.js for more info.
+
+  // HOTFIX/TODO Internal customizations, check test conditions.test.js for more info.
+  'Component',
+  'calculateDynamicProperties',
 ];
 const dynamicInternalJsfAttrsObj = Object.fromEntries(
   dynamicInternalJsfAttrs.map((k) => [k, true])
