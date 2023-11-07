@@ -446,7 +446,7 @@ describe('createHeadlessForm', () => {
           [fieldName]: 'The option "blah-blah" is not valid.',
         });
 
-        // Given undefined, it says it's a  required field.
+        // Given undefined, it says it's a required field.
         expect(validateForm({})).toEqual({
           [fieldName]: 'Required field',
         });
@@ -856,6 +856,7 @@ describe('createHeadlessForm', () => {
           has_car: 'yes',
         })
       ).toBeUndefined();
+
       expect(validateForm({})).toEqual({
         has_siblings: 'Required field',
       });
@@ -1419,6 +1420,50 @@ describe('createHeadlessForm', () => {
           ],
         });
       });
+
+      it('can be a conditional field', () => {
+        const { fields, handleValidation } = createHeadlessForm({
+          properties: {
+            yes_or_no: {
+              title: 'Show the dependents or not?',
+              oneOf: [{ const: 'yes' }, { const: 'no' }],
+              'x-jsf-presentation': { inputType: 'radio' },
+            },
+            dependent_details: mockGroupArrayInput,
+          },
+          allOf: [
+            {
+              if: {
+                properties: {
+                  yes_or_no: { const: 'yes' },
+                },
+                required: ['yes_or_no'],
+              },
+              then: {
+                required: ['dependent_details'],
+              },
+              else: {
+                properties: {
+                  dependent_details: false,
+                },
+              },
+            },
+          ],
+        });
+
+        // By default is hidden but the fields are accessible
+        expect(getField(fields, 'dependent_details').isVisible).toBe(false);
+        expect(getField(fields, 'dependent_details').fields).toEqual(expect.any(Function));
+
+        // When the condition matches...
+        const { formErrors } = handleValidation({ yes_or_no: 'yes' });
+        expect(formErrors).toEqual({
+          dependent_details: 'Required field',
+        });
+        // it gets visible with its inner fields.
+        expect(getField(fields, 'dependent_details').isVisible).toBe(true);
+        expect(getField(fields, 'dependent_details').fields).toEqual(expect.any(Function));
+      });
     });
 
     it('supports "radio" field type with its "card" and "card-expandable" variants', () => {
@@ -1808,11 +1853,8 @@ describe('createHeadlessForm', () => {
           expect(foodField.options).toHaveLength(4);
           // ...Food description was back to the original
           expect(foodField.description).toBeUndefined();
-
-          // @BUG RMT-58 PTO description should disappear, but it didn't.
-          expect(getField(fields, 'pto').description).toBe(
-            'Above 30 hours, the PTO needs to be at least 20 days.'
-          );
+          // ...PTO Description is removed too.
+          expect(getField(fields, 'pto').description).toBeUndefined();
 
           // Given again "low perks", the form valid.
           expect(
