@@ -358,4 +358,62 @@ describe('Conditional attributes updated', () => {
       ],
     });
   });
+
+  it('Keeps custom attribute Component (fieldAttrsFromJsf) (hotfix temporary)', () => {
+    // This is necessary as hotfix because we (Remote) use it internally.
+    // Not cool, we'll need a better solution asap.
+    const { fields, handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          is_full_time: { type: 'string', oneOf: [{ const: 'yes' }, { const: 'no' }] },
+          salary_period: {
+            type: 'string',
+            title: 'Salary period',
+            oneOf: [
+              { title: 'Weekly', const: 'weekly' },
+              { title: 'Monthly', const: 'monthly' },
+            ],
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { is_full_time: { const: 'yes' } },
+              required: ['is_full_time'],
+            },
+            then: {
+              properties: {
+                salary_period: {
+                  description: 'We recommend montlhy.',
+                },
+              },
+            },
+          },
+        ],
+      },
+      {
+        strictInputType: false,
+        customProperties: {
+          salary_period: {
+            Component: '<A React Component>',
+            calculateDynamicProperties: () => true,
+          },
+        },
+      }
+    );
+
+    // It's there by default
+    expect(fields[1].Component).toBe('<A React Component>');
+    expect(fields[1].calculateDynamicProperties).toEqual(expect.any(Function));
+
+    // Given "Yes", it stays there too.
+    handleValidation({ is_full_time: 'yes' });
+    expect(fields[1].Component).toBe('<A React Component>');
+    expect(fields[1].calculateDynamicProperties).toEqual(expect.any(Function));
+
+    // Given "No", it stays there too.
+    handleValidation({ is_full_time: 'no' });
+    expect(fields[1].Component).toBe('<A React Component>');
+    expect(fields[1].calculateDynamicProperties).toEqual(expect.any(Function));
+  });
 });
