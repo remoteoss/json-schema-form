@@ -1,14 +1,20 @@
+#### 0.7.4-beta.0 (2023-11-07)
+
+##### Chores
+
+- Follow-up of #57. Ignore internal attributes from conditional attributes removal ([#58](https://github.com/remoteoss/json-schema-form/pull/58)) ([ee762c2e](https://github.com/remoteoss/json-schema-form/commit/ee762c2e90834a9ec0d7b88af47cefe1e3a03dd1))
+
 #### 0.7.3-beta.0 (2023-11-07)
 
 ##### Bug Fixes
 
-*  Remove conditional attributes after the condition is unmatched ([#57](https://github.com/remoteoss/json-schema-form/pull/57)) ([8bac7145](https://github.com/remoteoss/json-schema-form/commit/8bac7145dfdd4136c0613044389666a614eb12f7))
+- Remove conditional attributes after the condition is unmatched ([#57](https://github.com/remoteoss/json-schema-form/pull/57)) ([8bac7145](https://github.com/remoteoss/json-schema-form/commit/8bac7145dfdd4136c0613044389666a614eb12f7))
 
 #### 0.7.2-beta.0 (2023-11-06)
 
 ##### Bug Fixes
 
-* **select/radio:**  Support oneOf[].pattern validation ([#47](https://github.com/remoteoss/json-schema-form/pull/47)) ([5a4bb592](https://github.com/remoteoss/json-schema-form/commit/5a4bb59266ff595a9cb65f5b261a4ae2f3ad279f))
+- **select/radio:** Support oneOf[].pattern validation ([#47](https://github.com/remoteoss/json-schema-form/pull/47)) ([5a4bb592](https://github.com/remoteoss/json-schema-form/commit/5a4bb59266ff595a9cb65f5b261a4ae2f3ad279f))
 
 #### 0.7.1-beta.0 (2023-10-31)
 
