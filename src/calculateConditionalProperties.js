@@ -79,8 +79,8 @@ function rebuildFieldset(fields, property) {
 export function calculateConditionalProperties({ fieldParams, customProperties, logic, config }) {
   /**
    * @typedef {calculateConditionalPropertiesReturn}
-   * @property {rootFieldAttrs} x - The field attributes from the first render (root)
-   * @property {newAttributes} y - Attributes from the matched conditional
+   * @property {rootFieldAttrs} - The field attributes from the first render (root)
+   * @property {newAttributes} - Attributes from the matched conditional
    */
   /**
    * Runs dynamic property calculation on a field based on a conditional that has been calculated
