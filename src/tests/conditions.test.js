@@ -293,7 +293,7 @@ describe('Conditional attributes updated', () => {
     expect(fields[1].isVisible).toBe(false);
   });
 
-  it('Keeps internal attributes (fieldAttrsFromJsf)', () => {
+  it('Keeps internal attributes (dynamicInternalJsfAttrs)', () => {
     // This is necessary while we keep supporting "type", even if deprecated
     // otherwise our Remote app will break because it didn't migrate
     // from "type" to "inputType" yet.
@@ -359,7 +359,7 @@ describe('Conditional attributes updated', () => {
     });
   });
 
-  it('Keeps custom attribute Component (fieldAttrsFromJsf) (hotfix temporary)', () => {
+  it('Keeps custom attributes (dynamicInternalJsfAttrs) (hotfix temporary)', () => {
     // This is necessary as hotfix because we (Remote) use it internally.
     // Not cool, we'll need a better solution asap.
     const { fields, handleValidation } = createHeadlessForm(
@@ -415,5 +415,11 @@ describe('Conditional attributes updated', () => {
     handleValidation({ is_full_time: 'no' });
     expect(fields[1].Component).toBe('<A React Component>');
     expect(fields[1].calculateDynamicProperties).toEqual(expect.any(Function));
+
+    expect(fields[1].visibilityCondition).toEqual(undefined);
+    // visibilityCondition can be externally changed/updated/added, it stays there too;
+    fields[1].visibilityCondition = () => false;
+    handleValidation({ is_full_time: 'no' });
+    expect(fields[1].visibilityCondition).toEqual(expect.any(Function));
   });
 });
