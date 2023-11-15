@@ -28,6 +28,7 @@ const dynamicInternalJsfAttrs = [
   // HOTFIX/TODO Internal customizations, check test conditions.test.js for more info.
   'Component',
   'calculateDynamicProperties',
+  'visibilityCondition',
 ];
 const dynamicInternalJsfAttrsObj = Object.fromEntries(
   dynamicInternalJsfAttrs.map((k) => [k, true])
