@@ -46,6 +46,20 @@ The simplest way to test your PR in your project is by installing it locally as 
 
 You can re-run this `release:local` as many times as you need. Remember to re-install the package each time a new tarball is created.
 
+3. In alternative you can use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/);
+
+- `cd json-schema-form`
+- Run `npm link`
+- Run `npm build`
+- `cd you-project`
+- Run `npm link @remoteoss/json-schema-form`
+
+You need to run `npm build` in the `json-schema-form` directory to ensure the latest changes are in your project.
+
+Run `npm unlink --no-save @remoteoss/json-schema-form` to remove the local symlink;
+
+With `yarn unlink @remoteoss/json-schema-form` you will need to run `yarn install` to re-install the package that was unlinked;
+
 #### Public release
 
 If you need a public release (for example, to run it on your project CI), you can publish a `dev` release.
@@ -76,7 +90,7 @@ You can create as many dev releases as you need during the PRs, by running the s
 
 A PR needs all CI checks to pass.
 
-By default, prefer to "Squash and Merge" giving it a message that follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).  
+By default, prefer to "Squash and Merge" giving it a message that follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
 
 ```bash
 - <type>[optional scope]: <description>
