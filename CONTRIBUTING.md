@@ -58,7 +58,7 @@ You need to run `npm build` in the `json-schema-form` directory to ensure the la
 
 Run `npm unlink --no-save @remoteoss/json-schema-form` to remove the local symlink;
 
-With `yarn unlink @remoteoss/json-schema-form` you will need to run `yarn install` to re-install the package that was unlinked;
+With `yarn unlink @remoteoss/json-schema-form` you will need to run `yarn install --force` to re-install the package that was unlinked;
 
 #### Public release
 
