@@ -1,8 +1,14 @@
+#### 0.7.5-beta.0 (2023-11-15)
+
+##### Chores
+
+- Follow-up of #57. Ignore internal attributes from conditional attributes removal (`visibilityCondition`) ([#59](https://github.com/remoteoss/json-schema-form/pull/59)) ([57fe4468](https://github.com/remoteoss/json-schema-form/commit/57fe446834636d727a5da5a91f7e5f3cc4eab8f8))
+
 #### 0.7.4-beta.0 (2023-11-07)
 
 ##### Chores
 
-- Follow-up of #57. Ignore internal attributes from conditional attributes removal ([#58](https://github.com/remoteoss/json-schema-form/pull/58)) ([ee762c2e](https://github.com/remoteoss/json-schema-form/commit/ee762c2e90834a9ec0d7b88af47cefe1e3a03dd1))
+- Follow-up of #57. Ignore internal attributes from conditional attributes removal (`Component`, `calculateDynamicProperties`) ([#58](https://github.com/remoteoss/json-schema-form/pull/58)) ([ee762c2e](https://github.com/remoteoss/json-schema-form/commit/ee762c2e90834a9ec0d7b88af47cefe1e3a03dd1))
 
 #### 0.7.3-beta.0 (2023-11-07)
 
