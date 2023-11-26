@@ -187,15 +187,22 @@ const getOptions = (field) => {
 
 const getYupSchema = ({ inputType, ...field }) => {
   const jsonType = getJsonTypeInArray(field.jsonType);
+  const hasOptions = field.options?.length > 0;
 
-  if (field.options?.length > 0 && field.jsonType !== 'number') {
+  const generateOptionSchema = (type) => {
     const optionValues = getOptions(field);
-    return yupSchemas.radioOrSelectString(optionValues);
-  }
+    return type === 'number'
+      ? yupSchemas.radioOrSelectNumber(optionValues)
+      : yupSchemas.radioOrSelectString(optionValues);
+  };
 
-  if (field.options?.length > 0 && field.jsonType === 'number') {
-    const optionValues = getOptions(field);
-    return yupSchemas.radioOrSelectNumber(optionValues);
+  if (hasOptions) {
+    if (Array.isArray(field.jsonType)) {
+      return field.jsonType.includes('number')
+        ? generateOptionSchema('number')
+        : generateOptionSchema('string');
+    }
+    return generateOptionSchema(field.jsonType);
   }
 
   if (field.format === 'date') {
