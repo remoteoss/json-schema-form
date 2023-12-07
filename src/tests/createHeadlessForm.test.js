@@ -1576,6 +1576,57 @@ describe('createHeadlessForm', () => {
       expect(fieldValidator.isValidSync(undefined)).toBe(true);
     });
 
+    it('supports validation of only one field', () => {
+      const { handleValidation } = createHeadlessForm({
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+            'x-jsf-presentation': { inputType: 'text' },
+          },
+          department_slug: {
+            type: 'string',
+            'x-jsf-presentation': { inputType: 'text' },
+          },
+          department_name: {
+            type: 'string',
+            'x-jsf-presentation': { inputType: 'text' },
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                department_slug: true,
+              },
+              required: ['department_slug'],
+            },
+            then: {
+              properties: {
+                department_name: {
+                  not: true,
+                  'x-jsf-presentation': {
+                    not: 'Only name or slug are allowed, not both at the same time.',
+                  },
+                },
+              },
+            },
+          },
+        ],
+        required: ['name'],
+      });
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(
+        validateForm({
+          department_name: 'department name',
+          department_slug: 'department-slug',
+        })
+      ).toEqual({
+        department_name: 'only name or slug are allowed, not both at the same time.',
+      });
+    });
+
     describe('supports "fieldset" field type', () => {
       it('supports basic case', () => {
         const result = createHeadlessForm({
