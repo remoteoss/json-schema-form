@@ -240,7 +240,11 @@ export const mockSelectInputSolo = {
 
 export const mockSelectInputSoloCreatable = {
   ...mockSelectInputSolo,
-  oneOf: [...mockSelectInputSolo.oneOf, { type: 'string', title: '{Create another}' }],
+  creatable_on: 'browser_name',
+  'x-jsf-presentation': {
+    inputType: 'select',
+  },
+  oneOf: [...mockSelectInputSolo.oneOf],
 };
 
 export const mockSelectInputMultiple = {
@@ -944,6 +948,11 @@ export const schemaInputTypeSelectSolo = JSONSchemaBuilder()
 
 export const schemaInputTypeSelectString = JSONSchemaBuilder().addInput({
   browsers: mockSelectInputSoloCreatable,
+  browser_name: {
+    ...mockTextInput,
+    title: 'Browser name',
+    description: 'Have another favorite browser? Enter it here',
+  },
 });
 
 /** @deprecated */
