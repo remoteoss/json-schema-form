@@ -632,8 +632,8 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('supports "select" field type with string option', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectString);
+    it('supports "select" field type with creatable option', () => {
+      const { fields } = createHeadlessForm(schemaInputTypeSelectString);
       const fieldSelect = fields[0];
       expect(fieldSelect).toMatchObject({
         name: 'browsers',
@@ -657,12 +657,6 @@ describe('createHeadlessForm', () => {
       });
 
       expect(fieldSelect).not.toHaveProperty('multiple');
-
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'browsers',
-        validOptions: ['chr', 'ff', 'ie'],
-      });
     });
 
     it('supports "select" field type with multiple options @deprecated', () => {
