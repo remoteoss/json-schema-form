@@ -60,10 +60,7 @@ const validateMaxDate = (value, minDate) => {
 
 const yupSchemas = {
   text: validateOnlyStrings,
-  radioOrSelect: (options, isString) => {
-    if (isString) {
-      return string().nullable();
-    }
+  radioOrSelect: (options) => {
     return string()
       .nullable()
       .transform((value) => {
@@ -215,9 +212,8 @@ const getYupSchema = ({ inputType, ...field }) => {
   const jsonType = getJsonTypeInArray(field.jsonType);
 
   if (field.options?.length > 0) {
-    const isString = field.options?.findIndex((option) => option.type === 'string') > -1;
     const optionValues = getOptions(field);
-    return yupSchemas.radioOrSelect(optionValues, isString);
+    return yupSchemas.radioOrSelect(optionValues);
   }
 
   if (field.format === 'date') {

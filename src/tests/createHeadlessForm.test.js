@@ -432,7 +432,7 @@ describe('createHeadlessForm', () => {
   });
 
   describe('field support', () => {
-    function assertOptionsAllowed({ handleValidation, fieldName, validOptions, isString = false }) {
+    function assertOptionsAllowed({ handleValidation, fieldName, validOptions }) {
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       // All allowed options are valid
@@ -440,34 +440,27 @@ describe('createHeadlessForm', () => {
         expect(validateForm({ [fieldName]: value })).toBeUndefined();
       });
 
-      if (!isString) {
-        // Any other arbitrary value is not valid.
-        expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
-          [fieldName]: 'The option "blah-blah" is not valid.',
-        });
+      // Any other arbitrary value is not valid.
+      expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
+        [fieldName]: 'The option "blah-blah" is not valid.',
+      });
 
-        // Given undefined, it says it's a required field.
-        expect(validateForm({})).toEqual({
-          [fieldName]: 'Required field',
-        });
+      // Given undefined, it says it's a required field.
+      expect(validateForm({})).toEqual({
+        [fieldName]: 'Required field',
+      });
 
-        // As required field, empty string ("") is also considered empty. @BUG RMT-518
-        // Expectation: The error to be "The option '' is not valid."
-        expect(validateForm({ [fieldName]: '' })).toEqual({
-          [fieldName]: 'Required field',
-        });
+      // As required field, empty string ("") is also considered empty. @BUG RMT-518
+      // Expectation: The error to be "The option '' is not valid."
+      expect(validateForm({ [fieldName]: '' })).toEqual({
+        [fieldName]: 'Required field',
+      });
 
-        // As required field, null is also considered empty @BUG RMT-518
-        // Expectation: The error to be "The option null is not valid."
-        expect(validateForm({ [fieldName]: null })).toEqual({
-          [fieldName]: 'Required field',
-        });
-      }
-
-      if (isString) {
-        // Any other arbitrary value is valid.
-        expect(validateForm({ [fieldName]: 'blah-blah' })).toBeUndefined();
-      }
+      // As required field, null is also considered empty @BUG RMT-518
+      // Expectation: The error to be "The option null is not valid."
+      expect(validateForm({ [fieldName]: null })).toEqual({
+        [fieldName]: 'Required field',
+      });
     }
 
     it('support "text" field type', () => {
@@ -660,7 +653,6 @@ describe('createHeadlessForm', () => {
             label: 'Internet Explorer',
             disabled: true,
           },
-          { value: undefined, type: 'string', label: '{Create another}' },
         ],
       });
 
@@ -670,7 +662,6 @@ describe('createHeadlessForm', () => {
         handleValidation,
         fieldName: 'browsers',
         validOptions: ['chr', 'ff', 'ie'],
-        isString: true,
       });
     });
 
