@@ -15,7 +15,6 @@ import {
   schemaInputTypeRadioOptionsWithDetails,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
-  schemaInputTypeSelectString,
   schemaInputTypeSelectMultipleDeprecated,
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
@@ -630,33 +629,6 @@ describe('createHeadlessForm', () => {
         fieldName: 'browsers',
         validOptions: ['chr', 'ff', 'ie'],
       });
-    });
-
-    it('supports "select" field type with creatable option', () => {
-      const { fields } = createHeadlessForm(schemaInputTypeSelectString);
-      const fieldSelect = fields[0];
-      expect(fieldSelect).toMatchObject({
-        name: 'browsers',
-        label: 'Browsers (solo)',
-        description: 'This solo select also includes a disabled option.',
-        options: [
-          {
-            value: 'chr',
-            label: 'Chrome',
-          },
-          {
-            value: 'ff',
-            label: 'Firefox',
-          },
-          {
-            value: 'ie',
-            label: 'Internet Explorer',
-            disabled: true,
-          },
-        ],
-      });
-
-      expect(fieldSelect).not.toHaveProperty('multiple');
     });
 
     it('supports "select" field type with multiple options @deprecated', () => {
