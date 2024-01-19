@@ -238,11 +238,6 @@ export const mockSelectInputSolo = {
   },
 };
 
-export const mockSelectInputSoloCreatable = {
-  ...mockSelectInputSolo,
-  oneOf: [...mockSelectInputSolo.oneOf, { type: 'string', title: '{Create another}' }],
-};
-
 export const mockSelectInputMultiple = {
   title: 'Browsers (multiple)',
   description: 'This multi-select also includes a disabled option.',
@@ -941,10 +936,6 @@ export const schemaInputTypeSelectSolo = JSONSchemaBuilder()
   })
   .setRequiredFields(['browsers'])
   .build();
-
-export const schemaInputTypeSelectString = JSONSchemaBuilder().addInput({
-  browsers: mockSelectInputSoloCreatable,
-});
 
 /** @deprecated */
 export const schemaInputTypeSelectMultipleDeprecated = JSONSchemaBuilder()
