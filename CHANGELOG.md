@@ -1,3 +1,11 @@
+#### 0.7.6-beta.0 (2024-01-23)
+
+##### Chores
+
+BREAKING CHANGES:
+
+- **select:** Remove creatable logic ([#62](https://github.com/remoteoss/json-schema-form/pull/62)) ([0a6273c6](https://github.com/remoteoss/json-schema-form/commit/0a6273c63049a2f03bcf0b212dec6455ab48b5e5)) Added in 0.7.1
+
 #### 0.7.5-beta.0 (2023-11-15)
 
 ##### Chores
