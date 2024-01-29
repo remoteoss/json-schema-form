@@ -357,17 +357,23 @@ describe('createHeadlessForm() - custom validations', () => {
               minimum: 24,
               maximum: 28,
             },
-            second_gen: {
-              cub_age: {
+            second_gen: { // fieldset
+              customProperties: {
+                cub_age: {
                 minimum: 18,
-                maximum: 21,
+                maximum: 21
               },
-              third_gen: {
-                grandcub_age: {
-                  minimum: 10,
-                  maximum: 15,
-                },
+              third_gen: { 
+                customProperties: {
+                  grandcub_age: {
+                    minimum: 10,
+                    maximum: 15,
+                  },
+                }
+                
               },
+              },
+            
             },
           },
         },
