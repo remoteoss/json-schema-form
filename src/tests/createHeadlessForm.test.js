@@ -3677,11 +3677,17 @@ describe('createHeadlessForm', () => {
           customProperties: {
             id_number: { 'data-field': 'field' },
             fieldset: {
-              id_number: { 'data-fieldset': 'fieldset' },
+              customProperties: {
+                id_number: { 'data-fieldset': 'fieldset' },
+              },
             },
             nestedFieldset: {
-              innerFieldset: {
-                id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+              customProperties: {
+                innerFieldset: {
+                  customProperties: {
+                    id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+                  },
+                },
               },
             },
           },
