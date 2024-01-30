@@ -455,6 +455,58 @@ describe('createHeadlessForm() - custom validations', () => {
         },
       });
     });
+    it('renders subfields with reserved keywords and jsfOption customization', () => {
+        const {fields} = createScenario({
+          schema: {
+            "properties": {
+              "dog": {
+                "title": "Dog details",
+                "description": "Fieldset description",
+                "x-jsf-presentation": {
+                  "inputType": "fieldset"
+                },
+                "properties": {
+                  "name": {
+                    "title": "Dogs name",
+                    "x-jsf-presentation": {
+                      "inputType": "text"
+                    },
+                    "type": "string"
+                  },
+                  "type": {
+                    "title": "Breed type",
+                    "x-jsf-presentation": {
+                      "inputType": "number"
+                    },
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "name"
+                ],
+                "type": "object"
+              }
+            },
+            "required": [
+              "dog"
+            ]
+          },
+          config: {
+            customProperties: {
+              dog: {
+                customProperties:{
+                  name: {
+                    label: "What's your dogs name"
+                  }
+                }
+              }
+            }
+          }
+        })
+        expect(fields.length).toBe(1);
+        expect(fields[0].fields.length).toBe(2);
+        expect(fields[0].fields[0].label).toBe("What's your dogs name");
+    });
   });
 
   describe('in conditional fields', () => {
