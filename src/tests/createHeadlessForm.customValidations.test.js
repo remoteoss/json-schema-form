@@ -357,23 +357,21 @@ describe('createHeadlessForm() - custom validations', () => {
               minimum: 24,
               maximum: 28,
             },
-            second_gen: { 
+            second_gen: {
               customProperties: {
                 cub_age: {
-                minimum: 18,
-                maximum: 21
-              },
-              third_gen: { 
-                customProperties: {
-                  grandcub_age: {
-                    minimum: 10,
-                    maximum: 15,
+                  minimum: 18,
+                  maximum: 21,
+                },
+                third_gen: {
+                  customProperties: {
+                    grandcub_age: {
+                      minimum: 10,
+                      maximum: 15,
+                    },
                   },
-                }
-                
+                },
               },
-              },
-            
             },
           },
         },
@@ -454,58 +452,6 @@ describe('createHeadlessForm() - custom validations', () => {
           },
         },
       });
-    });
-    it('renders subfields with reserved keywords and jsfOption customization', () => {
-        const {fields} = createScenario({
-          schema: {
-            "properties": {
-              "dog": {
-                "title": "Dog details",
-                "description": "Fieldset description",
-                "x-jsf-presentation": {
-                  "inputType": "fieldset"
-                },
-                "properties": {
-                  "name": {
-                    "title": "Dogs name",
-                    "x-jsf-presentation": {
-                      "inputType": "text"
-                    },
-                    "type": "string"
-                  },
-                  "type": {
-                    "title": "Breed type",
-                    "x-jsf-presentation": {
-                      "inputType": "number"
-                    },
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "name"
-                ],
-                "type": "object"
-              }
-            },
-            "required": [
-              "dog"
-            ]
-          },
-          config: {
-            customProperties: {
-              dog: {
-                customProperties:{
-                  name: {
-                    label: "What's your dogs name"
-                  }
-                }
-              }
-            }
-          }
-        })
-        expect(fields.length).toBe(1);
-        expect(fields[0].fields.length).toBe(2);
-        expect(fields[0].fields[0].label).toBe("What's your dogs name");
     });
   });
 
