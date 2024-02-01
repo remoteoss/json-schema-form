@@ -1,3 +1,9 @@
+#### 0.8.0-beta.0 (2024-02-01)
+
+##### Bug Fixes
+
+* **fieldset:**  Support customProperties with sub-fields clashing with reserved words. ([#64](https://github.com/remoteoss/json-schema-form/pull/64)) ([8340cdea](https://github.com/remoteoss/json-schema-form/commit/8340cdea27b711064079055af939a595d1c38031))
+
 #### 0.7.6-beta.0 (2024-01-23)
 
 ##### Chores
