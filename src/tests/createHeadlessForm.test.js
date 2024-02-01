@@ -3677,11 +3677,17 @@ describe('createHeadlessForm', () => {
           customProperties: {
             id_number: { 'data-field': 'field' },
             fieldset: {
-              id_number: { 'data-fieldset': 'fieldset' },
+              customProperties: {
+                id_number: { 'data-fieldset': 'fieldset' },
+              },
             },
             nestedFieldset: {
-              innerFieldset: {
-                id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+              customProperties: {
+                innerFieldset: {
+                  customProperties: {
+                    id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+                  },
+                },
               },
             },
           },
@@ -3753,6 +3759,58 @@ describe('createHeadlessForm', () => {
       expect(nestedFieldsetResult.fields[0].fields[0]).not.toHaveProperty('data-fieldset');
       expect(nestedFieldsetResult.fields[0].fields[1]).not.toHaveProperty('data-field');
       expect(nestedFieldsetResult.fields[0].fields[1]).not.toHaveProperty('data-fieldset');
+    });
+    it('should handle custom properties when inside fieldsets for fields name clashing with reserved words', () => {
+      const { fields } = createHeadlessForm(
+        {
+          properties: {
+            dog: {
+              title: 'Dog details',
+              description: 'Fieldset description',
+              'x-jsf-presentation': {
+                inputType: 'fieldset',
+              },
+              properties: {
+                name: {
+                  // This fieldName (name) clashs with the field specs "name"
+                  title: 'Dogs name',
+                  'x-jsf-presentation': {
+                    inputType: 'text',
+                  },
+                  type: 'string',
+                },
+                type: {
+                  // This field name (type) clashs with the field specs "type"
+                  title: 'Breed type',
+                  'x-jsf-presentation': {
+                    inputType: 'number',
+                  },
+                  type: 'string',
+                },
+              },
+              required: ['name'],
+              type: 'object',
+            },
+          },
+          required: ['dog'],
+        },
+        {
+          customProperties: {
+            dog: {
+              customProperties: {
+                name: {
+                  description: "What's your dogs name",
+                },
+              },
+            },
+          },
+        }
+      );
+
+      expect(fields.length).toBe(1);
+      expect(fields[0].fields.length).toBe(2);
+      expect(fields[0].fields[0].name).toBe('name');
+      expect(fields[0].fields[0].description).toBe("What's your dogs name");
     });
   });
 
