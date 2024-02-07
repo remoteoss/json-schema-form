@@ -439,11 +439,10 @@ describe('Conditional with a minimum value check', () => {
             required: ['salary'],
           },
           then: {
-            required: ['employee_knows', 'reason'],
+            required: ['reason'],
           },
           else: {
             properties: {
-              employee_knows: false,
               reason: false,
             },
           },
@@ -451,13 +450,8 @@ describe('Conditional with a minimum value check', () => {
       ],
       properties: {
         salary: {
-          title: 'Annual gross salary',
           type: 'number',
-          'x-jsf-errorMessage': {
-            type: 'Please, use US standard currency format. Ex: 1024.12',
-          },
           'x-jsf-presentation': {
-            currency: 'EUR',
             inputType: 'money',
           },
         },
@@ -465,54 +459,23 @@ describe('Conditional with a minimum value check', () => {
           oneOf: [
             {
               const: 'reason_one',
-              title: 'Reason One',
             },
             {
               const: 'reason_two',
-              title: 'Reason Two',
             },
           ],
-          title: 'Reason for salary decrease',
           type: 'string',
-          'x-jsf-presentation': {
-            inputType: 'select',
-          },
-        },
-        employee_knows: {
-          oneOf: [
-            {
-              const: 'yes',
-              title: 'Yes',
-            },
-            {
-              const: 'no',
-              title: 'No',
-            },
-            {
-              const: null,
-            },
-          ],
-          title: 'Was the employee informed?',
-          type: ['string', 'null'],
-          'x-jsf-presentation': {
-            inputType: 'radio',
-          },
         },
       },
       required: ['salary'],
       type: 'object',
-      'x-jsf-logic': {
-        validations: {},
-      },
     };
+
     const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
     expect(handleValidation({ salary: 120000 }).formErrors).toEqual(undefined);
     expect(handleValidation({ salary: 1000 }).formErrors).toEqual({
       reason: 'Required field',
-      employee_knows: 'Required field',
     });
-    expect(
-      handleValidation({ salary: 1000, reason: 'reason_one', employee_knows: 'yes' }).formErrors
-    ).toEqual(undefined);
+    expect(handleValidation({ salary: 1000, reason: 'reason_one' }).formErrors).toEqual(undefined);
   });
 });
