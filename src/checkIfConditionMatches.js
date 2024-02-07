@@ -59,10 +59,8 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
 
     return validateFieldSchema(
       {
-        options: field.options,
-        // @TODO/CODE SMELL. We are passing the property (raw field), but buildYupSchema() expected the output field.
-        ...{ ...field, ...currentProperty },
-        inputType: field.inputType,
+        ...field,
+        ...currentProperty,
         required: true,
       },
       value
