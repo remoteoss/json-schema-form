@@ -423,3 +423,96 @@ describe('Conditional attributes updated', () => {
     expect(fields[1].visibilityCondition).toEqual(expect.any(Function));
   });
 });
+
+describe('Conditional with a minimum value check', () => {
+  it('Should handle a maximum as a property field check', () => {
+    const schema = {
+      additionalProperties: false,
+      allOf: [
+        {
+          if: {
+            properties: {
+              salary: {
+                maximum: 119999,
+              },
+            },
+            required: ['salary'],
+          },
+          then: {
+            required: ['employee_knows', 'reason'],
+          },
+          else: {
+            properties: {
+              employee_knows: false,
+              reason: false,
+            },
+          },
+        },
+      ],
+      properties: {
+        salary: {
+          title: 'Annual gross salary',
+          type: 'number',
+          'x-jsf-errorMessage': {
+            type: 'Please, use US standard currency format. Ex: 1024.12',
+          },
+          'x-jsf-presentation': {
+            currency: 'EUR',
+            inputType: 'money',
+          },
+        },
+        reason: {
+          oneOf: [
+            {
+              const: 'reason_one',
+              title: 'Reason One',
+            },
+            {
+              const: 'reason_two',
+              title: 'Reason Two',
+            },
+          ],
+          title: 'Reason for salary decrease',
+          type: 'string',
+          'x-jsf-presentation': {
+            inputType: 'select',
+          },
+        },
+        employee_knows: {
+          oneOf: [
+            {
+              const: 'yes',
+              title: 'Yes',
+            },
+            {
+              const: 'no',
+              title: 'No',
+            },
+            {
+              const: null,
+            },
+          ],
+          title: 'Was the employee informed?',
+          type: ['string', 'null'],
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+        },
+      },
+      required: ['salary'],
+      type: 'object',
+      'x-jsf-logic': {
+        validations: {},
+      },
+    };
+    const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+    expect(handleValidation({ salary: 120000 }).formErrors).toEqual(undefined);
+    expect(handleValidation({ salary: 1000 }).formErrors).toEqual({
+      reason: 'Required field',
+      employee_knows: 'Required field',
+    });
+    expect(
+      handleValidation({ salary: 1000, reason: 'reason_one', employee_knows: 'yes' }).formErrors
+    ).toEqual(undefined);
+  });
+});
