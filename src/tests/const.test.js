@@ -112,7 +112,7 @@ describe('validations: const', () => {
       },
       { strictInputType: false }
     );
-    expect(fields[0]).toMatchObject({ value: 10, const: 10, default: 10 });
+    expect(fields[0]).toMatchObject({ forcedValue: 10, const: 10, default: 10 });
   });
 });
 
@@ -130,7 +130,7 @@ describe('const/default with forced values', () => {
     expect(handleValidation({ zero_only: 1 }).formErrors).toEqual({
       zero_only: 'The only accepted value is 0.',
     });
-    expect(fields[0]).toMatchObject({ value: 0, const: 0, default: 0 });
+    expect(fields[0]).toMatchObject({ forcedValue: 0, const: 0, default: 0 });
     expect(handleValidation({ zero_only: 0 }).formErrors).toBeUndefined();
     // null is also considered valid until we fix @BUG RMT-518
     // Expectation: To fail with error "The only accepted value is 0."
@@ -151,9 +151,21 @@ describe('const/default with forced values', () => {
       ten_only: 'The only accepted value is 10.',
     });
     expect(handleValidation({ ten_only: 10 }).formErrors).toBeUndefined();
-    expect(fields[0]).toMatchObject({ value: 10, const: 10, default: 10 });
+    expect(fields[0]).toMatchObject({ forcedValue: 10, const: 10, default: 10 });
     // null is also considered valid until we fix @BUG RMT-518
     // Expectation: To fail with error "The only accepted value is 10."
     expect(handleValidation({ ten_only: null }).formErrors).toBeUndefined();
+  });
+
+  it('do not set a forced value if const and default do not equal', () => {
+    const { fields } = createHeadlessForm(
+      {
+        properties: {
+          bad_field_for_number: { type: 'number', const: 10, default: 20 },
+        },
+      },
+      { strictInputType: false }
+    );
+    expect(fields[0]).not.toMatchObject({ forcedValue: expect.any(Number) });
   });
 });

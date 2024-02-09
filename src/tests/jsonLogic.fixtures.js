@@ -227,6 +227,35 @@ export const schemaWithComputedAttributes = {
   },
 };
 
+export const badSchemaThatWillNotSetAForcedValue = {
+  properties: {
+    field_a: {
+      type: 'number',
+    },
+    field_b: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        const: 'a_times_three',
+        default: 'a_times_two',
+      },
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      a_times_two: {
+        rule: {
+          '*': [{ var: 'field_a' }, 2],
+        },
+      },
+      a_times_three: {
+        rule: {
+          '*': [{ var: 'field_a' }, 3],
+        },
+      },
+    },
+  },
+};
+
 export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
   properties: {
     field_a: {
