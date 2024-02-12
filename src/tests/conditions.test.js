@@ -423,3 +423,59 @@ describe('Conditional attributes updated', () => {
     expect(fields[1].visibilityCondition).toEqual(expect.any(Function));
   });
 });
+
+describe('Conditional with a minimum value check', () => {
+  it('Should handle a maximum as a property field check', () => {
+    const schema = {
+      additionalProperties: false,
+      allOf: [
+        {
+          if: {
+            properties: {
+              salary: {
+                maximum: 119999,
+              },
+            },
+            required: ['salary'],
+          },
+          then: {
+            required: ['reason'],
+          },
+          else: {
+            properties: {
+              reason: false,
+            },
+          },
+        },
+      ],
+      properties: {
+        salary: {
+          type: 'number',
+          'x-jsf-presentation': {
+            inputType: 'money',
+          },
+        },
+        reason: {
+          oneOf: [
+            {
+              const: 'reason_one',
+            },
+            {
+              const: 'reason_two',
+            },
+          ],
+          type: 'string',
+        },
+      },
+      required: ['salary'],
+      type: 'object',
+    };
+
+    const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+    expect(handleValidation({ salary: 120000 }).formErrors).toEqual(undefined);
+    expect(handleValidation({ salary: 1000 }).formErrors).toEqual({
+      reason: 'Required field',
+    });
+    expect(handleValidation({ salary: 1000, reason: 'reason_one' }).formErrors).toEqual(undefined);
+  });
+});
