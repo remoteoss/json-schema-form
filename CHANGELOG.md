@@ -1,3 +1,9 @@
+#### 0.8.1-beta.0 (2024-02-12)
+
+##### Bug Fixes
+
+* **conditionals:**  Certain conditions in a JSON schema were failing. This bugfix adds missing field context to the evaluation to prevent the error. ([#65](https://github.com/remoteoss/json-schema-form/pull/65)) ([6755a2fd](https://github.com/remoteoss/json-schema-form/commit/6755a2fd29f3f806a57ba19e29ad7e21daf9e51b))
+
 #### 0.8.0-beta.0 (2024-02-01)
 
 ##### Bug Fixes
