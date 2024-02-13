@@ -13,6 +13,7 @@ import {
   schemaInputRadioOptionalNull,
   schemaInputRadioOptionalConventional,
   schemaInputTypeRadioOptionsWithDetails,
+  schemaInputTypeRadioWithoutOptions,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
   schemaInputTypeSelectMultipleDeprecated,
@@ -900,6 +901,15 @@ describe('createHeadlessForm', () => {
           },
         },
       ]);
+    });
+
+    it('support "radio" field type without oneOf options', () => {
+      const result = createHeadlessForm(schemaInputTypeRadioWithoutOptions);
+
+      expect(result.fields).toHaveLength(1);
+
+      const fieldOptions = result.fields[0].options;
+      expect(fieldOptions).toEqual([]);
     });
 
     it('support "number" field type', () => {

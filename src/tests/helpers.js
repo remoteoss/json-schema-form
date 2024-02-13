@@ -923,6 +923,18 @@ export const schemaInputTypeRadioOptionsWithDetails = {
   },
 };
 
+export const schemaInputTypeRadioWithoutOptions = {
+  properties: {
+    health_perks: {
+      title: 'Health perks',
+      description:
+        'This example contains options with more custom details, under the x-jsf-presentation key',
+      'x-jsf-presentation': { inputType: 'radio' },
+      type: 'string',
+    },
+  },
+};
+
 /** @deprecated */
 export const schemaInputTypeSelectSoloDeprecated = JSONSchemaBuilder()
   .addInput({

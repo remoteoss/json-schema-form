@@ -497,10 +497,10 @@ function getFieldOptions(node, presentation) {
   }
 
   // it's similar to inputType=radio
-  if (node.oneOf) {
+  if (node.oneOf || presentation.inputType === 'radio') {
     // Do not do if(hasType("string")) because a JSON Schema does not need it
     // necessarily to be considered a valid json schema.
-    return convertToOptions(node.oneOf);
+    return convertToOptions(node.oneOf || []);
   }
 
   // it's similar to inputType=select multiple
