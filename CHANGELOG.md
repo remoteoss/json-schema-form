@@ -1,3 +1,9 @@
+#### 0.8.2-beta.0 (2024-02-13)
+
+##### Bug Fixes
+
+* **helpers:**  getFieldOptions - return empty array if oneOf missing in radio ([#67](https://github.com/remoteoss/json-schema-form/pull/67)) ([6511330f](https://github.com/remoteoss/json-schema-form/commit/6511330f55a2accedb1c58a61ff915a3a0186dbb))
+
 #### 0.8.1-beta.0 (2024-02-12)
 
 ##### Bug Fixes
