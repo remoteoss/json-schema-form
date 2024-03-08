@@ -168,4 +168,30 @@ describe('const/default with forced values', () => {
     );
     expect(fields[0]).not.toMatchObject({ forcedValue: expect.any(Number) });
   });
+
+  it('Should work numbers with non-standard input types', () => {
+    const { fields, handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          number: {
+            title: 'Monthly salary is 300',
+            type: 'integer',
+            const: 300,
+            default: 300,
+            description: 'Some description',
+            'x-jsf-presentation': {
+              inputType: 'money',
+            },
+          },
+        },
+        required: ['number'],
+      },
+      { strictInputType: true }
+    );
+    expect(handleValidation({ number: 0 }).formErrors).toEqual({
+      number: 'The only accepted value is 300.',
+    });
+    expect(handleValidation({ number: 300 }).formErrors).toBeUndefined();
+    expect(fields[0]).toMatchObject({ forcedValue: 300 });
+  });
 });
