@@ -174,11 +174,9 @@ describe('const/default with forced values', () => {
       {
         properties: {
           number: {
-            title: 'Monthly salary is 300',
             type: 'integer',
             const: 300,
             default: 300,
-            description: 'Some description',
             'x-jsf-presentation': {
               inputType: 'money',
             },
