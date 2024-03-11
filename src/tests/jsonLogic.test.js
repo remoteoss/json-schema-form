@@ -35,6 +35,7 @@ import {
   schemaWithUnknownVariableInComputedValues,
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
+  badSchemaThatWillNotSetAForcedValue,
 } from './jsonLogic.fixtures';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -335,10 +336,19 @@ describe('jsonLogic: cross-values validations', () => {
         'This field is 2 times bigger than field_a with value of 4.'
       );
       expect(fieldB.default).toEqual(4);
-      expect(fieldB.value).toEqual(4);
+      expect(fieldB.forcedValue).toEqual(4);
       handleValidation({ field_a: 4 });
       expect(fieldB.default).toEqual(8);
       expect(fieldB.label).toEqual('This is 8!');
+    });
+
+    it('A forced value will not be set when const and default are not equal', () => {
+      const { fields } = createHeadlessForm(badSchemaThatWillNotSetAForcedValue, {
+        strictInputType: false,
+        initialValues: { field_a: 2 },
+      });
+      expect(fields[1]).toMatchObject({ const: 6, default: 4 });
+      expect(fields[1]).not.toMatchObject({ forcedValue: expect.any(Number) });
     });
 
     it('Derived errorMessages and statements work', () => {

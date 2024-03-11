@@ -535,8 +535,10 @@ export function extractParametersFromNode(schemaNode) {
   const statementDescription = presentation.statement?.description;
 
   const value =
-    typeof node.const !== 'undefined' && typeof node.default !== 'undefined'
-      ? { value: node.const }
+    typeof node.const !== 'undefined' &&
+    typeof node.default !== 'undefined' &&
+    node.const === node.default
+      ? { forcedValue: node.const }
       : {};
 
   return omitBy(
@@ -657,10 +659,12 @@ export const handleValuesChange = (fields, jsonSchema, config, logic) => (values
 };
 
 function getDecoratedComputedAttributes(computedAttributes) {
+  const isEqualConstAndDefault = computedAttributes?.const === computedAttributes?.default;
+
   return {
     ...(computedAttributes ?? {}),
-    ...(computedAttributes?.const && computedAttributes?.default
-      ? { value: computedAttributes.const }
+    ...(computedAttributes?.const && computedAttributes?.default && isEqualConstAndDefault
+      ? { forcedValue: computedAttributes.const }
       : {}),
   };
 }
