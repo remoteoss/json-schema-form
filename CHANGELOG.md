@@ -1,3 +1,9 @@
+#### 0.9.0-beta.0 (2024-03-11)
+
+##### Breaking changes
+
+*  Rename `value` -> `forcedValue`. This is in regards to the `json-logic`, where a "forced value" will now be returned in each relevant field (i.e. fields where the schema `const` and `default` are the same) with `forcedValue` over `value`. ([#66](https://github.com/remoteoss/json-schema-form/pull/66)) ([77c445a9](https://github.com/remoteoss/json-schema-form/commit/77c445a9dce657a7648642312f22c18f972187c7))
+
 #### 0.8.2-beta.0 (2024-02-13)
 
 ##### Bug Fixes
