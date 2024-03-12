@@ -111,7 +111,7 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {},
     fields = getFieldsFromJSONSchema(
       fieldProperties,
       {
-        customProperties: get(config, `customProperties.${name}`, {}),
+        customProperties: get(config, `customProperties.${name}.customProperties`, {}),
         parentID: name,
       },
       logic
