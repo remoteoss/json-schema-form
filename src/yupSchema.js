@@ -1,7 +1,7 @@
 import flow from 'lodash/flow';
 import noop from 'lodash/noop';
 import { randexp } from 'randexp';
-import { string, number, boolean, object, array, mixed } from 'yup';
+import { string, number, boolean, object, array } from 'yup';
 
 import { supportedTypes } from './internals/fields';
 import { yupSchemaWithCustomJSONLogic } from './jsonLogic';
@@ -152,7 +152,8 @@ const yupSchemas = {
     return dateString;
   },
   radioOrSelectNumber: (options) =>
-    mixed()
+    number()
+      .strict()
       .typeError('The value must be a number')
       .test(
         'matchesOptionOrPattern',
