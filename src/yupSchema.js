@@ -58,6 +58,24 @@ const validateMaxDate = (value, minDate) => {
   return compare === 'LESSER' || compare === 'EQUAL' ? true : false;
 };
 
+/* 
+  Custom test determines if the value either:
+  - Matches a specific option by value
+  - Matches a pattern
+  If the option is undefined do not test, to allow for optional fields. 
+*/
+const validateRadioOrSelectOptions = (value, options) => {
+  if (value === undefined) return true;
+
+  const exactMatch = options.some((option) => option.value === value);
+
+  if (exactMatch) return true;
+
+  const patternMatch = options.some((option) => option.pattern?.test(value));
+
+  return !!patternMatch;
+};
+
 const yupSchemas = {
   text: validateOnlyStrings,
   radioOrSelectString: (options) => {
@@ -97,33 +115,9 @@ const yupSchemas = {
         */
       })
       .test(
-        /* 
-          Custom test determines if the value either:
-           - Matches a specific option by value
-           - Matches a pattern
-          If the option is undefined do not test, to allow for optional fields. 
-         */
         'matchesOptionOrPattern',
         ({ value }) => `The option ${JSON.stringify(value)} is not valid.`,
-        (value) => {
-          if (value === undefined) {
-            return true; // [2]
-          }
-
-          const exactMatch = options.some((option) => option.value === value);
-
-          if (exactMatch) {
-            return true;
-          }
-
-          const patternMatch = options.some((option) => option.pattern?.test(value));
-
-          if (patternMatch) {
-            return true;
-          }
-
-          return false;
-        }
+        (value) => validateRadioOrSelectOptions(value, options)
       );
   },
   date: ({ minDate, maxDate }) => {
@@ -160,9 +154,13 @@ const yupSchemas = {
   radioOrSelectNumber: (options) =>
     mixed()
       .typeError('The value must be a number')
-      .oneOf(options, ({ value }) => {
-        return `The option ${JSON.stringify(value)} is not valid.`;
-      })
+      .test(
+        'matchesOptionOrPattern',
+        ({ value }) => {
+          return `The option ${JSON.stringify(value)} is not valid.`;
+        },
+        (value) => validateRadioOrSelectOptions(value, options)
+      )
       .nullable(),
   number: number().typeError('The value must be a number').nullable(),
   file: array().nullable(),
