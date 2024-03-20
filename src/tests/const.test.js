@@ -195,7 +195,7 @@ describe('const/default with forced values', () => {
 });
 
 describe('OneOf const', () => {
-  it('Validates numbers or strings correctly', () => {
+  it('Validates numbers correctly', () => {
     const { handleValidation } = createHeadlessForm(
       {
         properties: {
@@ -209,6 +209,25 @@ describe('OneOf const', () => {
       number: 'The option 3 is not valid.',
     });
     expect(handleValidation({ number: 2 }).formErrors).toBeUndefined();
+    expect(handleValidation({ number: '2' }).formErrors).toEqual({
+      number: 'The option "2" is not valid.',
+    });
+  });
+
+  it('Validates strings', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          number: { type: 'number', oneOf: [{ const: 'a' }, { const: 'b' }, { const: 'c' }] },
+        },
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({}).formErrors).toEqual(undefined);
+    expect(handleValidation({ number: 'd' }).formErrors).toEqual({
+      number: 'The option "d" is not valid.',
+    });
+    expect(handleValidation({ number: 'a' }).formErrors).toBeUndefined();
     expect(handleValidation({ number: '2' }).formErrors).toEqual({
       number: 'The option "2" is not valid.',
     });
