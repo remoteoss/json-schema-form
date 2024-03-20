@@ -69,7 +69,7 @@ function rebuildFieldset(fields, property) {
  * schema dependencies, and conditional logic.
  *
  * @param {Object} params - Parameters
- * @param {Object} params.fieldParams - Current field parameters
+ * @param {Object} params.fieldParams - The field attributes from the first render (root)
  * @param {Object} params.customProperties - Custom field properties from schema
  * @param {Object} params.logic - JSON-logic
  * @param {Object} params.config - Form configuration
@@ -78,6 +78,11 @@ function rebuildFieldset(fields, property) {
  */
 export function calculateConditionalProperties({ fieldParams, customProperties, logic, config }) {
   /**
+   * @typedef {calculateConditionalPropertiesReturn}
+   * @property {rootFieldAttrs} - The field attributes from the first render (root)
+   * @property {newAttributes} - Attributes from the matched conditional
+   */
+  /**
    * Runs dynamic property calculation on a field based on a conditional that has been calculated
    *
    * @param {Object} params - Parameters
@@ -85,11 +90,11 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
    * @param {Object} params.conditionBranch - Condition branch
    * @param {Object} params.formValues - Current form values
    *
-   * @returns {Object} Updated field parameters
+   * @returns {calculateConditionalPropertiesReturn}
    */
   return ({ isRequired, conditionBranch, formValues }) => {
     // Check if the current field is conditionally declared in the schema
-
+    // console.log('::calc (closure original)', fieldParams.description);
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
 
     if (conditionalProperty) {
@@ -142,20 +147,26 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
         ),
       };
 
-      return omit(merge(base, presentation, newFieldParams), ['inputType']);
+      return {
+        rootFieldAttrs: fieldParams,
+        newAttributes: omit(merge(base, presentation, newFieldParams), ['inputType']),
+      };
     }
 
     // If field is not conditionally declared it should be visible if it's required
     const isVisible = isRequired;
 
     return {
-      isVisible,
-      required: isRequired,
-      schema: buildYupSchema({
-        ...fieldParams,
-        ...extractParametersFromNode(conditionBranch),
+      rootFieldAttrs: fieldParams,
+      newAttributes: {
+        isVisible,
         required: isRequired,
-      }),
+        schema: buildYupSchema({
+          ...fieldParams,
+          ...extractParametersFromNode(conditionBranch),
+          required: isRequired,
+        }),
+      },
     };
   };
 }

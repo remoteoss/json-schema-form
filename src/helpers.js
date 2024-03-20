@@ -13,6 +13,46 @@ import { hasProperty } from './utils';
 import { buildCompleteYupSchema, buildYupSchema } from './yupSchema';
 
 /**
+ * List of custom JSF's attributes for field
+ * that are added dynamically after the first parsing.
+ */
+const dynamicInternalJsfAttrs = [
+  'isVisible', // Driven from conditionals state
+  'fields', // driven from group-array
+  'getComputedAttributes', // From json-logic
+  'computedAttributes', // From json-logic
+  'calculateConditionalProperties', // driven from conditionals
+  'calculateCustomValidationProperties', // To be deprecated in favor of json-logic
+  'scopedJsonSchema', // The respective JSON Schema
+
+  // HOTFIX/TODO Internal customizations, check test conditions.test.js for more info.
+  'Component',
+  'calculateDynamicProperties',
+  'visibilityCondition',
+];
+const dynamicInternalJsfAttrsObj = Object.fromEntries(
+  dynamicInternalJsfAttrs.map((k) => [k, true])
+);
+
+/**
+ *
+ * @param {Object} field - Current field attributes
+ * @param {Object} conditionalAttrs - Attributes from the matched conditional
+ * @param {Object} rootAttrs - Original field attributes from the root.
+ */
+function removeConditionalStaleAttributes(field, conditionalAttrs, rootAttrs) {
+  Object.keys(field).forEach((key) => {
+    if (
+      conditionalAttrs[key] === undefined &&
+      rootAttrs[key] === undefined && // Don't remove attrs that were declared in the root field.
+      dynamicInternalJsfAttrsObj[key] === undefined // ignore these because they are internal
+    ) {
+      field[key] = undefined;
+    }
+  });
+}
+
+/**
  * @typedef {import('./createHeadlessForm').FieldParameters} FieldParameters
  * @typedef {import('./createHeadlessForm').FieldValues} FieldValues
  * @typedef {import('./createHeadlessForm').YupErrors} YupErrors
@@ -202,9 +242,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     field.isVisible = true;
   }
 
-  const updateValues = (fieldValues) =>
-    Object.entries(fieldValues).forEach(([key, value]) => {
-      // some values (eg "schema") are a function, so we need to call it here
+  const updateAttributes = (fieldAttrs) => {
+    Object.entries(fieldAttrs).forEach(([key, value]) => {
+      // some attributes' value (eg "schema") are a function, so we need to call it here
       field[key] = typeof value === 'function' ? value() : value;
 
       if (key === 'value') {
@@ -212,9 +252,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
         // unless it's a read-only field
         // If the readOnly property has changed, use that updated value,
         // otherwise use the start value of the property
-        const readOnlyPropertyWasUpdated = typeof fieldValues.readOnly !== 'undefined';
+        const readOnlyPropertyWasUpdated = typeof fieldAttrs.readOnly !== 'undefined';
         const isReadonlyByDefault = field.readOnly;
-        const isReadonly = readOnlyPropertyWasUpdated ? fieldValues.readOnly : isReadonlyByDefault;
+        const isReadonly = readOnlyPropertyWasUpdated ? fieldAttrs.readOnly : isReadonlyByDefault;
 
         // Needs field.type check because otherwise checkboxes will have an initial
         // value of "true" when they should be not checked. !8755 for full context
@@ -226,9 +266,10 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
         }
       }
     });
+  };
 
   if (field.getComputedAttributes) {
-    const computedFieldValues = field.getComputedAttributes({
+    const newAttributes = field.getComputedAttributes({
       field,
       isRequired: fieldIsRequired,
       node,
@@ -236,26 +277,27 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       config,
       logic,
     });
-    updateValues(computedFieldValues);
+    updateAttributes(newAttributes);
   }
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
-    const newFieldValues = field.calculateConditionalProperties({
+    const { rootFieldAttrs, newAttributes } = field.calculateConditionalProperties({
       isRequired: fieldIsRequired,
       conditionBranch: node,
       formValues,
     });
-    updateValues(newFieldValues);
+    updateAttributes(newAttributes);
+    removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
   }
 
   if (field.calculateCustomValidationProperties) {
-    const newFieldValues = field.calculateCustomValidationProperties(
+    const newAttributes = field.calculateCustomValidationProperties(
       fieldIsRequired,
       node,
       formValues
     );
-    updateValues(newFieldValues);
+    updateAttributes(newAttributes);
   }
 }
 
@@ -455,10 +497,10 @@ function getFieldOptions(node, presentation) {
   }
 
   // it's similar to inputType=radio
-  if (node.oneOf) {
+  if (node.oneOf || presentation.inputType === 'radio') {
     // Do not do if(hasType("string")) because a JSON Schema does not need it
     // necessarily to be considered a valid json schema.
-    return convertToOptions(node.oneOf);
+    return convertToOptions(node.oneOf || []);
   }
 
   // it's similar to inputType=select multiple
@@ -493,8 +535,10 @@ export function extractParametersFromNode(schemaNode) {
   const statementDescription = presentation.statement?.description;
 
   const value =
-    typeof node.const !== 'undefined' && typeof node.default !== 'undefined'
-      ? { value: node.const }
+    typeof node.const !== 'undefined' &&
+    typeof node.default !== 'undefined' &&
+    node.const === node.default
+      ? { forcedValue: node.const }
       : {};
 
   return omitBy(
@@ -615,10 +659,12 @@ export const handleValuesChange = (fields, jsonSchema, config, logic) => (values
 };
 
 function getDecoratedComputedAttributes(computedAttributes) {
+  const isEqualConstAndDefault = computedAttributes?.const === computedAttributes?.default;
+
   return {
     ...(computedAttributes ?? {}),
-    ...(computedAttributes?.const && computedAttributes?.default
-      ? { value: computedAttributes.const }
+    ...(computedAttributes?.const && computedAttributes?.default && isEqualConstAndDefault
+      ? { forcedValue: computedAttributes.const }
       : {}),
   };
 }

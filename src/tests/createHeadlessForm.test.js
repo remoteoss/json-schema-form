@@ -13,6 +13,7 @@ import {
   schemaInputRadioOptionalNull,
   schemaInputRadioOptionalConventional,
   schemaInputTypeRadioOptionsWithDetails,
+  schemaInputTypeRadioWithoutOptions,
   schemaInputTypeSelectSoloDeprecated,
   schemaInputTypeSelectSolo,
   schemaInputTypeSelectMultipleDeprecated,
@@ -38,6 +39,7 @@ import {
   mockFileInput,
   mockRadioCardInput,
   mockRadioCardExpandableInput,
+  mockTelWithPattern,
   mockTextInput,
   mockTextInputDeprecated,
   mockNumberInput,
@@ -443,7 +445,7 @@ describe('createHeadlessForm', () => {
         [fieldName]: 'The option "blah-blah" is not valid.',
       });
 
-      // Given undefined, it says it's a  required field.
+      // Given undefined, it says it's a required field.
       expect(validateForm({})).toEqual({
         [fieldName]: 'Required field',
       });
@@ -812,6 +814,7 @@ describe('createHeadlessForm', () => {
           has_car: 'yes',
         })
       ).toBeUndefined();
+
       expect(validateForm({})).toEqual({
         has_siblings: 'Required field',
       });
@@ -898,6 +901,15 @@ describe('createHeadlessForm', () => {
           },
         },
       ]);
+    });
+
+    it('support "radio" field type without oneOf options', () => {
+      const result = createHeadlessForm(schemaInputTypeRadioWithoutOptions);
+
+      expect(result.fields).toHaveLength(1);
+
+      const fieldOptions = result.fields[0].options;
+      expect(fieldOptions).toEqual([]);
     });
 
     it('support "number" field type', () => {
@@ -1375,6 +1387,50 @@ describe('createHeadlessForm', () => {
           ],
         });
       });
+
+      it('can be a conditional field', () => {
+        const { fields, handleValidation } = createHeadlessForm({
+          properties: {
+            yes_or_no: {
+              title: 'Show the dependents or not?',
+              oneOf: [{ const: 'yes' }, { const: 'no' }],
+              'x-jsf-presentation': { inputType: 'radio' },
+            },
+            dependent_details: mockGroupArrayInput,
+          },
+          allOf: [
+            {
+              if: {
+                properties: {
+                  yes_or_no: { const: 'yes' },
+                },
+                required: ['yes_or_no'],
+              },
+              then: {
+                required: ['dependent_details'],
+              },
+              else: {
+                properties: {
+                  dependent_details: false,
+                },
+              },
+            },
+          ],
+        });
+
+        // By default is hidden but the fields are accessible
+        expect(getField(fields, 'dependent_details').isVisible).toBe(false);
+        expect(getField(fields, 'dependent_details').fields).toEqual(expect.any(Function));
+
+        // When the condition matches...
+        const { formErrors } = handleValidation({ yes_or_no: 'yes' });
+        expect(formErrors).toEqual({
+          dependent_details: 'Required field',
+        });
+        // it gets visible with its inner fields.
+        expect(getField(fields, 'dependent_details').isVisible).toBe(true);
+        expect(getField(fields, 'dependent_details').fields).toEqual(expect.any(Function));
+      });
     });
 
     it('supports "radio" field type with its "card" and "card-expandable" variants', () => {
@@ -1440,6 +1496,51 @@ describe('createHeadlessForm', () => {
           },
         ],
       });
+    });
+
+    it('supports oneOf pattern validation', () => {
+      const result = createHeadlessForm(mockTelWithPattern);
+
+      expect(result).toMatchObject({
+        fields: [
+          {
+            label: 'Phone number',
+            name: 'phone_number',
+            type: 'tel',
+            required: false,
+            options: [
+              {
+                label: 'Portugal',
+                pattern: '^(\\+351)[0-9]{9,}$',
+              },
+              {
+                label: 'United Kingdom (UK)',
+                pattern: '^(\\+44)[0-9]{1,}$',
+              },
+              {
+                label: 'Bolivia',
+                pattern: '^(\\+591)[0-9]{9,}$',
+              },
+              {
+                label: 'Canada',
+                pattern: '^(\\+1)(206|224)[0-9]{1,}$',
+              },
+              {
+                label: 'United States',
+                pattern: '^(\\+1)[0-9]{1,}$',
+              },
+            ],
+          },
+        ],
+      });
+
+      const fieldValidator = result.fields[0].schema;
+
+      expect(fieldValidator.isValidSync('+351123123123')).toBe(true);
+      expect(() => fieldValidator.validateSync('+35100')).toThrowError(
+        'The option "+35100" is not valid.'
+      );
+      expect(fieldValidator.isValidSync(undefined)).toBe(true);
     });
 
     describe('supports "fieldset" field type', () => {
@@ -1719,11 +1820,8 @@ describe('createHeadlessForm', () => {
           expect(foodField.options).toHaveLength(4);
           // ...Food description was back to the original
           expect(foodField.description).toBeUndefined();
-
-          // @BUG RMT-58 PTO description should disappear, but it didn't.
-          expect(getField(fields, 'pto').description).toBe(
-            'Above 30 hours, the PTO needs to be at least 20 days.'
-          );
+          // ...PTO Description is removed too.
+          expect(getField(fields, 'pto').description).toBeUndefined();
 
           // Given again "low perks", the form valid.
           expect(
@@ -1947,9 +2045,9 @@ describe('createHeadlessForm', () => {
             },
           },
           {
-            name: 'a_or_b',
-            label: 'A dropdown',
-            type: 'select',
+            name: 'role',
+            label: 'Role',
+            type: 'text',
             statement: {
               description: 'This is another statement message, but more severe.',
               inputType: 'statement',
@@ -3589,11 +3687,17 @@ describe('createHeadlessForm', () => {
           customProperties: {
             id_number: { 'data-field': 'field' },
             fieldset: {
-              id_number: { 'data-fieldset': 'fieldset' },
+              customProperties: {
+                id_number: { 'data-fieldset': 'fieldset' },
+              },
             },
             nestedFieldset: {
-              innerFieldset: {
-                id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+              customProperties: {
+                innerFieldset: {
+                  customProperties: {
+                    id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+                  },
+                },
               },
             },
           },
@@ -3665,6 +3769,58 @@ describe('createHeadlessForm', () => {
       expect(nestedFieldsetResult.fields[0].fields[0]).not.toHaveProperty('data-fieldset');
       expect(nestedFieldsetResult.fields[0].fields[1]).not.toHaveProperty('data-field');
       expect(nestedFieldsetResult.fields[0].fields[1]).not.toHaveProperty('data-fieldset');
+    });
+    it('should handle custom properties when inside fieldsets for fields name clashing with reserved words', () => {
+      const { fields } = createHeadlessForm(
+        {
+          properties: {
+            dog: {
+              title: 'Dog details',
+              description: 'Fieldset description',
+              'x-jsf-presentation': {
+                inputType: 'fieldset',
+              },
+              properties: {
+                name: {
+                  // This fieldName (name) clashs with the field specs "name"
+                  title: 'Dogs name',
+                  'x-jsf-presentation': {
+                    inputType: 'text',
+                  },
+                  type: 'string',
+                },
+                type: {
+                  // This field name (type) clashs with the field specs "type"
+                  title: 'Breed type',
+                  'x-jsf-presentation': {
+                    inputType: 'number',
+                  },
+                  type: 'string',
+                },
+              },
+              required: ['name'],
+              type: 'object',
+            },
+          },
+          required: ['dog'],
+        },
+        {
+          customProperties: {
+            dog: {
+              customProperties: {
+                name: {
+                  description: "What's your dogs name",
+                },
+              },
+            },
+          },
+        }
+      );
+
+      expect(fields.length).toBe(1);
+      expect(fields[0].fields.length).toBe(2);
+      expect(fields[0].fields[0].name).toBe('name');
+      expect(fields[0].fields[0].description).toBe("What's your dogs name");
     });
   });
 
