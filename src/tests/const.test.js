@@ -210,7 +210,7 @@ describe('OneOf const', () => {
     });
     expect(handleValidation({ number: 2 }).formErrors).toBeUndefined();
     expect(handleValidation({ number: '2' }).formErrors).toEqual({
-      number: 'The value must be a number',
+      number: 'The option "2" is not valid.',
     });
   });
 
@@ -229,7 +229,8 @@ describe('OneOf const', () => {
     });
     expect(handleValidation({ number: 2 }).formErrors).toBeUndefined();
     expect(handleValidation({ number: '2' }).formErrors).toEqual({
-      number: 'The value must be a number',
+      number: 'The option "2" is not valid.',
     });
+    expect(handleValidation({ number: null }).formErrors).toEqual(undefined);
   });
 });

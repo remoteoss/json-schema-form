@@ -2028,6 +2028,45 @@ describe('createHeadlessForm', () => {
     });
   });
 
+  it('supports oneOf number const', () => {
+    const result = createHeadlessForm({
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        pets: {
+          title: 'How many pets?',
+          oneOf: [
+            {
+              title: 'One',
+              const: 0,
+            },
+            {
+              title: 'Two',
+              const: 2,
+            },
+            {
+              title: 'null',
+              const: 1,
+            },
+          ],
+          'x-jsf-presentation': {
+            inputType: 'select',
+          },
+          type: ['number', 'null'],
+        },
+      },
+      required: [],
+      'x-jsf-order': ['pets'],
+    });
+
+    const fieldValidator = result.fields[0].schema;
+
+    expect(fieldValidator.isValidSync(0)).toBe(true);
+    expect(fieldValidator.isValidSync(1)).toBe(true);
+    expect(() => fieldValidator.validateSync('2')).toThrowError('The option "2" is not valid.');
+    expect(fieldValidator.isValidSync(null)).toBe(true);
+  });
+
   describe('x-jsf-presentation attribute', () => {
     it('support field with "x-jsf-presentation.statement"', () => {
       const result = createHeadlessForm(schemaInputWithStatement);

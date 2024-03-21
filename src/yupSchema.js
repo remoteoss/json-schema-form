@@ -1,7 +1,7 @@
 import flow from 'lodash/flow';
 import noop from 'lodash/noop';
 import { randexp } from 'randexp';
-import { string, number, boolean, object, array } from 'yup';
+import { string, number, boolean, object, array, mixed } from 'yup';
 
 import { supportedTypes } from './internals/fields';
 import { yupSchemaWithCustomJSONLogic } from './jsonLogic';
@@ -124,7 +124,7 @@ const yupSchemas = {
     let dateString = string()
       .nullable()
       .transform((value) => {
-        // @BUG RMT-518 - Same reason to radioOrSelect above.
+        // @BUG RMT-518 - Same reason to radioOrSelectString above.
         if (value === '') {
           return undefined;
         }
@@ -152,15 +152,25 @@ const yupSchemas = {
     return dateString;
   },
   radioOrSelectNumber: (options) =>
-    number()
-      .strict()
+    mixed()
       .typeError('The value must be a number')
+      .transform((value) => {
+        // @BUG RMT-518 - Same reason to radioOrSelectString above.
+        if (options?.some((option) => option.value === null)) {
+          return value;
+        }
+        return value === null ? undefined : value;
+      })
       .test(
         'matchesOptionOrPattern',
         ({ value }) => {
           return `The option ${JSON.stringify(value)} is not valid.`;
         },
-        (value) => validateRadioOrSelectOptions(value, options)
+        (value) => {
+          if (value !== undefined && typeof value !== 'number') return false;
+
+          return validateRadioOrSelectOptions(value, options);
+        }
       )
       .nullable(),
   number: number().typeError('The value must be a number').nullable(),
