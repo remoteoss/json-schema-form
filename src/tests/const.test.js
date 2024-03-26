@@ -193,3 +193,44 @@ describe('const/default with forced values', () => {
     expect(fields[0]).toMatchObject({ forcedValue: 300 });
   });
 });
+
+describe('OneOf const', () => {
+  it('Validates numbers or strings correctly', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          number: { type: 'number', oneOf: [{ const: 0 }, { const: 1 }, { const: 2 }] },
+        },
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({}).formErrors).toEqual(undefined);
+    expect(handleValidation({ number: 3 }).formErrors).toEqual({
+      number: 'The option 3 is not valid.',
+    });
+    expect(handleValidation({ number: 2 }).formErrors).toBeUndefined();
+    expect(handleValidation({ number: '2' }).formErrors).toEqual({
+      number: 'The option "2" is not valid.',
+    });
+  });
+
+  it('Validates numbers or strings when type is an array with null', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          number: { type: ['number', 'null'], oneOf: [{ const: 0 }, { const: 1 }, { const: 2 }] },
+        },
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({}).formErrors).toEqual(undefined);
+    expect(handleValidation({ number: 3 }).formErrors).toEqual({
+      number: 'The option 3 is not valid.',
+    });
+    expect(handleValidation({ number: 2 }).formErrors).toBeUndefined();
+    expect(handleValidation({ number: '2' }).formErrors).toEqual({
+      number: 'The option "2" is not valid.',
+    });
+    expect(handleValidation({ number: null }).formErrors).toEqual(undefined);
+  });
+});

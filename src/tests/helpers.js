@@ -93,6 +93,7 @@ export const mockTextMaxLengthInput = {
 export const mockRadioInputDeprecated = {
   title: 'Has siblings',
   description: 'Do you have any siblings?',
+  type: 'string',
   enum: ['yes', 'no'],
   'x-jsf-presentation': {
     inputType: 'radio',
@@ -386,6 +387,7 @@ export const mockGroupArrayInput = {
           ],
         },
         title: 'Child Sex',
+        type: 'string',
       },
     },
     'x-jsf-order': ['full_name', 'birthdate', 'sex'],
@@ -842,7 +844,7 @@ export const mockRadioInputOptionalNull = {
     { const: 'yes', title: 'Yes' },
     { const: 'no', title: 'No' },
     // JSF excludes the null option from the field output
-    // But keepts null as an accepted value
+    // But keeps null as an accepted value
     { const: null, title: 'N/A' },
   ],
   'x-jsf-presentation': { inputType: 'radio' },
@@ -1612,7 +1614,6 @@ export const schemaFieldsetScopedCondition = {
       properties: {
         has_child: {
           description: 'If yes, it will show its age.',
-          maximum: 100,
           'x-jsf-presentation': {
             inputType: 'radio',
             options: [
@@ -1627,7 +1628,7 @@ export const schemaFieldsetScopedCondition = {
             ],
           },
           title: 'Do you have a child?',
-          type: 'number',
+          type: 'string',
         },
         age: {
           description: 'This age is required, but the "age" at the root level is still optional.',
