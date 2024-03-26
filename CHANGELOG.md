@@ -1,3 +1,9 @@
+#### 0.9.1-beta.0 (2024-03-26)
+
+##### Bug Fixes
+
+* **select/radio:**  Allow numbers in oneOf ([#49](https://github.com/remoteoss/json-schema-form/pull/49)) ([04c2598a](https://github.com/remoteoss/json-schema-form/commit/04c2598a3f4e31d8a9495e0d69c0427b6b8c9f56))
+
 #### 0.9.0-beta.0 (2024-03-11)
 
 ##### Breaking changes
