@@ -181,6 +181,53 @@ describe('modify() - attributes', () => {
     });
   });
 
+  it('replace field options (radio/select)', () => {
+    const result = modify(schemaPet, {
+      fields: {
+        has_pet: {
+          oneOf: (oneOf) => {
+            const labelsMap = {
+              yes: 'Yes, I have',
+            };
+
+            return oneOf.map((option) => {
+              const customTitle = labelsMap[option.const];
+              if (!customTitle) {
+                console.error('The option is not handled.');
+                return option;
+              }
+              return {
+                ...option,
+                title: customTitle,
+              };
+            });
+          },
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      properties: {
+        has_pet: {
+          oneOf: [
+            {
+              oneOf: [
+                {
+                  title: 'Yes, I have',
+                  const: 'yes',
+                },
+                {
+                  title: 'No',
+                  const: 'no',
+                },
+              ],
+            },
+          ],
+        },
+      },
+    });
+  });
+
   it('error message', () => {
     const result = modify(schemaPet, {
       fields: {
