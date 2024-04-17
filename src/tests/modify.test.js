@@ -85,12 +85,15 @@ const schemaPet = {
   ],
 };
 
+const imagineSomeBasicSchema = {};
+
 describe('modify() - attributes', () => {
   it('replace base field', () => {
     const result = modify(schemaPet, {
       fields: {
         has_pet: {
           title: 'Pet owner',
+          // Q:❓[*1] Do you find it useful to every attribute to support a callback function?
           description: (fieldAttrs) => {
             // You can access any raw field attribute to do whatever verification you need,
             // but remember to be cautious, as they might change.
@@ -143,7 +146,7 @@ describe('modify() - attributes', () => {
 
   it('replace all fields', () => {
     const result = modify(schemaPet, {
-      // This is a callback recursive through all fields
+      // [*2] This is a callback recursive through all fields
       allFields: (fieldName, fieldAttrs) => {
         const { inputType, percentage } = fieldAttrs.presentation;
 
@@ -184,8 +187,10 @@ describe('modify() - attributes', () => {
         pet_name: (fieldAttrs) => {
           //console.log(fieldsAttrs.maximum) // 24
           return {
+            // [*3]
             errorMessage: {
               minimum: `We only accept pets up to ${fieldAttrs.maximum} months old.`,
+              required: 'We need to know your pet name.',
             },
           };
         },
@@ -199,6 +204,8 @@ describe('modify() - attributes', () => {
           'x-jsf-errorMessage': {
             // maximum: (before) 'Your pet cannot be older than 24 months.',
             minimum: `We only accept pets up to 24 months old.`,
+            // required: (before) undefined
+            required: 'We need to know your pet name.',
           },
         },
       },
@@ -215,6 +222,7 @@ describe('modify() - attributes', () => {
     const result = modify(baseExample, {
       // eslint-disable-next-line no-unused-vars
       order: (originalOrder) => {
+        // [*4]
         // console.log(order) // ['field_a', 'field_b', 'field_c', 'field_d']
         return {
           order: ['field_c', 'field_a', 'field_b'],
@@ -306,6 +314,7 @@ const schemaTickets = {
 };
 
 describe('modify() - structures', () => {
+  // [*6]
   it('pick fields - basic', () => {
     const result = modify(schemaTickets, {
       pick: {
@@ -352,7 +361,7 @@ describe('modify() - structures', () => {
     });
   });
 
-  // Q:❓ Would this be really needed?
+  // Q:❓ [*7] Would this be really needed?
   it('omit fields - basic usage', () => {
     const result = modify(schemaTickets, {
       omit: 'has_premium',
@@ -373,9 +382,9 @@ describe('modify() - structures', () => {
     });
   });
 
+  // [*8]
   it('split fields - basic', () => {
-    // eslint-disable-next-line no-undef
-    const result = modify(someSchema, {
+    const result = modify(imagineSomeBasicSchema, {
       split: {
         // 💡 Note how "*" is mandatory to ensure
         // remaining fields has a fallback place.
