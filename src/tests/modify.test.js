@@ -1,5 +1,13 @@
 import { modify } from '../modify';
 
+/**
+ * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
+ * None of this is implemented yet.
+ * Just specs explained with tests.
+ * For review first.
+ * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
+ */
+
 const schemaPet = {
   type: 'object',
   additionalProperties: false,
@@ -371,14 +379,11 @@ describe('modify() - structures', () => {
       split: {
         // 💡 Note how "*" is mandatory to ensure
         // remaining fields has a fallback place.
-        // otherwise the split will fail.
+        // otherwise the modify() will throw.
         parts: [
           ['field_a', 'field_b'],
           ['field_c', '*'],
         ],
-        onError: (ex) => {
-          console.error('Split failed', ex.message);
-        },
       },
     });
 
@@ -405,100 +410,109 @@ describe('modify() - structures', () => {
               // come from the wild "*" selector.
               /* ... */
             },
+            field_e: {
+              // come from the wild "*" selector.
+              /* ... */
+            },
           },
         },
       ],
     });
   });
 
-  // CONTINUE HEREEE!
-  //  it.todo('split fields - handling condional fields - Approach A', () => {
-  //    const result = modify(someSchema, {
-  //      split: {
-  //        // 💡 Note how "*" is mandatory to ensure
-  //        // remaining fields has a fallback place.
-  //        // otherwise the split will fail.
-  //        parts: [
-  //          ['field_a', 'field_b'],
-  //          ['field_c', '*'],
-  //        ],
-  //        onError: (ex) => {
-  //          log('Split failed', ex.message);
-  //        },
-  //      },
-  //    });
+  // The behavior for splitting edge-cases needs to be refined, let's see:
+  // A connected field is missing ("premium_id" must be on step 1)
+  // Outcome A - Throw an error and fail — not cool in production.
+  // Outcome B - Fix the form gracefully, and log warning (onWarn).
+  //             Add the missing field to the same step. (see below)
+  it('split fields - handling condional fields - missing field', () => {
+    const result = modify(schemaTickets, {
+      split: {
+        parts: [
+          ['age', 'has_premium'],
+          ['quantity', '*'],
+        ],
+        onWarn: (ex) => {
+          // error: The "premium_id" is a dependent on "has_premium", so it was added to the same step.
+          console.log('Split had a side-effect', ex.message);
+        },
+      },
+    });
 
-  //    expect(result).toMatchObject({
-  //      parts: [
-  //        // Part 1
-  //        {
-  //          properties: {
-  //            field_a: {
-  //              /* ... */
-  //            },
-  //            field_b: {
-  //              /* ... */
-  //            },
-  //          },
-  //        },
-  //        // Part 2
-  //        {
-  //          properties: {
-  //            field_c: {
-  //              /* ... */
-  //            },
-  //            field_d: {
-  //              // come from the wild "*" selector.
-  //              /* ... */
-  //            },
-  //          },
-  //        },
-  //      ],
-  //    });
-  //  });
+    expect(result).toMatchObject({
+      parts: [
+        // Part 1
+        {
+          properties: {
+            age: {
+              /* ... */
+            },
+            has_premium: {
+              /* ... */
+            },
+            premium_id: {
+              /* 💡 (Outcome B) */
+            },
+          },
+        },
+        // Part 2
+        {
+          properties: {
+            quantity: {
+              /* ... */
+            },
+          },
+        },
+      ],
+    });
+  });
 
-  //  it.todo('split fields - handling condional fields - Approach B', () => {
-  //    const result = modify(someSchema, {
-  //      split: {
-  //        // 💡 Note how "*" is mandatory to ensure
-  //        // remaining fields has a fallback place.
-  //        // otherwise the split will fail.
-  //        parts: [
-  //          ['field_a', 'field_b'],
-  //          ['field_c', '*'],
-  //        ],
-  //        onError: (ex) => {
-  //          log('Split failed', ex.message);
-  //        },
-  //      },
-  //    });
+  // The behavior for splitting edge-cases needs to be refined, let's see:
+  // Two fiels that must be together were split. ("has_premium" and "premium_id")
+  // Outcome A - Throw an error and fail — not cool in production.
+  // Outcome B - Fix the form gracefully, and log error (onError)
+  //             Move the dependent field to the same step. (see bellow)
+  it('split fields - handling condional fields - disconneted fields', () => {
+    const result = modify(schemaTickets, {
+      split: {
+        // 💡 note how "premium_id" is in the wrong step.
+        parts: [
+          ['age', 'has_premium'],
+          ['quantity', 'premium_id', '*'],
+        ],
+        onError: (ex) => {
+          // error: The "premium_id" is a dependent on "has_premium", so it was MOVED to the same step.
+          console.log('Split had a side-effect', ex.message);
+        },
+      },
+    });
 
-  //    expect(result).toMatchObject({
-  //      parts: [
-  //        // Part 1
-  //        {
-  //          properties: {
-  //            field_a: {
-  //              /* ... */
-  //            },
-  //            field_b: {
-  //              /* ... */
-  //            },
-  //          },
-  //        },
-  //        // Part 2
-  //        {
-  //          properties: {
-  //            field_c: {
-  //              /* ... */
-  //            },
-  //            field_d: {
-  //              // come from the wild "*" selector.
-  //              /* ... */
-  //            },
-  //          },
-  //        },
-  //      ],
-  //    });
-  //  });
+    expect(result).toMatchObject({
+      parts: [
+        // Part 1
+        {
+          properties: {
+            age: {
+              /* ... */
+            },
+            has_premium: {
+              /* ... */
+            },
+            premium_id: {
+              /* 💡 (Outcome B) */
+            },
+          },
+        },
+        // Part 2
+        {
+          properties: {
+            quantity: {
+              /* ... */
+            },
+            // premium_id: {} // NOT HERE, IGNORED!
+          },
+        },
+      ],
+    });
+  });
 });
