@@ -299,7 +299,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
 
   fieldParamsList.forEach((fieldParams) => {
     if (fieldParams.inputType === 'group-array') {
-      const groupArrayItems = convertJSONSchemaPropertiesToFieldParameters(fieldParams.items);
+      const groupArrayItems = convertJSONSchemaPropertiesToFieldParameters(fieldParams.prefixItems);
       const groupArrayFields = groupArrayItems.map((groupArrayItem) => {
         groupArrayItem.nameKey = groupArrayItem.name;
         const customProperties = null; // getCustomPropertiesForField(fieldParams, config); // TODO later support in group-array
