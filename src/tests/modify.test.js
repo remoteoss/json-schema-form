@@ -85,7 +85,24 @@ const schemaPet = {
   ],
 };
 
-const imagineSomeBasicSchema = {};
+const imagineSomeBasicSchema = {
+  /* ... */
+};
+
+/*
+modify() Options:
+
+{
+  fields,
+  allFields,
+  order,
+  conditionals,
+  pick,
+  omit,
+  split, 
+}
+
+*/
 
 describe('modify() - attributes', () => {
   it('replace base field', () => {
@@ -93,13 +110,16 @@ describe('modify() - attributes', () => {
       fields: {
         has_pet: {
           title: 'Pet owner',
-          // Q:❓[*1] Do you find it useful to every attribute to support a callback function?
-          description: (fieldAttrs) => {
-            // You can access any raw field attribute to do whatever verification you need,
-            // but remember to be cautious, as they might change.
-            const options = fieldAttrs.oneOf?.map(({ title }) => title).join('or ') || '';
-            return `Do you own a pet? ${options}?`;
-          },
+        },
+        // Q:❓[*1] Do you find it useful to be a callback function instead?
+        // You can access any raw attribute from the field to do whatever verification you need,
+        // but remember to be cautious, as the attrs value might change.
+        has_pet_2: (fieldAttrs) => {
+          const options = fieldAttrs.oneOf?.map(({ title }) => title).join('or ') || '';
+          return {
+            title: 'Pet owner',
+            description: `Do you own a pet? ${options}?`, // "Do you own a pet? Yes or No?"
+          };
         },
       },
     });
@@ -184,13 +204,13 @@ describe('modify() - attributes', () => {
   it('replace field options (radio/select)', () => {
     const result = modify(schemaPet, {
       fields: {
-        has_pet: {
-          oneOf: (oneOf) => {
-            const labelsMap = {
-              yes: 'Yes, I have',
-            };
+        has_pet: (fieldAttrs) => {
+          const labelsMap = {
+            yes: 'Yes, I have',
+          };
 
-            return oneOf.map((option) => {
+          return {
+            oneOf: fieldAttrs.oneOf.map((option) => {
               const customTitle = labelsMap[option.const];
               if (!customTitle) {
                 console.error('The option is not handled.');
@@ -200,8 +220,8 @@ describe('modify() - attributes', () => {
                 ...option,
                 title: customTitle,
               };
-            });
-          },
+            }),
+          };
         },
       },
     });
@@ -235,6 +255,7 @@ describe('modify() - attributes', () => {
           //console.log(fieldsAttrs.maximum) // 24
           return {
             // [*3]
+            // note how we don't need to write "x-jsf-errorMessage" - sugar syntax.
             errorMessage: {
               minimum: `We only accept pets up to ${fieldAttrs.maximum} months old.`,
               required: 'We need to know your pet name.',
@@ -290,9 +311,9 @@ describe('modify() - attributes', () => {
       conditionals: {
         // The idea is to target a conditional by its id. (new!)
         pet_conditional_id: {
-          else: {
+          then: {
             has_pet: {
-              description: 'You should think about finding one.',
+              description: 'Glad you have a pet!',
             },
           },
         },
