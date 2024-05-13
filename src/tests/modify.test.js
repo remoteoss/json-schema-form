@@ -1,11 +1,11 @@
 import { modify } from '../modify';
 
 /**
- * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
- * None of this is implemented yet.
- * Just specs explained with tests.
- * For review first.
- * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
+ * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
+ * WIP — In progress
+ * Tests with it.skip() are still not implemented.
+ * Please review all specs explained with tests.
+ * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
  */
 
 const schemaPet = {
@@ -57,6 +57,13 @@ const schemaPet = {
       },
       type: 'integer',
     },
+    pet_address: {
+      properties: {
+        street: {
+          title: 'Street',
+        },
+      },
+    },
   },
   required: ['has_pet'],
   'x-jsf-order': ['has_pet', 'pet_name'],
@@ -85,6 +92,24 @@ const schemaPet = {
   ],
 };
 
+const schemaAddress = {
+  properties: {
+    address: {
+      properties: {
+        street: {
+          title: 'Street',
+        },
+        number: {
+          title: 'Number',
+        },
+        city: {
+          title: 'City',
+        },
+      },
+    },
+  },
+};
+
 const imagineSomeBasicSchema = {
   /* ... */
 };
@@ -108,14 +133,14 @@ describe('modify() - attributes', () => {
   it('replace base field', () => {
     const result = modify(schemaPet, {
       fields: {
-        has_pet: {
-          title: 'Pet owner',
+        pet_name: {
+          title: 'Your pet name',
         },
         // Q:❓[*1] Do you find it useful to be a callback function instead?
         // You can access any raw attribute from the field to do whatever verification you need,
         // but remember to be cautious, as the attrs value might change.
-        has_pet_2: (fieldAttrs) => {
-          const options = fieldAttrs.oneOf?.map(({ title }) => title).join('or ') || '';
+        has_pet: (fieldAttrs) => {
+          const options = fieldAttrs.oneOf?.map(({ title }) => title).join(' or ') || '';
           return {
             title: 'Pet owner',
             description: `Do you own a pet? ${options}?`, // "Do you own a pet? Yes or No?"
@@ -126,6 +151,9 @@ describe('modify() - attributes', () => {
 
     expect(result).toMatchObject({
       properties: {
+        pet_name: {
+          title: 'Your pet name',
+        },
         has_pet: {
           title: 'Pet owner',
           description: 'Do you own a pet? Yes or No?',
@@ -135,8 +163,7 @@ describe('modify() - attributes', () => {
   });
 
   it('replace nested field', () => {
-    const baseAddress = {}; // TODO - imagine it is a fieldset, { address: { street, number, city } }
-    const result = modify(baseAddress, {
+    const result = modify(schemaAddress, {
       fields: {
         'address.street': {
           title: 'Street name',
@@ -156,7 +183,12 @@ describe('modify() - attributes', () => {
           properties: {
             street: {
               title: 'Street name',
-              number: 'Door number',
+            },
+            number: {
+              title: 'Door number',
+            },
+            city: {
+              title: 'City',
             },
           },
         },
@@ -168,7 +200,7 @@ describe('modify() - attributes', () => {
     const result = modify(schemaPet, {
       // [*2] This is a callback recursive through all fields
       allFields: (fieldName, fieldAttrs) => {
-        const { inputType, percentage } = fieldAttrs.presentation;
+        const { inputType, percentage } = fieldAttrs?.['x-jsf-presentation'] || {};
 
         // This is based on a real example I remember from G.codebase.
         if (inputType === 'number' && percentage === true) {
@@ -196,6 +228,13 @@ describe('modify() - attributes', () => {
         },
         pet_fat: {
           styleDecimals: 2,
+        },
+        pet_address: {
+          properties: {
+            street: {
+              dataFoo: 'abc', // recursive works too.
+            },
+          },
         },
       },
     });
@@ -231,16 +270,12 @@ describe('modify() - attributes', () => {
         has_pet: {
           oneOf: [
             {
-              oneOf: [
-                {
-                  title: 'Yes, I have',
-                  const: 'yes',
-                },
-                {
-                  title: 'No',
-                  const: 'no',
-                },
-              ],
+              title: 'Yes, I have',
+              const: 'yes',
+            },
+            {
+              title: 'No',
+              const: 'no',
             },
           ],
         },
@@ -248,7 +283,7 @@ describe('modify() - attributes', () => {
     });
   });
 
-  it('error message', () => {
+  it.skip('error message', () => {
     const result = modify(schemaPet, {
       fields: {
         pet_name: (fieldAttrs) => {
@@ -305,8 +340,10 @@ describe('modify() - attributes', () => {
     });
   });
 
+  it.todo('reorder fields in fieldsets');
+
   // Q:❓ Would this be useful for first version or too advanced?
-  it('customize conditional effects', () => {
+  it.skip('customize conditional effects', () => {
     const result = modify(schemaPet, {
       conditionals: {
         // The idea is to target a conditional by its id. (new!)
@@ -383,7 +420,7 @@ const schemaTickets = {
 
 describe('modify() - structures', () => {
   // [*6]
-  it('pick fields - basic', () => {
+  it.skip('pick fields - basic', () => {
     const result = modify(schemaTickets, {
       pick: {
         fields: ['quantity'],
@@ -402,7 +439,7 @@ describe('modify() - structures', () => {
       // ...
     });
   });
-  it('pick fields - with conditionals', () => {
+  it.skip('pick fields - with conditionals', () => {
     const result = modify(schemaTickets, {
       pick: {
         fields: ['has_premium'],
@@ -430,7 +467,7 @@ describe('modify() - structures', () => {
   });
 
   // Q:❓ [*7] Would this be really needed?
-  it('omit fields - basic usage', () => {
+  it.skip('omit fields - basic usage', () => {
     const result = modify(schemaTickets, {
       omit: 'has_premium',
     });
@@ -451,7 +488,7 @@ describe('modify() - structures', () => {
   });
 
   // [*8]
-  it('split fields - basic', () => {
+  it.skip('split fields - basic', () => {
     const result = modify(imagineSomeBasicSchema, {
       split: {
         // 💡 Note how "*" is mandatory to ensure
@@ -502,7 +539,7 @@ describe('modify() - structures', () => {
   // Outcome A - Throw an error and fail — not cool in production.
   // Outcome B - Fix the form gracefully, and log warning (onWarn).
   //             Add the missing field to the same step. (see below)
-  it('split fields - handling condional fields - missing field', () => {
+  it.skip('split fields - handling condional fields - missing field', () => {
     const result = modify(schemaTickets, {
       split: {
         parts: [
@@ -549,7 +586,7 @@ describe('modify() - structures', () => {
   // Outcome A - Throw an error and fail — not cool in production.
   // Outcome B - Fix the form gracefully, and log error (onError)
   //             Move the dependent field to the same step. (see bellow)
-  it('split fields - handling condional fields - disconneted fields', () => {
+  it.skip('split fields - handling condional fields - disconneted fields', () => {
     const result = modify(schemaTickets, {
       split: {
         // 💡 note how "premium_id" is in the wrong step.
