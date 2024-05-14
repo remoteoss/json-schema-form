@@ -1,7 +1,8 @@
+import difference from 'lodash/difference';
 import get from 'lodash/get';
-// import set from 'lodash/set';
+import intersection from 'lodash/intersection';
 import merge from 'lodash/merge';
-import { difference } from 'lodash';
+import set from 'lodash/set';
 
 /**
  *
@@ -11,6 +12,52 @@ import { difference } from 'lodash';
  */
 function shortToFullPath(path) {
   return path.replace('.', '.properties.');
+}
+
+function standardizeAttrs(attrs) {
+  const {
+    errorMessage, // to be renamed
+    properties, // ignored because of recurisve call
+    ...rest
+  } = attrs;
+
+  return {
+    ...rest,
+    ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
+  };
+}
+
+function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
+  const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
+
+  const inIf = intersection(ifCondition.required, fieldsToPick);
+
+  console.log({ inIf });
+  if (inIf.length > 0) {
+    return true;
+  }
+
+  const inThen =
+    intersection(thenCondition.required, fieldsToPick) ||
+    intersection(Object.keys(thenCondition.properties), fieldsToPick);
+
+  console.log({ inThen });
+
+  if (inThen.length > 0) {
+    return true;
+  }
+
+  const inElse =
+    intersection(elseCondition.required, fieldsToPick) ||
+    intersection(Object.keys(elseCondition.properties), fieldsToPick);
+
+  console.log({ inElse });
+
+  if (inElse.length > 0) {
+    return true;
+  }
+
+  return false;
 }
 
 function rewriteFields(schema, fieldsConfig) {
@@ -30,8 +77,13 @@ function rewriteFields(schema, fieldsConfig) {
 
     merge(get(schema.properties, fieldPath), {
       ...fieldAttrs,
-      ...fieldChanges,
+      ...standardizeAttrs(fieldChanges),
     });
+
+    // recrusive
+    if (fieldChanges.properties) {
+      rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
+    }
   });
 }
 
@@ -70,14 +122,59 @@ function reorderFields(schema, orderCallback) {
   schema['x-jsf-order'] = finalOrder;
 }
 
+function pickFields(originalSchema, pickConfig) {
+  if (!pickConfig) return originalSchema;
+
+  const fieldsToPick = pickConfig.fields;
+  const newSchema = {
+    properties: {},
+  };
+
+  Object.entries(originalSchema).forEach(([attrKey, attrValue]) => {
+    switch (attrKey) {
+      case 'properties':
+        // TODO — handle recursive nested fieldsets
+        fieldsToPick.forEach((fieldPath) => {
+          console.log('set', fieldPath, attrValue, fieldPath);
+          set(newSchema.properties, fieldPath, attrValue[fieldPath]);
+        });
+        break;
+      case 'x-jsf-order':
+      case 'required':
+        newSchema[attrKey] = attrValue.filter((fieldName) => fieldsToPick.includes(fieldName));
+        break;
+      case 'allOf': {
+        const newAllOf = [];
+        // remove conditional ("if, then, else") if it does not contain any reference to fieldsToPick
+        originalSchema.allOf.forEach((condition) => {
+          if (isConditionalReferencingAnyPickedField(condition, fieldsToPick)) {
+            console.log('entao');
+            newAllOf.push(condition);
+          }
+        });
+        newSchema[attrKey] = newAllOf;
+
+        break;
+      }
+      default:
+        newSchema[attrKey] = attrValue;
+    }
+  });
+
+  return newSchema;
+}
+
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
 
   // All these functions mutate "schema",
-  // that's why we create a copy of originalSchema.
+  // that's why we create a copy above
   rewriteFields(schema, config.fields);
+
   rewriteAllFields(schema, config.allFields);
+
   reorderFields(schema, config.order);
 
-  return schema;
+  const newSchema = pickFields(schema, config.pick);
+  return newSchema;
 }

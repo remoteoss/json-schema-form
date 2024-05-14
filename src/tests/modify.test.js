@@ -3,8 +3,9 @@ import { modify } from '../modify';
 /**
  * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
  * WIP — In progress
+ * Please review all tests explaining each spec.
  * Tests with it.skip() are still not implemented.
- * Please review all specs explained with tests.
+ * Thank you :)
  * 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧 🚧
  */
 
@@ -40,9 +41,9 @@ const schemaPet = {
     },
     pet_age: {
       title: "Pet's age in months",
+      maximum: 24,
       'x-jsf-presentation': {
         inputType: 'number',
-        maximum: 24,
       },
       'x-jsf-errorMessage': {
         maximum: 'Your pet cannot be older than 24 months.',
@@ -252,7 +253,8 @@ describe('modify() - attributes', () => {
             oneOf: fieldAttrs.oneOf.map((option) => {
               const customTitle = labelsMap[option.const];
               if (!customTitle) {
-                console.error('The option is not handled.');
+                // TODO - test this
+                // console.error('The option is not handled.');
                 return option;
               }
               return {
@@ -283,11 +285,11 @@ describe('modify() - attributes', () => {
     });
   });
 
-  it.skip('error message', () => {
+  it('error message', () => {
     const result = modify(schemaPet, {
       fields: {
-        pet_name: (fieldAttrs) => {
-          //console.log(fieldsAttrs.maximum) // 24
+        pet_age: (fieldAttrs) => {
+          // console.log(fieldAttrs); // 24
           return {
             // [*3]
             // note how we don't need to write "x-jsf-errorMessage" - sugar syntax.
@@ -297,18 +299,32 @@ describe('modify() - attributes', () => {
             },
           };
         },
+        'pet_address.street': {
+          errorMessage: {
+            required: 'Your pet cannot live in the street.',
+          },
+        },
       },
       // ...
     });
 
     expect(result).toMatchObject({
       properties: {
-        pet_name: {
+        pet_age: {
           'x-jsf-errorMessage': {
             // maximum: (before) 'Your pet cannot be older than 24 months.',
             minimum: `We only accept pets up to 24 months old.`,
             // required: (before) undefined
             required: 'We need to know your pet name.',
+          },
+        },
+        pet_address: {
+          properties: {
+            street: {
+              'x-jsf-errorMessage': {
+                required: 'Your pet cannot live in the street.',
+              },
+            },
           },
         },
       },
@@ -383,16 +399,20 @@ describe('modify() - attributes', () => {
 const schemaTickets = {
   properties: {
     age: {
-      /* ... */
+      title: 'Age',
+      type: 'integer',
     },
-    quatity: {
-      /* ... */
+    quantity: {
+      title: 'Quantity',
+      type: 'integer',
     },
     has_premium: {
-      /* ... */
+      title: 'Premium',
+      type: 'string',
     },
     premium_id: {
-      /* ... */
+      title: 'Premium ID',
+      type: 'boolean',
     },
   },
   'x-jsf-order': ['age', 'quantity', 'has_premium', 'premium_id'],
@@ -420,25 +440,34 @@ const schemaTickets = {
 
 describe('modify() - structures', () => {
   // [*6]
-  it.skip('pick fields - basic', () => {
+  it('pick fields - basic', () => {
     const result = modify(schemaTickets, {
       pick: {
         fields: ['quantity'],
       },
     });
 
+    console.log('xx', result);
     // Note how the other fields got discarded,
     // as well the order and allOf got reduced.
-    expect(result).toMatchObject({
-      properties: {
-        quatity: {
-          /*...*/
-        },
+    expect(result.properties).toEqual({
+      quantity: {
+        title: 'Quantity',
+        type: 'integer',
       },
-      'x-jsf-order': ['quantity'],
-      // ...
     });
+    expect(result.properties.age).toBeUndefined();
+    expect(result.properties.has_premium).toBeUndefined();
+    expect(result.properties.premium_id).toBeUndefined();
+
+    expect(result['x-jsf-order']).toEqual(['quantity']);
+    expect(result.allOf).toEqual([]); // conditional got removed.
   });
+
+  it.todo('pick fields - keep related conditionals');
+
+  it.todo('pick fields - nested fieldsets');
+
   it.skip('pick fields - with conditionals', () => {
     const result = modify(schemaTickets, {
       pick: {
@@ -478,7 +507,7 @@ describe('modify() - structures', () => {
         age: {
           /* ... */
         },
-        quatity: {
+        quantity: {
           /* ... */
         },
       },
