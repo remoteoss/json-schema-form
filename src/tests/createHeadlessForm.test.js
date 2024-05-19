@@ -467,9 +467,9 @@ describe('createHeadlessForm', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaInputTypeText);
 
       expect(fields[0]).toMatchObject({
-        description: 'The number of your national identification (max 10 digits)',
-        label: 'ID number',
-        name: 'id_number',
+        description: 'Your username (max 10 characters)',
+        label: 'Username',
+        name: 'username',
         required: true,
         schema: expect.any(Object),
         inputType: 'text',
@@ -485,8 +485,8 @@ describe('createHeadlessForm', () => {
       expect(fieldValidator.isValidSync(1)).toBe(false);
       expect(fieldValidator.isValidSync(0)).toBe(false);
 
-      expect(handleValidation({ id_number: 1 }).formErrors).toEqual({
-        id_number: 'id_number must be a `string` type, but the final value was: `1`.',
+      expect(handleValidation({ username: 1 }).formErrors).toEqual({
+        username: 'username must be a `string` type, but the final value was: `1`.',
       });
 
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
@@ -496,20 +496,18 @@ describe('createHeadlessForm', () => {
       const resultsWithRootDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: mockTextInput,
+            username: mockTextInput,
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
-      expect(resultsWithRootDescription.fields[0].description).toMatch(
-        /the number of your national/i
-      );
+      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
 
       const resultsWithPresentationDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: {
+            username: {
               ...mockTextInput,
               'x-jsf-presentation': {
                 inputType: 'text',
@@ -519,7 +517,7 @@ describe('createHeadlessForm', () => {
               },
             },
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
@@ -532,20 +530,18 @@ describe('createHeadlessForm', () => {
       const resultsWithRootDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: mockTextInputDeprecated,
+            username: mockTextInputDeprecated,
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
-      expect(resultsWithRootDescription.fields[0].description).toMatch(
-        /the number of your national/i
-      );
+      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
 
       const resultsWithPresentationDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: {
+            username: {
               ...mockTextInputDeprecated,
               presentation: {
                 inputType: 'text',
@@ -555,7 +551,7 @@ describe('createHeadlessForm', () => {
               },
             },
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
@@ -1561,9 +1557,9 @@ describe('createHeadlessForm', () => {
               required: false,
               fields: [
                 {
-                  description: 'The number of your national identification (max 10 digits)',
-                  label: 'ID number',
-                  name: 'id_number',
+                  description: 'Your username (max 10 characters)',
+                  label: 'Username',
+                  name: 'username',
                   type: 'text',
                   required: true,
                 },
@@ -1608,9 +1604,9 @@ describe('createHeadlessForm', () => {
                   required: false,
                   fields: [
                     {
-                      description: 'The number of your national identification (max 10 digits)',
-                      label: 'ID number',
-                      name: 'id_number',
+                      description: 'Your username (max 10 characters)',
+                      label: 'Username',
+                      name: 'username',
                       type: 'text',
                       required: true,
                     },
@@ -2018,12 +2014,12 @@ describe('createHeadlessForm', () => {
 
       // Assert the yupError shape is really a YupError
       expect(yupError).toEqual(expect.any(Error));
-      expect(yupError.inner[0].path).toBe('id_number');
+      expect(yupError.inner[0].path).toBe('username');
       expect(yupError.inner[0].message).toBe('Required field');
 
       // Assert the converted YupError to formErrors
       expect(formErrors).toEqual({
-        id_number: 'Required field',
+        username: 'Required field',
       });
     });
   });
@@ -2812,7 +2808,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'no',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
             mandatory_group_array: 'no',
           })
@@ -2827,7 +2823,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
             mandatory_group_array: 'no',
           })
@@ -2843,7 +2839,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
             mandatory_group_array: 'yes',
             a_group_array: [{ full_name: 'adfs' }],
@@ -2854,7 +2850,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
               tabs: 2,
             },
             mandatory_group_array: 'no',
@@ -2943,18 +2939,18 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number'],
+            validate_fieldset: ['username'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toBeUndefined();
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toEqual({
@@ -2965,9 +2961,9 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
               tabs: 2,
             },
           })
@@ -2980,18 +2976,18 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number'],
+            validate_fieldset: ['username'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toBeUndefined();
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toEqual({
@@ -3002,9 +2998,9 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
               tabs: 2,
             },
           })
@@ -3584,7 +3580,7 @@ describe('createHeadlessForm', () => {
 
         // It returns fields without errors
         expect(result.fields).toBeDefined();
-        expect(result.fields[0].fields[0].name).toBe('id_number');
+        expect(result.fields[0].fields[0].name).toBe('username');
         expect(result.fields[0].fields[1].name).toBe('tabs');
 
         // Warn about those missmatched values
@@ -3727,14 +3723,14 @@ describe('createHeadlessForm', () => {
             id_number: { 'data-field': 'field' },
             fieldset: {
               customProperties: {
-                id_number: { 'data-fieldset': 'fieldset' },
+                username: { 'data-fieldset': 'fieldset' },
               },
             },
             nestedFieldset: {
               customProperties: {
                 innerFieldset: {
                   customProperties: {
-                    id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+                    username: { 'data-nested-fieldset': 'nested-fieldset' },
                   },
                 },
               },
@@ -3753,7 +3749,7 @@ describe('createHeadlessForm', () => {
             name: 'fieldset',
             fields: [
               {
-                name: 'id_number',
+                name: 'username',
                 'data-fieldset': 'fieldset',
               },
               {
@@ -3768,7 +3764,7 @@ describe('createHeadlessForm', () => {
                 name: 'innerFieldset',
                 fields: [
                   {
-                    name: 'id_number',
+                    name: 'username',
                     'data-nested-fieldset': 'nested-fieldset',
                   },
                   {
@@ -3790,8 +3786,8 @@ describe('createHeadlessForm', () => {
       expect(fieldResult).not.toHaveProperty('data-fieldset');
       expect(fieldResult).not.toHaveProperty('data-nested-fieldset');
 
-      // $.fieldset.id_number
-      expect(fildsetResult.fields[0]).toHaveProperty('name', 'id_number');
+      // $.fieldset.username
+      expect(fildsetResult.fields[0]).toHaveProperty('name', 'username');
       expect(fildsetResult.fields[0]).toHaveProperty('data-fieldset', 'fieldset');
       expect(fildsetResult.fields[0]).not.toHaveProperty('data-field');
       expect(fildsetResult.fields[0]).not.toHaveProperty('data-nested-fieldset');
@@ -3799,7 +3795,7 @@ describe('createHeadlessForm', () => {
       expect(fildsetResult.fields[1]).not.toHaveProperty('data-nested-fieldset');
 
       // $.nestedFieldset.innerFieldset.id_number
-      expect(nestedFieldsetResult.fields[0].fields[0]).toHaveProperty('name', 'id_number');
+      expect(nestedFieldsetResult.fields[0].fields[0]).toHaveProperty('name', 'username');
       expect(nestedFieldsetResult.fields[0].fields[0]).toHaveProperty(
         'data-nested-fieldset',
         'nested-fieldset'

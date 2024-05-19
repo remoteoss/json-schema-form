@@ -3,8 +3,8 @@
 // -------------------------------------
 
 export const mockTextInput = {
-  title: 'ID number',
-  description: 'The number of your national identification (max 10 digits)',
+  title: 'Username',
+  description: 'Your username (max 10 characters)',
   maxLength: 10,
   'x-jsf-presentation': {
     inputType: 'text',
@@ -14,8 +14,8 @@ export const mockTextInput = {
 };
 
 export const mockTextInputDeprecated = {
-  title: 'ID number',
-  description: 'The number of your national identification (max 10 digits)',
+  title: 'Username',
+  description: 'Your username (max 10 characters)',
   maxLength: 10,
   presentation: {
     inputType: 'text',
@@ -313,10 +313,10 @@ export const mockFieldset = {
     inputType: 'fieldset',
   },
   properties: {
-    id_number: mockTextInput,
+    username: mockTextInput,
     tabs: mockNumberInput,
   },
-  required: ['id_number'],
+  required: ['username'],
   type: 'object',
 };
 
@@ -328,10 +328,10 @@ export const mockFocusedFieldset = {
     variant: 'focused',
   },
   properties: {
-    id_number: mockTextInput,
+    username: mockTextInput,
     tabs: mockNumberInput,
   },
-  required: ['id_number'],
+  required: ['username'],
   type: 'object',
 };
 
@@ -501,7 +501,7 @@ export const mockTelWithPattern = {
  * @returns {Object} A JSON schema
  * @example
  *  JSONSchemaBuilder().addInput({
-      id_number: mockTextInput,
+      username: mockTextInput,
     })
     .build();
  */
@@ -708,9 +708,9 @@ export const schemaWithoutTypes = {
 
 export const schemaInputTypeText = {
   properties: {
-    id_number: mockTextInput,
+    username: mockTextInput,
   },
-  required: ['id_number'],
+  required: ['username'],
 };
 
 export const schemaInputWithStatement = {
@@ -1292,7 +1292,7 @@ export const schemaDynamicValidationConst = {
   then: {
     properties: {
       a_fieldset: {
-        required: ['id_number', 'tabs'],
+        required: ['username', 'tabs'],
       },
     },
   },
@@ -1369,7 +1369,7 @@ export const schemaDynamicValidationContains = JSONSchemaBuilder()
       type: 'array',
       description: 'Select what fieldset fields are required',
       items: {
-        enum: ['all', 'id_number'],
+        enum: ['all', 'username'],
       },
       'x-jsf-presentation': {
         inputType: 'select',
@@ -1379,8 +1379,8 @@ export const schemaDynamicValidationContains = JSONSchemaBuilder()
             value: 'all',
           },
           {
-            label: 'ID Number',
-            value: 'id_number',
+            label: 'Username',
+            value: 'username',
           },
         ],
         placeholder: 'Select...',
@@ -1401,7 +1401,7 @@ export const schemaDynamicValidationContains = JSONSchemaBuilder()
     {
       properties: {
         a_fieldset: {
-          required: ['id_number', 'tabs'],
+          required: ['username', 'tabs'],
         },
       },
     }
