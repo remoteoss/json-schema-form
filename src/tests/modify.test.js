@@ -116,8 +116,7 @@ const imagineSomeBasicSchema = {
 };
 
 /*
-modify() Options:
-
+modify() config:
 {
   fields,
   allFields,
@@ -127,10 +126,9 @@ modify() Options:
   omit,
   split, 
 }
-
 */
 
-describe('modify() - attributes', () => {
+describe('modify() - basic mutations', () => {
   it('replace base field', () => {
     const result = modify(schemaPet, {
       fields: {
@@ -169,12 +167,19 @@ describe('modify() - attributes', () => {
         'address.street': {
           title: 'Street name',
         },
+        'address.city': () => ({
+          title: 'City name',
+        }),
         // Q:❓ or manual nesting — both would work.
-        address: {
-          properties: {
-            number: { title: 'Door number' },
-          },
+        address: (fieldAttrs) => {
+          console.log(fieldAttrs.properties.street);
+          return {
+            properties: {
+              number: { title: 'Door number' },
+            },
+          };
         },
+        // TODO: write test to nested field
       },
     });
 
@@ -189,7 +194,7 @@ describe('modify() - attributes', () => {
               title: 'Door number',
             },
             city: {
-              title: 'City',
+              title: 'City name',
             },
           },
         },
@@ -331,34 +336,8 @@ describe('modify() - attributes', () => {
     });
   });
 
-  it('reorder fields', () => {
-    const baseExample = {
-      properties: {
-        /*...*/
-      },
-      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
-    };
-    const result = modify(baseExample, {
-      // eslint-disable-next-line no-unused-vars
-      order: (originalOrder) => {
-        // [*4]
-        // console.log(order) // ['field_a', 'field_b', 'field_c', 'field_d']
-        return {
-          order: ['field_c', 'field_a', 'field_b'],
-          rest: 'start', // 'start' | 'end'
-        };
-      },
-    });
-
-    // 💡 Note how the missing field (field_d) got automatically added as safety measure.
-    expect(result).toMatchObject({
-      'x-jsf-order': ['field_d', 'field_c', 'field_a', 'field_b'],
-    });
-  });
-
-  it.todo('reorder fields in fieldsets');
-
   // Q:❓ Would this be useful for first version or too advanced?
+  // Leave this for last.
   it.skip('customize conditional effects', () => {
     const result = modify(schemaPet, {
       conditionals: {
@@ -394,6 +373,36 @@ describe('modify() - attributes', () => {
       ],
     });
   });
+});
+
+describe('modify() - reoder fields', () => {
+  it('reorder fields', () => {
+    const baseExample = {
+      properties: {
+        /*...*/
+      },
+      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
+    };
+    const result = modify(baseExample, {
+      // eslint-disable-next-line no-unused-vars
+      order: (originalOrder) => {
+        // [*4]
+        // console.log(order) // ['field_a', 'field_b', 'field_c', 'field_d']
+        return {
+          order: ['field_c', 'field_a', 'field_b'],
+          rest: 'start', // 'start' | 'end'
+        };
+      },
+    });
+
+    // 💡 Note how the missing field (field_d) got automatically added as safety measure.
+    expect(result).toMatchObject({
+      'x-jsf-order': ['field_d', 'field_c', 'field_a', 'field_b'],
+    });
+  });
+
+  // Leave this for last.
+  it.skip('reorder fields in fieldsets', () => {});
 });
 
 const schemaTickets = {
@@ -438,9 +447,9 @@ const schemaTickets = {
   ],
 };
 
-describe('modify() - structures', () => {
-  // [*6]
-  it('pick fields - basic', () => {
+// [*6]
+describe('modify() - pick fields', () => {
+  it('basic usage', () => {
     const result = modify(schemaTickets, {
       pick: {
         fields: ['quantity'],
@@ -464,11 +473,7 @@ describe('modify() - structures', () => {
     expect(result.allOf).toEqual([]); // conditional got removed.
   });
 
-  it.todo('pick fields - keep related conditionals');
-
-  it.todo('pick fields - nested fieldsets');
-
-  it.skip('pick fields - with conditionals', () => {
+  it.skip('with conditionals are kept', () => {
     const result = modify(schemaTickets, {
       pick: {
         fields: ['has_premium'],
@@ -495,8 +500,13 @@ describe('modify() - structures', () => {
     });
   });
 
-  // Q:❓ [*7] Would this be really needed?
-  it.skip('omit fields - basic usage', () => {
+  it.skip('nested fieldsets', () => {});
+});
+
+// Q:❓ [*7] Would this be really needed?
+// Leave this for last.
+describe('modify() - omit fields', () => {
+  it.skip('basic usage', () => {
     const result = modify(schemaTickets, {
       omit: 'has_premium',
     });
@@ -514,10 +524,32 @@ describe('modify() - structures', () => {
       'x-jsf-order': ['age', 'quantity'],
       allOf: [],
     });
+
+    //
   });
 
+  it.skip('conditionals - main field (eg has_pet)', () => {
+    // QUESTION: what happens in this situation?
+    // hmm...
+    // - Approach A: The conditional is removed, and the dependent fields are removed too.
+    //  And throws an warning saying it also removed the dependent fields
+    // - Approach B: The conditional is removed, but the dependent fields are kept.
+    //  This doesn't sound right at all.
+  });
+
+  it.skip('conditionals - dependent field (eg pet_name)', () => {
+    // QUESTION: what happens in this situation?
+    // hmm...
+    // - Approach A: The dependent field is removed,
+    //    and the conditional effect ("else" and/or "then") are removed too.
+    // - Approach B: The dependent field is removed, but the conditional is kept.
+    // No, no, no, then it would be an invalid json schema, asking for a field that does not exist.
+  });
+});
+
+describe('modify() - split fields', () => {
   // [*8]
-  it.skip('split fields - basic', () => {
+  it.skip('basic usage', () => {
     const result = modify(imagineSomeBasicSchema, {
       split: {
         // 💡 Note how "*" is mandatory to ensure
@@ -568,7 +600,7 @@ describe('modify() - structures', () => {
   // Outcome A - Throw an error and fail — not cool in production.
   // Outcome B - Fix the form gracefully, and log warning (onWarn).
   //             Add the missing field to the same step. (see below)
-  it.skip('split fields - handling condional fields - missing field', () => {
+  it.skip('condionals - missing field', () => {
     const result = modify(schemaTickets, {
       split: {
         parts: [
@@ -615,7 +647,7 @@ describe('modify() - structures', () => {
   // Outcome A - Throw an error and fail — not cool in production.
   // Outcome B - Fix the form gracefully, and log error (onError)
   //             Move the dependent field to the same step. (see bellow)
-  it.skip('split fields - handling condional fields - disconneted fields', () => {
+  it.skip('condionals - disconneted fields', () => {
     const result = modify(schemaTickets, {
       split: {
         // 💡 note how "premium_id" is in the wrong step.
@@ -658,4 +690,50 @@ describe('modify() - structures', () => {
       ],
     });
   });
+});
+
+describe.skip('modify() -> mutations based on form values', () => {
+  // ?????
+  /* TODO/ OPEN QUESTIONS:
+ 1. Do we have access the value of the field in the fieldAttrs?
+  - No because this modify is done before passing to createHeadlessForm()
+  - Check answer: https://github.com/remoteoss/json-schema-form/pull/71#discussion_r1600252504
+
+  But what if we really have to?
+  - Well... then it's another API. Nowadays, internally we use calculateDynamicProperties(),
+    which works with all attrs except validations (eg minimum, maximum, etc).
+    That's what G. needs too.
+    [] TODO: Write a unit test + playground demo showing this
+    [] Blocker - we need a simple playground for JSF - do NOT use Dragon for this.
+*/
+  it.skip('maybe calculateDynamicProperties()... ?', () => {});
+
+  it.skip('maybe onChange() side effects - a black box... ?', () => {});
+});
+
+describe('modify() - with React Components', () => {
+  /*
+  Is it possible to return React Components?
+  - Technically no because this is JSON. Again, we have to use another API for that.
+  - How?... A specific attr just for JSX, called "Component"
+  [ ] TODO:
+  {
+    fields: {
+      pet_name: {
+        title: 'Your pet name',
+        // This comes from the UI Library connection.
+        Component: (fieldAttrs, value) => <MyCustomComponent {...fieldAttrs} value={value} />,
+        // or simply
+        description: (fieldAttrs) => <Text>{fieldAttrs.description}</Text>
+      },
+    },
+  }
+
+  // Old specs to be deprecated:
+
+  probation_length: {
+    // This cb text is replaced by the fieldAttrs
+    description: (text) => <ProbationLengthDrawer description={text} />,
+  },
+ */
 });

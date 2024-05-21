@@ -32,7 +32,6 @@ function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
 
   const inIf = intersection(ifCondition.required, fieldsToPick);
 
-  console.log({ inIf });
   if (inIf.length > 0) {
     return true;
   }
@@ -50,8 +49,6 @@ function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
   const inElse =
     intersection(elseCondition.required, fieldsToPick) ||
     intersection(Object.keys(elseCondition.properties), fieldsToPick);
-
-  console.log({ inElse });
 
   if (inElse.length > 0) {
     return true;
