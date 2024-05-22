@@ -706,7 +706,36 @@ describe.skip('modify() -> mutations based on form values', () => {
     [] TODO: Write a unit test + playground demo showing this
     [] Blocker - we need a simple playground for JSF - do NOT use Dragon for this.
 */
-  it.skip('maybe calculateDynamicProperties()... ?', () => {});
+  it.skip('maybe calculateDynamicProperties()... ?', () => {
+    // eslint-disable-next-line no-unused-vars
+    const result = modify(schemaPet, {
+      fields: {
+        pet_age: {
+          'x-jsf-presentation': {
+            // eslint-disable-next-line no-unused-vars
+            onChange: (fieldAttrs, values) => {
+              // ... some side effect...
+            },
+            calculateDynamicProperties: () => {},
+            // eslint-disable-next-line no-undef
+            Component: MyReactComponentOrWhatever,
+          },
+        },
+      },
+    });
+
+    // Usage
+    // const { fields } = createHeadlessForm(result, {
+    //   customProperties: <--- deprecated...
+    // });
+
+    // fields.map((field) => {
+    //   const Component = field.Component || MyComponent
+    //   ... <Component onChange={() =>{
+    //     field.onChange(field, values)
+    //   }}/>
+    // })
+  });
 
   it.skip('maybe onChange() side effects - a black box... ?', () => {});
 });
