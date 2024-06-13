@@ -66,6 +66,20 @@ function rewriteAllFields(schema, configCallback, context) {
   });
 }
 
+/**
+ * @typedef Mutations
+ * @type {object}
+ * @property {object} fields - an object with the list of fields to be mutated.
+ * @property {(fieldName: string, fieldAttrs: object) => object} allFields - a callback function that applies a mutation to all the fields.
+ */
+
+/**
+ * Modifies the original schema based on the provided configuration.
+ *
+ * @param {object} originalSchema - The original JSON schema to be modified.
+ * @param {Mutations} config - The configuration object containing the fields and allFields properties.
+ * @returns {object} - The modified JSON schema.
+ */
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
 

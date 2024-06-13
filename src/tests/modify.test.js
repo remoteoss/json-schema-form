@@ -141,8 +141,7 @@ describe('modify() - basic mutations', () => {
         'address.city': () => ({
           title: 'City name',
         }),
-        address: (fieldAttrs) => {
-          console.log(fieldAttrs.properties.street);
+        address: () => {
           return {
             properties: {
               number: { title: 'Door number' },
