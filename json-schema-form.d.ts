@@ -136,5 +136,5 @@ export function modify(
   /**
    * The configuration object containing the fields and allFields properties.
    */
-  config?: Mutations
+  config?: MutationsConfig
 );
