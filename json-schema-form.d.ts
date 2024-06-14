@@ -113,3 +113,28 @@ export function createHeadlessForm(
   jsonSchema: JSONSchemaObjectType,
   customConfig?: JSFConfig
 ): HeadlessFormOutput;
+
+type MutationsConfig = {
+  /**
+   * An object with the list of fields to be mutated.
+   */
+  fields: Record<string, unknown>;
+  /**
+   * a callback function that applies a mutation to all the fields.
+   * @param fieldName
+   * @param fieldAttrs
+   * @returns
+   */
+  allFields: (fieldName: string, fieldAttrs: Record<string, unknown>) => Record<string, unknown>;
+};
+
+export function modify(
+  /**
+   * The original JSON schema to be modified.
+   */
+  originalSchema: JSONSchemaObjectType,
+  /**
+   * The configuration object containing the fields and allFields properties.
+   */
+  config?: Mutations
+);
