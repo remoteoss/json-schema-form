@@ -57,12 +57,18 @@ import { buildYupSchema } from './yupSchema';
  */
 
 /**
+ * @typedef {Object} PresentationMapping
+ * @property {Array} [groupArray] - map external input types as group-array
+ */
+
+/**
  * @typedef {Object} JsfConfig
  * @property {Object} [config.initialValues] - Initial values to evaluate the form against
  * @property {Boolean} [config.strictInputType] - Disabled by default. When enabled, presentation.inputType is required.
  * @property {Object} [config.customProperties] - Object of fields with custom attributes
  * @property {Function|String} config.customProperties[].description - Override description for FieldParameters
  * @property {*} config.customProperties[].* - Any other attribute is included in the FieldParameters
+ * @property {PresentationMapping} config.presentationMapping[].* - Allows mapping internal input types to external input types
  * @property {Object} config.inputTypes[].errorMessage.* - Custom error messages by each error type. eg errorMessage: { required: 'Cannot be empty' }
 
 */
@@ -298,7 +304,10 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
   const fields = [];
 
   fieldParamsList.forEach((fieldParams) => {
-    if (fieldParams.inputType === 'group-array') {
+    if (
+      fieldParams.inputType === 'group-array' ||
+      config.config.presentationMapping?.groupArray?.includes(fieldParams.inputType)
+    ) {
       const groupArrayItems = convertJSONSchemaPropertiesToFieldParameters(fieldParams.items);
       const groupArrayFields = groupArrayItems.map((groupArrayItem) => {
         groupArrayItem.nameKey = groupArrayItem.name;
