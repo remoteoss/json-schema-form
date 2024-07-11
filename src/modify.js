@@ -1,4 +1,3 @@
-import difference from 'lodash/difference';
 import get from 'lodash/get';
 import merge from 'lodash/merge';
 import intersection from 'lodash/intersection';
@@ -49,8 +48,6 @@ function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
   const inThen =
     intersection(thenCondition.required, fieldsToPick) ||
     intersection(Object.keys(thenCondition.properties), fieldsToPick);
-
-  console.log({ inThen });
 
   if (inThen.length > 0) {
     return true;
@@ -194,15 +191,6 @@ function pickFields(originalSchema, pickConfig) {
     properties: {},
   };
 
-  function setMissingFields(missingFields, path) {
-    if (!missingFields) return;
-
-    missingFields.forEach((fieldName) => {
-      pickConfig.onWarn({ fieldName, path });
-      set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
-    });
-  }
-
   Object.entries(originalSchema).forEach(([attrKey, attrValue]) => {
     switch (attrKey) {
       case 'properties':
@@ -220,7 +208,6 @@ function pickFields(originalSchema, pickConfig) {
         // remove conditional ("if, then, else") if it does not contain any reference to fieldsToPick
         originalSchema.allOf.forEach((condition) => {
           if (isConditionalReferencingAnyPickedField(condition, fieldsToPick)) {
-            console.log('entao');
             newAllOf.push(condition);
           }
         });
@@ -233,69 +220,71 @@ function pickFields(originalSchema, pickConfig) {
     }
   });
 
-  // Look for unpicked fields in the conditionals
-  // and add them to the new schema.
+  // Look for unpicked fields in the conditionals...
+  let missingFields = {};
+
   newSchema.allOf.forEach((condition, ix) => {
     const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
 
-    findMissingFields(ifCondition, {
-      fields: fieldsToPick,
-      path: `allOf[${ix}].if`,
-      pickConfig,
-      originalSchema,
-      newSchema,
-    });
-
-    findMissingFields(thenCondition, {
-      fields: fieldsToPick,
-      path: `allOf[${ix}].then`,
-      pickConfig,
-      originalSchema,
-      newSchema,
-    });
-
-    findMissingFields(elseCondition, {
-      fields: fieldsToPick,
-      path: `allOf[${ix}].else`,
-      pickConfig,
-      originalSchema,
-      newSchema,
-    });
+    missingFields = {
+      ...missingFields,
+      ...findMissingFields(ifCondition, {
+        fields: fieldsToPick,
+        path: `allOf[${ix}].if`,
+      }),
+      ...findMissingFields(thenCondition, {
+        fields: fieldsToPick,
+        path: `allOf[${ix}].then`,
+      }),
+      ...findMissingFields(elseCondition, {
+        fields: fieldsToPick,
+        path: `allOf[${ix}].else`,
+      }),
+    };
   });
+
+  if (Object.keys(missingFields).length > 0) {
+    // Read them to the new schema...
+    Object.entries(missingFields).forEach(([fieldName]) => {
+      set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
+    });
+    // And warn about it (the most important part!)
+    pickConfig.onWarn(missingFields);
+  }
 
   return newSchema;
 }
 
-function findMissingFields(conditional, { fields, pickConfig, path, newSchema, originalSchema }) {
+function findMissingFields(conditional, { fields, path }) {
   if (!conditional) {
     return null;
   }
 
-  const missingFields = [];
+  let missingFields = {};
 
   conditional.required?.forEach((fieldName) => {
     if (!fields.includes(fieldName)) {
-      missingFields.push(fieldName);
+      missingFields[fieldName] = {
+        path,
+      };
     }
   });
 
   Object.entries(conditional.properties || []).forEach(([fieldName, fieldAttrs]) => {
     if (!fields.includes(fieldName)) {
-      missingFields.push(fieldName);
+      missingFields[fieldName] = { path };
     }
 
     if (fieldAttrs.properties) {
       const nested = findMissingFields(fieldAttrs.properties, fields);
-      missingFields.push(...nested);
+      missingFields = {
+        ...missingFields,
+        ...nested,
+      };
     }
   });
 
-  if (!missingFields) return;
-
-  missingFields.forEach((fieldName) => {
-    pickConfig.onWarn({ fieldName, path });
-    set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
-  });
+  return missingFields;
 }
 
 export function modify(originalSchema, config) {
