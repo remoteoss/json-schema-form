@@ -397,3 +397,136 @@ describe('modify() - basic mutations', () => {
     });
   });
 });
+
+describe('modify() - reoder fields', () => {
+  it('reorder fields - basic usage as "start"', () => {
+    const baseExample = {
+      properties: {
+        /* does not matter */
+      },
+      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
+    };
+    const result = modify(baseExample, {
+      order: () => {
+        return {
+          order: ['field_c', 'field_a', 'field_b'],
+          // rest: 'start', default behavior
+        };
+      },
+    });
+
+    // 💡 Note how the missing field (field_d) was added to the start as safety measure.
+    expect(result).toMatchObject({
+      'x-jsf-order': ['field_d', 'field_c', 'field_a', 'field_b'],
+    });
+  });
+
+  it('reorder fields - basic usage as "end"', () => {
+    const baseExample = {
+      properties: {
+        /* does not matter */
+      },
+      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
+    };
+    const result = modify(baseExample, {
+      order: () => {
+        return {
+          order: ['field_c', 'field_a', 'field_b'],
+          rest: 'end',
+        };
+      },
+    });
+
+    // 💡 Note how the missing field (field_d) was added to the end as safety measure.
+    expect(result).toMatchObject({
+      'x-jsf-order': ['field_c', 'field_a', 'field_b', 'field_d'],
+    });
+  });
+
+  it('reorder fields -  based on originalOrder', () => {
+    const baseExample = {
+      properties: {
+        /* does not matter */
+      },
+      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
+    };
+    const result = modify(baseExample, {
+      order: (original) => {
+        return {
+          order: original.reverse(),
+        };
+      },
+    });
+
+    expect(result).toMatchObject({
+      'x-jsf-order': ['field_d', 'field_c', 'field_b', 'field_a'],
+    });
+  });
+
+  it('reorder fields in fieldsets', () => {
+    const baseExample = {
+      properties: {
+        address: {
+          properties: {
+            /* does not matter */
+          },
+          'x-jsf-order': ['first_line', 'zipcode', 'city'],
+        },
+        age: {
+          /* ... */
+        },
+      },
+      'x-jsf-order': ['address', 'age'],
+    };
+
+    // Approach A - API based on field scope.
+    // Downside: The root order() is misleading?
+    const resultA = modify(baseExample, {
+      fields: {
+        address: {
+          order: (original) => {
+            return {
+              order: original.reverse(), // ['city', 'zipcode', 'first_line']
+            };
+          },
+        },
+      },
+      order: (original) => {
+        return {
+          order: original.reverse(), // ['age', 'address']
+        };
+      },
+    });
+
+    // Approach B - API based on order scope.
+    // Downside - harder to isolate customizations per fieldset
+    /*
+    const resultB = modify(baseExample, {
+      order: () => {
+        return {
+          order: (original) => {
+            return original.reverse(); // ['age', 'address']
+          },
+          fields: {
+            address: {
+              order: (original) => {
+                return {
+                  order: original.reverse(), // ['city', 'zipcode', 'first_line']
+                };
+              },
+            },
+          },
+        };
+      },
+    });
+    */
+    expect(resultA).toMatchObject({
+      properties: {
+        address: {
+          'x-jsf-order': ['city', 'zipcode', 'first_line'],
+        },
+      },
+      'x-jsf-order': ['age', 'address'],
+    });
+  });
+});
