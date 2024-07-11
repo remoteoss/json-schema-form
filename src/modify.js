@@ -249,7 +249,10 @@ function pickFields(originalSchema, pickConfig) {
       set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
     });
     // And warn about it (the most important part!)
-    pickConfig.onWarn(missingFields);
+    pickConfig.onWarn({
+      message: 'You picked a field with conditional fields. They got added:',
+      missingFields,
+    });
   }
 
   return newSchema;

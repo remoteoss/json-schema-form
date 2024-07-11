@@ -490,7 +490,10 @@ describe('modify() - basic mutations', () => {
 
       expect(result.properties.quantity).toBeUndefined();
       expect(result.properties.age).toBeUndefined();
-      expect(onWarnMock).toBeCalledWith({ premium_id: { path: 'allOf[0].else' } });
+      expect(onWarnMock).toBeCalledWith({
+        message: 'You picked a field with conditional fields. They got added:',
+        missingFields: { premium_id: { path: 'allOf[0].else' } },
+      });
     });
 
     it('related conditionals are kept - (if)', () => {
@@ -516,7 +519,10 @@ describe('modify() - basic mutations', () => {
 
       expect(result.properties.quantity).toBeUndefined();
       expect(result.properties.age).toBeUndefined();
-      expect(onWarnMock).toBeCalledWith({ has_premium: { path: 'allOf[0].if' } });
+      expect(onWarnMock).toBeCalledWith({
+        message: 'You picked a field with conditional fields. They got added:',
+        missingFields: { has_premium: { path: 'allOf[0].if' } },
+      });
     });
 
     // For later on when needed.
