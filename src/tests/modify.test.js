@@ -479,9 +479,7 @@ describe('modify() - reoder fields', () => {
       'x-jsf-order': ['address', 'age'],
     };
 
-    // Approach A - API based on field scope.
-    // Downside: The root order() is misleading?
-    const resultA = modify(baseExample, {
+    const result = modify(baseExample, {
       fields: {
         address: {
           order: (original) => {
@@ -498,29 +496,7 @@ describe('modify() - reoder fields', () => {
       },
     });
 
-    // Approach B - API based on order scope.
-    // Downside - harder to isolate customizations per fieldset
-    /*
-    const resultB = modify(baseExample, {
-      order: () => {
-        return {
-          order: (original) => {
-            return original.reverse(); // ['age', 'address']
-          },
-          fields: {
-            address: {
-              order: (original) => {
-                return {
-                  order: original.reverse(), // ['city', 'zipcode', 'first_line']
-                };
-              },
-            },
-          },
-        };
-      },
-    });
-    */
-    expect(resultA).toMatchObject({
+    expect(result).toMatchObject({
       properties: {
         address: {
           'x-jsf-order': ['city', 'zipcode', 'first_line'],
