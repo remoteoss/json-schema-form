@@ -1,3 +1,4 @@
+import difference from 'lodash/difference';
 import get from 'lodash/get';
 import mergeWith from 'lodash/mergeWith';
 
@@ -19,7 +20,11 @@ function mergeReplaceArray(_, newVal) {
 }
 
 function standardizeAttrs(attrs) {
-  const { errorMessage, properties, ...rest } = attrs;
+  const {
+    errorMessage, // this is the key that will be renamed
+    properties, // destructured because of recursive call afterwards
+    ...rest
+  } = attrs;
 
   return {
     ...rest,
@@ -62,6 +67,10 @@ function rewriteFields(schema, fieldsConfig) {
       const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
       warnings.push(result.warnings);
     }
+
+    if (fieldChanges.order) {
+      reorderFields(fieldAttrs, fieldChanges.order);
+    }
   });
 
   return { warnings: warnings.flat() };
@@ -92,12 +101,29 @@ function rewriteAllFields(schema, configCallback, context) {
   });
 }
 
+function reorderFields(schema, orderCallback) {
+  if (!orderCallback) return null;
+
+  const originalOrder = schema['x-jsf-order'];
+  const orderConfig = orderCallback(originalOrder);
+  const remaining = difference(originalOrder, orderConfig.order);
+
+  const finalOrder =
+    orderConfig.rest === 'end'
+      ? [...orderConfig.order, ...remaining]
+      : [...remaining, ...orderConfig.order];
+
+  schema['x-jsf-order'] = finalOrder;
+}
+
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
   // All these functions mutate "schema" that's why we create a copy above
 
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
+
+  reorderFields(schema, config.order);
 
   if (!config.muteLogging) {
     console.warn(
