@@ -410,14 +410,14 @@ describe('modify() - reoder fields', () => {
       order: () => {
         return {
           order: ['field_c', 'field_a', 'field_b'],
-          // rest: 'start', default behavior
+          // rest: 'end', default behavior
         };
       },
     });
 
-    // 💡 Note how the missing field (field_d) was added to the start as safety measure.
+    // 💡 Note how the missing field (field_d) was added to the end as safety measure.
     expect(result).toMatchObject({
-      'x-jsf-order': ['field_d', 'field_c', 'field_a', 'field_b'],
+      'x-jsf-order': ['field_c', 'field_a', 'field_b', 'field_d'],
     });
   });
 
@@ -432,14 +432,14 @@ describe('modify() - reoder fields', () => {
       order: () => {
         return {
           order: ['field_c', 'field_a', 'field_b'],
-          rest: 'end',
+          rest: 'start',
         };
       },
     });
 
     // 💡 Note how the missing field (field_d) was added to the end as safety measure.
     expect(result).toMatchObject({
-      'x-jsf-order': ['field_c', 'field_a', 'field_b', 'field_d'],
+      'x-jsf-order': ['field_d', 'field_c', 'field_a', 'field_b'],
     });
   });
 
