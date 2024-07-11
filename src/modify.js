@@ -1,6 +1,7 @@
 import difference from 'lodash/difference';
 import get from 'lodash/get';
 import merge from 'lodash/merge';
+import intersection from 'lodash/intersection';
 import mergeWith from 'lodash/mergeWith';
 import set from 'lodash/set';
 
@@ -24,12 +25,46 @@ function mergeReplaceArray(_, newVal) {
 }
 
 function standardizeAttrs(attrs) {
-  const { errorMessage, properties, ...rest } = attrs;
+  const {
+    errorMessage, // to be renamed
+    properties, // ignored because of recurisve call
+    ...rest
+  } = attrs;
 
   return {
     ...rest,
     ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
   };
+}
+
+function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
+  const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
+
+  const inIf = intersection(ifCondition.required, fieldsToPick);
+
+  if (inIf.length > 0) {
+    return true;
+  }
+
+  const inThen =
+    intersection(thenCondition.required, fieldsToPick) ||
+    intersection(Object.keys(thenCondition.properties), fieldsToPick);
+
+  console.log({ inThen });
+
+  if (inThen.length > 0) {
+    return true;
+  }
+
+  const inElse =
+    intersection(elseCondition.required, fieldsToPick) ||
+    intersection(Object.keys(elseCondition.properties), fieldsToPick);
+
+  if (inElse.length > 0) {
+    return true;
+  }
+
+  return false;
 }
 
 function rewriteFields(schema, fieldsConfig) {
@@ -63,6 +98,7 @@ function rewriteFields(schema, fieldsConfig) {
       mergeReplaceArray
     );
 
+    // recrusive
     if (fieldChanges.properties) {
       const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
       warnings.push(result.warnings);
@@ -88,7 +124,7 @@ function rewriteAllFields(schema, configCallback, context) {
       mergeReplaceArray
     );
 
-    // Nested fields, go recursive (fieldset)
+    // Nested, go recursive (fieldset)
     if (fieldAttrs.properties) {
       rewriteAllFields(fieldAttrs, configCallback, {
         parent: fieldName,
@@ -150,6 +186,118 @@ function createFields(schema, fieldsConfig) {
   return { warnings: warnings.flat() };
 }
 
+function pickFields(originalSchema, pickConfig) {
+  if (!pickConfig) return { schema: originalSchema, warnings: null };
+
+  const fieldsToPick = pickConfig.fields;
+  const newSchema = {
+    properties: {},
+  };
+
+  function setMissingFields(missingFields, path) {
+    if (!missingFields) return;
+
+    missingFields.forEach((fieldName) => {
+      pickConfig.onWarn({ fieldName, path });
+      set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
+    });
+  }
+
+  Object.entries(originalSchema).forEach(([attrKey, attrValue]) => {
+    switch (attrKey) {
+      case 'properties':
+        // TODO — handle recursive nested fieldsets
+        fieldsToPick.forEach((fieldPath) => {
+          set(newSchema.properties, fieldPath, attrValue[fieldPath]);
+        });
+        break;
+      case 'x-jsf-order':
+      case 'required':
+        newSchema[attrKey] = attrValue.filter((fieldName) => fieldsToPick.includes(fieldName));
+        break;
+      case 'allOf': {
+        const newAllOf = [];
+        // remove conditional ("if, then, else") if it does not contain any reference to fieldsToPick
+        originalSchema.allOf.forEach((condition) => {
+          if (isConditionalReferencingAnyPickedField(condition, fieldsToPick)) {
+            console.log('entao');
+            newAllOf.push(condition);
+          }
+        });
+        newSchema[attrKey] = newAllOf;
+
+        break;
+      }
+      default:
+        newSchema[attrKey] = attrValue;
+    }
+  });
+
+  // Look for unpicked fields in the conditionals
+  // and add them to the new schema.
+  newSchema.allOf.forEach((condition, ix) => {
+    const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
+
+    findMissingFields(ifCondition, {
+      fields: fieldsToPick,
+      path: `allOf[${ix}].if`,
+      pickConfig,
+      originalSchema,
+      newSchema,
+    });
+
+    findMissingFields(thenCondition, {
+      fields: fieldsToPick,
+      path: `allOf[${ix}].then`,
+      pickConfig,
+      originalSchema,
+      newSchema,
+    });
+
+    findMissingFields(elseCondition, {
+      fields: fieldsToPick,
+      path: `allOf[${ix}].else`,
+      pickConfig,
+      originalSchema,
+      newSchema,
+    });
+  });
+
+  return newSchema;
+}
+
+function findMissingFields(conditional, { fields, pickConfig, path, newSchema, originalSchema }) {
+  if (!conditional) {
+    return null;
+  }
+
+  const missingFields = [];
+
+  conditional.required?.forEach((fieldName) => {
+    if (!fields.includes(fieldName)) {
+      missingFields.push(fieldName);
+    }
+  });
+
+  Object.entries(conditional.properties || []).forEach(([fieldName, fieldAttrs]) => {
+    if (!fields.includes(fieldName)) {
+      missingFields.push(fieldName);
+    }
+
+    if (fieldAttrs.properties) {
+      const nested = findMissingFields(fieldAttrs.properties, fields);
+      missingFields.push(...nested);
+    }
+  });
+
+  if (!missingFields) return;
+
+  missingFields.forEach((fieldName) => {
+    pickConfig.onWarn({ fieldName, path });
+    set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
+  });
+}
+
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
   // All these functions mutate "schema" that's why we create a copy above
@@ -159,7 +307,9 @@ export function modify(originalSchema, config) {
 
   const resultCreate = createFields(schema, config.create);
 
-  const resultReorder = reorderFields(schema, config.orderRoot);
+  const resultPick = pickFields(schema, config.pick);
+  const finalSchema = resultPick.schema;
+  const resultReorder = reorderFields(finalSchema, config.orderRoot);
 
   if (!config.muteLogging) {
     console.warn(
@@ -167,12 +317,17 @@ export function modify(originalSchema, config) {
     );
   }
 
-  const warnings = [resultRewrite.warnings, resultCreate.warnings, resultReorder.warnings]
+  const warnings = [
+    resultRewrite.warnings,
+    resultCreate.warnings,
+    resultPick.warnings,
+    resultReorder.warnings,
+  ]
     .flat()
     .filter(Boolean);
 
   return {
-    schema,
+    schema: finalSchema,
     warnings,
   };
 }
