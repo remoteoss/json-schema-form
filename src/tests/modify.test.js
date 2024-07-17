@@ -552,7 +552,12 @@ describe('modify() - basic mutations', () => {
     // For later on when needed.
     it.todo('ignore conditionals with unpicked fields');
 
-    it.todo('pick nested fieldsets');
+    it.todo('pick nested fields (fieldsets)');
+    /* Use cases:
+      - conditionals inside fieldstes. eg properties.family.allOf[0].if...
+      - conditional in the root pointing to nested fields: eg if properties.family.properties.simblings is 0 then hide properties.playTogether ...
+      - variations of each one of these similar to the existing tests.
+      */
   });
 });
 

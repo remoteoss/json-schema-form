@@ -271,18 +271,12 @@ function findMissingFields(conditional, { fields, path }) {
     }
   });
 
-  Object.entries(conditional.properties || []).forEach(([fieldName, fieldAttrs]) => {
+  Object.entries(conditional.properties || []).forEach(([fieldName]) => {
     if (!fields.includes(fieldName)) {
       missingFields[fieldName] = { path };
     }
 
-    if (fieldAttrs.properties) {
-      const nested = findMissingFields(fieldAttrs.properties, fields);
-      missingFields = {
-        ...missingFields,
-        ...nested,
-      };
-    }
+    // TODO support nested fields (eg if properties.adddress.properties.door_number)
   });
 
   return missingFields;
