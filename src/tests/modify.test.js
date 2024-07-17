@@ -415,26 +415,47 @@ describe('modify() - basic mutations', () => {
         title: 'Premium ID',
         type: 'boolean',
       },
+      reason: {
+        title: 'Why not premium?',
+        type: 'string',
+      },
     },
-    'x-jsf-order': ['age', 'quantity', 'has_premium', 'premium_id'],
+    'x-jsf-order': ['age', 'quantity', 'has_premium', 'premium_id', 'reason'],
     allOf: [
       {
+        // Empty conditional to sanity test empty cases
+        if: {},
+        then: {},
+        else: {},
+      },
+      // Create two conditionals to test both get matched
+      {
         if: {
-          properties: {
-            has_premium: {
-              const: 'yes',
-            },
+          has_premium: {
+            const: 'yes',
           },
           required: ['has_premium'],
         },
         then: {
           required: ['premium_id'],
         },
-        else: {
+        else: {},
+      },
+      {
+        if: {
           properties: {
-            premium_id: false,
+            has_premium: {
+              const: 'no',
+            },
+          },
+          required: ['has_premium'],
+        },
+        then: {
+          properties: {
+            reason: false,
           },
         },
+        else: {},
       },
     ],
   };
@@ -484,15 +505,18 @@ describe('modify() - basic mutations', () => {
           premium_id: {
             title: 'Premium ID',
           },
+          reason: {
+            title: 'Why not premium?',
+          },
         },
-        allOf: [schemaTickets.allOf[0]],
+        allOf: [schemaTickets.allOf[1], schemaTickets.allOf[2]],
       });
 
       expect(result.properties.quantity).toBeUndefined();
       expect(result.properties.age).toBeUndefined();
       expect(onWarnMock).toBeCalledWith({
-        message: 'You picked a field with conditional fields. They got added:',
-        missingFields: { premium_id: { path: 'allOf[0].else' } },
+        message: 'You picked a field which has related conditional fields. They got added:',
+        missingFields: { premium_id: { path: 'allOf[1].then' }, reason: { path: 'allOf[2].then' } },
       });
     });
 
@@ -520,8 +544,8 @@ describe('modify() - basic mutations', () => {
       expect(result.properties.quantity).toBeUndefined();
       expect(result.properties.age).toBeUndefined();
       expect(onWarnMock).toBeCalledWith({
-        message: 'You picked a field with conditional fields. They got added:',
-        missingFields: { has_premium: { path: 'allOf[0].if' } },
+        message: 'You picked a field which has related conditional fields. They got added:',
+        missingFields: { has_premium: { path: 'allOf[1].if' } },
       });
     });
 

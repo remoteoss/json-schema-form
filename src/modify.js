@@ -204,13 +204,11 @@ function pickFields(originalSchema, pickConfig) {
         newSchema[attrKey] = attrValue.filter((fieldName) => fieldsToPick.includes(fieldName));
         break;
       case 'allOf': {
-        const newAllOf = [];
-        // remove conditional ("if, then, else") if it does not contain any reference to fieldsToPick
-        originalSchema.allOf.forEach((condition) => {
-          if (isConditionalReferencingAnyPickedField(condition, fieldsToPick)) {
-            newAllOf.push(condition);
-          }
-        });
+        // remove conditionals that do not contain any reference to fieldsToPick
+        const newAllOf = originalSchema.allOf.filter((condition) =>
+          isConditionalReferencingAnyPickedField(condition, fieldsToPick)
+        );
+
         newSchema[attrKey] = newAllOf;
 
         break;
@@ -223,34 +221,34 @@ function pickFields(originalSchema, pickConfig) {
   // Look for unpicked fields in the conditionals...
   let missingFields = {};
 
-  newSchema.allOf.forEach((condition, ix) => {
+  newSchema.allOf.forEach((condition) => {
     const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
-
+    const index = originalSchema.allOf.indexOf(condition);
     missingFields = {
       ...missingFields,
       ...findMissingFields(ifCondition, {
         fields: fieldsToPick,
-        path: `allOf[${ix}].if`,
+        path: `allOf[${index}].if`,
       }),
       ...findMissingFields(thenCondition, {
         fields: fieldsToPick,
-        path: `allOf[${ix}].then`,
+        path: `allOf[${index}].then`,
       }),
       ...findMissingFields(elseCondition, {
         fields: fieldsToPick,
-        path: `allOf[${ix}].else`,
+        path: `allOf[${index}].else`,
       }),
     };
   });
 
   if (Object.keys(missingFields).length > 0) {
-    // Read them to the new schema...
+    // Re-add them to the schema...
     Object.entries(missingFields).forEach(([fieldName]) => {
       set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
     });
     // And warn about it (the most important part!)
     pickConfig.onWarn({
-      message: 'You picked a field with conditional fields. They got added:',
+      message: 'You picked a field which has related conditional fields. They got added:',
       missingFields,
     });
   }
