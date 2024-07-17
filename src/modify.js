@@ -26,7 +26,7 @@ function mergeReplaceArray(_, newVal) {
 function standardizeAttrs(attrs) {
   const {
     errorMessage, // to be renamed
-    properties, // ignored because of recurisve call
+    properties, // ignored because of recursive call
     ...rest
   } = attrs;
 
@@ -95,7 +95,7 @@ function rewriteFields(schema, fieldsConfig) {
       mergeReplaceArray
     );
 
-    // recrusive
+    // recursive
     if (fieldChanges.properties) {
       const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
       warnings.push(result.warnings);
