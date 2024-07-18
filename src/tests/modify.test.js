@@ -497,7 +497,71 @@ describe('modify() - reoder fields', () => {
         },
       },
     });
+  });
+});
+
+describe('modify() - set new fields', () => {
+  it('add base field', () => {
+    const result = modify(schemaAddress, {
+      add: {
+        new_field: {
+          title: 'New field',
+          type: 'string',
+        },
+        address: {
+          something: 'foo',
+        },
+      },
+    });
+
+    expect(result.schema).toMatchObject({
+      properties: {
+        new_field: {
+          title: 'New field',
+          type: 'string',
+        },
+        address: schemaAddress.properties.address,
+      },
+    });
+
+    // this is ignored because the field already exists
+    expect(result.properties.address.something).toBe(undefined);
+  });
+
+  it('add nested field', () => {
+    const result = modify(schemaAddress, {
+      add: {
+        // Pointer as string
+        'address.state': {
+          title: 'State',
+        },
+        // Pointer as object
+        address: {
+          properties: {
+            district: {
+              title: 'District',
+            },
+          },
+        },
+        // this is ignored because the field already exists [1]
+        'address.street': {
+          title: 'Foo',
+        },
+      },
+    });
 
     expect(result.warnings).toEqual([]);
+    expect(result.properties.address.properties).toMatchObject({
+      ...schemaAddress.properties.address.properties,
+      state: {
+        title: 'State',
+      },
+      district: {
+        title: 'District',
+      },
+    });
+
+    // this is ignored because the field already exists [1]
+    expect(result.properties.address.properties.street.title).toBe('Street');
   });
 });
