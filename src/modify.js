@@ -1,6 +1,8 @@
 import difference from 'lodash/difference';
 import get from 'lodash/get';
+import merge from 'lodash/merge';
 import mergeWith from 'lodash/mergeWith';
+import set from 'lodash/set';
 
 const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
@@ -21,11 +23,12 @@ function mergeReplaceArray(_, newVal) {
 }
 
 function standardizeAttrs(attrs) {
-  const { errorMessage, properties, ...rest } = attrs;
+  const { errorMessage, presentation, properties, ...rest } = attrs;
 
   return {
     ...rest,
     ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
+    ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
   };
 }
 
@@ -115,12 +118,40 @@ function reorderFields(schema, configOrder) {
   return { warnings };
 }
 
+function setFields(schema, fieldsConfig) {
+  if (!fieldsConfig) return null;
+
+  const fieldsToAdd = Object.entries(fieldsConfig);
+
+  fieldsToAdd.forEach(([shortPath, fieldAttrs]) => {
+    const fieldPath = shortToFullPath(shortPath);
+
+    console.log('fieldAttrs', fieldAttrs);
+
+    if (fieldAttrs.properties) {
+      // Recursive to nested fields...
+      setFields(get(schema.properties, fieldPath), fieldAttrs.properties);
+    }
+
+    const fieldInSchema = get(schema.properties, fieldPath);
+    if (fieldInSchema) {
+      // NOTE: Not sure if we should ignore or overwrite it
+      // when it exists. Let's ignore until someone complains.
+      return;
+    }
+
+    const fieldInObjectPath = set({}, fieldPath, standardizeAttrs(fieldAttrs));
+    merge(schema.properties, fieldInObjectPath);
+  });
+}
+
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
   // All these functions mutate "schema" that's why we create a copy above
 
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
+  setFields(schema, config.add);
 
   const resultReorder = reorderFields(schema, config.orderRoot);
 
