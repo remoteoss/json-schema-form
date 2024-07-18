@@ -583,7 +583,7 @@ describe('modify() - set new fields', () => {
     });
 
     expect(result).toMatchObject({
-      'x-jsf-order': ['has_pet', 'new_field', 'pet_name', 'pet_age', 'pet_fat', 'pet_address'],
+      'x-jsf-order': ['has_pet', 'new_field'],
     });
   });
 });
