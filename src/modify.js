@@ -132,8 +132,8 @@ function createFields(schema, fieldsConfig) {
 
     const fieldInSchema = get(schema.properties, fieldPath);
     if (fieldInSchema) {
-      // NOTE: Not sure if we should ignore or overwrite it
-      // when it exists. Let's ignore until someone complains.
+      // Do not override/edit a field that already exists.
+      // That's the job of config.fields method.
       return;
     }
 
