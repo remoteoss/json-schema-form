@@ -58,7 +58,7 @@ const schemaPet = {
     },
   },
   required: ['has_pet'],
-  'x-jsf-order': ['has_pet', 'pet_name'],
+  'x-jsf-order': ['has_pet', 'pet_name', 'pet_age', 'pet_fat', 'pet_address'],
   allOf: [
     {
       id: 'pet_conditional_id',
@@ -563,5 +563,27 @@ describe('modify() - set new fields', () => {
 
     // this is ignored because the field already exists [1]
     expect(result.properties.address.properties.street.title).toBe('Street');
+  });
+
+  // Enable this on PR !78
+  it.skip('reorder new fields', () => {
+    const result = modify(schemaPet, {
+      add: {
+        new_field: {
+          title: 'New field',
+          type: 'string',
+        },
+      },
+      order: {
+        fields: (originalOrder) => {
+          const newOrder = [...originalOrder];
+          return newOrder.splice(1, 0, 'new_field');
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      'x-jsf-order': ['has_pet', 'new_field', 'pet_name', 'pet_age', 'pet_fat', 'pet_address'],
+    });
   });
 });
