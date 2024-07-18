@@ -23,12 +23,11 @@ function mergeReplaceArray(_, newVal) {
 }
 
 function standardizeAttrs(attrs) {
-  const { errorMessage, presentation, properties, ...rest } = attrs;
+  const { errorMessage, properties, ...rest } = attrs;
 
   return {
     ...rest,
     ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
-    ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
   };
 }
 
@@ -125,8 +124,6 @@ function setFields(schema, fieldsConfig) {
 
   fieldsToAdd.forEach(([shortPath, fieldAttrs]) => {
     const fieldPath = shortToFullPath(shortPath);
-
-    console.log('fieldAttrs', fieldAttrs);
 
     if (fieldAttrs.properties) {
       // Recursive to nested fields...
