@@ -356,7 +356,7 @@ describe('modify() - basic mutations', () => {
     });
   });
 
-  it('error message', () => {
+  it('customize x-jsf-errorMessage (shorthand)', () => {
     const result = modify(schemaPet, {
       fields: {
         pet_age: (fieldAttrs) => {
@@ -389,6 +389,46 @@ describe('modify() - basic mutations', () => {
             street: {
               'x-jsf-errorMessage': {
                 required: 'Your pet cannot live in the street.',
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('customize x-jsf-presentation (shorthand)', () => {
+    const result = modify(schemaPet, {
+      fields: {
+        pet_age: () => {
+          return {
+            presentation: {
+              'data-foo': 123,
+            },
+          };
+        },
+        'pet_address.street': {
+          errorMessage: {
+            'data-foo': 456,
+          },
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      properties: {
+        pet_age: {
+          'x-jsf-presentation': {
+            ...result.properties.pet_age['x-jsf-presentation'],
+            'data-foo': 123,
+          },
+        },
+        pet_address: {
+          properties: {
+            street: {
+              'x-jsf-errorMessage': {
+                ...result.properties.pet_address.properties.street['x-jsf-presentation'],
+                'data-foo': 456,
               },
             },
           },
