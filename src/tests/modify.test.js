@@ -501,9 +501,9 @@ describe('modify() - reoder fields', () => {
 });
 
 describe('modify() - set new fields', () => {
-  it('add base field', () => {
+  it('create base field', () => {
     const result = modify(schemaAddress, {
-      add: {
+      create: {
         new_field: {
           title: 'New field',
           type: 'string',
@@ -528,9 +528,9 @@ describe('modify() - set new fields', () => {
     expect(result.properties.address.something).toBe(undefined);
   });
 
-  it('add nested field', () => {
+  it('create nested field', () => {
     const result = modify(schemaAddress, {
-      add: {
+      create: {
         // Pointer as string
         'address.state': {
           title: 'State',
@@ -566,9 +566,9 @@ describe('modify() - set new fields', () => {
   });
 
   // Enable this on PR !78
-  it.skip('reorder new fields', () => {
+  it.skip('reorder new created fields', () => {
     const result = modify(schemaPet, {
-      add: {
+      create: {
         new_field: {
           title: 'New field',
           type: 'string',

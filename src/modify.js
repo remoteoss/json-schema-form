@@ -117,7 +117,7 @@ function reorderFields(schema, configOrder) {
   return { warnings };
 }
 
-function setFields(schema, fieldsConfig) {
+function createFields(schema, fieldsConfig) {
   if (!fieldsConfig) return null;
 
   const fieldsToAdd = Object.entries(fieldsConfig);
@@ -127,7 +127,7 @@ function setFields(schema, fieldsConfig) {
 
     if (fieldAttrs.properties) {
       // Recursive to nested fields...
-      setFields(get(schema.properties, fieldPath), fieldAttrs.properties);
+      createFields(get(schema.properties, fieldPath), fieldAttrs.properties);
     }
 
     const fieldInSchema = get(schema.properties, fieldPath);
@@ -148,7 +148,8 @@ export function modify(originalSchema, config) {
 
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
-  setFields(schema, config.add);
+
+  createFields(schema, config.create);
 
   const resultReorder = reorderFields(schema, config.orderRoot);
 
