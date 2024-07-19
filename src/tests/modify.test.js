@@ -399,7 +399,7 @@ describe('modify() - basic mutations', () => {
 });
 
 describe('modify() - reoder fields', () => {
-  it('reorder fields - basic usage as "start"', () => {
+  it('reorder fields - basic usage', () => {
     const baseExample = {
       properties: {
         /* does not matter */
@@ -407,10 +407,8 @@ describe('modify() - reoder fields', () => {
       'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
     };
     const result = modify(baseExample, {
-      order: () => {
-        return {
-          order: ['field_c', 'field_a', 'field_b'],
-        };
+      order: {
+        fields: ['field_c', 'field_a', 'field_b'],
       },
     });
 
@@ -430,7 +428,7 @@ describe('modify() - reoder fields', () => {
     const result = modify(baseExample, {
       order: (original) => {
         return {
-          order: original.reverse(),
+          fields: original.reverse(),
         };
       },
     });
@@ -461,14 +459,14 @@ describe('modify() - reoder fields', () => {
         address: {
           order: (original) => {
             return {
-              order: original.reverse(), // ['city', 'zipcode', 'first_line']
+              fields: original.reverse(), // ['city', 'zipcode', 'first_line']
             };
           },
         },
       },
       order: (original) => {
         return {
-          order: original.reverse(), // ['age', 'address']
+          fields: original.reverse(), // ['age', 'address']
         };
       },
     });

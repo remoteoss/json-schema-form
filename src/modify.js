@@ -101,14 +101,14 @@ function rewriteAllFields(schema, configCallback, context) {
   });
 }
 
-function reorderFields(schema, orderCallback) {
-  if (!orderCallback) return null;
+function reorderFields(schema, configOrder) {
+  if (!configOrder) return null;
 
   const originalOrder = schema['x-jsf-order'];
-  const orderConfig = orderCallback(originalOrder);
-  const remaining = difference(originalOrder, orderConfig.order);
+  const orderConfig = typeof configOrder === 'function' ? configOrder(originalOrder) : configOrder;
+  const remaining = difference(originalOrder, orderConfig.fields);
 
-  schema['x-jsf-order'] = [...orderConfig.order, ...remaining];
+  schema['x-jsf-order'] = [...orderConfig.fields, ...remaining];
 }
 
 export function modify(originalSchema, config) {
