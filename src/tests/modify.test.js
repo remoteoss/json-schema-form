@@ -213,7 +213,7 @@ describe('modify() - basic mutations', () => {
     });
   });
 
-  it('replace field options (radio/select)', () => {
+  it('replace field attrs that are arrays (partial)', () => {
     const result = modify(schemaPet, {
       fields: {
         has_pet: (fieldAttrs) => {
@@ -250,6 +250,29 @@ describe('modify() - basic mutations', () => {
             {
               title: 'No',
               const: 'no',
+            },
+          ],
+        },
+      },
+    });
+  });
+
+  it('replace field attrs that are arrays (full)', () => {
+    const result = modify(schemaPet, {
+      fields: {
+        has_pet: {
+          oneOf: [{ const: 'yaaas', title: 'YAAS!' }],
+        },
+      },
+    });
+
+    expect(result).toMatchObject({
+      properties: {
+        has_pet: {
+          oneOf: [
+            {
+              const: 'yaaas',
+              title: 'YAAS!',
             },
           ],
         },
