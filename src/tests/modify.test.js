@@ -500,7 +500,7 @@ describe('modify() - reoder fields', () => {
   });
 });
 
-describe('modify() - set new fields', () => {
+describe('modify() - create fields', () => {
   it('create base field', () => {
     const result = modify(schemaAddress, {
       create: {
