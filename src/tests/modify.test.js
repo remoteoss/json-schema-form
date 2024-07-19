@@ -410,7 +410,6 @@ describe('modify() - reoder fields', () => {
       order: () => {
         return {
           order: ['field_c', 'field_a', 'field_b'],
-          // rest: 'end', default behavior
         };
       },
     });
@@ -418,28 +417,6 @@ describe('modify() - reoder fields', () => {
     // 💡 Note how the missing field (field_d) was added to the end as safety measure.
     expect(result).toMatchObject({
       'x-jsf-order': ['field_c', 'field_a', 'field_b', 'field_d'],
-    });
-  });
-
-  it('reorder fields - basic usage as "end"', () => {
-    const baseExample = {
-      properties: {
-        /* does not matter */
-      },
-      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
-    };
-    const result = modify(baseExample, {
-      order: () => {
-        return {
-          order: ['field_c', 'field_a', 'field_b'],
-          rest: 'start',
-        };
-      },
-    });
-
-    // 💡 Note how the missing field (field_d) was added to the end as safety measure.
-    expect(result).toMatchObject({
-      'x-jsf-order': ['field_d', 'field_c', 'field_a', 'field_b'],
     });
   });
 

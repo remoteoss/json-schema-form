@@ -108,12 +108,7 @@ function reorderFields(schema, orderCallback) {
   const orderConfig = orderCallback(originalOrder);
   const remaining = difference(originalOrder, orderConfig.order);
 
-  const finalOrder =
-    orderConfig.rest === 'start'
-      ? [...remaining, ...orderConfig.order]
-      : [...orderConfig.order, ...remaining];
-
-  schema['x-jsf-order'] = finalOrder;
+  schema['x-jsf-order'] = [...orderConfig.order, ...remaining];
 }
 
 export function modify(originalSchema, config) {
