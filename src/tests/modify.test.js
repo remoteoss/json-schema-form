@@ -419,7 +419,7 @@ describe('modify() - basic mutations', () => {
       properties: {
         pet_age: {
           'x-jsf-presentation': {
-            ...result.properties.pet_age['x-jsf-presentation'],
+            ...schemaPet.properties.pet_age['x-jsf-presentation'],
             'data-foo': 123,
           },
         },
@@ -427,7 +427,7 @@ describe('modify() - basic mutations', () => {
           properties: {
             street: {
               'x-jsf-errorMessage': {
-                ...result.properties.pet_address.properties.street['x-jsf-presentation'],
+                ...schemaPet.properties.pet_address.properties.street['x-jsf-presentation'],
                 'data-foo': 456,
               },
             },
