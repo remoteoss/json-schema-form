@@ -1,3 +1,9 @@
+#### 0.10.1-beta.0 (2024-07-23)
+
+##### Chores
+
+* **Text field docs:**  Change naming of ID number property ([#74](https://github.com/remoteoss/json-schema-form/pull/74)) ([338ddd2a](https://github.com/remoteoss/json-schema-form/commit/338ddd2a5f008ec089f38db834f075100b856001))
+
 #### 0.10.0-beta.0 (2024-06-20)
 
 Adds `modify` utility for better customizations ([#75](https://github.com/remoteoss/json-schema-form/pull/75))
