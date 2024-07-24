@@ -443,7 +443,8 @@ describe('modify() - reoder fields', () => {
   it('reorder fields in fieldsets (through config.fields)', () => {
     // NOTE: A better API is needed but we decided to not implement it yet
     // as we didn't agreed on the best DX. Check PR #78 for proposed APIs.
-    // Until then this is the workaround:
+    // Until then this is the workaround.
+    // Note the warning "ODER_MISSING_FIELDS" won't be added.
 
     const baseExample = {
       properties: {
@@ -479,6 +480,6 @@ describe('modify() - reoder fields', () => {
       },
     });
 
-    expect(result.warn).toBeUndefined();
+    expect(result.warnings).toBeNull();
   });
 });
