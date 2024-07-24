@@ -1,5 +1,5 @@
 import get from 'lodash/get';
-import merge from 'lodash/merge';
+import mergeWith from 'lodash/mergeWith';
 
 /**
  *
@@ -9,6 +9,10 @@ import merge from 'lodash/merge';
  */
 function shortToFullPath(path) {
   return path.replace('.', '.properties.');
+}
+
+function mergeReplaceArray(_, newVal) {
+  return Array.isArray(newVal) ? newVal : undefined;
 }
 
 function standardizeAttrs(attrs) {
@@ -35,10 +39,14 @@ function rewriteFields(schema, fieldsConfig) {
     const fieldAttrs = get(schema.properties, fieldPath);
     const fieldChanges = typeof mutation === 'function' ? mutation(fieldAttrs) : mutation;
 
-    merge(get(schema.properties, fieldPath), {
-      ...fieldAttrs,
-      ...standardizeAttrs(fieldChanges),
-    });
+    mergeWith(
+      get(schema.properties, fieldPath),
+      {
+        ...fieldAttrs,
+        ...standardizeAttrs(fieldChanges),
+      },
+      mergeReplaceArray
+    );
 
     if (fieldChanges.properties) {
       rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
@@ -52,10 +60,14 @@ function rewriteAllFields(schema, configCallback, context) {
 
   Object.entries(schema.properties).forEach(([fieldName, fieldAttrs]) => {
     const fullName = parentName ? `${parentName}.${fieldName}` : fieldName;
-    merge(get(schema.properties, fieldName), {
-      ...fieldAttrs,
-      ...configCallback(fullName, fieldAttrs),
-    });
+    mergeWith(
+      get(schema.properties, fieldName),
+      {
+        ...fieldAttrs,
+        ...configCallback(fullName, fieldAttrs),
+      },
+      mergeReplaceArray
+    );
 
     // Nested fields, go recursive (fieldset)
     if (fieldAttrs.properties) {
