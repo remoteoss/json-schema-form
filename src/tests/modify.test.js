@@ -417,7 +417,7 @@ describe('modify() - reoder fields', () => {
 
     expect(result.warnings).toMatchObject([
       {
-        type: 'ODER_MISSING_FIELDS',
+        type: 'ORDER_MISSING_FIELDS',
         message:
           'Some fields got forgotten in the new order. They were automatically appended: field_a, field_d',
       },
@@ -444,7 +444,7 @@ describe('modify() - reoder fields', () => {
     // NOTE: A better API is needed but we decided to not implement it yet
     // as we didn't agreed on the best DX. Check PR #78 for proposed APIs.
     // Until then this is the workaround.
-    // Note the warning "ODER_MISSING_FIELDS" won't be added.
+    // Note the warning "ORDER_MISSING_FIELDS" won't be added.
 
     const baseExample = {
       properties: {
