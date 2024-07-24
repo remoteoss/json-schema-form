@@ -80,7 +80,7 @@ function rewriteAllFields(schema, configCallback, context) {
 
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
-  let warn = []; // To be implemented in next PRs.
+  let warnings = []; // To be implemented in next PRs.
 
   // All these functions mutate "schema",
   // that's why we create a copy above
@@ -90,12 +90,12 @@ export function modify(originalSchema, config) {
 
   if (!config.muteWarningTip) {
     console.warn(
-      'json-schema-form modify(): Make sure you log the returned `warn` as they highlight possible bugs in your modifications. To mute this log, pass `muteWarningTip: true` to the config.'
+      'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteWarningTip: true` to the config.'
     );
   }
 
   return {
     schema,
-    warn: warn.length > 0 ? warn : undefined,
+    warnings: warnings.length > 0 ? warnings : null,
   };
 }
