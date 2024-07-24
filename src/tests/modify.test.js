@@ -396,169 +396,168 @@ describe('modify() - basic mutations', () => {
       },
     });
   });
+});
 
-  const schemaTickets = {
-    properties: {
-      age: {
-        title: 'Age',
-        type: 'integer',
+const schemaTickets = {
+  properties: {
+    age: {
+      title: 'Age',
+      type: 'integer',
+    },
+    quantity: {
+      title: 'Quantity',
+      type: 'integer',
+    },
+    has_premium: {
+      title: 'Has premium',
+      type: 'string',
+    },
+    premium_id: {
+      title: 'Premium ID',
+      type: 'boolean',
+    },
+    reason: {
+      title: 'Why not premium?',
+      type: 'string',
+    },
+  },
+  'x-jsf-order': ['age', 'quantity', 'has_premium', 'premium_id', 'reason'],
+  allOf: [
+    {
+      // Empty conditional to sanity test empty cases
+      if: {},
+      then: {},
+      else: {},
+    },
+    // Create two conditionals to test both get matched
+    {
+      if: {
+        has_premium: {
+          const: 'yes',
+        },
+        required: ['has_premium'],
       },
+      then: {
+        required: ['premium_id'],
+      },
+      else: {},
+    },
+    {
+      if: {
+        properties: {
+          has_premium: {
+            const: 'no',
+          },
+        },
+        required: ['has_premium'],
+      },
+      then: {
+        properties: {
+          reason: false,
+        },
+      },
+      else: {},
+    },
+  ],
+};
+
+describe('modify() - pick fields', () => {
+  it('basic usage', () => {
+    const onWarnMock = jest.fn();
+    const { schema, warnings } = modify(schemaTickets, {
+      pick: ['quantity'],
+    });
+
+    // Note how the other fields got removed from
+    // from the root properties, the "order" and "allOf".
+    expect(schema.properties).toEqual({
       quantity: {
         title: 'Quantity',
         type: 'integer',
       },
-      has_premium: {
-        title: 'Has premium',
-        type: 'string',
-      },
-      premium_id: {
-        title: 'Premium ID',
-        type: 'boolean',
-      },
-      reason: {
-        title: 'Why not premium?',
-        type: 'string',
-      },
-    },
-    'x-jsf-order': ['age', 'quantity', 'has_premium', 'premium_id', 'reason'],
-    allOf: [
-      {
-        // Empty conditional to sanity test empty cases
-        if: {},
-        then: {},
-        else: {},
-      },
-      // Create two conditionals to test both get matched
-      {
-        if: {
-          has_premium: {
-            const: 'yes',
-          },
-          required: ['has_premium'],
-        },
-        then: {
-          required: ['premium_id'],
-        },
-        else: {},
-      },
-      {
-        if: {
-          properties: {
-            has_premium: {
-              const: 'no',
-            },
-          },
-          required: ['has_premium'],
-        },
-        then: {
-          properties: {
-            reason: false,
-          },
-        },
-        else: {},
-      },
-    ],
-  };
+    });
+    expect(schema.properties.age).toBeUndefined();
+    expect(schema.properties.has_premium).toBeUndefined();
+    expect(schema.properties.premium_id).toBeUndefined();
 
-  describe('modify() - pick fields', () => {
-    it('basic usage', () => {
-      const onWarnMock = jest.fn();
-      const result = modify(schemaTickets, {
-        pick: {
-          fields: ['quantity'],
-          onWarn: onWarnMock,
-        },
-      });
+    expect(schema['x-jsf-order']).toEqual(['quantity']);
+    expect(schema.allOf).toEqual([]); // conditional got removed.
 
-      // Note how the other fields got removed from
-      // from the root properties, the "order" and "allOf".
-      expect(result.properties).toEqual({
-        quantity: {
-          title: 'Quantity',
-          type: 'integer',
-        },
-      });
-      expect(result.properties.age).toBeUndefined();
-      expect(result.properties.has_premium).toBeUndefined();
-      expect(result.properties.premium_id).toBeUndefined();
+    expect(onWarnMock).not.toBeCalled();
 
-      expect(result['x-jsf-order']).toEqual(['quantity']);
-      expect(result.allOf).toEqual([]); // conditional got removed.
+    expect(warnings).toHaveLength(0);
+  });
 
-      expect(onWarnMock).not.toBeCalled();
+  it('related conditionals are kept - (else)', () => {
+    const { schema, warnings } = modify(schemaTickets, {
+      pick: ['has_premium'],
     });
 
-    it('related conditionals are kept - (else)', () => {
-      const onWarnMock = jest.fn();
-      const result = modify(schemaTickets, {
-        pick: {
-          fields: ['has_premium'],
-          onWarn: onWarnMock,
+    expect(schema).toMatchObject({
+      properties: {
+        has_premium: {
+          title: 'Has premium',
         },
-      });
-
-      expect(result).toMatchObject({
-        properties: {
-          has_premium: {
-            title: 'Has premium',
-          },
-          premium_id: {
-            title: 'Premium ID',
-          },
-          reason: {
-            title: 'Why not premium?',
-          },
+        premium_id: {
+          title: 'Premium ID',
         },
-        allOf: [schemaTickets.allOf[1], schemaTickets.allOf[2]],
-      });
+        reason: {
+          title: 'Why not premium?',
+        },
+      },
+      allOf: [schemaTickets.allOf[1], schemaTickets.allOf[2]],
+    });
 
-      expect(result.properties.quantity).toBeUndefined();
-      expect(result.properties.age).toBeUndefined();
-      expect(onWarnMock).toBeCalledWith({
-        message: 'You picked a field which has related conditional fields. They got added:',
+    expect(schema.properties.quantity).toBeUndefined();
+    expect(schema.properties.age).toBeUndefined();
+    expect(warnings).toEqual([
+      {
+        type: 'PICK_MISSED_FIELD',
+        message:
+          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
         missingFields: { premium_id: { path: 'allOf[1].then' }, reason: { path: 'allOf[2].then' } },
-      });
+      },
+    ]);
+  });
+
+  it('related conditionals are kept - (if)', () => {
+    const { schema, warnings } = modify(schemaTickets, {
+      pick: ['premium_id'],
     });
 
-    it('related conditionals are kept - (if)', () => {
-      const onWarnMock = jest.fn();
-      const result = modify(schemaTickets, {
-        pick: {
-          fields: ['premium_id'],
-          onWarn: onWarnMock,
+    expect(schema).toMatchObject({
+      properties: {
+        has_premium: {
+          title: 'Has premium',
         },
-      });
-
-      expect(result).toMatchObject({
-        properties: {
-          has_premium: {
-            title: 'Has premium',
-          },
-          premium_id: {
-            title: 'Premium ID',
-          },
+        premium_id: {
+          title: 'Premium ID',
         },
-        allOf: [schemaTickets.allOf[0]],
-      });
+      },
+      allOf: [schemaTickets.allOf[0]],
+    });
 
-      expect(result.properties.quantity).toBeUndefined();
-      expect(result.properties.age).toBeUndefined();
-      expect(onWarnMock).toBeCalledWith({
-        message: 'You picked a field which has related conditional fields. They got added:',
+    expect(schema.properties.quantity).toBeUndefined();
+    expect(schema.properties.age).toBeUndefined();
+    expect(warnings).toEqual([
+      {
+        type: 'PICK_MISSED_FIELD',
+        message:
+          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
         missingFields: { has_premium: { path: 'allOf[1].if' } },
-      });
-    });
+      },
+    ]);
+  });
 
-    // For later on when needed.
-    it.todo('ignore conditionals with unpicked fields');
+  // For later on when needed.
+  it.todo('ignore conditionals with unpicked fields');
 
-    it.todo('pick nested fields (fieldsets)');
-    /* Use cases:
+  it.todo('pick nested fields (fieldsets)');
+  /* Use cases:
       - conditionals inside fieldstes. eg properties.family.allOf[0].if...
       - conditional in the root pointing to nested fields: eg if properties.family.properties.simblings is 0 then hide properties.playTogether ...
       - variations of each one of these similar to the existing tests.
       */
-  });
 });
 
 describe('modify() - reoder fields', () => {
