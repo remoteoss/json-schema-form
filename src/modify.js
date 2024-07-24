@@ -26,11 +26,7 @@ function mergeReplaceArray(_, newVal) {
 }
 
 function standardizeAttrs(attrs) {
-  const {
-    errorMessage, // to be renamed
-    properties, // ignored because of recursive call
-    ...rest
-  } = attrs;
+  const { errorMessage, properties, ...rest } = attrs;
 
   return {
     ...rest,
@@ -97,7 +93,6 @@ function rewriteFields(schema, fieldsConfig) {
       mergeReplaceArray
     );
 
-    // recursive
     if (fieldChanges.properties) {
       const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
       warnings.push(result.warnings);
@@ -123,7 +118,7 @@ function rewriteAllFields(schema, configCallback, context) {
       mergeReplaceArray
     );
 
-    // Nested, go recursive (fieldset)
+    // Nested fields, go recursive (fieldset)
     if (fieldAttrs.properties) {
       rewriteAllFields(fieldAttrs, configCallback, {
         parent: fieldName,
@@ -185,13 +180,11 @@ function createFields(schema, fieldsConfig) {
   return { warnings: warnings.flat() };
 }
 
-function pickFields(originalSchema, pickConfig) {
-  if (!pickConfig) {
+function pickFields(originalSchema, fieldsToPick) {
+  if (!fieldsToPick) {
     return { schema: originalSchema, warnings: null };
   }
 
-  const warnings = [];
-  const fieldsToPick = pickConfig;
   const newSchema = {
     properties: {},
   };
@@ -245,19 +238,19 @@ function pickFields(originalSchema, pickConfig) {
     };
   });
 
+  const warnings = [];
+
   if (Object.keys(missingFields).length > 0) {
     // Re-add them to the schema...
     Object.entries(missingFields).forEach(([fieldName]) => {
       set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
     });
-    // And warn about it (the most important part!)
 
-    const missingFieldsNames = Object.keys(missingFields);
     warnings.push({
       type: WARNING_TYPES.PICK_MISSED_FIELD,
-      message: `The picked fields have related conditional fields that got added automatically. ${missingFieldsNames.join(
-        ', '
-      )}. Check "meta" for more details.`,
+      message: `The picked fields have related conditional fields that got added automatically. ${Object.keys(
+        missingFields
+      ).join(', ')}. Check "meta" for more details.`,
       meta: missingFields,
     });
   }
