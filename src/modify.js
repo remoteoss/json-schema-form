@@ -98,7 +98,7 @@ function reorderFields(schema, configOrder) {
   if (!configOrder) return { warnings: null };
 
   const warnings = [];
-  const originalOrder = schema['x-jsf-order'];
+  const originalOrder = schema['x-jsf-order'] || [];
   const orderConfig = typeof configOrder === 'function' ? configOrder(originalOrder) : configOrder;
   const remaining = difference(originalOrder, orderConfig);
 

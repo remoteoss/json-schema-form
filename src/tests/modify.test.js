@@ -424,6 +424,24 @@ describe('modify() - reoder fields', () => {
     ]);
   });
 
+  it('reorder fields - basic usage fallback', () => {
+    const baseExample = {
+      properties: {
+        /* does not matter */
+      },
+    };
+    const result = modify(baseExample, {
+      orderRoot: ['field_c', 'field_b'],
+    });
+
+    // Does not explode if it doesn't have an original order.
+    expect(result.schema).toMatchObject({
+      'x-jsf-order': ['field_c', 'field_b'],
+    });
+
+    expect(result.warnings).toEqual([]);
+  });
+
   it('reorder fields -  as callback based on original order', () => {
     const baseExample = {
       properties: {
