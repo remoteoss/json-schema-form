@@ -251,11 +251,14 @@ function pickFields(originalSchema, pickConfig) {
       set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
     });
     // And warn about it (the most important part!)
+
+    const missingFieldsNames = Object.keys(missingFields);
     warnings.push({
       type: WARNING_TYPES.PICK_MISSED_FIELD,
-      message:
-        'You picked a field which has related conditional fields. They got added. Check "missingFields".',
-      missingFields,
+      message: `The picked fields have related conditional fields that got added automatically. ${missingFieldsNames.join(
+        ', '
+      )}. Check "meta" for more details.`,
+      meta: missingFields,
     });
   }
 

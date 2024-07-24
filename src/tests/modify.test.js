@@ -700,8 +700,8 @@ describe('modify() - pick fields', () => {
       {
         type: 'PICK_MISSED_FIELD',
         message:
-          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
-        missingFields: { premium_id: { path: 'allOf[1].then' }, reason: { path: 'allOf[2].then' } },
+          'The picked fields have related conditional fields that got added automatically. premium_id, reason. Check "meta" for more details.',
+        meta: { premium_id: { path: 'allOf[1].then' }, reason: { path: 'allOf[2].then' } },
       },
     ]);
   });
@@ -729,8 +729,8 @@ describe('modify() - pick fields', () => {
       {
         type: 'PICK_MISSED_FIELD',
         message:
-          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
-        missingFields: { has_premium: { path: 'allOf[1].if' } },
+          'The picked fields have related conditional fields that got added automatically. has_premium. Check "meta" for more details.',
+        meta: { has_premium: { path: 'allOf[1].if' } },
       },
     ]);
   });
