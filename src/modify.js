@@ -99,9 +99,9 @@ export function modify(originalSchema, config) {
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
 
-  if (!config.muteWarningTip) {
+  if (!config.muteLogging) {
     console.warn(
-      'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteWarningTip: true` to the config.'
+      'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteLogging: true` to the config.'
     );
   }
 

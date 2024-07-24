@@ -115,16 +115,16 @@ describe('modify() - warnings', () => {
     const result = modify(schemaPet, {});
 
     expect(console.warn).toBeCalledWith(
-      'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteWarningTip: true` to the config.'
+      'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteLogging: true` to the config.'
     );
 
     console.warn.mockClear();
     expect(result.warnings).toBeNull();
   });
 
-  it('given muteWarningTip, it does not log the warning', () => {
+  it('given muteLogging, it does not log the warning', () => {
     const result = modify(schemaPet, {
-      muteWarningTip: true,
+      muteLogging: true,
     });
 
     expect(console.warn).not.toBeCalled();
