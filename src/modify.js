@@ -1,6 +1,7 @@
+import difference from 'lodash/difference';
 import get from 'lodash/get';
-import merge from 'lodash/merge';
 import intersection from 'lodash/intersection';
+import merge from 'lodash/merge';
 import mergeWith from 'lodash/mergeWith';
 import set from 'lodash/set';
 
@@ -8,6 +9,7 @@ const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
   ORDER_MISSING_FIELDS: 'ORDER_MISSING_FIELDS',
   FIELD_TO_CREATE_EXISTS: 'FIELD_TO_CREATE_EXISTS',
+  PICK_MISSED_FIELD: 'PICK_MISSED_FIELD',
 };
 /**
  *
@@ -92,7 +94,6 @@ function rewriteFields(schema, fieldsConfig) {
       mergeReplaceArray
     );
 
-    // recursive
     if (fieldChanges.properties) {
       const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
       warnings.push(result.warnings);
@@ -118,7 +119,7 @@ function rewriteAllFields(schema, configCallback, context) {
       mergeReplaceArray
     );
 
-    // Nested, go recursive (fieldset)
+    // Nested fields, go recursive (fieldset)
     if (fieldAttrs.properties) {
       rewriteAllFields(fieldAttrs, configCallback, {
         parent: fieldName,
@@ -180,10 +181,11 @@ function createFields(schema, fieldsConfig) {
   return { warnings: warnings.flat() };
 }
 
-function pickFields(originalSchema, pickConfig) {
-  if (!pickConfig) return { schema: originalSchema, warnings: null };
+function pickFields(originalSchema, fieldsToPick) {
+  if (!fieldsToPick) {
+    return { schema: originalSchema, warnings: null };
+  }
 
-  const fieldsToPick = pickConfig.fields;
   const newSchema = {
     properties: {},
   };
@@ -191,7 +193,7 @@ function pickFields(originalSchema, pickConfig) {
   Object.entries(originalSchema).forEach(([attrKey, attrValue]) => {
     switch (attrKey) {
       case 'properties':
-        // TODO — handle recursive nested fieldsets
+        // TODO — handle recursive nested fields
         fieldsToPick.forEach((fieldPath) => {
           set(newSchema.properties, fieldPath, attrValue[fieldPath]);
         });
@@ -217,7 +219,6 @@ function pickFields(originalSchema, pickConfig) {
 
   // Look for unpicked fields in the conditionals...
   let missingFields = {};
-
   newSchema.allOf.forEach((condition) => {
     const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
     const index = originalSchema.allOf.indexOf(condition);
@@ -238,19 +239,24 @@ function pickFields(originalSchema, pickConfig) {
     };
   });
 
+  const warnings = [];
+
   if (Object.keys(missingFields).length > 0) {
     // Re-add them to the schema...
     Object.entries(missingFields).forEach(([fieldName]) => {
       set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
     });
-    // And warn about it (the most important part!)
-    pickConfig.onWarn({
-      message: 'You picked a field which has related conditional fields. They got added:',
-      missingFields,
+
+    warnings.push({
+      type: WARNING_TYPES.PICK_MISSED_FIELD,
+      message: `The picked fields have related conditional fields that got added automatically. ${Object.keys(
+        missingFields
+      ).join(', ')}. Check "meta" for more details.`,
+      meta: missingFields,
     });
   }
 
-  return newSchema;
+  return { schema: newSchema, warnings };
 }
 
 function findMissingFields(conditional, { fields, path }) {
@@ -289,6 +295,7 @@ export function modify(originalSchema, config) {
   const resultCreate = createFields(schema, config.create);
 
   const resultPick = pickFields(schema, config.pick);
+
   const finalSchema = resultPick.schema;
   const resultReorder = reorderFields(finalSchema, config.orderRoot);
 
