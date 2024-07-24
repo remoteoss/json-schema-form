@@ -58,7 +58,7 @@ const schemaPet = {
     },
   },
   required: ['has_pet'],
-  'x-jsf-order': ['has_pet', 'pet_name'],
+  'x-jsf-order': ['has_pet', 'pet_name', 'pet_age', 'pet_fat', 'pet_address'],
   allOf: [
     {
       id: 'pet_conditional_id',
@@ -497,7 +497,92 @@ describe('modify() - reoder fields', () => {
         },
       },
     });
+  });
+});
 
-    expect(result.warnings).toEqual([]);
+describe('modify() - create fields', () => {
+  it('create base field', () => {
+    const result = modify(schemaAddress, {
+      create: {
+        new_field: {
+          title: 'New field',
+          type: 'string',
+        },
+        address: {
+          someAttr: 'foo',
+        },
+      },
+    });
+
+    expect(result.schema).toMatchObject({
+      properties: {
+        new_field: {
+          title: 'New field',
+          type: 'string',
+        },
+        address: schemaAddress.properties.address,
+      },
+    });
+
+    // this is ignored because the field already exists
+    expect(result.schema.properties.address.someAttr).toBe(undefined);
+
+    expect(result.warnings).toEqual([
+      {
+        type: 'FIELD_TO_CREATE_EXISTS',
+        message: 'Creating field "address" was ignored because it already exists.',
+      },
+    ]);
+  });
+
+  it('create nested field', () => {
+    const result = modify(schemaAddress, {
+      create: {
+        // Pointer as string
+        'address.state': {
+          title: 'State',
+        },
+        // Pointer as object
+        address: {
+          someAttr: 'foo',
+          properties: {
+            district: {
+              title: 'District',
+            },
+          },
+        },
+        // Ignore field street because the field already exists [1]
+        'address.street': {
+          title: 'Foo',
+        },
+      },
+    });
+
+    expect(result.schema.properties.address.properties).toMatchObject({
+      ...schemaAddress.properties.address.properties,
+      state: {
+        title: 'State',
+      },
+      district: {
+        title: 'District',
+      },
+    });
+
+    // Ignore address.someAttr because the address itself already exists.
+    expect(result.schema.properties.address.someAttr).toBeUndefined();
+
+    // Ignore field street because it already exists [1]
+    expect(result.schema.properties.address.properties.street.title).toBe('Street');
+
+    expect(result.warnings).toEqual([
+      {
+        type: 'FIELD_TO_CREATE_EXISTS',
+        message: 'Creating field "address" was ignored because it already exists.',
+      },
+      {
+        type: 'FIELD_TO_CREATE_EXISTS',
+        message: 'Creating field "address.street" was ignored because it already exists.',
+      },
+    ]);
   });
 });

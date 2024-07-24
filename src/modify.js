@@ -1,10 +1,13 @@
 import difference from 'lodash/difference';
 import get from 'lodash/get';
+import merge from 'lodash/merge';
 import mergeWith from 'lodash/mergeWith';
+import set from 'lodash/set';
 
 const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
   ORDER_MISSING_FIELDS: 'ORDER_MISSING_FIELDS',
+  FIELD_TO_CREATE_EXISTS: 'FIELD_TO_CREATE_EXISTS',
 };
 /**
  *
@@ -115,12 +118,46 @@ function reorderFields(schema, configOrder) {
   return { warnings };
 }
 
+function createFields(schema, fieldsConfig) {
+  if (!fieldsConfig) return { warnings: null };
+
+  const warnings = [];
+  const fieldsToCreate = Object.entries(fieldsConfig);
+
+  fieldsToCreate.forEach(([shortPath, fieldAttrs]) => {
+    const fieldPath = shortToFullPath(shortPath);
+
+    if (fieldAttrs.properties) {
+      // Recursive to nested fields...
+      const result = createFields(get(schema.properties, fieldPath), fieldAttrs.properties);
+      warnings.push(result.warnings);
+    }
+
+    const fieldInSchema = get(schema.properties, fieldPath);
+
+    if (fieldInSchema) {
+      warnings.push({
+        type: WARNING_TYPES.FIELD_TO_CREATE_EXISTS,
+        message: `Creating field "${shortPath}" was ignored because it already exists.`,
+      });
+      return;
+    }
+
+    const fieldInObjectPath = set({}, fieldPath, standardizeAttrs(fieldAttrs));
+    merge(schema.properties, fieldInObjectPath);
+  });
+
+  return { warnings: warnings.flat() };
+}
+
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
   // All these functions mutate "schema" that's why we create a copy above
 
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
+
+  const resultCreate = createFields(schema, config.create);
 
   const resultReorder = reorderFields(schema, config.orderRoot);
 
@@ -130,7 +167,9 @@ export function modify(originalSchema, config) {
     );
   }
 
-  const warnings = [resultRewrite.warnings, resultReorder.warnings].flat().filter(Boolean);
+  const warnings = [resultRewrite.warnings, resultCreate.warnings, resultReorder.warnings]
+    .flat()
+    .filter(Boolean);
 
   return {
     schema,
