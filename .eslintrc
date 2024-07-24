@@ -26,9 +26,6 @@
         }
       }
     ],
-    "no-unused-vars": [
-      "error",
-      { "ignoreRestSiblings": true, "destructuredArrayIgnorePattern": "_" }
-    ]
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true }]
   }
 }
