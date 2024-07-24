@@ -417,7 +417,7 @@ describe('modify() - reoder fields', () => {
 
     expect(result.warnings).toMatchObject([
       {
-        type: 'reorderFields',
+        type: 'ODER_MISSING_FIELDS',
         message:
           'Some fields got forgotten in the new order. They were automatically appended to the end: field_a, field_d',
       },

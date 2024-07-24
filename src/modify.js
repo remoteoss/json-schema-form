@@ -4,6 +4,7 @@ import mergeWith from 'lodash/mergeWith';
 
 const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
+  ODER_MISSING_FIELDS: 'ODER_MISSING_FIELDS',
 };
 /**
  *
@@ -106,7 +107,7 @@ function reorderFields(schema, configOrder) {
   const remaining = difference(originalOrder, orderConfig);
   if (remaining.length > 0) {
     warnings.push({
-      type: 'reorderFields',
+      type: WARNING_TYPES.ODER_MISSING_FIELDS,
       message: `Some fields got forgotten in the new order. They were automatically appended to the end: ${remaining.join(
         ', '
       )}`,
