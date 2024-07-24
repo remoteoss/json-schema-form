@@ -1,7 +1,7 @@
 import difference from 'lodash/difference';
 import get from 'lodash/get';
-import merge from 'lodash/merge';
 import intersection from 'lodash/intersection';
+import merge from 'lodash/merge';
 import mergeWith from 'lodash/mergeWith';
 import set from 'lodash/set';
 

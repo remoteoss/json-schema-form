@@ -461,105 +461,6 @@ const schemaTickets = {
   ],
 };
 
-describe('modify() - pick fields', () => {
-  it('basic usage', () => {
-    const onWarnMock = jest.fn();
-    const { schema, warnings } = modify(schemaTickets, {
-      pick: ['quantity'],
-    });
-
-    // Note how the other fields got removed from
-    // from the root properties, the "order" and "allOf".
-    expect(schema.properties).toEqual({
-      quantity: {
-        title: 'Quantity',
-        type: 'integer',
-      },
-    });
-    expect(schema.properties.age).toBeUndefined();
-    expect(schema.properties.has_premium).toBeUndefined();
-    expect(schema.properties.premium_id).toBeUndefined();
-
-    expect(schema['x-jsf-order']).toEqual(['quantity']);
-    expect(schema.allOf).toEqual([]); // conditional got removed.
-
-    expect(onWarnMock).not.toBeCalled();
-
-    expect(warnings).toHaveLength(0);
-  });
-
-  it('related conditionals are kept - (else)', () => {
-    const { schema, warnings } = modify(schemaTickets, {
-      pick: ['has_premium'],
-    });
-
-    expect(schema).toMatchObject({
-      properties: {
-        has_premium: {
-          title: 'Has premium',
-        },
-        premium_id: {
-          title: 'Premium ID',
-        },
-        reason: {
-          title: 'Why not premium?',
-        },
-      },
-      allOf: [schemaTickets.allOf[1], schemaTickets.allOf[2]],
-    });
-
-    expect(schema.properties.quantity).toBeUndefined();
-    expect(schema.properties.age).toBeUndefined();
-    expect(warnings).toEqual([
-      {
-        type: 'PICK_MISSED_FIELD',
-        message:
-          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
-        missingFields: { premium_id: { path: 'allOf[1].then' }, reason: { path: 'allOf[2].then' } },
-      },
-    ]);
-  });
-
-  it('related conditionals are kept - (if)', () => {
-    const { schema, warnings } = modify(schemaTickets, {
-      pick: ['premium_id'],
-    });
-
-    expect(schema).toMatchObject({
-      properties: {
-        has_premium: {
-          title: 'Has premium',
-        },
-        premium_id: {
-          title: 'Premium ID',
-        },
-      },
-      allOf: [schemaTickets.allOf[0]],
-    });
-
-    expect(schema.properties.quantity).toBeUndefined();
-    expect(schema.properties.age).toBeUndefined();
-    expect(warnings).toEqual([
-      {
-        type: 'PICK_MISSED_FIELD',
-        message:
-          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
-        missingFields: { has_premium: { path: 'allOf[1].if' } },
-      },
-    ]);
-  });
-
-  // For later on when needed.
-  it.todo('ignore conditionals with unpicked fields');
-
-  it.todo('pick nested fields (fieldsets)');
-  /* Use cases:
-      - conditionals inside fieldstes. eg properties.family.allOf[0].if...
-      - conditional in the root pointing to nested fields: eg if properties.family.properties.simblings is 0 then hide properties.playTogether ...
-      - variations of each one of these similar to the existing tests.
-      */
-});
-
 describe('modify() - reoder fields', () => {
   it('reorder fields - basic usage', () => {
     const baseExample = {
@@ -747,4 +648,119 @@ describe('modify() - create fields', () => {
       },
     ]);
   });
+});
+
+describe('modify() - pick fields', () => {
+  it('basic usage', () => {
+    const { schema, warnings } = modify(schemaTickets, {
+      pick: ['quantity'],
+    });
+
+    // Note how the other fields got removed from
+    // from the root properties, the "order" and "allOf".
+    expect(schema.properties).toEqual({
+      quantity: {
+        title: 'Quantity',
+        type: 'integer',
+      },
+    });
+    expect(schema.properties.age).toBeUndefined();
+    expect(schema.properties.has_premium).toBeUndefined();
+    expect(schema.properties.premium_id).toBeUndefined();
+
+    expect(schema['x-jsf-order']).toEqual(['quantity']);
+    expect(schema.allOf).toEqual([]); // conditional got removed.
+
+    expect(warnings).toHaveLength(0);
+  });
+
+  it('related conditionals are kept - (else)', () => {
+    const { schema, warnings } = modify(schemaTickets, {
+      pick: ['has_premium'],
+    });
+
+    expect(schema).toMatchObject({
+      properties: {
+        has_premium: {
+          title: 'Has premium',
+        },
+        premium_id: {
+          title: 'Premium ID',
+        },
+        reason: {
+          title: 'Why not premium?',
+        },
+      },
+      allOf: [schemaTickets.allOf[1], schemaTickets.allOf[2]],
+    });
+
+    expect(schema.properties.quantity).toBeUndefined();
+    expect(schema.properties.age).toBeUndefined();
+    expect(warnings).toEqual([
+      {
+        type: 'PICK_MISSED_FIELD',
+        message:
+          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
+        missingFields: { premium_id: { path: 'allOf[1].then' }, reason: { path: 'allOf[2].then' } },
+      },
+    ]);
+  });
+
+  it('related conditionals are kept - (if)', () => {
+    const { schema, warnings } = modify(schemaTickets, {
+      pick: ['premium_id'],
+    });
+
+    expect(schema).toMatchObject({
+      properties: {
+        has_premium: {
+          title: 'Has premium',
+        },
+        premium_id: {
+          title: 'Premium ID',
+        },
+      },
+      allOf: [schemaTickets.allOf[0]],
+    });
+
+    expect(schema.properties.quantity).toBeUndefined();
+    expect(schema.properties.age).toBeUndefined();
+    expect(warnings).toEqual([
+      {
+        type: 'PICK_MISSED_FIELD',
+        message:
+          'You picked a field which has related conditional fields. They got added. Check "missingFields".',
+        missingFields: { has_premium: { path: 'allOf[1].if' } },
+      },
+    ]);
+  });
+
+  it('reorder only handles the picked fields', () => {
+    const { schema, warnings } = modify(schemaTickets, {
+      pick: ['age', 'quantity'],
+      orderRoot: (original) => original.reverse(),
+    });
+
+    // The order only includes those 2 fields
+    expect(schema['x-jsf-order']).toEqual(['quantity', 'age']);
+    // There are no warnings about forgotten fields.
+    expect(warnings).toHaveLength(0);
+
+    // Sanity check the result
+    expect(schema.properties.quantity).toBeDefined();
+    expect(schema.properties.age).toBeDefined();
+    expect(schema.properties.has_premium).toBeUndefined();
+    expect(schema.properties.premium_id).toBeUndefined();
+    expect(schema.allOf).toEqual([]);
+  });
+
+  // For later on when needed.
+  it.todo('ignore conditionals with unpicked fields');
+
+  it.todo('pick nested fields (fieldsets)');
+  /* Use cases:
+      - conditionals inside fieldstes. eg properties.family.allOf[0].if...
+      - conditional in the root pointing to nested fields: eg if properties.family.properties.simblings is 0 then hide properties.playTogether ...
+      - variations of each one of these similar to the existing tests.
+      */
 });
