@@ -407,18 +407,24 @@ describe('modify() - reoder fields', () => {
       'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
     };
     const result = modify(baseExample, {
-      order: {
-        fields: ['field_c', 'field_a', 'field_b'],
-      },
+      rootOrder: ['field_c', 'field_b'],
     });
 
     // 💡 Note how the missing field (field_d) was added to the end as safety measure.
-    expect(result).toMatchObject({
-      'x-jsf-order': ['field_c', 'field_a', 'field_b', 'field_d'],
+    expect(result.schema).toMatchObject({
+      'x-jsf-order': ['field_c', 'field_b', 'field_a', 'field_d'],
     });
+
+    expect(result.warnings).toMatchObject([
+      {
+        type: 'reorderFields',
+        message:
+          'Some fields got forgotten in the new order. They were automatically appended to the end: field_a, field_d',
+      },
+    ]);
   });
 
-  it('reorder fields -  based on originalOrder', () => {
+  it('reorder fields -  as callback based on original order', () => {
     const baseExample = {
       properties: {
         /* does not matter */
@@ -426,19 +432,19 @@ describe('modify() - reoder fields', () => {
       'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
     };
     const result = modify(baseExample, {
-      order: (original) => {
-        return {
-          fields: original.reverse(),
-        };
-      },
+      rootOrder: (original) => original.reverse(),
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       'x-jsf-order': ['field_d', 'field_c', 'field_b', 'field_a'],
     });
   });
 
-  it('reorder fields in fieldsets', () => {
+  it('reorder fields in fieldsets (through config.fields)', () => {
+    // NOTE: A better API is needed but we decided to not implement it yet
+    // as we didn't agreed on the best DX. Check PR #78 for proposed APIs.
+    // Until then this is the workaround:
+
     const baseExample = {
       properties: {
         address: {
@@ -456,28 +462,23 @@ describe('modify() - reoder fields', () => {
 
     const result = modify(baseExample, {
       fields: {
-        address: {
-          order: (original) => {
-            return {
-              fields: original.reverse(), // ['city', 'zipcode', 'first_line']
-            };
-          },
+        address: (attrs) => {
+          // eslint-disable-next-line no-unused-vars
+          const [_firstLine, ...restOrder] = attrs['x-jsf-order'];
+          return { 'x-jsf-order': restOrder.reverse() }; // ['city', 'zipcode']
         },
-      },
-      order: (original) => {
-        return {
-          fields: original.reverse(), // ['age', 'address']
-        };
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         address: {
-          'x-jsf-order': ['city', 'zipcode', 'first_line'],
+          // Note how first_line was NOT appended
+          'x-jsf-order': ['city', 'zipcode'],
         },
       },
-      'x-jsf-order': ['age', 'address'],
     });
+
+    expect(result.warn).toBeUndefined();
   });
 });

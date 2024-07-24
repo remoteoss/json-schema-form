@@ -67,10 +67,6 @@ function rewriteFields(schema, fieldsConfig) {
       const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
       warnings.push(result.warnings);
     }
-
-    if (fieldChanges.order) {
-      reorderFields(fieldAttrs, fieldChanges.order);
-    }
   });
 
   return { warnings: warnings.flat() };
@@ -102,13 +98,23 @@ function rewriteAllFields(schema, configCallback, context) {
 }
 
 function reorderFields(schema, configOrder) {
-  if (!configOrder) return null;
+  if (!configOrder) return { warnings: null };
 
+  const warnings = [];
   const originalOrder = schema['x-jsf-order'];
   const orderConfig = typeof configOrder === 'function' ? configOrder(originalOrder) : configOrder;
-  const remaining = difference(originalOrder, orderConfig.fields);
+  const remaining = difference(originalOrder, orderConfig);
+  if (remaining.length > 0) {
+    warnings.push({
+      type: 'reorderFields',
+      message: `Some fields got forgotten in the new order. They were automatically appended to the end: ${remaining.join(
+        ', '
+      )}`,
+    });
+  }
+  schema['x-jsf-order'] = [...orderConfig, ...remaining];
 
-  schema['x-jsf-order'] = [...orderConfig.fields, ...remaining];
+  return { warnings };
 }
 
 export function modify(originalSchema, config) {
@@ -118,7 +124,7 @@ export function modify(originalSchema, config) {
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
 
-  reorderFields(schema, config.order);
+  const resultReorder = reorderFields(schema, config.rootOrder);
 
   if (!config.muteLogging) {
     console.warn(
@@ -126,7 +132,7 @@ export function modify(originalSchema, config) {
     );
   }
 
-  const warnings = [resultRewrite.warnings].flat().filter(Boolean);
+  const warnings = [resultRewrite.warnings, resultReorder.warnings].flat().filter(Boolean);
 
   return {
     schema,
