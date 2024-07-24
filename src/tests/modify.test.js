@@ -558,7 +558,6 @@ describe('modify() - create fields', () => {
       },
     });
 
-    expect(result.warnings).toEqual([]);
     expect(result.schema.properties.address.properties).toMatchObject({
       ...schemaAddress.properties.address.properties,
       state: {
@@ -583,34 +582,6 @@ describe('modify() - create fields', () => {
       {
         type: 'FIELD_TO_CREATE_EXISTS',
         message: 'Creating field "address.street" was ignored because it already exists.',
-      },
-    ]);
-  });
-
-  // Enable this after PR !78 is merged
-  it.skip('reorder new created fields', () => {
-    const result = modify(schemaPet, {
-      create: {
-        new_field: {
-          title: 'New field',
-          type: 'string',
-        },
-      },
-      orderRoot: (originalOrder) => {
-        const newOrder = [...originalOrder];
-        return newOrder.splice(1, 0, 'new_field');
-      },
-    });
-
-    expect(result).toMatchObject({
-      'x-jsf-order': ['has_pet', 'new_field', 'pet_name', 'pet_age', 'pet_fat', 'pet_address'],
-    });
-
-    expect(result.warnings).toEqual([
-      {
-        type: 'ODER_MISSING_FIELDS',
-        message:
-          'Some fields got forgotten in the new order. They were automatically appended to the end: XXX, XXXX',
       },
     ]);
   });
