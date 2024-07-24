@@ -134,9 +134,8 @@ function createFields(schema, fieldsConfig) {
     }
 
     const fieldInSchema = get(schema.properties, fieldPath);
-    const { properties, ...otherAttrs } = fieldAttrs;
 
-    if (fieldInSchema && otherAttrs) {
+    if (fieldInSchema) {
       warnings.push({
         type: WARNING_TYPES.FIELD_TO_CREATE_EXISTS,
         message: `Creating field "${shortPath}" was ignored because it already exists.`,
