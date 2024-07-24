@@ -102,6 +102,36 @@ const schemaAddress = {
   },
 };
 
+beforeAll(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  console.warn.mockRestore();
+});
+
+describe('modify() - warnings', () => {
+  it('logs a warning by default', () => {
+    const result = modify(schemaPet, {});
+
+    expect(console.warn).toBeCalledWith(
+      'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteLogging: true` to the config.'
+    );
+
+    console.warn.mockClear();
+    expect(result.warnings).toEqual([]);
+  });
+
+  it('given muteLogging, it does not log the warning', () => {
+    const result = modify(schemaPet, {
+      muteLogging: true,
+    });
+
+    expect(console.warn).not.toBeCalled();
+    expect(result.warnings).toEqual([]);
+  });
+});
+
 describe('modify() - basic mutations', () => {
   it('replace base field', () => {
     const result = modify(schemaPet, {
@@ -119,7 +149,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         pet_name: {
           title: 'Your pet name',
@@ -135,24 +165,30 @@ describe('modify() - basic mutations', () => {
   it('replace nested field', () => {
     const result = modify(schemaAddress, {
       fields: {
+        // You can use dot notation
         'address.street': {
           title: 'Street name',
         },
         'address.city': () => ({
           title: 'City name',
         }),
-        address: () => {
+        // Or pass the native object
+        address: (fieldAttrs) => {
           return {
             properties: {
-              number: { title: 'Door number' },
+              number: (nestedAttrs) => {
+                return {
+                  'x-test-siblings': Object.keys(fieldAttrs.properties),
+                  title: `Door ${nestedAttrs.title}`,
+                };
+              },
             },
           };
         },
-        // TODO: write test to nested field
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         address: {
           properties: {
@@ -160,7 +196,8 @@ describe('modify() - basic mutations', () => {
               title: 'Street name',
             },
             number: {
-              title: 'Door number',
+              title: 'Door Number',
+              'x-test-siblings': ['street', 'number', 'city'],
             },
             city: {
               title: 'City name',
@@ -169,6 +206,44 @@ describe('modify() - basic mutations', () => {
         },
       },
     });
+  });
+
+  it('replace fields that dont exist gets ignored', () => {
+    // IMPORTANT NOTE on this behavior:
+    // Context: At Remote we have a lot of global customization that run equally across multiple different JSON Schemas.
+    // With this, we avoid applying customizations to non-existing fields. (aka create fields)
+    // That's why we have the "create" config, specific to create new fields.
+    const result = modify(schemaPet, {
+      fields: {
+        unknown_field: {
+          title: 'This field does not exist in the original schema',
+        },
+        'nested.field': {
+          title: 'Nop',
+        },
+        pet_name: {
+          title: 'New pet title',
+        },
+      },
+    });
+
+    expect(result.schema.properties.unknown_field).toBeUndefined();
+    expect(result.schema.properties.nested).toBeUndefined();
+    expect(result.schema.properties.pet_name).toEqual({
+      ...schemaPet.properties.pet_name,
+      title: 'New pet title',
+    });
+
+    expect(result.warnings).toEqual([
+      {
+        type: 'FIELD_TO_CHANGE_NOT_FOUND',
+        message: 'Changing field "unknown_field" was ignored because it does not exist.',
+      },
+      {
+        type: 'FIELD_TO_CHANGE_NOT_FOUND',
+        message: 'Changing field "nested.field" was ignored because it does not exist.',
+      },
+    ]);
   });
 
   it('replace all fields', () => {
@@ -188,7 +263,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         has_pet: {
           dataFoo: 'abc',
@@ -203,6 +278,7 @@ describe('modify() - basic mutations', () => {
           styleDecimals: 2,
         },
         pet_address: {
+          // assert recursivity
           properties: {
             street: {
               dataFoo: 'abc',
@@ -239,7 +315,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         has_pet: {
           oneOf: [
@@ -266,7 +342,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         has_pet: {
           oneOf: [
@@ -300,7 +376,7 @@ describe('modify() - basic mutations', () => {
       // ...
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         pet_age: {
           'x-jsf-errorMessage': {

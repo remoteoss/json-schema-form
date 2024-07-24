@@ -1,6 +1,9 @@
 import get from 'lodash/get';
 import mergeWith from 'lodash/mergeWith';
 
+const WARNING_TYPES = {
+  FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
+};
 /**
  *
  * @param {*} path
@@ -25,7 +28,8 @@ function standardizeAttrs(attrs) {
 }
 
 function rewriteFields(schema, fieldsConfig) {
-  if (!fieldsConfig) return null;
+  if (!fieldsConfig) return { warnings: null };
+  const warnings = [];
 
   const fieldsToModify = Object.entries(fieldsConfig);
 
@@ -33,7 +37,13 @@ function rewriteFields(schema, fieldsConfig) {
     const fieldPath = shortToFullPath(shortPath);
 
     if (!get(schema.properties, fieldPath)) {
-      return; // Ignore field non existent in original schema.
+      // Do not override/edit a field that does not exist.
+      // That's the job of config.create() method.
+      warnings.push({
+        type: WARNING_TYPES.FIELD_TO_CHANGE_NOT_FOUND,
+        message: `Changing field "${shortPath}" was ignored because it does not exist.`,
+      });
+      return;
     }
 
     const fieldAttrs = get(schema.properties, fieldPath);
@@ -49,13 +59,17 @@ function rewriteFields(schema, fieldsConfig) {
     );
 
     if (fieldChanges.properties) {
-      rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
+      const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
+      warnings.push(result.warnings);
     }
   });
+
+  return { warnings: warnings.flat() };
 }
 
 function rewriteAllFields(schema, configCallback, context) {
   if (!configCallback) return null;
+
   const parentName = context?.parent;
 
   Object.entries(schema.properties).forEach(([fieldName, fieldAttrs]) => {
@@ -80,10 +94,21 @@ function rewriteAllFields(schema, configCallback, context) {
 
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
+  // All these functions mutate "schema" that's why we create a copy above
 
-  rewriteFields(schema, config.fields);
-
+  const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
 
-  return schema;
+  if (!config.muteLogging) {
+    console.warn(
+      'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteLogging: true` to the config.'
+    );
+  }
+
+  const warnings = [resultRewrite.warnings].flat().filter(Boolean);
+
+  return {
+    schema,
+    warnings,
+  };
 }
