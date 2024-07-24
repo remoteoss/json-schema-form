@@ -119,7 +119,7 @@ describe('modify() - warnings', () => {
     );
 
     console.warn.mockClear();
-    expect(result.warnings).toBeNull();
+    expect(result.warnings).toEqual([]);
   });
 
   it('given muteLogging, it does not log the warning', () => {
@@ -128,7 +128,7 @@ describe('modify() - warnings', () => {
     });
 
     expect(console.warn).not.toBeCalled();
-    expect(result.warnings).toBeNull();
+    expect(result.warnings).toEqual([]);
   });
 });
 

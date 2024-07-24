@@ -105,10 +105,10 @@ export function modify(originalSchema, config) {
     );
   }
 
-  const allWarnings = [resultRewrite.warnings].flat().filter(Boolean);
+  const warnings = [resultRewrite.warnings].flat().filter(Boolean);
 
   return {
     schema,
-    warnings: allWarnings.length > 0 ? allWarnings : null,
+    warnings,
   };
 }
