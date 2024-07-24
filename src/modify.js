@@ -1,8 +1,10 @@
+import difference from 'lodash/difference';
 import get from 'lodash/get';
 import mergeWith from 'lodash/mergeWith';
 
 const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
+  ORDER_MISSING_FIELDS: 'ORDER_MISSING_FIELDS',
 };
 /**
  *
@@ -92,6 +94,27 @@ function rewriteAllFields(schema, configCallback, context) {
   });
 }
 
+function reorderFields(schema, configOrder) {
+  if (!configOrder) return { warnings: null };
+
+  const warnings = [];
+  const originalOrder = schema['x-jsf-order'] || [];
+  const orderConfig = typeof configOrder === 'function' ? configOrder(originalOrder) : configOrder;
+  const remaining = difference(originalOrder, orderConfig);
+
+  if (remaining.length > 0) {
+    warnings.push({
+      type: WARNING_TYPES.ORDER_MISSING_FIELDS,
+      message: `Some fields got forgotten in the new order. They were automatically appended: ${remaining.join(
+        ', '
+      )}`,
+    });
+  }
+  schema['x-jsf-order'] = [...orderConfig, ...remaining];
+
+  return { warnings };
+}
+
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
   // All these functions mutate "schema" that's why we create a copy above
@@ -99,13 +122,15 @@ export function modify(originalSchema, config) {
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
 
+  const resultReorder = reorderFields(schema, config.orderRoot);
+
   if (!config.muteLogging) {
     console.warn(
       'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteLogging: true` to the config.'
     );
   }
 
-  const warnings = [resultRewrite.warnings].flat().filter(Boolean);
+  const warnings = [resultRewrite.warnings, resultReorder.warnings].flat().filter(Boolean);
 
   return {
     schema,

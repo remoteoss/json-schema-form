@@ -397,3 +397,107 @@ describe('modify() - basic mutations', () => {
     });
   });
 });
+
+describe('modify() - reoder fields', () => {
+  it('reorder fields - basic usage', () => {
+    const baseExample = {
+      properties: {
+        /* does not matter */
+      },
+      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
+    };
+    const result = modify(baseExample, {
+      orderRoot: ['field_c', 'field_b'],
+    });
+
+    // 💡 Note how the missing field (field_d) was added to the end as safety measure.
+    expect(result.schema).toMatchObject({
+      'x-jsf-order': ['field_c', 'field_b', 'field_a', 'field_d'],
+    });
+
+    expect(result.warnings).toMatchObject([
+      {
+        type: 'ORDER_MISSING_FIELDS',
+        message:
+          'Some fields got forgotten in the new order. They were automatically appended: field_a, field_d',
+      },
+    ]);
+  });
+
+  it('reorder fields - basic usage fallback', () => {
+    const baseExample = {
+      properties: {
+        /* does not matter */
+      },
+    };
+    const result = modify(baseExample, {
+      orderRoot: ['field_c', 'field_b'],
+    });
+
+    // Does not explode if it doesn't have an original order.
+    expect(result.schema).toMatchObject({
+      'x-jsf-order': ['field_c', 'field_b'],
+    });
+
+    expect(result.warnings).toEqual([]);
+  });
+
+  it('reorder fields -  as callback based on original order', () => {
+    const baseExample = {
+      properties: {
+        /* does not matter */
+      },
+      'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
+    };
+    const result = modify(baseExample, {
+      orderRoot: (original) => original.reverse(),
+    });
+
+    expect(result.schema).toMatchObject({
+      'x-jsf-order': ['field_d', 'field_c', 'field_b', 'field_a'],
+    });
+  });
+
+  it('reorder fields in fieldsets (through config.fields)', () => {
+    // NOTE: A better API is needed but we decided to not implement it yet
+    // as we didn't agreed on the best DX. Check PR #78 for proposed APIs.
+    // Until then this is the workaround.
+    // Note the warning "ORDER_MISSING_FIELDS" won't be added.
+
+    const baseExample = {
+      properties: {
+        address: {
+          properties: {
+            /* does not matter */
+          },
+          'x-jsf-order': ['first_line', 'zipcode', 'city'],
+        },
+        age: {
+          /* ... */
+        },
+      },
+      'x-jsf-order': ['address', 'age'],
+    };
+
+    const result = modify(baseExample, {
+      fields: {
+        address: (attrs) => {
+          // eslint-disable-next-line no-unused-vars
+          const [_firstLine, ...restOrder] = attrs['x-jsf-order'];
+          return { 'x-jsf-order': restOrder.reverse() }; // ['city', 'zipcode']
+        },
+      },
+    });
+
+    expect(result.schema).toMatchObject({
+      properties: {
+        address: {
+          // Note how first_line was NOT appended
+          'x-jsf-order': ['city', 'zipcode'],
+        },
+      },
+    });
+
+    expect(result.warnings).toEqual([]);
+  });
+});
