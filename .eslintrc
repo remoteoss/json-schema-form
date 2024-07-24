@@ -14,6 +14,7 @@
     "curly": ["error", "multi-line"],
     "arrow-body-style": 0,
     "default-case": 0,
+
     "import/order": [
       "warn",
       {
@@ -25,6 +26,9 @@
         }
       }
     ],
-    "no-unused-vars": ["error", { "ignoreRestSiblings": true }]
+    "no-unused-vars": [
+      "error",
+      { "ignoreRestSiblings": true, "destructuredArrayIgnorePattern": "_" }
+    ]
   }
 }
