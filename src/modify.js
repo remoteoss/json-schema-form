@@ -2,7 +2,7 @@ import get from 'lodash/get';
 import mergeWith from 'lodash/mergeWith';
 
 const WARNING_TYPES = {
-  CHANGE_FIELD_NOT_FOUND: 'CHANGE_FIELD_NOT_FOUND',
+  FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
 };
 /**
  *
@@ -40,7 +40,7 @@ function rewriteFields(schema, fieldsConfig) {
       // Do not override/edit a field that does not exist.
       // That's the job of config.create() method.
       warnings.push({
-        type: WARNING_TYPES.CHANGE_FIELD_NOT_FOUND,
+        type: WARNING_TYPES.FIELD_TO_CHANGE_NOT_FOUND,
         message: `Changing field "${shortPath}" was ignored because it does not exist.`,
       });
       return;

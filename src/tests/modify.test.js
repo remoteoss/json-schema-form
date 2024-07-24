@@ -236,11 +236,11 @@ describe('modify() - basic mutations', () => {
 
     expect(result.warnings).toEqual([
       {
-        type: 'CHANGE_FIELD_NOT_FOUND',
+        type: 'FIELD_TO_CHANGE_NOT_FOUND',
         message: 'Changing field "unknown_field" was ignored because it does not exist.',
       },
       {
-        type: 'CHANGE_FIELD_NOT_FOUND',
+        type: 'FIELD_TO_CHANGE_NOT_FOUND',
         message: 'Changing field "nested.field" was ignored because it does not exist.',
       },
     ]);
