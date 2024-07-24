@@ -415,7 +415,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         pet_age: {
           'x-jsf-presentation': {
