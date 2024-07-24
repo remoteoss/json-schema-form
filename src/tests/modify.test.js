@@ -102,6 +102,36 @@ const schemaAddress = {
   },
 };
 
+beforeAll(() => {
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
+
+afterAll(() => {
+  console.warn.mockRestore();
+});
+
+describe('modify() - warnings', () => {
+  it('logs a warning by default', () => {
+    const result = modify(schemaPet, {});
+
+    expect(console.warn).toBeCalledWith(
+      'json-schema-form modify(): Make sure you log the returned `warn` as they highlight possible bugs in your modifications. To mute this log, pass `muteWarningTip: true` to the config.'
+    );
+
+    console.warn.mockClear();
+    expect(result.warn).toBeUndefined();
+  });
+
+  it('given muteWarningTip, it does not log the warning', () => {
+    const result = modify(schemaPet, {
+      muteWarningTip: true,
+    });
+
+    expect(console.warn).not.toBeCalled();
+    expect(result.warn).toBeUndefined();
+  });
+});
+
 describe('modify() - basic mutations', () => {
   it('replace base field', () => {
     const result = modify(schemaPet, {
@@ -119,7 +149,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         pet_name: {
           title: 'Your pet name',
@@ -135,24 +165,30 @@ describe('modify() - basic mutations', () => {
   it('replace nested field', () => {
     const result = modify(schemaAddress, {
       fields: {
+        // You can use dot notation
         'address.street': {
           title: 'Street name',
         },
         'address.city': () => ({
           title: 'City name',
         }),
-        address: () => {
+        // Or pass the native object
+        address: (fieldAttrs) => {
           return {
             properties: {
-              number: { title: 'Door number' },
+              number: (nestedAttrs) => {
+                return {
+                  'x-test-siblings': Object.keys(fieldAttrs.properties),
+                  title: `Door ${nestedAttrs.title}`,
+                };
+              },
             },
           };
         },
-        // TODO: write test to nested field
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         address: {
           properties: {
@@ -160,7 +196,8 @@ describe('modify() - basic mutations', () => {
               title: 'Street name',
             },
             number: {
-              title: 'Door number',
+              title: 'Door Number',
+              'x-test-siblings': ['street', 'number', 'city'],
             },
             city: {
               title: 'City name',
@@ -188,7 +225,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         has_pet: {
           dataFoo: 'abc',
@@ -203,6 +240,7 @@ describe('modify() - basic mutations', () => {
           styleDecimals: 2,
         },
         pet_address: {
+          // assert recursivity
           properties: {
             street: {
               dataFoo: 'abc',
@@ -239,7 +277,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         has_pet: {
           oneOf: [
@@ -266,7 +304,7 @@ describe('modify() - basic mutations', () => {
       },
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         has_pet: {
           oneOf: [
@@ -300,7 +338,7 @@ describe('modify() - basic mutations', () => {
       // ...
     });
 
-    expect(result).toMatchObject({
+    expect(result.schema).toMatchObject({
       properties: {
         pet_age: {
           'x-jsf-errorMessage': {
