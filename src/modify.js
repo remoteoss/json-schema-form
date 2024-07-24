@@ -28,7 +28,7 @@ function standardizeAttrs(attrs) {
 }
 
 function rewriteFields(schema, fieldsConfig) {
-  if (!fieldsConfig) return null;
+  if (!fieldsConfig) return { warnings: null };
   const warnings = [];
 
   const fieldsToModify = Object.entries(fieldsConfig);
@@ -105,7 +105,7 @@ export function modify(originalSchema, config) {
     );
   }
 
-  const allWarnings = [resultRewrite?.warnings].filter(Boolean).flat();
+  const allWarnings = [resultRewrite.warnings].flat().filter(Boolean);
 
   return {
     schema,
