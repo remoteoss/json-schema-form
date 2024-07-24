@@ -419,7 +419,7 @@ describe('modify() - reoder fields', () => {
       {
         type: 'ODER_MISSING_FIELDS',
         message:
-          'Some fields got forgotten in the new order. They were automatically appended to the end: field_a, field_d',
+          'Some fields got forgotten in the new order. They were automatically appended: field_a, field_d',
       },
     ]);
   });
@@ -480,6 +480,6 @@ describe('modify() - reoder fields', () => {
       },
     });
 
-    expect(result.warnings).toBeNull();
+    expect(result.warnings).toEqual([]);
   });
 });

@@ -21,11 +21,7 @@ function mergeReplaceArray(_, newVal) {
 }
 
 function standardizeAttrs(attrs) {
-  const {
-    errorMessage, // this is the key that will be renamed
-    properties, // destructured because of recursive call afterwards
-    ...rest
-  } = attrs;
+  const { errorMessage, properties, ...rest } = attrs;
 
   return {
     ...rest,
@@ -105,10 +101,11 @@ function reorderFields(schema, configOrder) {
   const originalOrder = schema['x-jsf-order'];
   const orderConfig = typeof configOrder === 'function' ? configOrder(originalOrder) : configOrder;
   const remaining = difference(originalOrder, orderConfig);
+
   if (remaining.length > 0) {
     warnings.push({
       type: WARNING_TYPES.ODER_MISSING_FIELDS,
-      message: `Some fields got forgotten in the new order. They were automatically appended to the end: ${remaining.join(
+      message: `Some fields got forgotten in the new order. They were automatically appended: ${remaining.join(
         ', '
       )}`,
     });
