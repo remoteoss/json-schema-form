@@ -125,7 +125,7 @@ export function modify(originalSchema, config) {
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
 
-  const resultReorder = reorderFields(schema, config.rootOrder);
+  const resultReorder = reorderFields(schema, config.orderRoot);
 
   if (!config.muteLogging) {
     console.warn(

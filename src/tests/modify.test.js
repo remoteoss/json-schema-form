@@ -407,7 +407,7 @@ describe('modify() - reoder fields', () => {
       'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
     };
     const result = modify(baseExample, {
-      rootOrder: ['field_c', 'field_b'],
+      orderRoot: ['field_c', 'field_b'],
     });
 
     // 💡 Note how the missing field (field_d) was added to the end as safety measure.
@@ -432,7 +432,7 @@ describe('modify() - reoder fields', () => {
       'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
     };
     const result = modify(baseExample, {
-      rootOrder: (original) => original.reverse(),
+      orderRoot: (original) => original.reverse(),
     });
 
     expect(result.schema).toMatchObject({
