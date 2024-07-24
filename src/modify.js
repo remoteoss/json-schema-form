@@ -1,6 +1,9 @@
 import get from 'lodash/get';
 import mergeWith from 'lodash/mergeWith';
 
+const WARNING_TYPES = {
+  CHANGE_FIELD_NOT_FOUND: 'CHANGE_FIELD_NOT_FOUND',
+};
 /**
  *
  * @param {*} path
@@ -26,6 +29,7 @@ function standardizeAttrs(attrs) {
 
 function rewriteFields(schema, fieldsConfig) {
   if (!fieldsConfig) return null;
+  const warnings = [];
 
   const fieldsToModify = Object.entries(fieldsConfig);
 
@@ -33,7 +37,13 @@ function rewriteFields(schema, fieldsConfig) {
     const fieldPath = shortToFullPath(shortPath);
 
     if (!get(schema.properties, fieldPath)) {
-      return; // Ignore field non existent in original schema.
+      // Do not override/edit a field that does not exist.
+      // That's the job of config.create() method.
+      warnings.push({
+        type: WARNING_TYPES.CHANGE_FIELD_NOT_FOUND,
+        message: `Changing field "${shortPath}" was ignored because it does not exist.`,
+      });
+      return;
     }
 
     const fieldAttrs = get(schema.properties, fieldPath);
@@ -49,13 +59,17 @@ function rewriteFields(schema, fieldsConfig) {
     );
 
     if (fieldChanges.properties) {
-      rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
+      const result = rewriteFields(get(schema.properties, fieldPath), fieldChanges.properties);
+      warnings.push(result.warnings);
     }
   });
+
+  return { warnings: warnings.flat() };
 }
 
 function rewriteAllFields(schema, configCallback, context) {
   if (!configCallback) return null;
+
   const parentName = context?.parent;
 
   Object.entries(schema.properties).forEach(([fieldName, fieldAttrs]) => {
@@ -80,12 +94,9 @@ function rewriteAllFields(schema, configCallback, context) {
 
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
-  let warnings = []; // To be implemented in next PRs.
+  // All these functions mutate "schema" that's why we create a copy above
 
-  // All these functions mutate "schema",
-  // that's why we create a copy above
-  rewriteFields(schema, config.fields);
-
+  const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
 
   if (!config.muteWarningTip) {
@@ -94,8 +105,10 @@ export function modify(originalSchema, config) {
     );
   }
 
+  const allWarnings = [resultRewrite?.warnings].filter(Boolean).flat();
+
   return {
     schema,
-    warnings: warnings.length > 0 ? warnings : null,
+    warnings: allWarnings.length > 0 ? allWarnings : null,
   };
 }

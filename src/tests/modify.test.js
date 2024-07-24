@@ -208,6 +208,44 @@ describe('modify() - basic mutations', () => {
     });
   });
 
+  it('replace fields that dont exist gets ignored', () => {
+    // IMPORTANT NOTE on this behavior:
+    // Context: At Remote we have a lot of global customization that run equally across multiple different JSON Schemas.
+    // With this, we avoid applying customizations to non-existing fields. (aka create fields)
+    // That's why we have the "create" config, specific to create new fields.
+    const result = modify(schemaPet, {
+      fields: {
+        unknown_field: {
+          title: 'This field does not exist in the original schema',
+        },
+        'nested.field': {
+          title: 'Nop',
+        },
+        pet_name: {
+          title: 'New pet title',
+        },
+      },
+    });
+
+    expect(result.schema.properties.unknown_field).toBeUndefined();
+    expect(result.schema.properties.nested).toBeUndefined();
+    expect(result.schema.properties.pet_name).toEqual({
+      ...schemaPet.properties.pet_name,
+      title: 'New pet title',
+    });
+
+    expect(result.warnings).toEqual([
+      {
+        type: 'CHANGE_FIELD_NOT_FOUND',
+        message: 'Changing field "unknown_field" was ignored because it does not exist.',
+      },
+      {
+        type: 'CHANGE_FIELD_NOT_FOUND',
+        message: 'Changing field "nested.field" was ignored because it does not exist.',
+      },
+    ]);
+  });
+
   it('replace all fields', () => {
     const result = modify(schemaPet, {
       allFields: (fieldName, fieldAttrs) => {
