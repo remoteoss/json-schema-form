@@ -509,7 +509,7 @@ describe('modify() - create fields', () => {
           type: 'string',
         },
         address: {
-          something: 'foo',
+          someAttr: 'foo',
         },
       },
     });
@@ -525,7 +525,14 @@ describe('modify() - create fields', () => {
     });
 
     // this is ignored because the field already exists
-    expect(result.properties.address.something).toBe(undefined);
+    expect(result.schema.properties.address.someAttr).toBe(undefined);
+
+    expect(result.warnings).toEqual([
+      {
+        type: 'FIELD_TO_CREATE_EXISTS',
+        message: 'Creating field "address" was ignored because it already exists.',
+      },
+    ]);
   });
 
   it('create nested field', () => {
@@ -537,13 +544,14 @@ describe('modify() - create fields', () => {
         },
         // Pointer as object
         address: {
+          someAttr: 'foo',
           properties: {
             district: {
               title: 'District',
             },
           },
         },
-        // this is ignored because the field already exists [1]
+        // Ignore field street because the field already exists [1]
         'address.street': {
           title: 'Foo',
         },
@@ -551,7 +559,7 @@ describe('modify() - create fields', () => {
     });
 
     expect(result.warnings).toEqual([]);
-    expect(result.properties.address.properties).toMatchObject({
+    expect(result.schema.properties.address.properties).toMatchObject({
       ...schemaAddress.properties.address.properties,
       state: {
         title: 'State',
@@ -561,11 +569,25 @@ describe('modify() - create fields', () => {
       },
     });
 
-    // this is ignored because the field already exists [1]
-    expect(result.properties.address.properties.street.title).toBe('Street');
+    // Ignore address.someAttr because the address itself already exists.
+    expect(result.schema.properties.address.someAttr).toBeUndefined();
+
+    // Ignore field street because it already exists [1]
+    expect(result.schema.properties.address.properties.street.title).toBe('Street');
+
+    expect(result.warnings).toEqual([
+      {
+        type: 'FIELD_TO_CREATE_EXISTS',
+        message: 'Creating field "address" was ignored because it already exists.',
+      },
+      {
+        type: 'FIELD_TO_CREATE_EXISTS',
+        message: 'Creating field "address.street" was ignored because it already exists.',
+      },
+    ]);
   });
 
-  // Enable this on PR !78
+  // Enable this after PR !78 is merged
   it.skip('reorder new created fields', () => {
     const result = modify(schemaPet, {
       create: {
@@ -574,16 +596,22 @@ describe('modify() - create fields', () => {
           type: 'string',
         },
       },
-      order: {
-        fields: (originalOrder) => {
-          const newOrder = [...originalOrder];
-          return newOrder.splice(1, 0, 'new_field');
-        },
+      orderRoot: (originalOrder) => {
+        const newOrder = [...originalOrder];
+        return newOrder.splice(1, 0, 'new_field');
       },
     });
 
     expect(result).toMatchObject({
-      'x-jsf-order': ['has_pet', 'new_field'],
+      'x-jsf-order': ['has_pet', 'new_field', 'pet_name', 'pet_age', 'pet_fat', 'pet_address'],
     });
+
+    expect(result.warnings).toEqual([
+      {
+        type: 'ODER_MISSING_FIELDS',
+        message:
+          'Some fields got forgotten in the new order. They were automatically appended to the end: XXX, XXXX',
+      },
+    ]);
   });
 });

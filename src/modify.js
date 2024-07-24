@@ -7,6 +7,7 @@ import set from 'lodash/set';
 const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
   ORDER_MISSING_FIELDS: 'ORDER_MISSING_FIELDS',
+  FIELD_TO_CREATE_EXISTS: 'FIELD_TO_CREATE_EXISTS',
 };
 /**
  *
@@ -118,28 +119,36 @@ function reorderFields(schema, configOrder) {
 }
 
 function createFields(schema, fieldsConfig) {
-  if (!fieldsConfig) return null;
+  if (!fieldsConfig) return { warnings: null };
 
-  const fieldsToAdd = Object.entries(fieldsConfig);
+  const warnings = [];
+  const fieldsToCreate = Object.entries(fieldsConfig);
 
-  fieldsToAdd.forEach(([shortPath, fieldAttrs]) => {
+  fieldsToCreate.forEach(([shortPath, fieldAttrs]) => {
     const fieldPath = shortToFullPath(shortPath);
 
     if (fieldAttrs.properties) {
       // Recursive to nested fields...
-      createFields(get(schema.properties, fieldPath), fieldAttrs.properties);
+      const result = createFields(get(schema.properties, fieldPath), fieldAttrs.properties);
+      warnings.push(result.warnings);
     }
 
     const fieldInSchema = get(schema.properties, fieldPath);
-    if (fieldInSchema) {
-      // Do not override/edit a field that already exists.
-      // That's the job of config.fields method.
+    const { properties, ...otherAttrs } = fieldAttrs;
+
+    if (fieldInSchema && otherAttrs) {
+      warnings.push({
+        type: WARNING_TYPES.FIELD_TO_CREATE_EXISTS,
+        message: `Creating field "${shortPath}" was ignored because it already exists.`,
+      });
       return;
     }
 
     const fieldInObjectPath = set({}, fieldPath, standardizeAttrs(fieldAttrs));
     merge(schema.properties, fieldInObjectPath);
   });
+
+  return { warnings: warnings.flat() };
 }
 
 export function modify(originalSchema, config) {
@@ -149,7 +158,7 @@ export function modify(originalSchema, config) {
   const resultRewrite = rewriteFields(schema, config.fields);
   rewriteAllFields(schema, config.allFields);
 
-  createFields(schema, config.create);
+  const resultCreate = createFields(schema, config.create);
 
   const resultReorder = reorderFields(schema, config.orderRoot);
 
@@ -159,7 +168,9 @@ export function modify(originalSchema, config) {
     );
   }
 
-  const warnings = [resultRewrite.warnings, resultReorder.warnings].flat().filter(Boolean);
+  const warnings = [resultRewrite.warnings, resultCreate.warnings, resultReorder.warnings]
+    .flat()
+    .filter(Boolean);
 
   return {
     schema,
