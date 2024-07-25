@@ -249,9 +249,11 @@ function pickFields(originalSchema, fieldsToPick) {
 
     warnings.push({
       type: WARNING_TYPES.PICK_MISSED_FIELD,
-      message: `The picked fields have related conditional fields that got added automatically. ${Object.keys(
+      message: `The picked fields are in conditionals that refeer other fields. They added automatically: ${Object.keys(
         missingFields
-      ).join(', ')}. Check "meta" for more details.`,
+      )
+        .map((name) => `"${name}"`)
+        .join(', ')}. Check "meta" for more details.`,
       meta: missingFields,
     });
   }
