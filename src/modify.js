@@ -1,5 +1,6 @@
 import difference from 'lodash/difference';
 import get from 'lodash/get';
+import intersection from 'lodash/intersection';
 import merge from 'lodash/merge';
 import mergeWith from 'lodash/mergeWith';
 import set from 'lodash/set';
@@ -8,6 +9,7 @@ const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
   ORDER_MISSING_FIELDS: 'ORDER_MISSING_FIELDS',
   FIELD_TO_CREATE_EXISTS: 'FIELD_TO_CREATE_EXISTS',
+  PICK_MISSED_FIELD: 'PICK_MISSED_FIELD',
 };
 /**
  *
@@ -31,6 +33,34 @@ function standardizeAttrs(attrs) {
     ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
     ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
   };
+}
+
+function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
+  const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
+
+  const inIf = intersection(ifCondition.required, fieldsToPick);
+
+  if (inIf.length > 0) {
+    return true;
+  }
+
+  const inThen =
+    intersection(thenCondition.required, fieldsToPick) ||
+    intersection(Object.keys(thenCondition.properties), fieldsToPick);
+
+  if (inThen.length > 0) {
+    return true;
+  }
+
+  const inElse =
+    intersection(elseCondition.required, fieldsToPick) ||
+    intersection(Object.keys(elseCondition.properties), fieldsToPick);
+
+  if (inElse.length > 0) {
+    return true;
+  }
+
+  return false;
 }
 
 function rewriteFields(schema, fieldsConfig) {
@@ -151,6 +181,112 @@ function createFields(schema, fieldsConfig) {
   return { warnings: warnings.flat() };
 }
 
+function pickFields(originalSchema, fieldsToPick) {
+  if (!fieldsToPick) {
+    return { schema: originalSchema, warnings: null };
+  }
+
+  const newSchema = {
+    properties: {},
+  };
+
+  Object.entries(originalSchema).forEach(([attrKey, attrValue]) => {
+    switch (attrKey) {
+      case 'properties':
+        // TODO — handle recursive nested fields
+        fieldsToPick.forEach((fieldPath) => {
+          set(newSchema.properties, fieldPath, attrValue[fieldPath]);
+        });
+        break;
+      case 'x-jsf-order':
+      case 'required':
+        newSchema[attrKey] = attrValue.filter((fieldName) => fieldsToPick.includes(fieldName));
+        break;
+      case 'allOf': {
+        // remove conditionals that do not contain any reference to fieldsToPick
+        const newAllOf = originalSchema.allOf.filter((condition) =>
+          isConditionalReferencingAnyPickedField(condition, fieldsToPick)
+        );
+
+        newSchema[attrKey] = newAllOf;
+
+        break;
+      }
+      default:
+        newSchema[attrKey] = attrValue;
+    }
+  });
+
+  // Look for unpicked fields in the conditionals...
+  let missingFields = {};
+  newSchema.allOf.forEach((condition) => {
+    const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
+    const index = originalSchema.allOf.indexOf(condition);
+    missingFields = {
+      ...missingFields,
+      ...findMissingFields(ifCondition, {
+        fields: fieldsToPick,
+        path: `allOf[${index}].if`,
+      }),
+      ...findMissingFields(thenCondition, {
+        fields: fieldsToPick,
+        path: `allOf[${index}].then`,
+      }),
+      ...findMissingFields(elseCondition, {
+        fields: fieldsToPick,
+        path: `allOf[${index}].else`,
+      }),
+    };
+  });
+
+  const warnings = [];
+
+  if (Object.keys(missingFields).length > 0) {
+    // Re-add them to the schema...
+    Object.entries(missingFields).forEach(([fieldName]) => {
+      set(newSchema.properties, fieldName, originalSchema.properties[fieldName]);
+    });
+
+    warnings.push({
+      type: WARNING_TYPES.PICK_MISSED_FIELD,
+      message: `The picked fields are in conditionals that refeer other fields. They added automatically: ${Object.keys(
+        missingFields
+      )
+        .map((name) => `"${name}"`)
+        .join(', ')}. Check "meta" for more details.`,
+      meta: missingFields,
+    });
+  }
+
+  return { schema: newSchema, warnings };
+}
+
+function findMissingFields(conditional, { fields, path }) {
+  if (!conditional) {
+    return null;
+  }
+
+  let missingFields = {};
+
+  conditional.required?.forEach((fieldName) => {
+    if (!fields.includes(fieldName)) {
+      missingFields[fieldName] = {
+        path,
+      };
+    }
+  });
+
+  Object.entries(conditional.properties || []).forEach(([fieldName]) => {
+    if (!fields.includes(fieldName)) {
+      missingFields[fieldName] = { path };
+    }
+
+    // TODO support nested fields (eg if properties.adddress.properties.door_number)
+  });
+
+  return missingFields;
+}
+
 export function modify(originalSchema, config) {
   const schema = JSON.parse(JSON.stringify(originalSchema));
   // All these functions mutate "schema" that's why we create a copy above
@@ -160,7 +296,10 @@ export function modify(originalSchema, config) {
 
   const resultCreate = createFields(schema, config.create);
 
-  const resultReorder = reorderFields(schema, config.orderRoot);
+  const resultPick = pickFields(schema, config.pick);
+
+  const finalSchema = resultPick.schema;
+  const resultReorder = reorderFields(finalSchema, config.orderRoot);
 
   if (!config.muteLogging) {
     console.warn(
@@ -168,12 +307,17 @@ export function modify(originalSchema, config) {
     );
   }
 
-  const warnings = [resultRewrite.warnings, resultCreate.warnings, resultReorder.warnings]
+  const warnings = [
+    resultRewrite.warnings,
+    resultCreate.warnings,
+    resultPick.warnings,
+    resultReorder.warnings,
+  ]
     .flat()
     .filter(Boolean);
 
   return {
-    schema,
+    schema: finalSchema,
     warnings,
   };
 }
