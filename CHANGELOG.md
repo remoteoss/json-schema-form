@@ -1,8 +1,27 @@
+#### 0.11.0-beta.0 (2024-07-25)
+
+##### Breaking changes
+
+- **modify:**
+  - Change the return result to include warnings ([#83](https://github.com/remoteoss/json-schema-form/pull/83)) ([e07fcec8](https://github.com/remoteoss/json-schema-form/commit/e07fcec8e11cfcba2b477e5e6339cebbcc42038c))
+
+##### New Features
+
+- **modify:**
+  - Allow picking fields ([#79](https://github.com/remoteoss/json-schema-form/pull/79)) ([2e044021](https://github.com/remoteoss/json-schema-form/commit/2e044021f30292be81cede3805eefb4f1ea96dd9))
+  - Add x-jsf-presentation shorthand ([#81](https://github.com/remoteoss/json-schema-form/pull/81)) ([7cfaab0b](https://github.com/remoteoss/json-schema-form/commit/7cfaab0bdbb05a1555f6c1d74b26b1e6d7fa8c43))
+  - Allow creating fields ([#80](https://github.com/remoteoss/json-schema-form/pull/80)) ([8a82254d](https://github.com/remoteoss/json-schema-form/commit/8a82254d7cf5799471fa0bf2d3d09179f1327187))
+  - Allow customize fields order ([#78](https://github.com/remoteoss/json-schema-form/pull/78)) ([adc88179](https://github.com/remoteoss/json-schema-form/commit/adc88179a5d1e5bd85371c0cc581b35964bf6edf))
+
+##### Bug Fixes
+
+- **modify:** Customize attrs as Array now overrides the value ([#82](https://github.com/remoteoss/json-schema-form/pull/82)) ([7cc0853e](https://github.com/remoteoss/json-schema-form/commit/7cc0853e30f0c06ff160d8a3e4c4b4e402a1e520))
+
 #### 0.10.1-beta.0 (2024-07-23)
 
 ##### Chores
 
-* **Text field docs:**  Change naming of ID number property ([#74](https://github.com/remoteoss/json-schema-form/pull/74)) ([338ddd2a](https://github.com/remoteoss/json-schema-form/commit/338ddd2a5f008ec089f38db834f075100b856001))
+- **Text field docs:** Change naming of ID number property ([#74](https://github.com/remoteoss/json-schema-form/pull/74)) ([338ddd2a](https://github.com/remoteoss/json-schema-form/commit/338ddd2a5f008ec089f38db834f075100b856001))
 
 #### 0.10.0-beta.0 (2024-06-20)
 
