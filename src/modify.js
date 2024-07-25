@@ -24,10 +24,11 @@ function mergeReplaceArray(_, newVal) {
 }
 
 function standardizeAttrs(attrs) {
-  const { errorMessage, properties, ...rest } = attrs;
+  const { errorMessage, presentation, properties, ...rest } = attrs;
 
   return {
     ...rest,
+    ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
     ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
   };
 }
