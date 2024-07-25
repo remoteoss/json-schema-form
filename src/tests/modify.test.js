@@ -53,6 +53,9 @@ const schemaPet = {
       properties: {
         street: {
           title: 'Street',
+          'x-jsf-presentation': {
+            inputType: 'text',
+          },
         },
       },
     },
@@ -408,26 +411,33 @@ describe('modify() - basic mutations', () => {
           };
         },
         'pet_address.street': {
-          errorMessage: {
+          presentation: {
             'data-foo': 456,
           },
         },
       },
     });
 
+    const originalPetAgePresentation = schemaPet.properties.pet_age['x-jsf-presentation'];
+    expect(originalPetAgePresentation).toBeDefined();
+
+    const originalPetStreetPresentation =
+      schemaPet.properties.pet_address.properties.street['x-jsf-presentation'];
+    expect(originalPetStreetPresentation).toBeDefined();
+
     expect(result.schema).toMatchObject({
       properties: {
         pet_age: {
           'x-jsf-presentation': {
-            ...schemaPet.properties.pet_age['x-jsf-presentation'],
+            ...originalPetAgePresentation,
             'data-foo': 123,
           },
         },
         pet_address: {
           properties: {
             street: {
-              'x-jsf-errorMessage': {
-                ...schemaPet.properties.pet_address.properties.street['x-jsf-presentation'],
+              'x-jsf-presentation': {
+                ...originalPetStreetPresentation,
                 'data-foo': 456,
               },
             },
