@@ -156,15 +156,16 @@ export function createHeadlessForm(
 ): HeadlessFormOutput;
 
 /**
- * Modifies the JSON schema based on the provided configuration.
+ * Returns a new JSON Schema modified based a given configuration.
+ * This does not mutate the original JSON Schema.
  */
 export function modify(
   /**
-   * The original JSON schema to be modified.
+   * The original JSON schema as base to the modifications.
    */
   originalSchema: JSONSchemaObjectType,
   /**
-   * The configuration object containing the fields and allFields properties.
+   * The configuration object to create a new JSON Schema based on the originalSchema.
    */
   config?: ModifyConfig
 ): {
