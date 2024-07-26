@@ -146,6 +146,12 @@ type Warnings = {
   type: WARNING_TYPES;
   meta?: Record<string, unknown>;
 }[];
+
+type ModifyOutput = {
+  schema: JSONSchemaObjectType;
+  warnings: Warnings;
+};
+
 /**
  * Generates the Headless form based on the provided JSON schema
  */
@@ -168,7 +174,4 @@ export function modify(
    * The configuration object to create a new JSON Schema based on the originalSchema.
    */
   config?: ModifyConfig
-): {
-  schema: JSONSchemaObjectType;
-  warnings: Warnings;
-};
+): ModifyOutput;
