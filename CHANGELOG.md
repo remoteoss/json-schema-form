@@ -1,3 +1,9 @@
+#### 0.11.1-beta.0 (2024-07-26)
+
+##### Chores
+
+* **modify:**  Add missing Typescript declarations ([#84](https://github.com/remoteoss/json-schema-form/pull/84)) ([86b3af2a](https://github.com/remoteoss/json-schema-form/commit/86b3af2a31981718ad349ac8d08fbdce3aa86acf))
+
 #### 0.11.0-beta.0 (2024-07-25)
 
 ##### Breaking changes
