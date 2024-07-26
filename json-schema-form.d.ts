@@ -141,15 +141,15 @@ type WarningType =
   | 'FIELD_TO_CREATE_EXISTS'
   | 'PICK_MISSED_FIELD';
 
-type Warnings = {
+type Warning = {
   message: string;
   type: WarningType;
   meta?: Record<string, unknown>;
-}[];
+};
 
 type ModifyOutput = {
   schema: JSONSchemaObjectType;
-  warnings: Warnings;
+  warnings: Warning[];
 };
 
 /**
