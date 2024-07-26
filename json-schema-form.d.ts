@@ -1,5 +1,3 @@
-import { WARNING_TYPES } from './src/modify';
-
 /**
  * Shorthand to lookup for keys with `x-jsf-*` preffix.
  */
@@ -137,13 +135,15 @@ type ModifyConfig = {
   muteLogging?: boolean;
 };
 
-const warningTypes = WARNING_TYPES satisfies Record<string, string>;
-
-type WARNING_TYPES = keyof typeof warningTypes;
+type WarningType =
+  | 'FIELD_TO_CHANGE_NOT_FOUND'
+  | 'ORDER_MISSING_FIELDS'
+  | 'FIELD_TO_CREATE_EXISTS'
+  | 'PICK_MISSED_FIELD';
 
 type Warnings = {
   message: string;
-  type: WARNING_TYPES;
+  type: WarningType;
   meta?: Record<string, unknown>;
 }[];
 
