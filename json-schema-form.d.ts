@@ -2,7 +2,6 @@
  * Shorthand to lookup for keys with `x-jsf-*` preffix.
  */
 export function pickXKey(node: Object, key: 'presentation' | 'errorMessage'): Object | undefined;
-
 type ValidationTypes =
   | 'type'
   | 'minimum'
@@ -104,6 +103,54 @@ type HeadlessFormOutput = {
 };
 
 type JSONSchemaObjectType = Record<string, unknown>;
+type FieldName = string;
+type FieldAttrs = Record<string, unknown>;
+
+type FieldAttrsCallbackFn = (fieldName: FieldName, fieldAttrs: FieldAttrs) => FieldAttrs;
+
+type ModConfigProperties = Record<FieldName, FieldAttrs | FieldAttrsCallbackFn>;
+
+type ModifyConfig = {
+  /**
+   * An object with the fields to be modified with the returned attributes.
+   */
+  fields?: ModConfigProperties;
+  /**
+   * A callback function that runs through all fields, to modify them with the returned attributes.
+   */
+  allFields?: FieldAttrsCallbackFn;
+  /**
+   * An object of new fields to be created with the new attributes.
+   */
+  create?: ModConfigProperties;
+  /**
+   * An array of the fields to keep, removing the remaining fields.
+   */
+  pick?: FieldName[];
+  /* An array of fieldNames with the new order. Can be an object or callback function */
+  orderRoot?: FieldName[] | ((originalOrder: FieldName[]) => FieldName[]);
+  /**
+   * Mutes any logs or warnings from the library.
+   */
+  muteLogging?: boolean;
+};
+
+type WarningType =
+  | 'FIELD_TO_CHANGE_NOT_FOUND'
+  | 'ORDER_MISSING_FIELDS'
+  | 'FIELD_TO_CREATE_EXISTS'
+  | 'PICK_MISSED_FIELD';
+
+type Warning = {
+  message: string;
+  type: WarningType;
+  meta?: Record<string, unknown>;
+};
+
+type ModifyOutput = {
+  schema: JSONSchemaObjectType;
+  warnings: Warning[];
+};
 
 /**
  * Generates the Headless form based on the provided JSON schema
@@ -114,27 +161,17 @@ export function createHeadlessForm(
   customConfig?: JSFConfig
 ): HeadlessFormOutput;
 
-type MutationsConfig = {
-  /**
-   * An object with the list of fields to be mutated.
-   */
-  fields: Record<string, unknown>;
-  /**
-   * a callback function that applies a mutation to all the fields.
-   * @param fieldName
-   * @param fieldAttrs
-   * @returns
-   */
-  allFields: (fieldName: string, fieldAttrs: Record<string, unknown>) => Record<string, unknown>;
-};
-
+/**
+ * Returns a new JSON Schema modified based a given configuration.
+ * This does not mutate the original JSON Schema.
+ */
 export function modify(
   /**
-   * The original JSON schema to be modified.
+   * The original JSON schema as base to the modifications.
    */
   originalSchema: JSONSchemaObjectType,
   /**
-   * The configuration object containing the fields and allFields properties.
+   * The configuration object to create a new JSON Schema based on the originalSchema.
    */
-  config?: MutationsConfig
-);
+  config?: ModifyConfig
+): ModifyOutput;

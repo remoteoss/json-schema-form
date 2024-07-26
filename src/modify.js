@@ -5,12 +5,14 @@ import merge from 'lodash/merge';
 import mergeWith from 'lodash/mergeWith';
 import set from 'lodash/set';
 
-const WARNING_TYPES = {
+// NOTE: If you change this, also update the d.ts file.
+export const WARNING_TYPES = {
   FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
   ORDER_MISSING_FIELDS: 'ORDER_MISSING_FIELDS',
   FIELD_TO_CREATE_EXISTS: 'FIELD_TO_CREATE_EXISTS',
   PICK_MISSED_FIELD: 'PICK_MISSED_FIELD',
 };
+
 /**
  *
  * @param {*} path
