@@ -244,8 +244,12 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
 
   const updateAttributes = (fieldAttrs) => {
     Object.entries(fieldAttrs).forEach(([key, value]) => {
-      // some attributes' value (eg "schema") are a function, so we need to call it here
-      field[key] = typeof value === 'function' ? value() : value;
+      field[key] = value;
+
+      if (key === 'schema' && typeof value === 'function') {
+        // key "schema" refers to YupSchema that needs to be processed for validations.
+        field[key] = value();
+      }
 
       if (key === 'value') {
         // The value of the field should not be driven by the json-schema,
