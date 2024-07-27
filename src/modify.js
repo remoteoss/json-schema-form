@@ -116,7 +116,7 @@ function rewriteAllFields(schema, configCallback, context) {
       get(schema.properties, fieldName),
       {
         ...fieldAttrs,
-        ...configCallback(fullName, fieldAttrs),
+        ...standardizeAttrs(configCallback(fullName, fieldAttrs)),
       },
       mergeReplaceArray
     );
