@@ -252,6 +252,10 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       }
 
       if (key === 'value') {
+        /* NOTE/TODO: This section does not have any unit test. Be careful when changing this.
+         You'll need to check the internal MRs !9266 and !6572 (or other through git blame)
+         to better understand the reason. Then try to remove this workaround and/or write comprehensive unit tests. */
+
         // The value of the field should not be driven by the json-schema,
         // unless it's a read-only field
         // If the readOnly property has changed, use that updated value,
