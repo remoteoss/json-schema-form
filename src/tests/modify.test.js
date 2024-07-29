@@ -358,40 +358,94 @@ describe('modify() - basic mutations', () => {
       },
     });
   });
+});
 
-  it('customize x-jsf-errorMessage (shorthand)', () => {
-    const result = modify(schemaPet, {
-      fields: {
-        pet_age: (fieldAttrs) => {
-          return {
-            errorMessage: {
-              minimum: `We only accept pets up to ${fieldAttrs.maximum} months old.`,
-              required: 'We need to know your pet name.',
-            },
-          };
+describe('supporting shorthands', () => {
+  const invoiceSchema = {
+    properties: {
+      title: {
+        title: 'Invoice title',
+        'x-jsf-presentation': {
+          inputType: 'text',
         },
-        'pet_address.street': {
+        'x-jsf-errorMessage': {
+          required: 'Cannot be empty.',
+        },
+        type: 'string',
+      },
+      total: {
+        title: 'Invoice amount',
+        'x-jsf-presentation': {
+          inputType: 'money',
+        },
+        type: 'number',
+      },
+      taxes: {
+        title: 'Taxes details',
+        properties: {
+          country: {
+            title: 'Country',
+            'x-jsf-presentation': {
+              inputType: 'country',
+            },
+            type: 'string',
+          },
+          percentage: {
+            title: 'Percentage',
+            'x-jsf-presentation': {
+              inputType: 'number',
+            },
+          },
+          type: 'integer',
+        },
+      },
+    },
+    required: ['title'],
+  };
+
+  it('basic support for x-jsf-presentation and x-jsf-errorMessage in config.fields', () => {
+    const result = modify(invoiceSchema, {
+      fields: {
+        title: {
           errorMessage: {
-            required: 'Your pet cannot live in the street.',
+            maxLength: 'Must be shorter.',
+          },
+          presentation: {
+            dataFoo: 123,
+          },
+        },
+        'taxes.country': {
+          errorMessage: {
+            required: 'The country is required.',
+          },
+          presentation: {
+            flags: true,
           },
         },
       },
-      // ...
     });
+
+    // Assert all the other propreties are kept
+    expect(result.schema).toMatchObject(invoiceSchema);
 
     expect(result.schema).toMatchObject({
       properties: {
-        pet_age: {
+        title: {
           'x-jsf-errorMessage': {
-            minimum: `We only accept pets up to 24 months old.`,
-            required: 'We need to know your pet name.',
+            maxLength: 'Must be shorter.',
+          },
+          'x-jsf-presentation': {
+            dataFoo: 123,
           },
         },
-        pet_address: {
+        taxes: {
           properties: {
-            street: {
+            country: {
               'x-jsf-errorMessage': {
-                required: 'Your pet cannot live in the street.',
+                required: 'The country is required.',
+              },
+              'x-jsf-presentation': {
+                flags: true,
               },
             },
           },
@@ -400,47 +454,90 @@ describe('modify() - basic mutations', () => {
     });
   });
 
-  it('customize x-jsf-presentation (shorthand)', () => {
-    const result = modify(schemaPet, {
-      fields: {
-        pet_age: () => {
-          return {
-            presentation: {
-              'data-foo': 123,
-            },
-          };
+  it('shorthands work in config.allFields', () => {
+    const result = modify(invoiceSchema, {
+      allFields: (fieldName, attrs) => ({
+        errorMessage: {
+          required: `${attrs.title} cannot be empty.`,
         },
-        'pet_address.street': {
+        presentation: {
+          dataName: fieldName,
+        },
+      }),
+    });
+
+    expect(result.schema).toMatchObject({
+      properties: {
+        title: {
+          'x-jsf-errorMessage': {
+            required: 'Invoice title cannot be empty.',
+          },
+          'x-jsf-presentation': {
+            dataName: 'title',
+          },
+        },
+        total: {
+          'x-jsf-errorMessage': {
+            required: 'Invoice amount cannot be empty.',
+          },
+          'x-jsf-presentation': {
+            dataName: 'total',
+          },
+        },
+        taxes: {
+          'x-jsf-errorMessage': {
+            required: 'Taxes details cannot be empty.',
+          },
+          'x-jsf-presentation': {
+            dataName: 'taxes',
+          },
+          properties: {
+            country: {
+              'x-jsf-errorMessage': {
+                required: 'Country cannot be empty.',
+              },
+              'x-jsf-presentation': {
+                dataName: 'taxes.country',
+              },
+            },
+            percentage: {
+              'x-jsf-errorMessage': {
+                required: 'Percentage cannot be empty.',
+              },
+              'x-jsf-presentation': {
+                dataName: 'taxes.percentage',
+              },
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('shorthands work in config.create', () => {
+    const result = modify(invoiceSchema, {
+      create: {
+        invoice_id: {
+          title: 'Invoice ID',
           presentation: {
-            'data-foo': 456,
+            inputType: 'text',
+          },
+          errorMessage: {
+            pattern: 'Must have 5 characters.',
           },
         },
       },
     });
 
-    const originalPetAgePresentation = schemaPet.properties.pet_age['x-jsf-presentation'];
-    expect(originalPetAgePresentation).toBeDefined();
-
-    const originalPetStreetPresentation =
-      schemaPet.properties.pet_address.properties.street['x-jsf-presentation'];
-    expect(originalPetStreetPresentation).toBeDefined();
-
     expect(result.schema).toMatchObject({
       properties: {
-        pet_age: {
+        invoice_id: {
+          title: 'Invoice ID',
           'x-jsf-presentation': {
-            ...originalPetAgePresentation,
-            'data-foo': 123,
+            inputType: 'text',
           },
-        },
-        pet_address: {
-          properties: {
-            street: {
-              'x-jsf-presentation': {
-                ...originalPetStreetPresentation,
-                'data-foo': 456,
-              },
-            },
+          'x-jsf-errorMessage': {
+            pattern: 'Must have 5 characters.',
           },
         },
       },

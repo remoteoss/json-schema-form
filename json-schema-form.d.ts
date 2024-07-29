@@ -106,28 +106,26 @@ type JSONSchemaObjectType = Record<string, unknown>;
 type FieldName = string;
 type FieldAttrs = Record<string, unknown>;
 
-type FieldAttrsCallbackFn = (fieldName: FieldName, fieldAttrs: FieldAttrs) => FieldAttrs;
-
-type ModConfigProperties = Record<FieldName, FieldAttrs | FieldAttrsCallbackFn>;
-
 type ModifyConfig = {
   /**
    * An object with the fields to be modified with the returned attributes.
    */
-  fields?: ModConfigProperties;
+  fields?: Record<FieldName, FieldAttrs | ((fieldAttrs: FieldAttrs) => FieldAttrs)>;
   /**
    * A callback function that runs through all fields, to modify them with the returned attributes.
    */
-  allFields?: FieldAttrsCallbackFn;
+  allFields?: (fieldName: FieldName, fieldAttrs: FieldAttrs) => FieldAttrs;
   /**
    * An object of new fields to be created with the new attributes.
    */
-  create?: ModConfigProperties;
+  create?: Record<FieldName, FieldAttrs>;
   /**
    * An array of the fields to keep, removing the remaining fields.
    */
   pick?: FieldName[];
-  /* An array of fieldNames with the new order. Can be an object or callback function */
+  /**
+   * An array of fieldNames with the new order. Can be an object or callback function
+   * */
   orderRoot?: FieldName[] | ((originalOrder: FieldName[]) => FieldName[]);
   /**
    * Mutes any logs or warnings from the library.
