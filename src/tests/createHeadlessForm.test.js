@@ -2178,25 +2178,25 @@ describe('createHeadlessForm', () => {
     });
 
     it('pass custom attributes as function', () => {
+      function FakeComponent(props) {
+        const { label, description } = props;
+        return `A React component with ${label} and ${description}`;
+      }
       // Any custom attributes must be inside "x-jsf-presentation"
       const { fields, handleValidation } = createHeadlessForm({
         properties: {
           field_a: {
-            title: 'A field',
+            title: 'Field A',
             'x-jsf-presentation': {
               inputType: 'text',
+              MyComponent: FakeComponent,
             },
           },
           field_b: {
             title: 'Field B',
             'x-jsf-presentation': {
               inputType: 'text',
-              MyComponent: (props) => {
-                // Return a custom component, react, svelte, etc.
-                // This is just a fake dummy example
-                const { label, description } = props;
-                return `A React component with ${label} and ${description}`;
-              },
+              MyComponent: FakeComponent,
             },
           },
         },
@@ -2215,6 +2215,12 @@ describe('createHeadlessForm', () => {
         ],
       });
 
+      const fieldA = getField(fields, 'field_a');
+      expect(fieldA).toMatchObject({
+        label: 'Field A',
+        MyComponent: expect.any(Function),
+      });
+
       const fieldB = getField(fields, 'field_b');
       expect(fieldB).toMatchObject({
         label: 'Field B',
@@ -2231,9 +2237,10 @@ describe('createHeadlessForm', () => {
       // This covers the updateField(). Check PR for more context.
       handleValidation({ field_a: 'yes' });
 
-      const fieldBVisible = getField(fields, 'field_b');
-
-      expect(fieldBVisible).toMatchObject({
+      expect(getField(fields, 'field_a')).toMatchObject({
+        MyComponent: expect.any(Function),
+      });
+      expect(getField(fields, 'field_b')).toMatchObject({
         required: true,
         MyComponent: expect.any(Function),
       });
