@@ -1,8 +1,21 @@
+#### 0.11.2-beta.0 (2024-07-30)
+
+##### Bug Fixes
+
+- **modify:**
+
+  - Support x-jsf shorthands in all methods, fix TS declarations; ([#85](https://github.com/remoteoss/json-schema-form/pull/85)) ([9a87c19b](https://github.com/remoteoss/json-schema-form/commit/9a87c19b6d373a8f660dd24b20a48725f3dbe8d0))
+
+- **createHeadlessForm:**
+
+  - mark createHeadlessForm config.customProperties as deprecated ([#85](https://github.com/remoteoss/json-schema-form/pull/85)) ([9a87c19b](https://github.com/remoteoss/json-schema-form/commit/9a87c19b6d373a8f660dd24b20a48725f3dbe8d0))
+  - support custom attributes as functions (do not execute them) ([#86](https://github.com/remoteoss/json-schema-form/pull/86)) ([3674fc87](https://github.com/remoteoss/json-schema-form/commit/3674fc87d44df44a5ba9b13b40465c2ccda448ca))
+
 #### 0.11.1-beta.0 (2024-07-26)
 
 ##### Chores
 
-* **modify:**  Add missing Typescript declarations ([#84](https://github.com/remoteoss/json-schema-form/pull/84)) ([86b3af2a](https://github.com/remoteoss/json-schema-form/commit/86b3af2a31981718ad349ac8d08fbdce3aa86acf))
+- **modify:** Add missing Typescript declarations ([#84](https://github.com/remoteoss/json-schema-form/pull/84)) ([86b3af2a](https://github.com/remoteoss/json-schema-form/commit/86b3af2a31981718ad349ac8d08fbdce3aa86acf))
 
 #### 0.11.0-beta.0 (2024-07-25)
 
