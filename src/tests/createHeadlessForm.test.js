@@ -2580,7 +2580,7 @@ describe('createHeadlessForm', () => {
       );
       fields = result.fields;
     });
-    describe('and file is of inccorrect format', () => {
+    describe('and file is of incorrect format', () => {
       const file = new File(['foo'], 'file.txt', {
         type: 'text/plain',
       });
@@ -2628,6 +2628,16 @@ describe('createHeadlessForm', () => {
             })
             .validate({ fileInput: [file] })
         ).resolves.toEqual(assertObj));
+    });
+    describe('and file is not instance of a File', () => {
+      it('should throw an error', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ path: 'foo.txt' }] })
+        ).rejects.toMatchObject({ errors: ['Not a valid file.'] }));
     });
   });
 
