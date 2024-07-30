@@ -2177,6 +2177,75 @@ describe('createHeadlessForm', () => {
       });
     });
 
+    it('pass custom attributes as function', () => {
+      function FakeComponent(props) {
+        const { label, description } = props;
+        return `A React component with ${label} and ${description}`;
+      }
+      // Any custom attributes must be inside "x-jsf-presentation"
+      const { fields, handleValidation } = createHeadlessForm({
+        properties: {
+          field_a: {
+            title: 'Field A',
+            'x-jsf-presentation': {
+              inputType: 'text',
+              MyComponent: FakeComponent,
+            },
+          },
+          field_b: {
+            title: 'Field B',
+            'x-jsf-presentation': {
+              inputType: 'text',
+              MyComponent: FakeComponent,
+            },
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                field_a: { const: 'yes' },
+              },
+              required: ['field_a'],
+            },
+            then: {
+              required: ['field_b'],
+            },
+          },
+        ],
+      });
+
+      const fieldA = getField(fields, 'field_a');
+      expect(fieldA).toMatchObject({
+        label: 'Field A',
+        MyComponent: expect.any(Function),
+      });
+
+      const fieldB = getField(fields, 'field_b');
+      expect(fieldB).toMatchObject({
+        label: 'Field B',
+        required: false,
+        MyComponent: expect.any(Function),
+      });
+
+      const fakeProps = { label: 'Field B', description: 'fake description' };
+      expect(fieldB.MyComponent(fakeProps)).toBe(
+        'A React component with Field B and fake description'
+      );
+
+      // Ensure "MyComponent" attribute still exsits after a validation cycle.
+      // This covers the updateField(). Check PR for more context.
+      handleValidation({ field_a: 'yes' });
+
+      expect(getField(fields, 'field_a')).toMatchObject({
+        MyComponent: expect.any(Function),
+      });
+      expect(getField(fields, 'field_b')).toMatchObject({
+        required: true,
+        MyComponent: expect.any(Function),
+      });
+    });
+
     it('passes scopedJsonSchema to each field', () => {
       const { fields } = createHeadlessForm(schemaWithoutInputTypes, {
         strictInputType: false,
