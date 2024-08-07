@@ -479,3 +479,29 @@ describe('Conditional with a minimum value check', () => {
     expect(handleValidation({ salary: 1000, reason: 'reason_one' }).formErrors).toEqual(undefined);
   });
 });
+
+describe('Ensure multiple conditions are applied at the same time', () => {
+  it('Should apply multiple conditions at the same time', () => {
+    const schema = {
+      additionalProperties: false,
+      properties: {
+        word: {
+          type: 'string',
+        },
+      },
+      allOf: [
+        {
+          if: { properties: { word: { const: 'hello' } }, required: ['word'] },
+          then: { properties: { word: { maxLength: 5 } } },
+        },
+        {
+          if: { properties: { word: { const: 'hello' } }, required: ['word'] },
+          then: { properties: { word: { description: 'I am a description' } } },
+        },
+      ],
+    };
+    const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+    const { fieldsResult } = handleValidation({ word: 'hello' });
+    expect(fieldsResult.word).toMatchObject({ maxLength: 5, description: 'I am a description' });
+  });
+});

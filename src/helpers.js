@@ -41,15 +41,18 @@ const dynamicInternalJsfAttrsObj = Object.fromEntries(
  * @param {Object} rootAttrs - Original field attributes from the root.
  */
 function removeConditionalStaleAttributes(field, conditionalAttrs, rootAttrs) {
+  let result = { ...field };
   Object.keys(field).forEach((key) => {
     if (
       conditionalAttrs[key] === undefined &&
       rootAttrs[key] === undefined && // Don't remove attrs that were declared in the root field.
       dynamicInternalJsfAttrsObj[key] === undefined // ignore these because they are internal
     ) {
+      result[key] = undefined;
       field[key] = undefined;
     }
   });
+  return result;
 }
 
 /**
@@ -221,6 +224,8 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @returns
  */
 function updateField(field, requiredFields, node, formValues, logic, config) {
+  let result = { ...field };
+
   // If there was an error building the field, it might not exist in the form even though
   // it can be mentioned in the schema so we return early in that case
   if (!field) {
@@ -235,20 +240,24 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     // - if the field is marked as "false", it should be removed from the form
     // - otherwise ("true" or object stating updated properties) it should be visible in the form
     field.isVisible = !!node.properties[field.name];
+    result.isVisible = field.isVisible;
   }
 
   // If field is required, it needs to be visible
   if (fieldIsRequired) {
     field.isVisible = true;
+    result.isVisible = true;
   }
 
   const updateAttributes = (fieldAttrs) => {
     Object.entries(fieldAttrs).forEach(([key, value]) => {
       field[key] = value;
+      result[key] = value;
 
       if (key === 'schema' && typeof value === 'function') {
         // key "schema" refers to YupSchema that needs to be processed for validations.
         field[key] = value();
+        result[key] = value();
       }
 
       if (key === 'value') {
@@ -271,6 +280,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
           // Note: doing an early return does not work, we need to reset the value
           // so that formik takes charge of setting the value correctly
           field.value = undefined;
+          result.value = undefined;
         }
       }
     });
@@ -286,6 +296,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       logic,
     });
     updateAttributes(newAttributes);
+    result = { ...result, ...newAttributes };
   }
 
   // If field has a calculateConditionalProperties closure, run it and update the field properties
@@ -296,7 +307,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       formValues,
     });
     updateAttributes(newAttributes);
-    removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
+    result = { ...result, ...newAttributes };
+    const staleAttributes = removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
+    result = { ...result, ...staleAttributes };
   }
 
   if (field.calculateCustomValidationProperties) {
@@ -305,8 +318,10 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       node,
       formValues
     );
+    result = { ...result, ...newAttributes };
     updateAttributes(newAttributes);
   }
+  return result;
 }
 
 /**
@@ -331,21 +346,33 @@ export function processNode({
   parentID = 'root',
   logic,
 }) {
+  let fieldsResult = {};
   // Set initial required fields
   const requiredFields = new Set(accRequired);
 
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues, logic, { parentID });
+    let result = updateField(field, requiredFields, node, formValues, logic, {
+      parentID,
+    });
+    fieldsResult[fieldName] = { ...fieldsResult[fieldName], ...result };
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues, logic, {
-      parentID,
-    });
+    let result = updateField(
+      getField(fieldName, formFields),
+      requiredFields,
+      node,
+      formValues,
+      logic,
+      {
+        parentID,
+      }
+    );
+    fieldsResult[fieldName] = { ...fieldsResult[fieldName], ...result };
   });
 
   if (node.if) {
@@ -353,7 +380,7 @@ export function processNode({
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
-      const { required: branchRequired } = processNode({
+      const { required: branchRequired, fieldsResult: result } = processNode({
         node: node.then,
         formValues,
         formFields,
@@ -361,10 +388,11 @@ export function processNode({
         parentID,
         logic,
       });
+      fieldsResult = { ...fieldsResult, ...result };
 
       branchRequired.forEach((field) => requiredFields.add(field));
     } else if (node.else) {
-      const { required: branchRequired } = processNode({
+      const { required: branchRequired, fieldsResult: result } = processNode({
         node: node.else,
         formValues,
         formFields,
@@ -372,6 +400,7 @@ export function processNode({
         parentID,
         logic,
       });
+      fieldsResult = { ...fieldsResult, ...result };
       branchRequired.forEach((field) => requiredFields.add(field));
     }
   }
@@ -385,7 +414,10 @@ export function processNode({
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues, logic, { parentID });
+        let result = updateField(field, requiredFields, node, formValues, logic, {
+          parentID,
+        });
+        fieldsResult[fieldName] = { ...fieldsResult[fieldName], ...result };
       });
     });
   }
@@ -402,7 +434,14 @@ export function processNode({
           logic,
         })
       )
-      .forEach(({ required: allOfItemRequired }) => {
+      .forEach(({ required: allOfItemRequired, fieldsResult: results }) => {
+        Object.entries(results).forEach(([fieldName, result]) => {
+          console.log(result);
+          fieldsResult[fieldName] = {
+            ...removeUndefined(fieldsResult[fieldName]),
+            ...removeUndefined(result),
+          };
+        });
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
   }
@@ -412,13 +451,14 @@ export function processNode({
       const inputType = getInputType(nestedNode);
       if (inputType === supportedTypes.FIELDSET) {
         // It's a fieldset, which might contain scoped conditions
-        processNode({
+        const { fieldsResult: result } = processNode({
           node: nestedNode,
           formValues: formValues[name] || {},
           formFields: getField(name, formFields).fields,
           parentID: name,
           logic,
         });
+        fieldsResult = { ...fieldsResult, [name]: { ...fieldsResult[name], ...result } };
       }
     });
   }
@@ -437,8 +477,12 @@ export function processNode({
 
   return {
     required: requiredFields,
+    fieldsResult,
   };
 }
+
+const removeUndefined = (obj) =>
+  Object.fromEntries(Object.entries(obj).filter(([, v]) => v !== undefined));
 
 /**
  * Clears field value if the field is removed from the form
@@ -469,8 +513,9 @@ export function updateFieldsProperties(fields, formValues, jsonSchema, logic) {
   if (!jsonSchema?.properties) {
     return;
   }
-  processNode({ node: jsonSchema, formValues, formFields: fields, logic });
+  const { fieldsResult } = processNode({ node: jsonSchema, formValues, formFields: fields, logic });
   clearValuesIfNotVisible(fields, formValues);
+  return { fieldsResult };
 }
 
 const notNullOption = (opt) => opt.const !== null;
@@ -642,7 +687,7 @@ export function yupToFormErrors(yupError) {
  * @returns {Function(values: Object): { YupError: YupObject, formErrors: Object }} Callback that returns Yup errors <YupObject>
  */
 export const handleValuesChange = (fields, jsonSchema, config, logic) => (values) => {
-  updateFieldsProperties(fields, values, jsonSchema, logic);
+  const { fieldsResult } = updateFieldsProperties(fields, values, jsonSchema, logic);
 
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
   let errors;
@@ -662,6 +707,7 @@ export const handleValuesChange = (fields, jsonSchema, config, logic) => (values
 
   return {
     yupError: errors,
+    fieldsResult,
     formErrors: yupToFormErrors(errors),
   };
 };

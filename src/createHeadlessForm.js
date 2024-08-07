@@ -334,7 +334,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
  * @param {Object} jsonSchema - JSON Schema
  * @param {JsfConfig} customConfig - Config
  */
-export function createHeadlessForm(jsonSchema, customConfig = {}) {
+export function createHeadlessForm(jsonSchema = { properties: {} }, customConfig = {}) {
   const config = {
     strictInputType: true,
     ...customConfig,
@@ -346,7 +346,7 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
 
     const handleValidation = handleValuesChange(fields, jsonSchema, config, logic);
 
-    updateFieldsProperties(
+    const { fieldsResult } = updateFieldsProperties(
       fields,
       getPrefillValues(fields, config.initialValues),
       jsonSchema,
@@ -355,6 +355,7 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
 
     return {
       fields,
+      fieldsResult,
       handleValidation,
       isError: false,
     };
