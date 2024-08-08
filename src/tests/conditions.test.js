@@ -500,8 +500,8 @@ describe('Ensure multiple conditions are applied at the same time', () => {
         },
       ],
     };
-    const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
-    const { fieldsResult } = handleValidation({ word: 'hello' });
-    expect(fieldsResult.word).toMatchObject({ maxLength: 5, description: 'I am a description' });
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+    handleValidation({ word: 'hello' });
+    expect(fields[0]).toMatchObject({ maxLength: 5, description: 'I am a description' });
   });
 });

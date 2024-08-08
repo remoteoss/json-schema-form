@@ -436,7 +436,6 @@ export function processNode({
       )
       .forEach(({ required: allOfItemRequired, fieldsResult: results }) => {
         Object.entries(results).forEach(([fieldName, result]) => {
-          console.log(result);
           fieldsResult[fieldName] = {
             ...removeUndefined(fieldsResult[fieldName]),
             ...removeUndefined(result),
@@ -464,13 +463,16 @@ export function processNode({
   }
 
   if (node['x-jsf-logic']) {
-    const { required: requiredFromLogic } = processJSONLogicNode({
+    const { required: requiredFromLogic, result } = processJSONLogicNode({
       node: node['x-jsf-logic'],
       formValues,
       formFields,
       accRequired: requiredFields,
       parentID,
       logic,
+    });
+    Object.keys(result).forEach((fieldName) => {
+      fieldsResult[fieldName] = { ...fieldsResult[fieldName], ...result[fieldName] };
     });
     requiredFromLogic.forEach((field) => requiredFields.add(field));
   }
@@ -514,8 +516,15 @@ export function updateFieldsProperties(fields, formValues, jsonSchema, logic) {
     return;
   }
   const { fieldsResult } = processNode({ node: jsonSchema, formValues, formFields: fields, logic });
+  fields.forEach((field) => {
+    const fieldResult = fieldsResult[field.name];
+    Object.entries(fieldResult).forEach(([key, value]) => {
+      if (typeof value !== 'function') {
+        field[key] = value;
+      }
+    });
+  });
   clearValuesIfNotVisible(fields, formValues);
-  return { fieldsResult };
 }
 
 const notNullOption = (opt) => opt.const !== null;
@@ -687,7 +696,7 @@ export function yupToFormErrors(yupError) {
  * @returns {Function(values: Object): { YupError: YupObject, formErrors: Object }} Callback that returns Yup errors <YupObject>
  */
 export const handleValuesChange = (fields, jsonSchema, config, logic) => (values) => {
-  const { fieldsResult } = updateFieldsProperties(fields, values, jsonSchema, logic);
+  updateFieldsProperties(fields, values, jsonSchema, logic);
 
   const lazySchema = lazy(() => buildCompleteYupSchema(fields, config));
   let errors;
@@ -707,7 +716,6 @@ export const handleValuesChange = (fields, jsonSchema, config, logic) => (values
 
   return {
     yupError: errors,
-    fieldsResult,
     formErrors: yupToFormErrors(errors),
   };
 };

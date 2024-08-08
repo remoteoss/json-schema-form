@@ -445,6 +445,7 @@ export function processJSONLogicNode({
   parentID,
   logic,
 }) {
+  let result = {};
   const requiredFields = new Set(accRequired);
 
   if (node.allOf) {
@@ -452,7 +453,8 @@ export function processJSONLogicNode({
       .map((allOfNode) =>
         processJSONLogicNode({ node: allOfNode, formValues, formFields, logic, parentID })
       )
-      .forEach(({ required: allOfItemRequired }) => {
+      .forEach(({ required: allOfItemRequired, result: fieldsResult }) => {
+        result = { ...result, ...fieldsResult };
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
   }
@@ -478,7 +480,7 @@ export function processJSONLogicNode({
       nextNode = node.else;
     }
     if (nextNode) {
-      const { required: branchRequired } = processNode({
+      const { required: branchRequired, fieldsResult } = processNode({
         node: nextNode,
         formValues,
         formFields,
@@ -486,9 +488,12 @@ export function processJSONLogicNode({
         logic,
         parentID,
       });
+      Object.entries(fieldsResult).forEach(([key, value]) => {
+        result[key] = { ...result[key], ...value };
+      });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
   }
 
-  return { required: requiredFields };
+  return { required: requiredFields, result };
 }
