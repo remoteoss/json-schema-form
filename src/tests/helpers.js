@@ -110,7 +110,7 @@ export const mockRadioInputDeprecated = {
   },
 };
 
-export const mockRadioInput = {
+export const mockRadioInputString = {
   title: 'Has siblings',
   description: 'Do you have any siblings?',
   oneOf: [
@@ -127,6 +127,48 @@ export const mockRadioInput = {
     inputType: 'radio',
   },
   type: 'string',
+};
+
+export const mockRadioInputBoolean = {
+  title: 'Over 18',
+  description: 'Are you over 18 years old?',
+  oneOf: [
+    {
+      title: 'Yes',
+      const: true,
+    },
+    {
+      title: 'No',
+      const: false,
+    },
+  ],
+  'x-jsf-presentation': {
+    inputType: 'radio',
+  },
+  type: 'boolean',
+};
+
+export const mockRadioInputNumber = {
+  title: 'Number of siblings',
+  description: 'How many siblings do you have?',
+  oneOf: [
+    {
+      title: 'One',
+      const: 1,
+    },
+    {
+      title: 'Two',
+      const: 2,
+    },
+    {
+      title: 'Three',
+      const: 3,
+    },
+  ],
+  'x-jsf-presentation': {
+    inputType: 'radio',
+  },
+  type: 'number',
 };
 
 export const mockRadioCardExpandableInput = {
@@ -831,11 +873,25 @@ export const schemaInputTypeRadioDeprecated = {
   required: ['has_siblings'],
 };
 
-export const schemaInputTypeRadio = {
+export const schemaInputTypeRadioString = {
   properties: {
-    has_siblings: mockRadioInput,
+    has_siblings: mockRadioInputString,
   },
   required: ['has_siblings'],
+};
+
+export const schemaInputTypeRadioBoolean = {
+  properties: {
+    over_18: mockRadioInputBoolean,
+  },
+  required: ['over_18'],
+};
+
+export const schemaInputTypeRadioNumber = {
+  properties: {
+    siblings_count: mockRadioInputNumber,
+  },
+  required: ['siblings_count'],
 };
 
 export const mockRadioInputOptionalNull = {
@@ -853,7 +909,7 @@ export const mockRadioInputOptionalNull = {
 
 export const schemaInputTypeRadioRequiredAndOptional = {
   properties: {
-    has_siblings: mockRadioInput,
+    has_siblings: mockRadioInputString,
     has_car: {
       ...mockRadioInputOptionalNull,
       description: 'Do you have a car? (optional field, check oneOf)',
@@ -1440,7 +1496,7 @@ export const schemaAnyOfValidation = JSONSchemaBuilder()
 
 export const schemaWithConditionalPresentationProperties = JSONSchemaBuilder()
   .addInput({
-    mock_radio: mockRadioInput,
+    mock_radio: mockRadioInputString,
   })
   .addAllOf([
     {
@@ -1477,7 +1533,7 @@ export const schemaWithConditionalPresentationProperties = JSONSchemaBuilder()
   .build();
 
 export const schemaWithConditionalReadOnlyProperty = JSONSchemaBuilder()
-  .addInput({ field_a: mockRadioInput })
+  .addInput({ field_a: mockRadioInputString })
   .addInput({ field_b: mockTextInput })
   .addAllOf([
     {
@@ -1526,7 +1582,7 @@ export const schemaWithConditionalReadOnlyProperty = JSONSchemaBuilder()
   .build();
 
 export const schemaWithConditionalAcknowledgementProperty = JSONSchemaBuilder()
-  .addInput({ field_a: mockRadioInput })
+  .addInput({ field_a: mockRadioInputString })
   .addInput({ field_b: mockCheckboxInput })
   .addAllOf([
     {
@@ -1554,9 +1610,9 @@ export const schemaWithConditionalAcknowledgementProperty = JSONSchemaBuilder()
 // Note: The second conditional (field_a_wrong) is incorrect,
 // it's used to test/catch the scenario where devs forget to add the if.required[]
 export const schemaWithWrongConditional = JSONSchemaBuilder()
-  .addInput({ field_a: mockRadioInput })
+  .addInput({ field_a: mockRadioInputString })
   .addInput({ field_b: mockTextInput })
-  .addInput({ field_a_wrong: mockRadioInput })
+  .addInput({ field_a_wrong: mockRadioInputString })
   .addInput({ field_b_wrong: mockTextInput })
   .addAllOf([
     {
