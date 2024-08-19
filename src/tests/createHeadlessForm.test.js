@@ -783,6 +783,8 @@ describe('createHeadlessForm', () => {
     it('support "radio" field boolean type', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioBoolean);
 
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
       expect(fields).toMatchObject([
         {
           description: 'Are you over 18 years old?',
@@ -810,10 +812,16 @@ describe('createHeadlessForm', () => {
         validOptions: [true, false],
         type: 'boolean',
       });
+
+      expect(validateForm({ over_18: 'true' })).toEqual({
+        over_18: 'The option "true" is not valid.',
+      });
     });
 
     it('support "radio" field number type', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioNumber);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       expect(fields).toMatchObject([
         {
@@ -845,6 +853,10 @@ describe('createHeadlessForm', () => {
         fieldName: 'siblings_count',
         validOptions: [1, 2, 3],
         type: 'number',
+      });
+
+      expect(validateForm({ siblings_count: '3' })).toEqual({
+        siblings_count: 'The option "3" is not valid.',
       });
     });
 
