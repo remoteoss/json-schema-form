@@ -185,13 +185,12 @@ const yupSchemas = {
       })
       .test(
         'matchesOptionOrPattern',
-        ({ value }) => {
-          return `The option ${JSON.stringify(value)} is not valid.`;
+        ({ originalValue }) => {
+          return `The option ${JSON.stringify(originalValue)} is not valid.`;
         },
-        (value) => {
-          if (value !== undefined && typeof value !== 'boolean') return false;
-
-          return validateRadioOrSelectOptions(value, options);
+        (castValue, { originalValue }) => {
+          if (typeof originalValue !== 'boolean' && castValue !== undefined) return false;
+          return validateRadioOrSelectOptions(castValue, options);
         }
       );
   },
