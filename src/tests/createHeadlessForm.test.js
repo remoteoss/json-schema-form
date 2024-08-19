@@ -810,7 +810,7 @@ describe('createHeadlessForm', () => {
         handleValidation,
         fieldName: 'over_18',
         validOptions: [true, false],
-        type: 'boolean',
+        type: schemaInputTypeRadioBoolean.properties.over_18.type,
       });
 
       expect(validateForm({ over_18: 'true' })).toEqual({
@@ -853,6 +853,7 @@ describe('createHeadlessForm', () => {
         fieldName: 'siblings_count',
         validOptions: [1, 2, 3],
         type: 'number',
+        type: schemaInputTypeRadioBoolean.properties.siblings_count.type,
       });
 
       expect(validateForm({ siblings_count: '3' })).toEqual({
