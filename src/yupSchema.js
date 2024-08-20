@@ -204,11 +204,13 @@ const yupSchemas = {
     select: array().nullable(),
     'group-array': array().nullable(),
   },
-  /**
-   * Why string? "null" type fields default to text field input.
-   * If inputType is specified, it will be used instead to derive the schema.
-   */
-  null: string().trim().nullable(),
+  null: mixed()
+    .typeError('The value must be null')
+    .test(
+      'matchesNullValue',
+      ({ value }) => `The value ${JSON.stringify(value)} is not valid.`,
+      (value) => value === undefined || value === null
+    ),
 };
 
 const yupSchemasToJsonTypes = {

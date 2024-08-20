@@ -1141,6 +1141,23 @@ export const schemaInputTypeCheckboxBooleans = JSONSchemaBuilder()
   .setRequiredFields(['boolean_required'])
   .build();
 
+export const schemaInputTypeNull = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    name: {
+      type: 'null',
+      title: '(Optional) Name',
+    },
+    username: {
+      type: 'string',
+      title: 'Username',
+      maxLength: 4,
+    },
+  },
+  required: ['username'],
+};
+
 export const schemaCustomErrorMessageByField = {
   properties: {
     tabs: {
@@ -2212,52 +2229,4 @@ export const schemaWithCustomValidationsAndConditionals = {
       },
     },
   ],
-};
-
-export const schemaNullField = {
-  additionalProperties: false,
-  type: 'object',
-  properties: {
-    name: {
-      type: 'null',
-      title: '(Optional) Name',
-    },
-    username: {
-      type: 'string',
-      title: 'Username',
-      maxLength: 4,
-    },
-  },
-  required: ['username'],
-};
-
-export const schemaNullFieldWithInputType = {
-  additionalProperties: false,
-  type: 'object',
-  properties: {
-    name: {
-      type: 'null',
-      title: '(Optional) Name',
-      'x-jsf-presentation': {
-        inputType: 'hidden',
-      },
-    },
-    username: {
-      type: 'string',
-      title: 'Username',
-      maxLength: 4,
-      'x-jsf-presentation': {
-        inputType: 'text',
-      },
-    },
-    age: {
-      type: 'null',
-      title: 'Age',
-      maximum: 20,
-      'x-jsf-presentation': {
-        inputType: 'number',
-      },
-    },
-  },
-  required: ['username'],
 };
