@@ -1798,15 +1798,22 @@ describe('createHeadlessForm', () => {
         // Then the fieldset perks.food changes (the "no" option gets removed)
 
         // Setup (arrange)
-        const { fields, handleValidation } = createHeadlessForm(schemaWithConditionalToFieldset);
+        let validateForm;
+        let fields;
+        let originalFood;
+        let perksForLowWorkHours;
 
-        const validateForm = (vals) => friendlyError(handleValidation(vals));
-        const originalFood = getField(fields, 'perks', 'food');
+        beforeAll(() => {
+          const form = createHeadlessForm(schemaWithConditionalToFieldset);
+          fields = form.fields;
+          validateForm = (vals) => friendlyError(form.handleValidation(vals));
+          originalFood = getField(fields, 'perks', 'food');
 
-        const perksForLowWorkHours = {
-          food: 'no', // this option will be removed when the condition happens.
-          retirement: 'basic',
-        };
+          perksForLowWorkHours = {
+            food: 'no', // this option will be removed when the condition happens.
+            retirement: 'basic',
+          };
+        });
 
         it('by default, the Perks.food has 4 options', () => {
           expect(originalFood.options).toHaveLength(4);
