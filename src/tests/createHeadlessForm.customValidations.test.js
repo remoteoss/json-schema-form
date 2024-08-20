@@ -2,7 +2,7 @@ import merge from 'lodash/fp/merge';
 
 import { createHeadlessForm } from '../createHeadlessForm';
 
-import { JSONSchemaBuilder, mockFieldset, mockRadioInput } from './helpers';
+import { JSONSchemaBuilder, mockFieldset, mockRadioInputString } from './helpers';
 import { mockMoneyInput } from './helpers.custom';
 
 function friendlyError({ formErrors }) {
@@ -52,7 +52,7 @@ const schemaWithConditional = ({ newProperties } = {}) =>
     .addInput(
       merge(
         {
-          is_employee: mockRadioInput,
+          is_employee: mockRadioInputString,
           salary: { ...mockMoneyInput, minimum: 0 },
           bonus: { ...mockMoneyInput, minimum: 0 },
         },

@@ -1,3 +1,9 @@
+#### 0.11.3-beta.0 (2024-08-19)
+
+##### Bug Fixes
+
+* **select/radio:**  Add support for options with boolean type ([#89](https://github.com/remoteoss/json-schema-form/pull/89)) ([127f70b3](https://github.com/remoteoss/json-schema-form/commit/127f70b3b19974a404e710548b83d4e4b17e1339))
+
 #### 0.11.2-beta.0 (2024-07-30)
 
 ##### Bug Fixes
