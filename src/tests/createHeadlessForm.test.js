@@ -8,7 +8,9 @@ import {
   JSONSchemaBuilder,
   schemaInputTypeText,
   schemaInputTypeRadioDeprecated,
-  schemaInputTypeRadio,
+  schemaInputTypeRadioString,
+  schemaInputTypeRadioBoolean,
+  schemaInputTypeRadioNumber,
   schemaInputTypeRadioRequiredAndOptional,
   schemaInputRadioOptionalNull,
   schemaInputRadioOptionalConventional,
@@ -432,7 +434,7 @@ describe('createHeadlessForm', () => {
   });
 
   describe('field support', () => {
-    function assertOptionsAllowed({ handleValidation, fieldName, validOptions }) {
+    function assertOptionsAllowed({ handleValidation, fieldName, validOptions, type = 'string' }) {
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       // All allowed options are valid
@@ -440,19 +442,21 @@ describe('createHeadlessForm', () => {
         expect(validateForm({ [fieldName]: value })).toBeUndefined();
       });
 
-      // Any other arbitrary value is not valid.
-      expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
-        [fieldName]: 'The option "blah-blah" is not valid.',
-      });
+      if (type === 'string') {
+        // Any other arbitrary value is not valid.
+        expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
+          [fieldName]: 'The option "blah-blah" is not valid.',
+        });
+
+        // As required field, empty string ("") is also considered empty. @BUG RMT-518
+        // Expectation: The error to be "The option '' is not valid."
+        expect(validateForm({ [fieldName]: '' })).toEqual({
+          [fieldName]: 'Required field',
+        });
+      }
 
       // Given undefined, it says it's a required field.
       expect(validateForm({})).toEqual({
-        [fieldName]: 'Required field',
-      });
-
-      // As required field, empty string ("") is also considered empty. @BUG RMT-518
-      // Expectation: The error to be "The option '' is not valid."
-      expect(validateForm({ [fieldName]: '' })).toEqual({
         [fieldName]: 'Required field',
       });
 
@@ -745,8 +749,8 @@ describe('createHeadlessForm', () => {
         validOptions: ['yes', 'no'],
       });
     });
-    it('support "radio" field type', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadio);
+    it('support "radio" field string type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioString);
 
       expect(fields).toMatchObject([
         {
@@ -773,6 +777,86 @@ describe('createHeadlessForm', () => {
         handleValidation,
         fieldName: 'has_siblings',
         validOptions: ['yes', 'no'],
+      });
+    });
+
+    it('support "radio" field boolean type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioBoolean);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields).toMatchObject([
+        {
+          description: 'Are you over 18 years old?',
+          label: 'Over 18',
+          name: 'over_18',
+          options: [
+            {
+              label: 'Yes',
+              value: true,
+            },
+            {
+              label: 'No',
+              value: false,
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsAllowed({
+        handleValidation,
+        fieldName: 'over_18',
+        validOptions: [true, false],
+        type: schemaInputTypeRadioBoolean.properties.over_18.type,
+      });
+
+      expect(validateForm({ over_18: 'true' })).toEqual({
+        over_18: 'The option "true" is not valid.',
+      });
+    });
+
+    it('support "radio" field number type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioNumber);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields).toMatchObject([
+        {
+          description: 'How many siblings do you have?',
+          label: 'Number of siblings',
+          name: 'siblings_count',
+          options: [
+            {
+              label: 'One',
+              value: 1,
+            },
+            {
+              label: 'Two',
+              value: 2,
+            },
+            {
+              label: 'Three',
+              value: 3,
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsAllowed({
+        handleValidation,
+        fieldName: 'siblings_count',
+        validOptions: [1, 2, 3],
+        type: schemaInputTypeRadioNumber.properties.siblings_count.type,
+      });
+
+      expect(validateForm({ siblings_count: '3' })).toEqual({
+        siblings_count: 'The option "3" is not valid.',
       });
     });
 
@@ -1714,15 +1798,22 @@ describe('createHeadlessForm', () => {
         // Then the fieldset perks.food changes (the "no" option gets removed)
 
         // Setup (arrange)
-        const { fields, handleValidation } = createHeadlessForm(schemaWithConditionalToFieldset);
+        let validateForm;
+        let fields;
+        let originalFood;
+        let perksForLowWorkHours;
 
-        const validateForm = (vals) => friendlyError(handleValidation(vals));
-        const originalFood = getField(fields, 'perks', 'food');
+        beforeAll(() => {
+          const form = createHeadlessForm(schemaWithConditionalToFieldset);
+          fields = form.fields;
+          validateForm = (vals) => friendlyError(form.handleValidation(vals));
+          originalFood = getField(fields, 'perks', 'food');
 
-        const perksForLowWorkHours = {
-          food: 'no', // this option will be removed when the condition happens.
-          retirement: 'basic',
-        };
+          perksForLowWorkHours = {
+            food: 'no', // this option will be removed when the condition happens.
+            retirement: 'basic',
+          };
+        });
 
         it('by default, the Perks.food has 4 options', () => {
           expect(originalFood.options).toHaveLength(4);
@@ -2174,6 +2265,75 @@ describe('createHeadlessForm', () => {
 
       expect(result).toMatchObject({
         fields: [{ description: 'I am regular' }, { description: 'I am <b>bold</b>.' }],
+      });
+    });
+
+    it('pass custom attributes as function', () => {
+      function FakeComponent(props) {
+        const { label, description } = props;
+        return `A React component with ${label} and ${description}`;
+      }
+      // Any custom attributes must be inside "x-jsf-presentation"
+      const { fields, handleValidation } = createHeadlessForm({
+        properties: {
+          field_a: {
+            title: 'Field A',
+            'x-jsf-presentation': {
+              inputType: 'text',
+              MyComponent: FakeComponent,
+            },
+          },
+          field_b: {
+            title: 'Field B',
+            'x-jsf-presentation': {
+              inputType: 'text',
+              MyComponent: FakeComponent,
+            },
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                field_a: { const: 'yes' },
+              },
+              required: ['field_a'],
+            },
+            then: {
+              required: ['field_b'],
+            },
+          },
+        ],
+      });
+
+      const fieldA = getField(fields, 'field_a');
+      expect(fieldA).toMatchObject({
+        label: 'Field A',
+        MyComponent: expect.any(Function),
+      });
+
+      const fieldB = getField(fields, 'field_b');
+      expect(fieldB).toMatchObject({
+        label: 'Field B',
+        required: false,
+        MyComponent: expect.any(Function),
+      });
+
+      const fakeProps = { label: 'Field B', description: 'fake description' };
+      expect(fieldB.MyComponent(fakeProps)).toBe(
+        'A React component with Field B and fake description'
+      );
+
+      // Ensure "MyComponent" attribute still exsits after a validation cycle.
+      // This covers the updateField(). Check PR for more context.
+      handleValidation({ field_a: 'yes' });
+
+      expect(getField(fields, 'field_a')).toMatchObject({
+        MyComponent: expect.any(Function),
+      });
+      expect(getField(fields, 'field_b')).toMatchObject({
+        required: true,
+        MyComponent: expect.any(Function),
       });
     });
 

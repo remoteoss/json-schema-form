@@ -173,6 +173,27 @@ const yupSchemas = {
         }
       )
       .nullable(),
+  radioOrSelectBoolean: (options) => {
+    return boolean()
+      .nullable()
+      .transform((value) => {
+        // @BUG RMT-518 - Same reason to radioOrSelectString above.
+        if (options?.some((option) => option.value === null)) {
+          return value;
+        }
+        return value === null ? undefined : value;
+      })
+      .test(
+        'matchesOptionOrPattern',
+        ({ originalValue }) => {
+          return `The option ${JSON.stringify(originalValue)} is not valid.`;
+        },
+        (castValue, { originalValue }) => {
+          if (typeof originalValue !== 'boolean' && castValue !== undefined) return false;
+          return validateRadioOrSelectOptions(castValue, options);
+        }
+      );
+  },
   number: number().typeError('The value must be a number').nullable(),
   file: array().nullable(),
   email: string().trim().email('Please enter a valid email address').nullable(),
@@ -230,9 +251,14 @@ const getYupSchema = ({ inputType, ...field }) => {
 
   const generateOptionSchema = (type) => {
     const optionValues = getOptions(field);
-    return type === 'number'
-      ? yupSchemas.radioOrSelectNumber(optionValues)
-      : yupSchemas.radioOrSelectString(optionValues);
+    switch (type) {
+      case 'number':
+        return yupSchemas.radioOrSelectNumber(optionValues);
+      case 'boolean':
+        return yupSchemas.radioOrSelectBoolean(optionValues);
+      default:
+        return yupSchemas.radioOrSelectString(optionValues);
+    }
   };
 
   if (hasOptions) {
