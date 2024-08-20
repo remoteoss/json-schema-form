@@ -363,13 +363,25 @@ export function buildYupSchema(field, config, logic) {
     );
   }
 
+  function isFile(files) {
+    return Array.isArray(files)
+      ? files.every((file) => file instanceof File)
+      : files instanceof File;
+  }
+
+  function withFile(yupSchema) {
+    return yupSchema.test('isValidFile', 'Not a valid file.', isFile);
+  }
+
   function withMaxFileSize(yupSchema) {
     return yupSchema.test(
       'isValidFileSize',
       errorMessage.maxFileSize ??
         errorMessageFromConfig.maxFileSize ??
         `File size too large. The limit is ${convertKbBytesToMB(propertyFields.maxFileSize)} MB.`,
-      (files) => !files?.some((file) => convertBytesToKB(file.size) > propertyFields.maxFileSize)
+      (files) =>
+        isFile(files) &&
+        !files?.some((file) => convertBytesToKB(file.size) > propertyFields.maxFileSize)
     );
   }
 
@@ -380,7 +392,7 @@ export function buildYupSchema(field, config, logic) {
         errorMessageFromConfig.accept ??
         `Unsupported file format. The acceptable formats are ${propertyFields.accept}.`,
       (files) =>
-        files && files?.length > 0
+        isFile(files) && files.length > 0
           ? files.some((file) => {
               const fileType = file.name.split('.').pop();
               return propertyFields.accept.includes(fileType.toLowerCase());
@@ -450,6 +462,8 @@ export function buildYupSchema(field, config, logic) {
   } else if (inputType === supportedTypes.FIELDSET) {
     // build schema for field of a fieldset
     validators[0] = () => withBaseSchema().shape(buildFieldSetSchema(propertyFields.fields));
+  } else if (inputType === supportedTypes.FILE) {
+    validators.push(withFile);
   }
 
   if (propertyFields.required) {
