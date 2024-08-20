@@ -1,3 +1,13 @@
+#### 0.11.4-beta.0 (2024-08-20)
+
+##### Bug Fixes
+
+* **file:**  Validate the value is an instance of File ([#87](https://github.com/remoteoss/json-schema-form/pull/87)) ([8361df0d](https://github.com/remoteoss/json-schema-form/commit/8361df0d4e9f7d83342cdc91c41efb493e391307))
+
+##### Chores
+
+* **tests:**  Move code in global test scope to inside beforeAll ([#90](https://github.com/remoteoss/json-schema-form/pull/90)) ([88f7d3c9](https://github.com/remoteoss/json-schema-form/commit/88f7d3c95330c828fc2539962b878c43b61ca8a0))
+
 #### 0.11.3-beta.0 (2024-08-19)
 
 ##### Bug Fixes
