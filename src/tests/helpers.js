@@ -2213,3 +2213,43 @@ export const schemaWithCustomValidationsAndConditionals = {
     },
   ],
 };
+
+export const schemaNullField = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    name: {
+      type: 'null',
+      title: '(Optional) Name',
+    },
+    username: {
+      type: 'string',
+      title: 'Username',
+      maxLength: 2,
+    },
+  },
+  required: ['username'],
+};
+
+export const schemaNullFieldWithInputType = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    name: {
+      type: 'null',
+      title: '(Optional) Name',
+      'x-jsf-presentation': {
+        inputType: 'hidden',
+      },
+    },
+    username: {
+      type: 'string',
+      title: 'Username',
+      maxLength: 2,
+      'x-jsf-presentation': {
+        inputType: 'text',
+      },
+    },
+  },
+  required: ['username'],
+};

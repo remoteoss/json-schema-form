@@ -60,6 +60,8 @@ import {
   schemaInputTypeNumberWithPercentage,
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
+  schemaNullField,
+  schemaNullFieldWithInputType,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -1576,6 +1578,80 @@ describe('createHeadlessForm', () => {
           },
         ],
       });
+    });
+
+    it('supports "null" field type without inputType', () => {
+      const { handleValidation, fields } = createHeadlessForm(schemaNullField, {
+        strictInputType: false,
+      });
+
+      expect(fields).toMatchObject([
+        {
+          name: 'name',
+          label: '(Optional) Name',
+          type: undefined,
+          jsonType: 'null',
+          schema: expect.any(Object),
+        },
+        {
+          name: 'username',
+          label: 'Username',
+          type: 'text',
+          jsonType: 'string',
+          maxLength: 2,
+          schema: expect.any(Object),
+        },
+      ]);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toEqual({
+        username: 'Required field',
+      });
+
+      expect(validateForm({ username: 'test' })).toEqual({
+        username: 'Please insert up to 2 characters',
+      });
+
+      expect(validateForm({ username: 'hi' })).toBeUndefined();
+      expect(validateForm({ name: 2, username: 'hi' })).toBeUndefined();
+      expect(validateForm({ username: 'hi' })).toBeUndefined();
+    });
+
+    it('supports "null" field type with inputType "hidden"', () => {
+      const { handleValidation, fields } = createHeadlessForm(schemaNullFieldWithInputType);
+
+      expect(fields).toMatchObject([
+        {
+          name: 'name',
+          label: '(Optional) Name',
+          type: 'hidden',
+          jsonType: 'null',
+          schema: expect.any(Object),
+        },
+        {
+          name: 'username',
+          label: 'Username',
+          type: 'text',
+          jsonType: 'string',
+          maxLength: 2,
+          schema: expect.any(Object),
+        },
+      ]);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toEqual({
+        username: 'Required field',
+      });
+
+      expect(validateForm({ username: 'test' })).toEqual({
+        username: 'Please insert up to 2 characters',
+      });
+
+      expect(validateForm({ username: 'hi' })).toBeUndefined();
+      expect(validateForm({ name: 2, username: 'hi' })).toBeUndefined();
+      expect(validateForm({ username: 'hi' })).toBeUndefined();
     });
 
     it('supports oneOf pattern validation', () => {
