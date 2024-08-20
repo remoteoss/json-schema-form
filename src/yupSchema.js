@@ -313,6 +313,18 @@ export function buildYupSchema(field, config, logic) {
     }
     return yupSchema.required(requiredMessage);
   }
+
+  function withInteger(yupSchema) {
+    return yupSchema.integer(
+      (message) =>
+        errorMessage.integer ??
+        errorMessageFromConfig.integer ??
+        `Must not contain decimal points. E.g. ${Math.floor(message.value)} instead of ${
+          message.value
+        }`
+    );
+  }
+
   function withMin(yupSchema) {
     return yupSchema.min(
       propertyFields.minimum,
@@ -454,6 +466,10 @@ export function buildYupSchema(field, config, logic) {
 
   if (propertyFields.required) {
     validators.push(withRequired);
+  }
+
+  if (propertyFields.type === 'integer') {
+    validators.push(withInteger);
   }
 
   // support minimum with 0 value
