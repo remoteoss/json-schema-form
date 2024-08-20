@@ -1598,7 +1598,7 @@ describe('createHeadlessForm', () => {
           label: 'Username',
           type: 'text',
           jsonType: 'string',
-          maxLength: 2,
+          maxLength: 4,
           schema: expect.any(Object),
         },
       ]);
@@ -1609,13 +1609,13 @@ describe('createHeadlessForm', () => {
         username: 'Required field',
       });
 
-      expect(validateForm({ username: 'test' })).toEqual({
-        username: 'Please insert up to 2 characters',
+      expect(validateForm({ username: 'hello' })).toEqual({
+        username: 'Please insert up to 4 characters',
       });
 
-      expect(validateForm({ username: 'hi' })).toBeUndefined();
-      expect(validateForm({ name: 2, username: 'hi' })).toBeUndefined();
-      expect(validateForm({ username: 'hi' })).toBeUndefined();
+      expect(validateForm({ username: 'john' })).toBeUndefined();
+      expect(validateForm({ name: 2, username: 'john' })).toBeUndefined();
+      expect(validateForm({ username: 'john' })).toBeUndefined();
     });
 
     it('supports "null" field type with inputType "hidden"', () => {
@@ -1634,7 +1634,15 @@ describe('createHeadlessForm', () => {
           label: 'Username',
           type: 'text',
           jsonType: 'string',
-          maxLength: 2,
+          maxLength: 4,
+          schema: expect.any(Object),
+        },
+        {
+          name: 'age',
+          label: 'Age',
+          type: 'number',
+          jsonType: 'null',
+          maximum: 20,
           schema: expect.any(Object),
         },
       ]);
@@ -1645,13 +1653,14 @@ describe('createHeadlessForm', () => {
         username: 'Required field',
       });
 
-      expect(validateForm({ username: 'test' })).toEqual({
-        username: 'Please insert up to 2 characters',
+      expect(validateForm({ username: 'hello', age: 25 })).toEqual({
+        username: 'Please insert up to 4 characters',
+        age: 'Must be smaller or equal to 20',
       });
 
-      expect(validateForm({ username: 'hi' })).toBeUndefined();
-      expect(validateForm({ name: 2, username: 'hi' })).toBeUndefined();
-      expect(validateForm({ username: 'hi' })).toBeUndefined();
+      expect(validateForm({ username: 'john', age: 19 })).toBeUndefined();
+      expect(validateForm({ name: 2, username: 'john' })).toBeUndefined();
+      expect(validateForm({ username: 'john' })).toBeUndefined();
     });
 
     it('supports oneOf pattern validation', () => {

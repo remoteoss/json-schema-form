@@ -204,6 +204,10 @@ const yupSchemas = {
     select: array().nullable(),
     'group-array': array().nullable(),
   },
+  /**
+   * Why string? "null" type fields default to text field input.
+   * If inputType is specified, it will be used instead to derive the schema.
+   */
   null: string().trim().nullable(),
 };
 

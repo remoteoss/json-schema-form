@@ -2225,7 +2225,7 @@ export const schemaNullField = {
     username: {
       type: 'string',
       title: 'Username',
-      maxLength: 2,
+      maxLength: 4,
     },
   },
   required: ['username'],
@@ -2245,9 +2245,17 @@ export const schemaNullFieldWithInputType = {
     username: {
       type: 'string',
       title: 'Username',
-      maxLength: 2,
+      maxLength: 4,
       'x-jsf-presentation': {
         inputType: 'text',
+      },
+    },
+    age: {
+      type: 'null',
+      title: 'Age',
+      maximum: 20,
+      'x-jsf-presentation': {
+        inputType: 'number',
       },
     },
   },
