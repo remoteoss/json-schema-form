@@ -1597,10 +1597,14 @@ describe('createHeadlessForm', () => {
           label: 'Username',
           type: 'text',
           jsonType: 'string',
+          inputType: 'text',
           maxLength: 4,
           schema: expect.any(Object),
         },
       ]);
+
+      // jsonType `null` fields do not have a corresponding inputType
+      expect(fields[0].inputType).toBeUndefined();
 
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
