@@ -782,6 +782,25 @@ export const schemaInputWithStatement = {
   },
 };
 
+export const schemaHiddenInputWithStatement = {
+  properties: {
+    a_field_statement: {
+      type: 'null',
+      title: 'Company statement',
+      'x-jsf-presentation': {
+        inputType: 'hidden',
+        statement: {
+          title: 'Important statement',
+          description:
+            "This statement message will be shown at all times, irrespective of this field's visibility.",
+          inputType: 'statement',
+          severity: 'warning',
+        },
+      },
+    },
+  },
+};
+
 export const schemaInputWithExtra = {
   properties: {
     bonus: {
