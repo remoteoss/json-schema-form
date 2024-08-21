@@ -374,9 +374,15 @@ export function buildYupSchema(field, config, logic) {
     /**  A file input is considered valid if:
      * - it is undefined or null
      * - it is an empty array (files.every([]) === true)
-     * - it is an array consisting only of File instances
+     * - it is an array consisting only of File instances or objects with a 'name' property
      */
-    return files === undefined || files === null || files.every((file) => file instanceof File);
+    return (
+      files === undefined ||
+      files === null ||
+      files.every(
+        (file) => file instanceof File || Object.prototype.hasOwnProperty.call(file, 'name')
+      )
+    );
   }
 
   function withFile(yupSchema) {

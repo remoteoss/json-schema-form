@@ -2862,8 +2862,19 @@ describe('createHeadlessForm', () => {
             .validate({ fileInput: [file] })
         ).resolves.toEqual(assertObj));
     });
+
     describe('and file is not instance of a File', () => {
-      it('should throw an error', async () =>
+      it('accepts if file object has name property', async () => {
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.pdf' }] })
+        ).resolves.toEqual({ fileInput: [{ name: 'foo.pdf' }] });
+      });
+
+      it('throw an error if invalid file object', async () =>
         expect(
           object()
             .shape({
