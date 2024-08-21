@@ -2874,6 +2874,26 @@ describe('createHeadlessForm', () => {
         ).resolves.toEqual({ fileInput: [{ name: 'foo.pdf' }] });
       });
 
+      it('should validate format', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.txt' }] })
+        ).rejects.toMatchObject({
+          errors: ['Unsupported file format. The acceptable formats are .png,.jpg,.jpeg,.pdf.'],
+        }));
+
+      it('should validate max size', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.txt', size: 1024 * 1024 * 1024 }] })
+        ).rejects.toMatchObject({ errors: ['File size too large. The limit is 20 MB.'] }));
+
       it('throw an error if invalid file object', async () =>
         expect(
           object()
