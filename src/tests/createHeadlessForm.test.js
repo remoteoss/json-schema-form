@@ -2774,6 +2774,16 @@ describe('createHeadlessForm', () => {
           .validate(emptyFile)
       ).resolves.toEqual(emptyFile);
     });
+
+    it('it validates missing file correctly', () => {
+      const { handleValidation } = createHeadlessForm(
+        JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
+      );
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toBeUndefined();
+      expect(validateForm({ fileInput: null })).toBeUndefined();
+    });
   });
 
   describe('when a field file is required', () => {

@@ -370,14 +370,17 @@ export function buildYupSchema(field, config, logic) {
     );
   }
 
-  function isFile(files) {
-    return Array.isArray(files)
-      ? files.every((file) => file instanceof File)
-      : files instanceof File;
+  function isValidFileInput(files) {
+    /**  A file input is considered valid if:
+     * - it is undefined or null
+     * - it is an empty array (files.every([]) === true)
+     * - it is an array consisting only of File instances
+     */
+    return files === undefined || files === null || files.every((file) => file instanceof File);
   }
 
   function withFile(yupSchema) {
-    return yupSchema.test('isValidFile', 'Not a valid file.', isFile);
+    return yupSchema.test('isValidFile', 'Not a valid file.', isValidFileInput);
   }
 
   function withMaxFileSize(yupSchema) {
@@ -387,7 +390,7 @@ export function buildYupSchema(field, config, logic) {
         errorMessageFromConfig.maxFileSize ??
         `File size too large. The limit is ${convertKbBytesToMB(propertyFields.maxFileSize)} MB.`,
       (files) =>
-        isFile(files) &&
+        isValidFileInput(files) &&
         !files?.some((file) => convertBytesToKB(file.size) > propertyFields.maxFileSize)
     );
   }
@@ -399,7 +402,7 @@ export function buildYupSchema(field, config, logic) {
         errorMessageFromConfig.accept ??
         `Unsupported file format. The acceptable formats are ${propertyFields.accept}.`,
       (files) =>
-        isFile(files) && files.length > 0
+        isValidFileInput(files) && files?.length > 0
           ? files.some((file) => {
               const fileType = file.name.split('.').pop();
               return propertyFields.accept.includes(fileType.toLowerCase());
