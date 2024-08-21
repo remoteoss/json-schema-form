@@ -469,12 +469,14 @@ export function buildYupSchema(field, config, logic) {
   } else if (inputType === supportedTypes.FIELDSET) {
     // build schema for field of a fieldset
     validators[0] = () => withBaseSchema().shape(buildFieldSetSchema(propertyFields.fields));
-  } else if (inputType === supportedTypes.FILE) {
-    validators.push(withFile);
   }
 
   if (propertyFields.required) {
     validators.push(withRequired);
+  }
+
+  if (inputType === supportedTypes.FILE) {
+    validators.push(withFile);
   }
 
   // support minimum with 0 value

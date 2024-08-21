@@ -61,6 +61,7 @@ import {
   schemaInputTypeNumberWithPercentage,
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
+  schemaInputTypeFile,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -2772,6 +2773,25 @@ describe('createHeadlessForm', () => {
           })
           .validate(emptyFile)
       ).resolves.toEqual(emptyFile);
+    });
+  });
+
+  describe('when a field file is required', () => {
+    it('it validates missing file correctly', () => {
+      const { handleValidation } = createHeadlessForm(schemaInputTypeFile);
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toEqual({
+        a_file: 'Required field',
+      });
+
+      expect(
+        validateForm({
+          a_file: null,
+        })
+      ).toEqual({
+        a_file: 'Required field',
+      });
     });
   });
 
