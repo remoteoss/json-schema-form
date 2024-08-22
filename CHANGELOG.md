@@ -1,3 +1,11 @@
+#### 0.11.5-beta.0 (2024-08-22)
+
+##### Bug Fixes
+
+* **validation:**  Validate null field type correctly ([#91](https://github.com/remoteoss/json-schema-form/pull/91)) ([1cb8b61f](https://github.com/remoteoss/json-schema-form/commit/1cb8b61fec06d851832f9e76b3156d6f574b5d41))
+* **files:** accept object value with `name` property ([#91](https://github.com/remoteoss/json-schema-form/pull/91)) ([1cb8b61f](https://github.com/remoteoss/json-schema-form/commit/1cb8b61fec06d851832f9e76b3156d6f574b5d41))
+
+
 #### 0.11.4-beta.0 (2024-08-20)
 
 ##### Bug Fixes
