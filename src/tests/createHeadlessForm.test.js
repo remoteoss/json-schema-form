@@ -29,6 +29,7 @@ import {
   schemaInputWithStatement,
   schemaInputTypeCheckbox,
   schemaInputTypeCheckboxBooleans,
+  schemaInputTypeNull,
   schemaWithOrderKeyword,
   schemaWithPositionDeprecated,
   schemaDynamicValidationConst,
@@ -60,6 +61,7 @@ import {
   schemaInputTypeNumberWithPercentage,
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
+  schemaInputTypeFile,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -1578,6 +1580,48 @@ describe('createHeadlessForm', () => {
       });
     });
 
+    it('supports "null" field type', () => {
+      const { handleValidation, fields } = createHeadlessForm(schemaInputTypeNull, {
+        strictInputType: false,
+      });
+
+      expect(fields).toMatchObject([
+        {
+          name: 'name',
+          label: '(Optional) Name',
+          type: undefined,
+          jsonType: 'null',
+          schema: expect.any(Object),
+        },
+        {
+          name: 'username',
+          label: 'Username',
+          type: 'text',
+          jsonType: 'string',
+          inputType: 'text',
+          maxLength: 4,
+          schema: expect.any(Object),
+        },
+      ]);
+
+      // jsonType `null` fields do not have a corresponding inputType
+      expect(fields[0].inputType).toBeUndefined();
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toEqual({
+        username: 'Required field',
+      });
+
+      expect(validateForm({ username: 'hello', name: 'John' })).toEqual({
+        username: 'Please insert up to 4 characters',
+        name: 'The value "John" is not valid.',
+      });
+
+      expect(validateForm({ username: 'john' })).toBeUndefined();
+      expect(validateForm({ username: 'john', name: null })).toBeUndefined();
+    });
+
     it('supports oneOf pattern validation', () => {
       const result = createHeadlessForm(mockTelWithPattern);
 
@@ -2730,6 +2774,35 @@ describe('createHeadlessForm', () => {
           .validate(emptyFile)
       ).resolves.toEqual(emptyFile);
     });
+
+    it('it validates missing file correctly', () => {
+      const { handleValidation } = createHeadlessForm(
+        JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
+      );
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toBeUndefined();
+      expect(validateForm({ fileInput: null })).toBeUndefined();
+    });
+  });
+
+  describe('when a field file is required', () => {
+    it('it validates missing file correctly', () => {
+      const { handleValidation } = createHeadlessForm(schemaInputTypeFile);
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toEqual({
+        a_file: 'Required field',
+      });
+
+      expect(
+        validateForm({
+          a_file: null,
+        })
+      ).toEqual({
+        a_file: 'Required field',
+      });
+    });
   });
 
   describe('when a field has accepted extensions', () => {
@@ -2789,8 +2862,39 @@ describe('createHeadlessForm', () => {
             .validate({ fileInput: [file] })
         ).resolves.toEqual(assertObj));
     });
+
     describe('and file is not instance of a File', () => {
-      it('should throw an error', async () =>
+      it('accepts if file object has name property', async () => {
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.pdf' }] })
+        ).resolves.toEqual({ fileInput: [{ name: 'foo.pdf' }] });
+      });
+
+      it('should validate format', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.txt' }] })
+        ).rejects.toMatchObject({
+          errors: ['Unsupported file format. The acceptable formats are .png,.jpg,.jpeg,.pdf.'],
+        }));
+
+      it('should validate max size', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.txt', size: 1024 * 1024 * 1024 }] })
+        ).rejects.toMatchObject({ errors: ['File size too large. The limit is 20 MB.'] }));
+
+      it('throw an error if invalid file object', async () =>
         expect(
           object()
             .shape({

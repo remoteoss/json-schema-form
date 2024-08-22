@@ -58,11 +58,11 @@ const validateMaxDate = (value, minDate) => {
   return compare === 'LESSER' || compare === 'EQUAL' ? true : false;
 };
 
-/* 
+/*
   Custom test determines if the value either:
   - Matches a specific option by value
   - Matches a pattern
-  If the option is undefined do not test, to allow for optional fields. 
+  If the option is undefined do not test, to allow for optional fields.
 */
 const validateRadioOrSelectOptions = (value, options) => {
   if (value === undefined) return true;
@@ -99,7 +99,7 @@ const yupSchemas = {
 
           Disallowing "" would be a major BREAKING CHANGE
           because previously any string was allowed but now only the options[].value are,
-          which means we'd need to also exclude "" from being accepted.   
+          which means we'd need to also exclude "" from being accepted.
           This would be a dangerous change as it can disrupt existing UI Form integrations
           that might handle empty fields differently ("" vs null vs undefined).
 
@@ -204,6 +204,13 @@ const yupSchemas = {
     select: array().nullable(),
     'group-array': array().nullable(),
   },
+  null: mixed()
+    .typeError('The value must be null')
+    .test(
+      'matchesNullValue',
+      ({ value }) => `The value ${JSON.stringify(value)} is not valid.`,
+      (value) => value === undefined || value === null
+    ),
 };
 
 const yupSchemasToJsonTypes = {
@@ -213,7 +220,7 @@ const yupSchemasToJsonTypes = {
   object: yupSchemas.fieldset,
   array: yupSchemas.multiple.select,
   boolean: yupSchemas.checkboxBool,
-  null: noop,
+  null: yupSchemas.null,
 };
 
 function getRequiredErrorMessage(inputType, { inlineError, configError }) {
@@ -363,14 +370,23 @@ export function buildYupSchema(field, config, logic) {
     );
   }
 
-  function isFile(files) {
-    return Array.isArray(files)
-      ? files.every((file) => file instanceof File)
-      : files instanceof File;
+  function isValidFileInput(files) {
+    /**  A file input is considered valid if:
+     * - it is undefined or null
+     * - it is an empty array (files.every([]) === true)
+     * - it is an array consisting only of File instances or objects with a 'name' property
+     */
+    return (
+      files === undefined ||
+      files === null ||
+      files.every(
+        (file) => file instanceof File || Object.prototype.hasOwnProperty.call(file, 'name')
+      )
+    );
   }
 
   function withFile(yupSchema) {
-    return yupSchema.test('isValidFile', 'Not a valid file.', isFile);
+    return yupSchema.test('isValidFile', 'Not a valid file.', isValidFileInput);
   }
 
   function withMaxFileSize(yupSchema) {
@@ -380,7 +396,7 @@ export function buildYupSchema(field, config, logic) {
         errorMessageFromConfig.maxFileSize ??
         `File size too large. The limit is ${convertKbBytesToMB(propertyFields.maxFileSize)} MB.`,
       (files) =>
-        isFile(files) &&
+        isValidFileInput(files) &&
         !files?.some((file) => convertBytesToKB(file.size) > propertyFields.maxFileSize)
     );
   }
@@ -392,7 +408,7 @@ export function buildYupSchema(field, config, logic) {
         errorMessageFromConfig.accept ??
         `Unsupported file format. The acceptable formats are ${propertyFields.accept}.`,
       (files) =>
-        isFile(files) && files.length > 0
+        isValidFileInput(files) && files?.length > 0
           ? files.some((file) => {
               const fileType = file.name.split('.').pop();
               return propertyFields.accept.includes(fileType.toLowerCase());
@@ -462,12 +478,14 @@ export function buildYupSchema(field, config, logic) {
   } else if (inputType === supportedTypes.FIELDSET) {
     // build schema for field of a fieldset
     validators[0] = () => withBaseSchema().shape(buildFieldSetSchema(propertyFields.fields));
-  } else if (inputType === supportedTypes.FILE) {
-    validators.push(withFile);
   }
 
   if (propertyFields.required) {
     validators.push(withRequired);
+  }
+
+  if (inputType === supportedTypes.FILE) {
+    validators.push(withFile);
   }
 
   // support minimum with 0 value

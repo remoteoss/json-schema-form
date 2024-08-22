@@ -782,6 +782,25 @@ export const schemaInputWithStatement = {
   },
 };
 
+export const schemaHiddenInputWithStatement = {
+  properties: {
+    a_field_statement: {
+      type: 'null',
+      title: 'Company statement',
+      'x-jsf-presentation': {
+        inputType: 'hidden',
+        statement: {
+          title: 'Important statement',
+          description:
+            "This statement message will be shown at all times, irrespective of this field's visibility.",
+          inputType: 'statement',
+          severity: 'warning',
+        },
+      },
+    },
+  },
+};
+
 export const schemaInputWithExtra = {
   properties: {
     bonus: {
@@ -1140,6 +1159,23 @@ export const schemaInputTypeCheckboxBooleans = JSONSchemaBuilder()
   })
   .setRequiredFields(['boolean_required'])
   .build();
+
+export const schemaInputTypeNull = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    name: {
+      type: 'null',
+      title: '(Optional) Name',
+    },
+    username: {
+      type: 'string',
+      title: 'Username',
+      maxLength: 4,
+    },
+  },
+  required: ['username'],
+};
 
 export const schemaCustomErrorMessageByField = {
   properties: {
