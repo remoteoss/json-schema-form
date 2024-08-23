@@ -94,72 +94,25 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
    */
   return ({ isRequired, conditionBranch, formValues }) => {
     // Check if the current field is conditionally declared in the schema
-    // console.log('::calc (closure original)', fieldParams.description);
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
 
     if (conditionalProperty) {
-      const presentation = pickXKey(conditionalProperty, 'presentation') ?? {};
-
-      const fieldDescription = getFieldDescription(conditionalProperty, customProperties);
-
-      const newFieldParams = extractParametersFromNode({
-        ...conditionalProperty,
-        ...fieldDescription,
+      return calculateNewConditionalAttributes({
+        conditionalProperty,
+        customProperties,
+        fieldParams,
+        config,
+        logic,
+        formValues,
+        isRequired,
       });
-
-      let fieldSetFields;
-
-      if (fieldParams.inputType === supportedTypes.FIELDSET) {
-        fieldSetFields = rebuildFieldset(fieldParams.fields, conditionalProperty);
-        newFieldParams.fields = fieldSetFields;
-      }
-
-      const { computedAttributes, ...restNewFieldParams } = newFieldParams;
-      const calculatedComputedAttributes = computedAttributes
-        ? calculateComputedAttributes(newFieldParams, config)({ logic, formValues })
-        : {};
-
-      const jsonLogicValidations = [
-        ...(fieldParams.jsonLogicValidations ?? []),
-        ...(restNewFieldParams.jsonLogicValidations ?? []),
-      ];
-
-      const base = {
-        isVisible: true,
-        required: isRequired,
-        ...(presentation?.inputType && { type: presentation.inputType }),
-        ...calculatedComputedAttributes,
-        ...(calculatedComputedAttributes.value
-          ? { value: calculatedComputedAttributes.value }
-          : { value: undefined }),
-        schema: buildYupSchema(
-          {
-            ...fieldParams,
-            ...restNewFieldParams,
-            ...calculatedComputedAttributes,
-            jsonLogicValidations,
-            // If there are inner fields (case of fieldset) they need to be updated based on the condition
-            fields: fieldSetFields,
-            required: isRequired,
-          },
-          config,
-          logic
-        ),
-      };
-
-      return {
-        rootFieldAttrs: fieldParams,
-        newAttributes: omit(merge(base, presentation, newFieldParams), ['inputType']),
-      };
     }
-
-    // If field is not conditionally declared it should be visible if it's required
-    const isVisible = isRequired;
 
     return {
       rootFieldAttrs: fieldParams,
       newAttributes: {
-        isVisible,
+        // If field is not conditionally declared it should be visible if it's required
+        isVisible: isRequired,
         required: isRequired,
         schema: buildYupSchema({
           ...fieldParams,
@@ -168,5 +121,69 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
         }),
       },
     };
+  };
+}
+
+function calculateNewConditionalAttributes({
+  conditionalProperty,
+  customProperties,
+  fieldParams,
+  config,
+  logic,
+  formValues,
+  isRequired,
+}) {
+  const presentation = pickXKey(conditionalProperty, 'presentation') ?? {};
+
+  const fieldDescription = getFieldDescription(conditionalProperty, customProperties);
+
+  const newFieldParams = extractParametersFromNode({
+    ...conditionalProperty,
+    ...fieldDescription,
+  });
+
+  let fieldSetFields;
+
+  if (fieldParams.inputType === supportedTypes.FIELDSET) {
+    fieldSetFields = rebuildFieldset(fieldParams.fields, conditionalProperty);
+    newFieldParams.fields = fieldSetFields;
+  }
+
+  const { computedAttributes, ...restNewFieldParams } = newFieldParams;
+  const calculatedComputedAttributes = computedAttributes
+    ? calculateComputedAttributes(newFieldParams, config)({ logic, formValues })
+    : {};
+
+  const jsonLogicValidations = [
+    ...(fieldParams.jsonLogicValidations ?? []),
+    ...(restNewFieldParams.jsonLogicValidations ?? []),
+  ];
+
+  const base = {
+    isVisible: true,
+    required: isRequired,
+    ...(presentation?.inputType && { type: presentation.inputType }),
+    ...calculatedComputedAttributes,
+    ...(calculatedComputedAttributes.value
+      ? { value: calculatedComputedAttributes.value }
+      : { value: undefined }),
+    schema: buildYupSchema(
+      {
+        ...fieldParams,
+        ...restNewFieldParams,
+        ...calculatedComputedAttributes,
+        jsonLogicValidations,
+        // If there are inner fields (case of fieldset) they need to be updated based on the condition
+        fields: fieldSetFields,
+        required: isRequired,
+      },
+      config,
+      logic
+    ),
+  };
+
+  return {
+    rootFieldAttrs: fieldParams,
+    newAttributes: omit(merge(base, presentation, newFieldParams), ['inputType']),
   };
 }
