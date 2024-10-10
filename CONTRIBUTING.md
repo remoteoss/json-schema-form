@@ -28,7 +28,7 @@ npm test
 
 Submit your branch pointing to `main`.
 
-Please, always add tests to your bug fixs and new features.
+Please, always add tests to your bug fixes and new features.
 
 ### Testing the PR in your project
 
@@ -102,7 +102,7 @@ The final release is done after merge.
 ### Publishing a stable release
 
 1.  Checkout `main` and pull the latest commit
-2.  Depending if you want a `path` or `minor`, run the command `npm release:main:patch` or `npm release:main:minor`.
+2.  Depending if you want a `patch` or `minor`, run the command `npm release:main:patch` or `npm release:main:minor`.
 
     1. You'll be shown what's the new version and prompt you if it's correct. Eg
 

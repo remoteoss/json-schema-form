@@ -221,7 +221,7 @@ function pickFields(originalSchema, fieldsToPick) {
 
   // Look for unpicked fields in the conditionals...
   let missingFields = {};
-  newSchema.allOf.forEach((condition) => {
+  newSchema.allOf?.forEach((condition) => {
     const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
     const index = originalSchema.allOf.indexOf(condition);
     missingFields = {
