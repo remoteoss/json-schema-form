@@ -608,7 +608,7 @@ const schemaTickets = {
   ],
 };
 
-describe('modify() - reoder fields', () => {
+describe('modify() - reorder fields', () => {
   it('reorder fields - basic usage', () => {
     const baseExample = {
       properties: {
@@ -818,6 +818,32 @@ describe('modify() - pick fields', () => {
     expect(schema['x-jsf-order']).toEqual(['quantity']);
     expect(schema.allOf).toEqual([]); // conditional got removed.
 
+    expect(warnings).toHaveLength(0);
+  });
+
+  it('basic usage without conditionals', () => {
+    const schemaMinimal = {
+      properties: {
+        age: {
+          title: 'Age',
+          type: 'integer',
+        },
+        quantity: {
+          title: 'Quantity',
+          type: 'integer',
+        },
+      },
+      'x-jsf-order': ['age', 'quantity'],
+    };
+    const { schema, warnings } = modify(schemaMinimal, {
+      pick: ['quantity'],
+    });
+
+    expect(schema.properties.quantity).toBeDefined();
+    expect(schema.properties.age).toBeUndefined();
+    // `allOf` conditionals were not defined, and continue to be so.
+    // This test guards against a regression where lack of `allOf` caused a TypeError.
+    expect(schema.allOf).toBeUndefined();
     expect(warnings).toHaveLength(0);
   });
 
