@@ -1,3 +1,9 @@
+#### 0.11.6-beta.0 (2024-10-15)
+
+##### Bug Fixes
+
+* **modify:**  Support json schemas without allOf ([#93](https://github.com/remoteoss/json-schema-form/pull/93)) ([03795d0a](https://github.com/remoteoss/json-schema-form/commit/03795d0ac1a7ae0d523cd8418b83342676f221cf))
+
 #### 0.11.5-beta.0 (2024-08-22)
 
 ##### Bug Fixes
