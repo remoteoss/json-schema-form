@@ -79,7 +79,10 @@ const validateRadioOrSelectOptions = (value, options) => {
 const yupSchemas = {
   text: validateOnlyStrings,
   radioOrSelectString: (options) => {
-    return string()
+    // @BUG COD-1859
+    // moving from string() to mixed() to prevent the original value to be casted to string
+    // with that we can properly validate the data where the type is string but the submitted value is boolean
+    return mixed()
       .nullable()
       .transform((value) => {
         if (value === '') {
@@ -117,7 +120,17 @@ const yupSchemas = {
       .test(
         'matchesOptionOrPattern',
         ({ value }) => `The option ${JSON.stringify(value)} is not valid.`,
-        (value) => validateRadioOrSelectOptions(value, options)
+        (value) => {
+          /*
+            @BUG COD-1859
+            additional check to allow only string values to be validated
+          */
+          if (value !== undefined && typeof value !== 'string') {
+            return false;
+          }
+
+          return validateRadioOrSelectOptions(value, options);
+        }
       );
   },
   date: ({ minDate, maxDate }) => {
@@ -258,6 +271,7 @@ const getYupSchema = ({ inputType, ...field }) => {
 
   const generateOptionSchema = (type) => {
     const optionValues = getOptions(field);
+
     switch (type) {
       case 'number':
         return yupSchemas.radioOrSelectNumber(optionValues);
@@ -555,6 +569,7 @@ function getSchema(fields = [], config) {
         if (field.inputType === supportedTypes.FIELDSET) {
           // Fieldset validation schemas depend on the inner schemas of their fields,
           // so we need to rebuild it to take into account any of those updates.
+
           const fieldsetSchema = buildYupSchema(field, config)();
           newSchema[field.name] = fieldsetSchema;
         } else {

@@ -821,6 +821,7 @@ describe('createHeadlessForm', () => {
       });
     });
 
+    // @BUG COD-1859
     it('support "radio" field string-y type', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioStringY);
 
@@ -854,7 +855,7 @@ describe('createHeadlessForm', () => {
       });
 
       expect(validateForm({ has_siblings: false })).toEqual({
-        has_siblings: 'The option "false" is not valid.',
+        has_siblings: 'The option false is not valid.',
       });
     });
 
