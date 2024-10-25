@@ -9,6 +9,7 @@ import {
   schemaInputTypeText,
   schemaInputTypeRadioDeprecated,
   schemaInputTypeRadioString,
+  schemaInputTypeRadioStringY,
   schemaInputTypeRadioBoolean,
   schemaInputTypeRadioNumber,
   schemaInputTypeRadioRequiredAndOptional,
@@ -817,6 +818,45 @@ describe('createHeadlessForm', () => {
 
       expect(validateForm({ over_18: 'true' })).toEqual({
         over_18: 'The option "true" is not valid.',
+      });
+    });
+
+    // @BUG COD-1859
+    // it should validate when type is string but value is not a boolean
+    it('support "radio" field string-y type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioStringY);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields).toMatchObject([
+        {
+          description: 'Do you have any siblings?',
+          label: 'Has siblings',
+          name: 'has_siblings',
+          options: [
+            {
+              label: 'Yes',
+              value: 'true',
+            },
+            {
+              label: 'No',
+              value: 'false',
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsAllowed({
+        handleValidation,
+        fieldName: 'has_siblings',
+        validOptions: ['true', 'false'],
+      });
+
+      expect(validateForm({ has_siblings: false })).toEqual({
+        has_siblings: 'The option false is not valid.',
       });
     });
 
