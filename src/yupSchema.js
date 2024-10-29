@@ -117,7 +117,17 @@ const yupSchemas = {
       .test(
         'matchesOptionOrPattern',
         ({ value }) => `The option ${JSON.stringify(value)} is not valid.`,
-        (value) => validateRadioOrSelectOptions(value, options)
+        (castValue, { originalValue }) => {
+          /*
+            @BUG COD-1859
+            additional check to allow only string values to be validated
+          */
+          if (castValue !== undefined && typeof originalValue !== 'string') {
+            return false;
+          }
+
+          return validateRadioOrSelectOptions(castValue, options);
+        }
       );
   },
   date: ({ minDate, maxDate }) => {
