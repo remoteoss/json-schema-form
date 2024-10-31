@@ -479,3 +479,140 @@ describe('Conditional with a minimum value check', () => {
     expect(handleValidation({ salary: 1000, reason: 'reason_one' }).formErrors).toEqual(undefined);
   });
 });
+
+describe('Conditional with fields that depend on the previous value', () => {
+  it('Should hide dependent field if value does not satisfy conditional anymore', () => {
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        has_pet: {
+          title: 'Has Pet',
+          description: 'Do you have a pet?',
+          oneOf: [
+            {
+              title: 'Yes',
+              const: 'yes',
+            },
+            {
+              title: 'No',
+              const: 'no',
+            },
+          ],
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+          type: 'string',
+        },
+        pet_name: {
+          title: "Pet's name",
+          description: "What's your pet's name?",
+          'x-jsf-presentation': {
+            inputType: 'text',
+          },
+          type: 'string',
+        },
+        pet_age: {
+          title: "Pet's age",
+          description: "What's your pet's age",
+          'x-jsf-presentation': {
+            inputType: 'number',
+          },
+          type: 'number',
+        },
+        dietary_needs: {
+          title: 'Dietary needs',
+          description: "What are your pet's dietary needs?",
+          'x-jsf-presentation': {
+            inputType: 'textarea',
+          },
+          type: 'string',
+        },
+      },
+      required: ['has_pet'],
+      'x-jsf-order': ['has_pet', 'pet_name', 'pet_age', 'dietary_needs'],
+      allOf: [
+        {
+          if: {
+            properties: {
+              has_pet: {
+                const: 'yes',
+              },
+            },
+            required: ['has_pet'],
+          },
+          then: {
+            required: ['pet_age', 'pet_name'],
+          },
+          else: {
+            properties: {
+              pet_age: false,
+              pet_name: false,
+              dietary_needs: false,
+            },
+          },
+        },
+        {
+          if: {
+            properties: {
+              pet_age: {
+                minimum: 5,
+              },
+            },
+            required: ['pet_age'],
+          },
+          then: {
+            required: ['dietary_needs'],
+          },
+          else: {
+            properties: {
+              dietary_needs: false,
+            },
+          },
+        },
+      ],
+    };
+
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    let result = handleValidation({});
+
+    // Step 1: Click on Submit without any form interaction
+    expect(result.formErrors).toEqual({ has_pet: 'Required field' });
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: false');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: false');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: false');
+
+    // Step 2: Specify that you have a pet, form shows Pet name and age. Enter Name, skip adding age.
+    result = handleValidation({ has_pet: 'yes', pet_name: 'Woofy' });
+
+    expect(result.formErrors).toEqual({ pet_age: 'Required field' });
+
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: true');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: true');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: false');
+
+    // Step 3: Set age to be 6, to show dietary needs
+    result = handleValidation({ has_pet: 'yes', pet_name: 'Woofy', pet_age: 6 });
+
+    expect(result.formErrors).toEqual({ dietary_needs: 'Required field' });
+
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: true');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: true');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: true');
+
+    // Step 3: Change radio for Has pet to be "no". Form should be valid and
+    // pet_name, pet_age and dietary_needs to be hidden
+    result = handleValidation({ has_pet: 'no', pet_name: 'Woofy', pet_age: 6 });
+
+    expect(result.formErrors).toEqual(undefined);
+
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: false');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: false');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: false');
+  });
+});
