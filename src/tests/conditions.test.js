@@ -1,4 +1,34 @@
+import set from 'lodash/set';
+
 import { createHeadlessForm } from '../createHeadlessForm';
+
+// Copy-pasted from https://codesandbox.io/p/sandbox/json-schema-form-demo-react-igh3sk?file=%2Fsrc%2Futils.js
+function formValuesToJsonValues(fields, values) {
+  const fieldTypeTransform = {
+    number: (val) => (val === '' ? val : +val),
+    text: (val) => val,
+    // TODO support all types
+  };
+
+  const jsonValues = {};
+
+  fields.forEach(({ name, type, isVisible }) => {
+    const formValue = values[name];
+    const transformedValue = fieldTypeTransform[type]?.(formValue) || formValue;
+
+    if (transformedValue === '') {
+      // Omit empty fields from payload to avoid type error.
+      // eg { team_size: "" } -> The value ("") must be a number.
+    } else if (!isVisible) {
+      // Omit invisible (conditional) fields to avoid error:
+      // eg { account: "personal", team_size: 3 } -> The "team_size" is invalid
+    } else {
+      set(jsonValues, name, transformedValue);
+    }
+  });
+
+  return jsonValues;
+}
 
 it('Should allow check of a nested property in a conditional', () => {
   const { handleValidation } = createHeadlessForm(
@@ -606,7 +636,215 @@ describe('Conditional with fields that depend on the previous value', () => {
 
     // Step 3: Change radio for Has pet to be "no". Form should be valid and
     // pet_name, pet_age and dietary_needs to be hidden
-    result = handleValidation({ has_pet: 'no', pet_name: 'Woofy', pet_age: 6 });
+
+    const formValues = {
+      has_pet: 'no',
+      pet_name: 'Woofy',
+      pet_age: 6,
+    };
+
+    // 📌📌📌📌📌📌📌📌
+    // NEW: Bug explanation: In the Playground (React), when changing values,
+    // the validation is called twice (re-renders), that's why it works.
+    // Let me break down the data flow for you:
+
+    // 📌 1st validation round:
+    // At this point, pet_name is still isVisible, that's why pet_age is not trimmed...
+    const jsonValuesFirst = formValuesToJsonValues(fields, formValues);
+    expect(jsonValuesFirst).toEqual({
+      has_pet: 'no',
+      pet_name: 'Woofy',
+      pet_age: 6,
+    });
+    // The validation will now turn pet_age invisible because of has_pet: 'no' above.
+    // But dietary_needs is still visibile (required) because of pet_age: 6 above.
+    result = handleValidation(jsonValuesFirst);
+
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: false');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: true');
+
+    // 📌 2nd validation round:
+    // At this point as "pet_age" is invisible, the age gets trimmed.
+    const jsonValuesSecond = formValuesToJsonValues(fields, formValues);
+    expect(jsonValuesSecond).toEqual({
+      has_pet: 'no',
+    });
+    // ...and when running the validation again, dietary_needs becomes invisible too (not required).
+    result = handleValidation(jsonValuesSecond);
+
+    expect(result.formErrors).toEqual(undefined);
+
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: false');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: false');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: false');
+
+    /* CONCLUSION:
+     You found a tricky bug that we never realized because of our internal React app lifecycle.
+     Fun fact: If you try it in the Codesandbox demo, the bug happens there too. 😅
+     How would we fix it? I don't know, we'd need time to investigate.
+     It's quite tricky because the formValuesToJsonValues() takes into account
+     the existing field state, not the new one.
+
+     For now, the workaround is to call the validation twice, like this:
+
+     result = handleValidation(formValuesToJsonValues(fields, formValues));
+     result = handleValidation(formValuesToJsonValues(fields, formValues));
+    
+     We'll try to dig into this again later on and come up with a better solution.
+     
+     We're sorry :(
+      
+     P.S. Technically the JSON Schema and JSF is correct: given pet_age: 6, the dietary_needs is visible (and required).
+     The challenge here is the side-effects of the validation to calculate the latest isVisible status.
+     */
+  });
+
+  it('(ALTERNATIVE) Should hide dependent field if value does not satisfy conditional anymore', () => {
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        has_pet: {
+          title: 'Has Pet',
+          description: 'Do you have a pet?',
+          oneOf: [
+            {
+              title: 'Yes',
+              const: 'yes',
+            },
+            {
+              title: 'No',
+              const: 'no',
+            },
+          ],
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+          type: 'string',
+        },
+        pet_name: {
+          title: "Pet's name",
+          description: "What's your pet's name?",
+          'x-jsf-presentation': {
+            inputType: 'text',
+          },
+          type: 'string',
+        },
+        pet_age: {
+          title: "Pet's age",
+          description: "What's your pet's age",
+          'x-jsf-presentation': {
+            inputType: 'number',
+          },
+          type: 'number',
+        },
+        dietary_needs: {
+          title: 'Dietary needs',
+          description: "What are your pet's dietary needs?",
+          'x-jsf-presentation': {
+            inputType: 'textarea',
+          },
+          type: 'string',
+        },
+      },
+      required: ['has_pet'],
+      'x-jsf-order': ['has_pet', 'pet_name', 'pet_age', 'dietary_needs'],
+      allOf: [
+        {
+          if: {
+            properties: {
+              has_pet: {
+                const: 'yes',
+              },
+            },
+            required: ['has_pet'],
+          },
+          then: {
+            required: ['pet_age', 'pet_name'],
+          },
+          else: {
+            properties: {
+              pet_age: false,
+              pet_name: false,
+              dietary_needs: false,
+            },
+          },
+        },
+        {
+          if: {
+            properties: {
+              // 📌📌📌📌 NEW: More strict JSON Schema conditional:
+              has_pet: {
+                const: 'yes',
+              },
+              pet_age: {
+                minimum: 5,
+              },
+            },
+            required: ['has_pet', 'pet_age'],
+          },
+          then: {
+            required: ['dietary_needs'],
+          },
+          else: {
+            properties: {
+              dietary_needs: false,
+            },
+          },
+        },
+      ],
+    };
+
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    let result = handleValidation({});
+
+    // Step 1: Click on Submit without any form interaction
+    expect(result.formErrors).toEqual({ has_pet: 'Required field' });
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: false');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: false');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: false');
+
+    // Step 2: Specify that you have a pet, form shows Pet name and age. Enter Name, skip adding age.
+    result = handleValidation({ has_pet: 'yes', pet_name: 'Woofy' });
+
+    expect(result.formErrors).toEqual({ pet_age: 'Required field' });
+
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: true');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: true');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: false');
+
+    // Step 3: Set age to be 6, to show dietary needs
+    result = handleValidation({ has_pet: 'yes', pet_name: 'Woofy', pet_age: 6 });
+
+    expect(result.formErrors).toEqual({ dietary_needs: 'Required field' });
+
+    expect(`${fields[0].name}: ${fields[0].isVisible}`).toEqual('has_pet: true');
+    expect(`${fields[1].name}: ${fields[1].isVisible}`).toEqual('pet_name: true');
+    expect(`${fields[2].name}: ${fields[2].isVisible}`).toEqual('pet_age: true');
+    expect(`${fields[3].name}: ${fields[3].isVisible}`).toEqual('dietary_needs: true');
+
+    // Step 3: Change radio for Has pet to be "no". Form should be valid and
+    // pet_name, pet_age and dietary_needs to be hidden
+
+    const formValues = {
+      has_pet: 'no',
+      pet_name: 'Woofy',
+      pet_age: 6,
+    };
+
+    // 📌📌📌📌📌📌📌
+    // 📌 Now only 1 validation is needed, because the JSON Schema conditional is more strict.
+    const jsonValuesFirst = formValuesToJsonValues(fields, formValues);
+    expect(jsonValuesFirst).toEqual({
+      has_pet: 'no',
+      pet_name: 'Woofy',
+      pet_age: 6,
+    });
+    result = handleValidation(jsonValuesFirst);
 
     expect(result.formErrors).toEqual(undefined);
 
