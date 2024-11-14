@@ -1,3 +1,9 @@
+#### 0.11.7-beta.0 (2024-11-14)
+
+##### Bug Fixes
+
+* **validation:**  validate radio with string-y types; ([#94](https://github.com/remoteoss/json-schema-form/pull/94)) ([606913d8](https://github.com/remoteoss/json-schema-form/commit/606913d8412a02d9a38a43e903add58b8e11a7e4))
+
 #### 0.11.6-beta.0 (2024-10-15)
 
 ##### Bug Fixes
