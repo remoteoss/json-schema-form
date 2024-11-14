@@ -148,6 +148,25 @@ export const mockRadioInputBoolean = {
   type: 'boolean',
 };
 
+export const mockRadioInputStringY = {
+  title: 'Has siblings',
+  description: 'Do you have any siblings?',
+  oneOf: [
+    {
+      title: 'Yes',
+      const: 'true',
+    },
+    {
+      title: 'No',
+      const: 'false',
+    },
+  ],
+  'x-jsf-presentation': {
+    inputType: 'radio',
+  },
+  type: 'string',
+};
+
 export const mockRadioInputNumber = {
   title: 'Number of siblings',
   description: 'How many siblings do you have?',
@@ -895,6 +914,13 @@ export const schemaInputTypeRadioDeprecated = {
 export const schemaInputTypeRadioString = {
   properties: {
     has_siblings: mockRadioInputString,
+  },
+  required: ['has_siblings'],
+};
+
+export const schemaInputTypeRadioStringY = {
+  properties: {
+    has_siblings: mockRadioInputStringY,
   },
   required: ['has_siblings'],
 };
