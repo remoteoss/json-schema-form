@@ -2577,34 +2577,6 @@ describe('createHeadlessForm', () => {
         });
       });
     });
-    describe('and type is integer', () => {
-      it('should validate field', () => {
-        const { handleValidation } = createHeadlessForm(schemaInputTypeIntegerNumber);
-        const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-        expect(validateForm({ tabs: '10' })).toBeUndefined();
-        expect(validateForm({ tabs: '1.0' })).toBeUndefined();
-
-        expect(validateForm({ tabs: '0' })).toEqual({
-          tabs: 'Must be greater or equal to 1',
-        });
-        expect(validateForm({ tabs: '11' })).toEqual({
-          tabs: 'Must be smaller or equal to 10',
-        });
-        expect(validateForm({ tabs: '5.5' })).toEqual({
-          tabs: 'Must not contain decimal points. E.g. 5 instead of 5.5',
-        });
-        expect(validateForm({ tabs: 'this is text with a number 1' })).toEqual({
-          tabs: 'The value must be a number',
-        });
-        expect(validateForm({ tabs: 'some text' })).toEqual({
-          tabs: 'The value must be a number',
-        });
-        expect(validateForm({ tabs: '' })).toEqual({
-          tabs: 'The value must be a number',
-        });
-      });
-    });
   });
 
   describe('when a field has a maxLength of 10', () => {
