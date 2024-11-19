@@ -67,7 +67,7 @@ export const schemaInputTypeIntegerNumber = {
       title: 'Tabs',
       description: 'How many open tabs do you have?',
       'x-jsf-presentation': {
-        inputType: 'integer',
+        inputType: 'number',
       },
       minimum: 1,
       maximum: 10,

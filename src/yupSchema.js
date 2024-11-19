@@ -293,6 +293,7 @@ export function buildYupSchema(field, config, logic) {
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
   const errorMessageFromConfig = config?.inputTypes?.[inputType]?.errorMessage || {};
+  const jsonType = getJsonTypeInArray(field.jsonType);
 
   if (propertyFields.multiple) {
     // keep inputType while non-core are being removed #RMT-439
@@ -500,7 +501,7 @@ export function buildYupSchema(field, config, logic) {
     validators.push(withFile);
   }
 
-  if (propertyFields.type === 'integer') {
+  if (jsonType === 'integer') {
     validators.push(withInteger);
   }
 

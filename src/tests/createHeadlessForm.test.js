@@ -22,7 +22,7 @@ import {
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
   schemaInputTypeFieldset,
-  schemaInputTypeInteger,
+  schemaInputTypeIntegerNumber,
   schemaInputTypeNumber,
   schemaInputTypeNumberZeroMaximum,
   schemaInputTypeDate,
@@ -48,7 +48,6 @@ import {
   mockTextInputDeprecated,
   mockNumberInput,
   mockNumberInputWithPercentageAndCustomRange,
-  schemaInputTypeIntegerNumber,
   mockTextPatternInput,
   mockTextMaxLengthInput,
   mockFieldset,
@@ -997,16 +996,18 @@ describe('createHeadlessForm', () => {
     });
 
     it('support "integer" field type', () => {
-      const result = createHeadlessForm(schemaInputTypeInteger);
+      const result = createHeadlessForm(schemaInputTypeIntegerNumber);
       expect(result).toMatchObject({
         fields: [
           {
             description: 'How many open tabs do you have?',
             label: 'Tabs',
             name: 'tabs',
-            required: true,
+            required: false,
             schema: expect.any(Object),
-            type: 'integer',
+            type: 'number',
+            jsonType: 'integer',
+            inputType: 'number',
             minimum: 1,
             maximum: 10,
           },
