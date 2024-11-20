@@ -61,6 +61,21 @@ export const schemaInputTypeNumberZeroMaximum = {
   },
 };
 
+export const schemaInputTypeIntegerNumber = {
+  properties: {
+    tabs: {
+      title: 'Tabs',
+      description: 'How many open tabs do you have?',
+      'x-jsf-presentation': {
+        inputType: 'number',
+      },
+      minimum: 1,
+      maximum: 10,
+      type: 'integer',
+    },
+  },
+};
+
 export const mockNumberInputWithPercentage = {
   title: 'Shares',
   description: 'What % of shares do you own?',

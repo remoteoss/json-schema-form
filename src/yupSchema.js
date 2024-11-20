@@ -303,6 +303,7 @@ export function buildYupSchema(field, config, logic) {
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
   const errorMessageFromConfig = config?.inputTypes?.[inputType]?.errorMessage || {};
+  const jsonType = getJsonTypeInArray(field.jsonType);
 
   if (propertyFields.multiple) {
     // keep inputType while non-core are being removed #RMT-439
@@ -330,6 +331,18 @@ export function buildYupSchema(field, config, logic) {
     }
     return yupSchema.required(requiredMessage);
   }
+
+  function withInteger(yupSchema) {
+    return yupSchema.integer(
+      (message) =>
+        errorMessage.integer ??
+        errorMessageFromConfig.integer ??
+        `Must not contain decimal points. E.g. ${Math.floor(message.value)} instead of ${
+          message.value
+        }`
+    );
+  }
+
   function withMin(yupSchema) {
     return yupSchema.min(
       propertyFields.minimum,
@@ -496,6 +509,10 @@ export function buildYupSchema(field, config, logic) {
 
   if (inputType === supportedTypes.FILE) {
     validators.push(withFile);
+  }
+
+  if (jsonType === 'integer') {
+    validators.push(withInteger);
   }
 
   // support minimum with 0 value
