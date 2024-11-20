@@ -1,3 +1,9 @@
+#### 0.11.8-beta.0 (2024-11-20)
+
+##### Bug Fixes
+
+* **integer:**  support integer field type ([#11](https://github.com/remoteoss/json-schema-form/pull/11)) ([14f34971](https://github.com/remoteoss/json-schema-form/commit/14f349714ce7b294ae710801168b017692c659af))
+
 #### 0.11.7-beta.0 (2024-11-14)
 
 ##### Bug Fixes
