@@ -34,6 +34,7 @@ import {
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
   badSchemaThatWillNotSetAForcedValue,
+  schemaWithReduceAccumulator,
 } from './jsonLogic.fixtures';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 import { createHeadlessForm } from '@/createHeadlessForm';
@@ -240,6 +241,22 @@ describe('jsonLogic: cross-values validations', () => {
       expect(handleValidation({ field_a: 4, field_b: 1, field_c: 2 }).formErrors).toEqual(
         undefined
       );
+    });
+  });
+
+  describe('Reduce', () => {
+    it('reduce: working_hours_per_day * work_days', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaWithReduceAccumulator, {
+        strictInputType: false,
+      });
+      handleValidation({
+        work_days: ['monday', 'tuesday'],
+        working_hours_per_day: 8,
+      });
+      const field = fields.find((i) => i.name === 'working_hours_per_week');
+      expect(field.const).toEqual(16);
+      expect(field.default).toEqual(16);
+      expect(field.label).toEqual('16 hours per week');
     });
   });
 
