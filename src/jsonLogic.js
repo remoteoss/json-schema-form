@@ -399,6 +399,7 @@ function checkRuleIntegrity(
     subRule.map((item) => {
       const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
       if (isVar) {
+        if (Array.isArray(item.var)) return; // Is an accumlator for reduce and can't be checked.
         const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, data);
         if (exists === null) {
           throw Error(errorMessage(item));
