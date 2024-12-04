@@ -348,7 +348,7 @@ export function processNode({
     });
   });
 
-  if (node.if) {
+  if (node.if !== undefined) {
     const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.

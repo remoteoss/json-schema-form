@@ -1,5 +1,13 @@
 import { checkIfConditionMatchesProperties } from '../checkIfConditionMatches';
 
+it('True if is always going to be true', () => {
+  expect(checkIfConditionMatchesProperties({ if: true })).toBe(true);
+});
+
+it('False if is always going to be false', () => {
+  expect(checkIfConditionMatchesProperties({ if: false })).toBe(false);
+});
+
 it('Empty if is always going to be true', () => {
   expect(checkIfConditionMatchesProperties({ if: { properties: {} } })).toBe(true);
 });
