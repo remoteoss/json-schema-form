@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 
-import { yupToFormErrors } from '../helpers';
+import { processNode, yupToFormErrors } from '../helpers';
 import { getFieldDescription, pickXKey } from '../internals/helpers';
 
 describe('getFieldDescription()', () => {
@@ -171,5 +171,23 @@ describe('pickXKey()', () => {
     const xKey = pickXKey(schema, 'presentation');
 
     expect(xKey).toBeUndefined();
+  });
+});
+
+describe('processNode()', () => {
+  it('visits an if node when value is false', () => {
+    const node = {
+      if: false,
+      then: { required: ['field_a'] },
+      else: { required: ['field_b'] },
+    };
+
+    const result = processNode({
+      node,
+      formValues: {},
+      formFields: [],
+    });
+
+    expect(result.required).toEqual(new Set(['field_b']));
   });
 });

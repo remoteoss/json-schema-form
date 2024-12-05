@@ -8,6 +8,10 @@ import { hasProperty } from './utils';
  * @returns {Boolean}
  */
 export function checkIfConditionMatchesProperties(node, formValues, formFields, logic) {
+  if (typeof node.if === 'boolean') {
+    return node.if;
+  }
+
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
     const value = formValues[name];
