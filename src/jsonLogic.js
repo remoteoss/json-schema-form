@@ -1,4 +1,5 @@
 import jsonLogic from 'json-logic-js';
+import { flow } from 'lodash';
 
 import {
   checkIfConditionMatchesProperties,
@@ -241,10 +242,8 @@ export function calculateComputedAttributes(fieldParams, { parentID = 'root' } =
 
     return {
       ...attributes,
-      schema: buildYupSchema(
-        { ...fieldParams, ...attributes, required: isRequired },
-        config,
-        logic
+      schema: flow(
+        buildYupSchema({ ...fieldParams, ...attributes, required: isRequired }, config, logic)
       ),
     };
   };

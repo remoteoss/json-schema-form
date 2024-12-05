@@ -1,3 +1,4 @@
+import { flow } from 'lodash';
 import get from 'lodash/get';
 import isNil from 'lodash/isNil';
 import omit from 'lodash/omit';
@@ -82,7 +83,7 @@ export function getField(fieldName, fields) {
  * @returns
  */
 export function validateFieldSchema(field, value, logic) {
-  const validator = buildYupSchema(field, {}, logic);
+  const validator = flow(buildYupSchema(field, {}, logic));
   return validator().isValidSync(value);
 }
 

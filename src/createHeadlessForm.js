@@ -1,3 +1,4 @@
+import { flow } from 'lodash';
 import get from 'lodash/get';
 import isNil from 'lodash/isNil';
 import omit from 'lodash/omit';
@@ -238,10 +239,16 @@ function buildField(fieldParams, config, scopedJsonSchema, logic) {
   const customProperties = getCustomPropertiesForField(fieldParams, config);
   const composeFn = getComposeFunctionForField(fieldParams, !!customProperties);
 
-  const yupSchema = buildYupSchema(fieldParams, config, logic);
+  const yupSchemaValidations = buildYupSchema(fieldParams, config, logic);
   const calculateConditionalFieldsClosure =
     fieldParams.isDynamic &&
-    calculateConditionalProperties({ fieldParams, customProperties, logic, config });
+    calculateConditionalProperties({
+      fieldParams,
+      customProperties,
+      logic,
+      config,
+      baseValidations: yupSchemaValidations,
+    });
 
   const calculateCustomValidationPropertiesClosure = calculateCustomValidationProperties(
     fieldParams,
@@ -271,7 +278,7 @@ function buildField(fieldParams, config, scopedJsonSchema, logic) {
     // field customization properties
     ...(customProperties && { fieldCustomization: customProperties }),
     // base schema
-    schema: yupSchema(),
+    schema: flow(yupSchemaValidations)(),
     scopedJsonSchema,
   };
 

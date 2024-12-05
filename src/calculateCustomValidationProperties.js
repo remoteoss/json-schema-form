@@ -1,3 +1,4 @@
+import { flow } from 'lodash';
 import inRange from 'lodash/inRange';
 import isFunction from 'lodash/isFunction';
 import isNil from 'lodash/isNil';
@@ -80,12 +81,14 @@ export function calculateCustomValidationProperties(fieldParams, customPropertie
       type: presentation?.inputType || params.inputType,
       errorMessage,
       required: isRequired,
-      schema: buildYupSchema({
-        ...params,
-        ...fieldParamsWithNewValidation,
-        errorMessage,
-        required: isRequired,
-      }),
+      schema: flow(
+        buildYupSchema({
+          ...params,
+          ...fieldParamsWithNewValidation,
+          errorMessage,
+          required: isRequired,
+        })
+      ),
     };
   };
 }

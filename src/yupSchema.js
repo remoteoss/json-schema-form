@@ -298,7 +298,7 @@ const getYupSchema = ({ inputType, ...field }) => {
  * @param {FieldParameters} field Input fields
  * @returns {Function} Yup schema
  */
-export function buildYupSchema(field, config, logic) {
+export function buildYupSchema(field, config, logic, baseValidations = []) {
   const { inputType, jsonType: jsonTypeValue, errorMessage = {}, ...propertyFields } = field;
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
@@ -469,12 +469,14 @@ export function buildYupSchema(field, config, logic) {
           buildFieldSetSchema(fieldSetfield.fields)
         );
       } else {
-        fieldSetShape[fieldSetfield.name] = buildYupSchema(
-          {
-            ...fieldSetfield,
-            inputType: fieldSetfield.type,
-          },
-          config
+        fieldSetShape[fieldSetfield.name] = flow(
+          buildYupSchema(
+            {
+              ...fieldSetfield,
+              inputType: fieldSetfield.type,
+            },
+            config
+          )
         )();
       }
     });
@@ -486,14 +488,14 @@ export function buildYupSchema(field, config, logic) {
       propertyFields.nthFieldGroup.fields().reduce(
         (schema, groupArrayField) => ({
           ...schema,
-          [groupArrayField.name]: buildYupSchema(groupArrayField, config)(),
+          [groupArrayField.name]: flow(buildYupSchema(groupArrayField, config))(),
         }),
         {}
       )
     );
   }
 
-  const validators = [withBaseSchema];
+  const validators = [withBaseSchema, ...baseValidations];
 
   if (inputType === supportedTypes.GROUP_ARRAY) {
     // build schema for the items of a group array
@@ -557,7 +559,7 @@ export function buildYupSchema(field, config, logic) {
     );
   }
 
-  return flow(validators);
+  return validators;
 }
 
 // noSortEdges is the second parameter of shape() and ignores the order of the specified field names
@@ -582,7 +584,7 @@ function getSchema(fields = [], config) {
         if (field.inputType === supportedTypes.FIELDSET) {
           // Fieldset validation schemas depend on the inner schemas of their fields,
           // so we need to rebuild it to take into account any of those updates.
-          const fieldsetSchema = buildYupSchema(field, config)();
+          const fieldsetSchema = flow(buildYupSchema(field, config))();
           newSchema[field.name] = fieldsetSchema;
         } else {
           newSchema[field.name] = field.schema;

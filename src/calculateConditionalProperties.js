@@ -1,3 +1,4 @@
+import { flow } from 'lodash';
 import merge from 'lodash/merge';
 import omit from 'lodash/omit';
 
@@ -76,7 +77,13 @@ function rebuildFieldset(fields, property) {
  *
  * @returns {Function} A function that calculates conditional properties
  */
-export function calculateConditionalProperties({ fieldParams, customProperties, logic, config }) {
+export function calculateConditionalProperties({
+  fieldParams,
+  customProperties,
+  logic,
+  config,
+  baseValidations,
+}) {
   /**
    * @typedef {calculateConditionalPropertiesReturn}
    * @property {rootFieldAttrs} - The field attributes from the first render (root)
@@ -132,18 +139,21 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
         ...(calculatedComputedAttributes.value
           ? { value: calculatedComputedAttributes.value }
           : { value: undefined }),
-        schema: buildYupSchema(
-          {
-            ...fieldParams,
-            ...restNewFieldParams,
-            ...calculatedComputedAttributes,
-            jsonLogicValidations,
-            // If there are inner fields (case of fieldset) they need to be updated based on the condition
-            fields: fieldSetFields,
-            required: isRequired,
-          },
-          config,
-          logic
+        schema: flow(
+          buildYupSchema(
+            {
+              ...fieldParams,
+              ...restNewFieldParams,
+              ...calculatedComputedAttributes,
+              jsonLogicValidations,
+              // If there are inner fields (case of fieldset) they need to be updated based on the condition
+              fields: fieldSetFields,
+              required: isRequired,
+            },
+            config,
+            logic,
+            baseValidations
+          )
         ),
       };
 
@@ -161,11 +171,13 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
       newAttributes: {
         isVisible,
         required: isRequired,
-        schema: buildYupSchema({
-          ...fieldParams,
-          ...extractParametersFromNode(conditionBranch),
-          required: isRequired,
-        }),
+        schema: flow(
+          buildYupSchema({
+            ...fieldParams,
+            ...extractParametersFromNode(conditionBranch),
+            required: isRequired,
+          })
+        ),
       },
     };
   };
