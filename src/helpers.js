@@ -1,4 +1,4 @@
-import { flow } from 'lodash';
+import { flow, merge } from 'lodash';
 import get from 'lodash/get';
 import isNil from 'lodash/isNil';
 import omit from 'lodash/omit';
@@ -42,6 +42,7 @@ const dynamicInternalJsfAttrsObj = Object.fromEntries(
  * @param {Object} rootAttrs - Original field attributes from the root.
  */
 function removeConditionalStaleAttributes(field, conditionalAttrs, rootAttrs) {
+  const fieldsToRemove = {};
   Object.keys(field).forEach((key) => {
     if (
       conditionalAttrs[key] === undefined &&
@@ -49,8 +50,10 @@ function removeConditionalStaleAttributes(field, conditionalAttrs, rootAttrs) {
       dynamicInternalJsfAttrsObj[key] === undefined // ignore these because they are internal
     ) {
       field[key] = undefined;
+      fieldsToRemove[key] = undefined;
     }
   });
+  return fieldsToRemove;
 }
 
 /**
@@ -221,30 +224,18 @@ export function getPrefillValues(fields, initialValues = {}) {
  * @param {Object} node - JSON-schema node
  * @returns
  */
-function updateField(field, requiredFields, node, formValues, logic, config) {
-  // If there was an error building the field, it might not exist in the form even though
-  // it can be mentioned in the schema so we return early in that case
-  if (!field) {
-    return;
-  }
-
-  const fieldIsRequired = requiredFields.has(field.name);
-
-  // Update visibility
-  if (node.properties && hasProperty(node.properties, field.name)) {
-    // Field visibility can be controlled via the "properties" object:
-    // - if the field is marked as "false", it should be removed from the form
-    // - otherwise ("true" or object stating updated properties) it should be visible in the form
-    field.isVisible = !!node.properties[field.name];
-  }
-
-  // If field is required, it needs to be visible
-  if (fieldIsRequired) {
-    field.isVisible = true;
-  }
-
+function updateField(field = {}, fieldAttrs) {
   const updateAttributes = (fieldAttrs) => {
     Object.entries(fieldAttrs).forEach(([key, value]) => {
+      if (key === 'nestedFields') {
+        Object.entries(value ?? {}).forEach(([nestedFieldName, nestedFieldProperties]) => {
+          const nestedField = getField(nestedFieldName, field.fields);
+          if (nestedField) {
+            updateField(nestedField, nestedFieldProperties);
+          }
+        });
+      }
+
       field[key] = value;
 
       if (key === 'schema' && typeof value === 'function') {
@@ -276,6 +267,65 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       }
     });
   };
+  updateAttributes(fieldAttrs);
+}
+
+function updateFieldFake(field, requiredFields, node, formValues, logic, config) {
+  let fieldAttributes = { ...field };
+  // If there was an error building the field, it might not exist in the form even though
+  // it can be mentioned in the schema so we return early in that case
+  if (Object.keys(fieldAttributes).length === 0) {
+    return {};
+  }
+
+  const fieldIsRequired = requiredFields.has(fieldAttributes.name);
+
+  // Update visibility
+  if (node.properties && hasProperty(node.properties, field.name)) {
+    // Field visibility can be controlled via the "properties" object:
+    // - if the field is marked as "false", it should be removed from the form
+    // - otherwise ("true" or object stating updated properties) it should be visible in the form
+    fieldAttributes.isVisible = !!node.properties[fieldAttributes.name];
+  }
+
+  // If field is required, it needs to be visible
+  if (fieldIsRequired) {
+    fieldAttributes.isVisible = true;
+  }
+
+  const updateAttributes = (fieldAttrs) => {
+    Object.entries(fieldAttrs).forEach(([key, value]) => {
+      fieldAttributes[key] = value;
+
+      if (key === 'schema' && typeof value === 'function') {
+        // key "schema" refers to YupSchema that needs to be processed for validations.
+        fieldAttributes[key] = value();
+      }
+
+      if (key === 'value') {
+        /* NOTE/TODO: This section does not have any unit test. Be careful when changing this.
+         You'll need to check the internal MRs !9266 and !6572 (or other through git blame)
+         to better understand the reason. Then try to remove this workaround and/or write comprehensive unit tests. */
+
+        // The value of the field should not be driven by the json-schema,
+        // unless it's a read-only field
+        // If the readOnly property has changed, use that updated value,
+        // otherwise use the start value of the property
+        const readOnlyPropertyWasUpdated = typeof fieldAttrs.readOnly !== 'undefined';
+        const isReadonlyByDefault = fieldAttributes.readOnly;
+        const isReadonly = readOnlyPropertyWasUpdated ? fieldAttrs.readOnly : isReadonlyByDefault;
+
+        // Needs field.type check because otherwise checkboxes will have an initial
+        // value of "true" when they should be not checked. !8755 for full context
+        // TODO: to find a better solution here
+        if (!isReadonly && (value === null || field.inputType === 'checkbox')) {
+          // Note: doing an early return does not work, we need to reset the value
+          // so that formik takes charge of setting the value correctly
+          fieldAttributes.value = undefined;
+        }
+      }
+    });
+  };
 
   if (field.getComputedAttributes) {
     const newAttributes = field.getComputedAttributes({
@@ -296,8 +346,10 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       conditionBranch: node,
       formValues,
     });
+
     updateAttributes(newAttributes);
-    removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
+    const fieldsToRemove = removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
+    fieldAttributes = { ...fieldAttributes, ...fieldsToRemove };
   }
 
   if (field.calculateCustomValidationProperties) {
@@ -308,6 +360,8 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     );
     updateAttributes(newAttributes);
   }
+
+  return fieldAttributes;
 }
 
 /**
@@ -334,45 +388,60 @@ export function processNode({
 }) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
+  let propertyAttributes = {};
 
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
-    updateField(field, requiredFields, node, formValues, logic, { parentID });
+    const newProperties = updateFieldFake(field, requiredFields, node, formValues, logic, {
+      parentID,
+    });
+    propertyAttributes[field.name] = merge(propertyAttributes[field.name], newProperties);
   });
 
   // Update required fields based on the `required` property and mutate node if needed
   node.required?.forEach((fieldName) => {
     requiredFields.add(fieldName);
-    updateField(getField(fieldName, formFields), requiredFields, node, formValues, logic, {
-      parentID,
-    });
+    const newProperties = updateFieldFake(
+      getField(fieldName, formFields),
+      requiredFields,
+      node,
+      formValues,
+      logic,
+      {
+        parentID,
+      }
+    );
+    propertyAttributes[fieldName] = merge(propertyAttributes[fieldName], newProperties);
   });
 
-  if (node.if) {
+  if (node.if !== undefined) {
     const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
-      const { required: branchRequired } = processNode({
-        node: node.then,
-        formValues,
-        formFields,
-        accRequired: requiredFields,
-        parentID,
-        logic,
-      });
-
+      const { required: branchRequired, propertyAttributes: branchPropertyAttributes } =
+        processNode({
+          node: node.then,
+          formValues,
+          formFields,
+          accRequired: requiredFields,
+          parentID,
+          logic,
+        });
+      propertyAttributes = merge(propertyAttributes, branchPropertyAttributes);
       branchRequired.forEach((field) => requiredFields.add(field));
     } else if (node.else) {
-      const { required: branchRequired } = processNode({
-        node: node.else,
-        formValues,
-        formFields,
-        accRequired: requiredFields,
-        parentID,
-        logic,
-      });
+      const { required: branchRequired, propertyAttributes: branchPropertyAttributes } =
+        processNode({
+          node: node.else,
+          formValues,
+          formFields,
+          accRequired: requiredFields,
+          parentID,
+          logic,
+        });
+      propertyAttributes = merge(propertyAttributes, branchPropertyAttributes);
       branchRequired.forEach((field) => requiredFields.add(field));
     }
   }
@@ -386,7 +455,10 @@ export function processNode({
     node.anyOf.forEach(({ required = [] }) => {
       required.forEach((fieldName) => {
         const field = getField(fieldName, formFields);
-        updateField(field, requiredFields, node, formValues, logic, { parentID });
+        const newProperties = updateFieldFake(field, requiredFields, node, formValues, logic, {
+          parentID,
+        });
+        propertyAttributes[field.name] = merge(propertyAttributes[field.name], newProperties);
       });
     });
   }
@@ -403,9 +475,12 @@ export function processNode({
           logic,
         })
       )
-      .forEach(({ required: allOfItemRequired }) => {
-        allOfItemRequired.forEach(requiredFields.add, requiredFields);
-      });
+      .forEach(
+        ({ required: allOfItemRequired, propertyAttributes: allOfItemPropertyAttributes }) => {
+          allOfItemRequired.forEach(requiredFields.add, requiredFields);
+          propertyAttributes = merge(propertyAttributes, allOfItemPropertyAttributes);
+        }
+      );
   }
 
   if (node.properties) {
@@ -413,31 +488,38 @@ export function processNode({
       const inputType = getInputType(nestedNode);
       if (inputType === supportedTypes.FIELDSET) {
         // It's a fieldset, which might contain scoped conditions
-        processNode({
+        const { propertyAttributes: nestedPropertyAttributes } = processNode({
           node: nestedNode,
           formValues: formValues[name] || {},
           formFields: getField(name, formFields).fields,
           parentID: name,
           logic,
         });
+        propertyAttributes[name].nestedFields = merge(
+          propertyAttributes[name],
+          nestedPropertyAttributes
+        );
       }
     });
   }
 
   if (node['x-jsf-logic']) {
-    const { required: requiredFromLogic } = processJSONLogicNode({
-      node: node['x-jsf-logic'],
-      formValues,
-      formFields,
-      accRequired: requiredFields,
-      parentID,
-      logic,
-    });
+    const { required: requiredFromLogic, propertyAttributes: logicPropertyAttributes } =
+      processJSONLogicNode({
+        node: node['x-jsf-logic'],
+        formValues,
+        formFields,
+        accRequired: requiredFields,
+        parentID,
+        logic,
+      });
     requiredFromLogic.forEach((field) => requiredFields.add(field));
+    propertyAttributes = merge(propertyAttributes, logicPropertyAttributes);
   }
 
   return {
     required: requiredFields,
+    propertyAttributes,
   };
 }
 
@@ -470,7 +552,16 @@ export function updateFieldsProperties(fields, formValues, jsonSchema, logic) {
   if (!jsonSchema?.properties) {
     return;
   }
-  processNode({ node: jsonSchema, formValues, formFields: fields, logic });
+  const { propertyAttributes } = processNode({
+    node: jsonSchema,
+    formValues,
+    formFields: fields,
+    logic,
+  });
+  Object.entries(propertyAttributes).forEach(([fieldName, fieldProperties]) => {
+    let field = getField(fieldName, fields);
+    updateField(field, fieldProperties);
+  });
   clearValuesIfNotVisible(fields, formValues);
 }
 

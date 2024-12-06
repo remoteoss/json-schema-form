@@ -366,6 +366,7 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
       isError: false,
     };
   } catch (error) {
+    console.log('??', error);
     console.error('JSON Schema invalid!', error);
     return {
       fields: [],

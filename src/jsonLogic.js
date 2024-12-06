@@ -1,5 +1,5 @@
 import jsonLogic from 'json-logic-js';
-import { flow } from 'lodash';
+import { flow, merge } from 'lodash';
 
 import {
   checkIfConditionMatchesProperties,
@@ -444,6 +444,7 @@ export function processJSONLogicNode({
   parentID,
   logic,
 }) {
+  let propertyAttributes = {};
   const requiredFields = new Set(accRequired);
 
   if (node.allOf) {
@@ -451,9 +452,12 @@ export function processJSONLogicNode({
       .map((allOfNode) =>
         processJSONLogicNode({ node: allOfNode, formValues, formFields, logic, parentID })
       )
-      .forEach(({ required: allOfItemRequired }) => {
-        allOfItemRequired.forEach(requiredFields.add, requiredFields);
-      });
+      .forEach(
+        ({ required: allOfItemRequired, propertyAttributes: allOfItemPropertyAttributes }) => {
+          allOfItemRequired.forEach(requiredFields.add, requiredFields);
+          propertyAttributes = merge(propertyAttributes, allOfItemPropertyAttributes);
+        }
+      );
   }
 
   if (node.if) {
@@ -477,7 +481,7 @@ export function processJSONLogicNode({
       nextNode = node.else;
     }
     if (nextNode) {
-      const { required: branchRequired } = processNode({
+      const { required: branchRequired, propertyAttributes: nodePropertyAttributes } = processNode({
         node: nextNode,
         formValues,
         formFields,
@@ -486,8 +490,9 @@ export function processJSONLogicNode({
         parentID,
       });
       branchRequired.forEach((field) => requiredFields.add(field));
+      propertyAttributes = merge(propertyAttributes, nodePropertyAttributes);
     }
   }
 
-  return { required: requiredFields };
+  return { required: requiredFields, propertyAttributes };
 }

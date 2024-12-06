@@ -172,11 +172,16 @@ export function calculateConditionalProperties({
         isVisible,
         required: isRequired,
         schema: flow(
-          buildYupSchema({
-            ...fieldParams,
-            ...extractParametersFromNode(conditionBranch),
-            required: isRequired,
-          })
+          buildYupSchema(
+            {
+              ...fieldParams,
+              ...extractParametersFromNode(conditionBranch),
+              required: isRequired,
+            },
+            config,
+            logic,
+            baseValidations
+          )
         ),
       },
     };

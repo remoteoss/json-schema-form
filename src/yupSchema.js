@@ -130,7 +130,7 @@ const yupSchemas = {
         }
       );
   },
-  date: ({ minDate, maxDate }) => {
+  date: ({ minDate, maxDate } = {}) => {
     let dateString = string()
       .nullable()
       .transform((value) => {
