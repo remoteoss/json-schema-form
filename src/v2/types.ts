@@ -1,5 +1,4 @@
 import { FromSchema, JSONSchema as JSONSchemaType } from 'json-schema-to-ts';
-import { ProcessSchemaReturnType } from './process-schema';
 
 export type JSONSchemaFormConfiguration = {
   initialValues?: Record<string, unknown>;
@@ -8,6 +7,10 @@ export type JSONSchemaFormConfiguration = {
 };
 
 export type FormErrors = Record<string, string>;
+
+export type ProcessSchemaConfig<T extends JSONSchema> = {
+  values: unknown;
+};
 
 export type JSONSchemaFormValidatorPlugin = {
   type: 'validator';
