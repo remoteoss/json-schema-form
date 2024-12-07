@@ -3,6 +3,7 @@ import { traverseSchema } from '../process-schema';
 import { JSONSchema, JSONSchemaFormPlugin, ProcessSchemaConfig } from '../types';
 import { string, number, boolean, array, object, lazy, ValidationError, Schema, mixed } from 'yup';
 import flow from 'lodash/flow';
+import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 
 function getStringSchema(node: JSONSchema) {
   if (typeof node !== 'object') return string();
@@ -30,57 +31,74 @@ function getSpecificValueSchema(schema: Schema, node: JSONSchema) {
   return schema;
 }
 
-function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
-  if (typeof node !== 'object' || !node) return mixed();
-
-  const typesToCheck = Array.isArray(node.type) ? node.type : [node.type];
-
-  const schemas = typesToCheck
-    .map((type) => {
-      switch (type) {
-        case 'string':
-          return getStringSchema(node);
-        case 'number':
-        case 'integer':
-          return getNumberSchema(node);
-        case 'boolean':
-          return boolean().strict();
-        case 'array':
-          return array().strict();
-        case 'object':
-          return object().strict();
-        case 'null':
-          return mixed().nullable();
-        default:
-          return mixed();
-      }
-    })
-    .map((schema) => getNullableSchema(schema, node));
-
-  return mixed().test({
+function getMultiTypeSchema(
+  schema: Schema,
+  node: JSONSchema,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (typeof node !== 'object' || !node.type || !Array.isArray(node.type)) return schema;
+  return schema.test({
     name: 'multi-type',
     test(value, context) {
+      const schemas = (node.type as Array<JSONSchemaType>).map((type) =>
+        getYupSchema({ ...node, type }, config)
+      );
       const errors: ValidationError[] = [];
 
-      for (const schema of schemas) {
-        try {
-          schema.validateSync(value);
-          return true;
-        } catch (err) {
-          if (err instanceof ValidationError) {
-            errors.push(err);
+      // Check if any schema validates
+      if (
+        schemas.some((schema) => {
+          try {
+            schema.validateSync(value);
+            return true;
+          } catch (e) {
+            errors.push(e);
+            return false;
           }
-        }
+        })
+      ) {
+        return true;
       }
 
-      // If we get here, all validations failed
-      const error = errors[0]; // Use first error
+      const allowedTypes = node.type as string[];
+      const receivedType = typeof value;
+
+      const nonTypeError = errors.find((err) => err.type !== 'typeError');
+      if (nonTypeError) {
+        return context.createError({
+          message: nonTypeError.message,
+          path: context.path,
+        });
+      }
+
       return context.createError({
-        message: error.message,
-        path: error.path,
+        message: `Expected ${allowedTypes.join(' or ')}, but got ${receivedType}.`,
+        path: context.path,
       });
     },
   });
+}
+
+function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+  if (typeof node !== 'object' || !node) return mixed();
+
+  switch (node.type) {
+    case 'string':
+      return getStringSchema(node);
+    case 'number':
+    case 'integer':
+      return getNumberSchema(node);
+    case 'boolean':
+      return boolean().strict();
+    case 'array':
+      return array().strict();
+    case 'object':
+      return object().strict();
+    case 'null':
+      return mixed().nullable();
+    default:
+      return mixed();
+  }
 }
 
 function getNullValueSchema(schema: Schema) {
@@ -101,6 +119,7 @@ function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>)
   return flow([
     (schema) => getNullableSchema(schema, node),
     (schema) => getSpecificValueSchema(schema, node),
+    (schema) => getMultiTypeSchema(schema, node, config),
   ])(baseSchema);
 }
 
