@@ -5,6 +5,7 @@ import {
   booleanTestCases,
   nullTestCases,
   multiTypeTestCases,
+  objectTestCases,
 } from './primitive-tests';
 
 describe('createHeadlessForm', () => {
@@ -22,6 +23,7 @@ describe('createHeadlessForm', () => {
     { title: 'Boolean', testCases: booleanTestCases },
     { title: 'Null', testCases: nullTestCases },
     { title: 'Multi type', testCases: multiTypeTestCases },
+    { title: 'Object', testCases: objectTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(({ title, schema, values, formErrors, fields = undefined }) => {
