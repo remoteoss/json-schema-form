@@ -84,6 +84,30 @@ export const stringTestCases = [
     values: 'hello',
     formErrors: undefined,
   },
+  {
+    title: 'Date format',
+    schema: { type: 'string', format: 'date' } as const,
+    values: '2024-01-01',
+    formErrors: undefined,
+  },
+  {
+    title: 'Date format error',
+    schema: { type: 'string', format: 'date' } as const,
+    values: 'banana',
+    formErrors: { '': 'does not validate against format "date"' },
+  },
+  {
+    title: 'Invalid date',
+    schema: { type: 'string', format: 'date' } as const,
+    values: '2024-02-31',
+    formErrors: { '': 'does not validate against format "date"' },
+  },
+  {
+    title: 'Invalid date',
+    schema: { type: 'string', format: 'date' } as const,
+    values: '2024-2-1',
+    formErrors: { '': 'does not validate against format "date"' },
+  },
 ];
 
 export const numberTestCases = [
@@ -284,6 +308,73 @@ export const objectTestCases = [
     values: { nested: { field: 123 } },
     formErrors: {
       nested: { field: 'nested.field must be a `string` type, but the final value was: `123`.' },
+    },
+  },
+  {
+    title: 'Object with a field that is multiple types',
+    schema: {
+      type: 'object',
+      properties: { field: { type: ['string', 'number'] } },
+    } as const,
+    values: { field: true },
+    formErrors: { field: 'Expected string or number, but got boolean.' },
+  },
+];
+
+export const arrayTestCases = [
+  {
+    title: 'Basic array',
+    schema: { type: 'array' } as const,
+    values: [],
+    formErrors: undefined,
+  },
+  {
+    title: 'Array with items that are strings',
+    schema: { type: 'array', items: { type: 'string' } } as const,
+    values: ['hello', 'world'],
+    formErrors: undefined,
+  },
+  {
+    title: 'Array with items that are strings error',
+    schema: { type: 'array', items: { type: 'string' } } as const,
+    values: [1, 2],
+    formErrors: {
+      0: '[0] must be a `string` type, but the final value was: `1`.',
+      1: '[1] must be a `string` type, but the final value was: `2`.',
+    },
+  },
+  {
+    title: 'Array with items that are strings and a minimum length',
+    schema: { type: 'array', items: { type: 'string', minLength: 5 } } as const,
+    values: ['hello', 'world'],
+    formErrors: undefined,
+  },
+  {
+    title: 'Array with items that are strings and a minimum length error',
+    schema: { type: 'array', items: { type: 'string', minLength: 5 } } as const,
+    values: ['hello', 'hi'],
+    formErrors: {
+      1: '[1] must be at least 5 characters',
+    },
+  },
+  {
+    title: 'Min items',
+    schema: { type: 'array', minItems: 2 } as const,
+    values: ['hello'],
+    formErrors: { '': 'this field must have at least 2 items' },
+  },
+  {
+    title: 'Max items',
+    schema: { type: 'array', maxItems: 2 } as const,
+    values: ['hello', 'world', 'foo'],
+    formErrors: { '': 'this field must have less than or equal to 2 items' },
+  },
+  {
+    title: 'Mixed types',
+    schema: { type: 'array', items: { type: ['string', 'number'] } } as const,
+    values: ['hello', 1, true],
+    formErrors: {
+      2: 'Expected string or number, but got boolean.',
     },
   },
 ];

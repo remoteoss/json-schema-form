@@ -4,12 +4,33 @@ import { string, number, boolean, array, object, lazy, ValidationError, Schema, 
 import flow from 'lodash/flow';
 import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 
+function validateDate(schema: Schema) {
+  return schema.test({
+    name: 'date-format',
+    test(value) {
+      if (typeof value !== 'string') return false;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+      const [year, month, day] = value.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+    },
+    message: `does not validate against format "date"`,
+  });
+}
+
+function getFormatSchema(schema: Schema, node: JSONSchema) {
+  if (typeof node !== 'object' || !node.format) return schema;
+  if (node.format === 'date') return validateDate(schema);
+  return schema;
+}
+
 function getStringSchema(node: JSONSchema) {
   if (typeof node !== 'object') return string();
   let schema = string().strict();
   if (node.minLength) schema = schema.min(node.minLength);
   if (node.maxLength) schema = schema.max(node.maxLength);
   if (node.pattern) schema = schema.matches(new RegExp(node.pattern));
+  if (node.format) schema = getFormatSchema(schema, node);
   return schema;
 }
 
@@ -95,6 +116,15 @@ function getObjectSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchem
   return schema;
 }
 
+function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+  if (typeof node !== 'object') return mixed();
+  let schema = array().strict();
+  if (node.items) schema = schema.of(getYupSchema(node.items as JSONSchema, config));
+  if (node.minItems) schema = schema.min(node.minItems);
+  if (node.maxItems) schema = schema.max(node.maxItems);
+  return schema;
+}
+
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   if (typeof node !== 'object' || !node) return mixed();
 
@@ -107,7 +137,7 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
     case 'boolean':
       return boolean().strict();
     case 'array':
-      return array().strict();
+      return getArraySchema(node, config);
     case 'object':
       return getObjectSchema(node, config);
     case 'null':
@@ -148,7 +178,7 @@ export const yupValidatorPlugin: JSONSchemaFormPlugin = {
     const yupSchema = lazy(() => getYupSchema(schema, { values }));
 
     try {
-      yupSchema.validateSync(values);
+      yupSchema.validateSync(values, { abortEarly: false });
     } catch (e: unknown) {
       if (e instanceof ValidationError) {
         errors = e;
