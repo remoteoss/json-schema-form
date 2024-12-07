@@ -227,14 +227,14 @@ export function getPrefillValues(fields, initialValues = {}) {
 function updateField(field = {}, fieldAttrs) {
   const updateAttributes = (fieldAttrs) => {
     Object.entries(fieldAttrs).forEach(([key, value]) => {
-      if (key === 'nestedFields') {
-        Object.entries(value ?? {}).forEach(([nestedFieldName, nestedFieldProperties]) => {
-          const nestedField = getField(nestedFieldName, field.fields);
-          if (nestedField) {
-            updateField(nestedField, nestedFieldProperties);
-          }
-        });
-      }
+      // if (key === 'fields') {
+      //   Object.entries(value ?? {}).forEach(([nestedFieldName, nestedFieldProperties]) => {
+      //     const nestedField = getField(nestedFieldName, field.fields);
+      //     if (nestedField) {
+      //       updateField(nestedField, nestedFieldProperties);
+      //     }
+      //   });
+      // }
 
       field[key] = value;
 
@@ -388,7 +388,7 @@ export function processNode({
 }) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
-  let propertyAttributes = {};
+  let propertyAttributes = new Map();
 
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
@@ -396,7 +396,11 @@ export function processNode({
     const newProperties = updateFieldFake(field, requiredFields, node, formValues, logic, {
       parentID,
     });
-    propertyAttributes[field.name] = merge(propertyAttributes[field.name], newProperties);
+    console.log(field);
+    propertyAttributes.set(
+      `${parentID}.${field.name}`,
+      merge(propertyAttributes.get(`${parentID}.${field.name}`), newProperties)
+    );
   });
 
   // Update required fields based on the `required` property and mutate node if needed
@@ -412,7 +416,10 @@ export function processNode({
         parentID,
       }
     );
-    propertyAttributes[fieldName] = merge(propertyAttributes[fieldName], newProperties);
+    propertyAttributes.set(
+      `${parentID}.${fieldName}`,
+      merge(propertyAttributes.get(`${parentID}.${fieldName}`), newProperties)
+    );
   });
 
   if (node.if !== undefined) {
@@ -429,7 +436,9 @@ export function processNode({
           parentID,
           logic,
         });
-      propertyAttributes = merge(propertyAttributes, branchPropertyAttributes);
+      branchPropertyAttributes.forEach((newProperties, fieldName) => {
+        propertyAttributes.set(fieldName, merge(propertyAttributes.get(fieldName), newProperties));
+      });
       branchRequired.forEach((field) => requiredFields.add(field));
     } else if (node.else) {
       const { required: branchRequired, propertyAttributes: branchPropertyAttributes } =
@@ -441,7 +450,9 @@ export function processNode({
           parentID,
           logic,
         });
-      propertyAttributes = merge(propertyAttributes, branchPropertyAttributes);
+      branchPropertyAttributes.forEach((newProperties, fieldName) => {
+        propertyAttributes.set(fieldName, merge(propertyAttributes.get(fieldName), newProperties));
+      });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
   }
@@ -458,7 +469,7 @@ export function processNode({
         const newProperties = updateFieldFake(field, requiredFields, node, formValues, logic, {
           parentID,
         });
-        propertyAttributes[field.name] = merge(propertyAttributes[field.name], newProperties);
+        propertyAttributes.set(fieldName, merge(propertyAttributes.get(fieldName), newProperties));
       });
     });
   }
@@ -478,7 +489,12 @@ export function processNode({
       .forEach(
         ({ required: allOfItemRequired, propertyAttributes: allOfItemPropertyAttributes }) => {
           allOfItemRequired.forEach(requiredFields.add, requiredFields);
-          propertyAttributes = merge(propertyAttributes, allOfItemPropertyAttributes);
+          allOfItemPropertyAttributes.forEach((newProperties, fieldName) => {
+            propertyAttributes.set(
+              fieldName,
+              merge(propertyAttributes.get(fieldName), newProperties)
+            );
+          });
         }
       );
   }
@@ -495,10 +511,12 @@ export function processNode({
           parentID: name,
           logic,
         });
-        propertyAttributes[name].nestedFields = merge(
-          propertyAttributes[name],
-          nestedPropertyAttributes
-        );
+        nestedPropertyAttributes.forEach((newProperties, fieldName) => {
+          propertyAttributes.set(
+            `${parentID}.${fieldName}`,
+            merge(propertyAttributes.get(`${parentID}.${fieldName}`), newProperties)
+          );
+        });
       }
     });
   }
@@ -514,7 +532,12 @@ export function processNode({
         logic,
       });
     requiredFromLogic.forEach((field) => requiredFields.add(field));
-    propertyAttributes = merge(propertyAttributes, logicPropertyAttributes);
+    logicPropertyAttributes.forEach((newProperties, fieldName) => {
+      propertyAttributes.set(
+        `${parentID}.${fieldName}`,
+        merge(propertyAttributes.get(`${parentID}.${fieldName}`), newProperties)
+      );
+    });
   }
 
   return {
@@ -558,10 +581,15 @@ export function updateFieldsProperties(fields, formValues, jsonSchema, logic) {
     formFields: fields,
     logic,
   });
-  Object.entries(propertyAttributes).forEach(([fieldName, fieldProperties]) => {
-    let field = getField(fieldName, fields);
-    updateField(field, fieldProperties);
+  propertyAttributes.forEach((newProperties, path) => {
+    const [_root, fieldName, ...fieldsPath] = path.split('.');
+    const field = getField(fieldName, fields);
+    updateField(field, newProperties);
+    if (fieldsPath.length > 0) {
+      updateFieldsProperties(field.fields, formValues[fieldName], jsonSchema, logic);
+    }
   });
+
   clearValuesIfNotVisible(fields, formValues);
 }
 

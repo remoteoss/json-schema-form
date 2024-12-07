@@ -1976,33 +1976,33 @@ describe('createHeadlessForm', () => {
           expect(foodField.options).toHaveLength(3);
           // Ensure the "no" option is no longer accepted:
           // This is a very important test in case the UI fails for some reason.
-          // expect(
-          //   validateForm({
-          //     work_hours_per_week: 35,
-          //     pto: 20,
-          //     perks: perksForLowWorkHours,
-          //   })
-          // ).toEqual({
-          //   perks: {
-          //     food: 'The option "no" is not valid.',
-          //   },
-          // });
-          // // perks.food has a new description
-          // expect(foodField.description).toBe("Above 30 hours, the 'no' option disappears.");
-          // // pto has a new description
-          // expect(getField(fields, 'pto').description).toBe(
-          //   'Above 30 hours, the PTO needs to be at least 20 days.'
-          // );
-          // // Sanity-check: Now the PTO also has a minimum value
-          // expect(
-          //   validateForm({
-          //     work_hours_per_week: 35,
-          //     pto: 5, // too low
-          //     perks: { food: 'lunch', retirement: 'basic' },
-          //   })
-          // ).toEqual({
-          //   pto: 'Must be greater or equal to 20',
-          // });
+          expect(
+            validateForm({
+              work_hours_per_week: 35,
+              pto: 20,
+              perks: perksForLowWorkHours,
+            })
+          ).toEqual({
+            perks: {
+              food: 'The option "no" is not valid.',
+            },
+          });
+          // perks.food has a new description
+          expect(foodField.description).toBe("Above 30 hours, the 'no' option disappears.");
+          // pto has a new description
+          expect(getField(fields, 'pto').description).toBe(
+            'Above 30 hours, the PTO needs to be at least 20 days.'
+          );
+          // Sanity-check: Now the PTO also has a minimum value
+          expect(
+            validateForm({
+              work_hours_per_week: 35,
+              pto: 5, // too low
+              perks: { food: 'lunch', retirement: 'basic' },
+            })
+          ).toEqual({
+            pto: 'Must be greater or equal to 20',
+          });
         });
 
         it('When changing back to low work hours, the perks.food goes back to the original state', () => {
