@@ -153,24 +153,24 @@ export const booleanTestCases = [
 ];
 
 export const nullTestCases = [
-  // {
-  //   title: 'Null',
-  //   schema: { type: 'null' } as const,
-  //   values: null,
-  //   formErrors: undefined,
-  // },
+  {
+    title: 'Null',
+    schema: { type: 'null' } as const,
+    values: null,
+    formErrors: undefined,
+  },
   {
     title: 'As const',
     schema: { const: null } as const,
     values: null,
     formErrors: undefined,
   },
-  // {
-  //   title: 'As const error',
-  //   schema: { const: null } as const,
-  //   values: 1,
-  //   formErrors: { '': 'Value must be null' },
-  // },
+  {
+    title: 'As const error',
+    schema: { const: null } as const,
+    values: 1,
+    formErrors: { '': 'Value must be null' },
+  },
 ];
 
 export const multiTypeTestCases = [
@@ -184,6 +184,12 @@ export const multiTypeTestCases = [
     title: 'String or number error',
     schema: { type: ['string', 'number'] } as const,
     values: true,
-    formErrors: { '': 'this must be a `string` type, but the final value was: `true`.' },
+    formErrors: { '': 'Expected string or number, but got boolean.' },
+  },
+  {
+    title: 'string or number but use number',
+    schema: { type: ['string', 'number'], minimum: 5 } as const,
+    values: 1,
+    formErrors: { '': 'this must be greater than or equal to 5' },
   },
 ];
