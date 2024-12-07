@@ -26,6 +26,7 @@ import {
 import { pickXKey } from './internals/helpers';
 import { calculateComputedAttributes, createValidationChecker } from './jsonLogic';
 import { buildYupSchema } from './yupSchema';
+import { createHeadlessForm as createHeadlessFormV2 } from './v2/create-headless-form';
 
 // Some type definitions (to be migrated into .d.ts file or TS Interfaces)
 /**
@@ -337,8 +338,13 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
 export function createHeadlessForm(jsonSchema, customConfig = {}) {
   const config = {
     strictInputType: true,
+    use_v2: true,
     ...customConfig,
   };
+
+  if (config.use_v2) {
+    return createHeadlessFormV2(jsonSchema, customConfig);
+  }
 
   try {
     const logic = createValidationChecker(jsonSchema);
@@ -367,3 +373,4 @@ export function createHeadlessForm(jsonSchema, customConfig = {}) {
     };
   }
 }
+
