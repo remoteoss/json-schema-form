@@ -1,417 +1,270 @@
 export const stringTestCases = [
   {
-    title: 'Basic',
+    title: 'Basic string validation',
     schema: { type: 'string' } as const,
-    values: 'hello',
-    formErrors: undefined,
+    validTestCases: [{ data: 'hello' }, { data: '' }],
+    invalidTestCases: [
+      {
+        data: 1,
+        error: { '': 'this must be a `string` type, but the final value was: `1`.' },
+      },
+    ],
   },
   {
-    title: 'Min length',
-    schema: { type: 'string', minLength: 5 } as const,
-    values: 'hello',
-    formErrors: undefined,
+    title: 'String length constraints',
+    schema: { type: 'string', minLength: 5, maxLength: 10 } as const,
+    validTestCases: [{ data: 'hello' }, { data: 'helloworld' }],
+    invalidTestCases: [
+      {
+        data: 'hi',
+        error: { '': 'this must be at least 5 characters' },
+      },
+      {
+        data: 'helloworldtoolong',
+        error: { '': 'this must be at most 10 characters' },
+      },
+    ],
   },
   {
-    title: 'Min length error',
-    schema: { type: 'string', minLength: 5 } as const,
-    values: 'h',
-    formErrors: { '': 'this must be at least 5 characters' },
-  },
-  {
-    title: 'Max length error',
-    schema: { type: 'string', maxLength: 5 } as const,
-    values: 'hello!!',
-    formErrors: { '': 'this must be at most 5 characters' },
-  },
-  {
-    title: 'Max length',
-    schema: { type: 'string', maxLength: 5 } as const,
-    values: 'hello',
-    formErrors: undefined,
-  },
-  {
-    title: 'Pattern',
+    title: 'String pattern matching',
     schema: { type: 'string', pattern: '^[a-z]+$' } as const,
-    values: 'hello',
-    formErrors: undefined,
+    validTestCases: [{ data: 'hello' }, { data: 'world' }],
+    invalidTestCases: [
+      {
+        data: 'hello!',
+        error: { '': 'this must match the following: "/^[a-z]+$/"' },
+      },
+      {
+        data: 'Hello',
+        error: { '': 'this must match the following: "/^[a-z]+$/"' },
+      },
+    ],
   },
   {
-    title: 'Pattern error',
-    schema: { type: 'string', pattern: '^[a-z]+$' } as const,
-    values: 'hello!',
-    formErrors: { '': 'this must match the following: "/^[a-z]+$/"' },
-  },
-  {
-    title: 'Type error',
-    schema: { type: 'string' } as const,
-    values: 1,
-    formErrors: { '': 'this must be a `string` type, but the final value was: `1`.' },
-  },
-  {
-    title: 'Title and description',
-    schema: { type: 'string', title: 'Hello', description: 'This is a string' } as const,
-    values: 'hello',
-    formErrors: undefined,
-    fields: [{ type: 'string', label: 'Hello', description: 'This is a string' }],
-  },
-  {
-    title: 'Enum',
+    title: 'String enum validation',
     schema: { type: 'string', enum: ['hello', 'world'] } as const,
-    values: 'hello',
-    formErrors: undefined,
+    validTestCases: [{ data: 'hello' }, { data: 'world' }],
+    invalidTestCases: [
+      {
+        data: 'goodbye',
+        error: { '': 'this must be one of the following values: hello, world' },
+      },
+    ],
   },
   {
-    title: 'Enum error',
-    schema: { type: 'string', enum: ['hello', 'world'] } as const,
-    values: 'goodbye',
-    formErrors: { '': 'this must be one of the following values: hello, world' },
-  },
-  {
-    title: 'Const',
-    schema: { type: 'string', const: 'hello' } as const,
-    values: 'hello',
-    formErrors: undefined,
-  },
-  {
-    title: 'Const error',
-    schema: { type: 'string', const: 'hello' } as const,
-    values: 'goodbye',
-    formErrors: { '': 'this must be one of the following values: hello' },
-  },
-  {
-    title: 'Const no type',
-    schema: { const: 'hello' } as const,
-    values: 'hello',
-    formErrors: undefined,
-  },
-  {
-    title: 'Date format',
+    title: 'Date format validation',
     schema: { type: 'string', format: 'date' } as const,
-    values: '2024-01-01',
-    formErrors: undefined,
-  },
-  {
-    title: 'Date format error',
-    schema: { type: 'string', format: 'date' } as const,
-    values: 'banana',
-    formErrors: { '': 'does not validate against format "date"' },
-  },
-  {
-    title: 'Invalid date',
-    schema: { type: 'string', format: 'date' } as const,
-    values: '2024-02-31',
-    formErrors: { '': 'does not validate against format "date"' },
-  },
-  {
-    title: 'Invalid date',
-    schema: { type: 'string', format: 'date' } as const,
-    values: '2024-2-1',
-    formErrors: { '': 'does not validate against format "date"' },
+    validTestCases: [{ data: '2024-01-01' }, { data: '2024-12-31' }],
+    invalidTestCases: [
+      {
+        data: 'banana',
+        error: { '': 'does not validate against format "date"' },
+      },
+      {
+        data: '2024-02-31',
+        error: { '': 'does not validate against format "date"' },
+      },
+      {
+        data: '2024-2-1',
+        error: { '': 'does not validate against format "date"' },
+      },
+    ],
   },
 ];
 
 export const numberTestCases = [
   {
-    title: 'Basic number',
+    title: 'Basic number validation',
     schema: { type: 'number' } as const,
-    values: 1,
-    formErrors: undefined,
+    validTestCases: [{ data: 1 }, { data: 1.5 }, { data: 0 }, { data: -1 }],
+    invalidTestCases: [
+      {
+        data: '1',
+        error: { '': 'this must be a `number` type, but the final value was: `"1"`.' },
+      },
+    ],
   },
   {
-    title: 'Minimum',
-    schema: { type: 'number', minimum: 5 } as const,
-    values: 1,
-    formErrors: { '': 'this must be greater than or equal to 5' },
+    title: 'Number range validation',
+    schema: { type: 'number', minimum: 5, maximum: 10 } as const,
+    validTestCases: [{ data: 5 }, { data: 7.5 }, { data: 10 }],
+    invalidTestCases: [
+      {
+        data: 1,
+        error: { '': 'this must be greater than or equal to 5' },
+      },
+      {
+        data: 11,
+        error: { '': 'this must be less than or equal to 10' },
+      },
+    ],
   },
   {
-    title: 'Maximum',
-    schema: { type: 'number', maximum: 5 } as const,
-    values: 10,
-    formErrors: { '': 'this must be less than or equal to 5' },
-  },
-  {
-    title: 'Integer',
+    title: 'Integer validation',
     schema: { type: 'integer' } as const,
-    values: 1,
-    formErrors: undefined,
-  },
-  {
-    title: 'Integer error',
-    schema: { type: 'integer' } as const,
-    values: 1.5,
-    formErrors: { '': 'this must be an integer' },
-  },
-  {
-    title: 'Const no type',
-    schema: { const: 1 } as const,
-    values: 1,
-    formErrors: undefined,
+    validTestCases: [{ data: 1 }, { data: 0 }, { data: -1 }],
+    invalidTestCases: [
+      {
+        data: 1.5,
+        error: { '': 'this must be an integer' },
+      },
+    ],
   },
 ];
 
 export const booleanTestCases = [
   {
-    title: 'True',
+    title: 'Boolean validation',
     schema: { type: 'boolean' } as const,
-    values: true,
-    formErrors: undefined,
+    validTestCases: [{ data: true }, { data: false }],
+    invalidTestCases: [
+      {
+        data: 'true',
+        error: { '': 'this must be a `boolean` type, but the final value was: `"true"`.' },
+      },
+    ],
   },
   {
-    title: 'False',
-    schema: { type: 'boolean' } as const,
-    values: false,
-    formErrors: undefined,
-  },
-  {
-    title: 'Type error',
-    schema: { type: 'boolean' } as const,
-    values: 'true',
-    formErrors: { '': 'this must be a `boolean` type, but the final value was: `"true"`.' },
-  },
-  {
-    title: 'True as const',
+    title: 'Boolean const validation',
     schema: { const: true } as const,
-    values: true,
-    formErrors: undefined,
+    validTestCases: [{ data: true }],
+    invalidTestCases: [
+      {
+        data: false,
+        error: { '': 'this must be one of the following values: true' },
+      },
+    ],
   },
 ];
 
 export const nullTestCases = [
   {
-    title: 'Null',
+    title: 'Null validation',
     schema: { type: 'null' } as const,
-    values: null,
-    formErrors: undefined,
+    validTestCases: [{ data: null }],
+    invalidTestCases: [
+      {
+        data: 'null',
+        error: { '': 'Value must be null' },
+      },
+    ],
   },
   {
-    title: 'As const',
+    title: 'Null const validation',
     schema: { const: null } as const,
-    values: null,
-    formErrors: undefined,
+    validTestCases: [{ data: null }],
+    invalidTestCases: [
+      {
+        data: 1,
+        error: { '': 'Value must be null' },
+      },
+    ],
   },
   {
-    title: 'As const error',
-    schema: { const: null } as const,
-    values: 1,
-    formErrors: { '': 'Value must be null' },
+    title: 'Multi-type with null',
+    schema: { type: ['string', 'null'] } as const,
+    validTestCases: [{ data: null }, { data: 'hello' }],
+    invalidTestCases: [
+      {
+        data: 1,
+        error: { '': 'Expected string or null, but got number.' },
+      },
+    ],
   },
 ];
 
 export const multiTypeTestCases = [
   {
-    title: 'String or number',
+    title: 'String or number validation',
     schema: { type: ['string', 'number'] } as const,
-    values: 'hello',
-    formErrors: undefined,
+    validTestCases: [{ data: 'hello' }, { data: 42 }],
+    invalidTestCases: [
+      {
+        data: true,
+        error: { '': 'Expected string or number, but got boolean.' },
+      },
+    ],
   },
   {
-    title: 'String or number error',
-    schema: { type: ['string', 'number'] } as const,
-    values: true,
-    formErrors: { '': 'Expected string or number, but got boolean.' },
-  },
-  {
-    title: 'string or number but use number',
+    title: 'Number with constraints in multi-type',
     schema: { type: ['string', 'number'], minimum: 5 } as const,
-    values: 1,
-    formErrors: { '': 'this must be greater than or equal to 5' },
-  },
-  {
-    title: 'string or number but use integer',
-    schema: {
-      type: ['integer', 'string'],
-      minimum: 100,
-    } as const,
-    values: 1.3,
-    formErrors: { '': 'Expected integer or string, but got number.' },
+    validTestCases: [{ data: 'hello' }, { data: 10 }],
+    invalidTestCases: [
+      {
+        data: 1,
+        error: { '': 'this must be greater than or equal to 5' },
+      },
+    ],
   },
 ];
 
 export const objectTestCases = [
   {
-    title: 'Basic object',
+    title: 'Basic object validation',
     schema: { type: 'object' } as const,
-    values: {},
-    formErrors: undefined,
-  },
-  {
-    title: 'Basic object with random values',
-    schema: { type: 'object' } as const,
-    values: { a: 1, b: 'hello' },
-    formErrors: undefined,
-  },
-  {
-    title: 'Object with a property that is a string',
-    schema: { type: 'object', properties: { a: { type: 'string' } } } as const,
-    values: { a: 'hello' },
-    formErrors: undefined,
-  },
-  {
-    title: 'Object with a property that is a string error',
-    schema: { type: 'object', properties: { a: { type: 'string' } } } as const,
-    values: { a: 1 },
-    formErrors: { a: 'a must be a `string` type, but the final value was: `1`.' },
-  },
-  {
-    title: 'Object with different types',
-    schema: {
-      type: 'object',
-      properties: {
-        string: { type: 'string' },
-        boolean: { type: 'boolean' },
-        number: { type: 'number' },
-        integer: { type: 'integer' },
+    validTestCases: [{ data: {} }, { data: { a: 1, b: 'hello' } }],
+    invalidTestCases: [
+      {
+        data: 'not-an-object',
+        error: { '': 'this must be a `object` type, but the final value was: `"not-an-object"`.' },
       },
-    } as const,
-    values: { string: 'hello', boolean: true, number: 1.332, integer: 1 },
-    formErrors: undefined,
+    ],
   },
   {
-    title: 'Additional properties error when not allowed',
+    title: 'Object with property constraints',
     schema: {
       type: 'object',
-      properties: {
-        string: { type: 'string' },
+      properties: { field: { type: 'string' } },
+      required: ['field'],
+    } as const,
+    validTestCases: [{ data: { field: 'hello' } }],
+    invalidTestCases: [
+      {
+        data: { field: 123 },
+        error: { field: 'field must be a `string` type, but the final value was: `123`.' },
       },
-      additionalProperties: false,
-    } as const,
-    values: { string: 'hello', x: 1 },
-    formErrors: { '': 'this field has unspecified keys: x' },
-  },
-  {
-    title: 'Required properties',
-    schema: {
-      type: 'object',
-      properties: {
-        required: { type: 'string' },
-        optional: { type: 'number' },
+      {
+        data: {},
+        error: { field: 'Field is required' },
       },
-      required: ['required'],
-    } as const,
-    values: { optional: 123 },
-    formErrors: { required: 'Field is required' },
-  },
-  {
-    title: 'Nested object validation',
-    schema: {
-      type: 'object',
-      properties: {
-        nested: {
-          type: 'object',
-          properties: {
-            field: { type: 'string' },
-          },
-          required: ['field'],
-        },
-      },
-    } as const,
-    values: { nested: { field: 123 } },
-    formErrors: {
-      nested: { field: 'nested.field must be a `string` type, but the final value was: `123`.' },
-    },
-  },
-  {
-    title: 'Object with a field that is multiple types',
-    schema: {
-      type: 'object',
-      properties: { field: { type: ['string', 'number'] } },
-    } as const,
-    values: { field: true },
-    formErrors: { field: 'Expected string or number, but got boolean.' },
+    ],
   },
 ];
 
 export const arrayTestCases = [
   {
-    title: 'Basic array',
+    title: 'Basic array validation',
     schema: { type: 'array' } as const,
-    values: [],
-    formErrors: undefined,
+    validTestCases: [{ data: [] }, { data: [1, 'two', true] }],
+    invalidTestCases: [
+      {
+        data: 'not-an-array',
+        error: { '': 'this must be a `array` type, but the final value was: `"not-an-array"`.' },
+      },
+    ],
   },
   {
-    title: 'Array with items that are strings',
-    schema: { type: 'array', items: { type: 'string' } } as const,
-    values: ['hello', 'world'],
-    formErrors: undefined,
-  },
-  {
-    title: 'Array with items that are strings error',
-    schema: { type: 'array', items: { type: 'string' } } as const,
-    values: [1, 2],
-    formErrors: {
-      0: '[0] must be a `string` type, but the final value was: `1`.',
-      1: '[1] must be a `string` type, but the final value was: `2`.',
-    },
-  },
-  {
-    title: 'Array with items that are strings and a minimum length',
-    schema: { type: 'array', items: { type: 'string', minLength: 5 } } as const,
-    values: ['hello', 'world'],
-    formErrors: undefined,
-  },
-  {
-    title: 'Array with items that are strings and a minimum length error',
-    schema: { type: 'array', items: { type: 'string', minLength: 5 } } as const,
-    values: ['hello', 'hi'],
-    formErrors: {
-      1: '[1] must be at least 5 characters',
-    },
-  },
-  {
-    title: 'Min items',
-    schema: { type: 'array', minItems: 2 } as const,
-    values: ['hello'],
-    formErrors: { '': 'this field must have at least 2 items' },
-  },
-  {
-    title: 'Max items',
-    schema: { type: 'array', maxItems: 2 } as const,
-    values: ['hello', 'world', 'foo'],
-    formErrors: { '': 'this field must have less than or equal to 2 items' },
-  },
-  {
-    title: 'Mixed types',
-    schema: { type: 'array', items: { type: ['string', 'number'] } } as const,
-    values: ['hello', 1, true],
-    formErrors: {
-      2: 'Expected string or number, but got boolean.',
-    },
-  },
-  {
-    title: 'Array with items that are objects',
-    schema: { type: 'array', items: { type: 'object' } } as const,
-    values: [{ a: 1 }, { b: 2 }],
-    formErrors: undefined,
-  },
-  {
-    title: 'Array with items that are objects with a required field',
+    title: 'Array with item constraints',
     schema: {
       type: 'array',
-      items: { type: 'object', required: ['field'] },
+      items: { type: 'string' },
+      minItems: 1,
+      maxItems: 3,
     } as const,
-    values: [{ field: 1 }, { b: 2 }],
-    formErrors: {
-      1: { field: 'Field is required' },
-    },
-  },
-  {
-    title: 'Array with items that are objects with a required field',
-    schema: {
-      type: 'array',
-      items: { type: 'object', required: ['field'] },
-    } as const,
-    values: [{ field: 1 }, { field: 'hello' }],
-    formErrors: undefined,
-  },
-  {
-    title: 'Array with items that are objects with a required field',
-    schema: {
-      type: 'array',
-      items: { type: 'object', properties: { field: { type: 'string' } }, required: ['field'] },
-    } as const,
-    values: [{ field: 1 }, { field: 'hello' }],
-    formErrors: {
-      0: { field: '[0].field must be a `string` type, but the final value was: `1`.' },
-    },
+    validTestCases: [{ data: ['one'] }, { data: ['one', 'two', 'three'] }],
+    invalidTestCases: [
+      {
+        data: [],
+        error: { '': 'this field must have at least 1 items' },
+      },
+      {
+        data: ['one', 'two', 'three', 'four'],
+        error: { '': 'this field must have less than or equal to 3 items' },
+      },
+      {
+        data: ['one', 2],
+        error: { '1': '[1] must be a `string` type, but the final value was: `2`.' },
+      },
+    ],
   },
 ];

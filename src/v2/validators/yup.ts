@@ -1,8 +1,8 @@
 import { yupToFormErrors } from '../../helpers';
 import { JSONSchema, JSONSchemaFormPlugin, ProcessSchemaConfig } from '../types';
 import { string, number, boolean, array, object, lazy, ValidationError, Schema, mixed } from 'yup';
-import flow from 'lodash/flow';
 import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
+import flow from 'lodash/flow';
 
 function validateDate(schema: Schema) {
   return schema.test({
@@ -82,7 +82,6 @@ function getMultiTypeSchema(
 
       const allowedTypes = node.type as string[];
       const receivedType = typeof value;
-
       const error = errors.at(-1);
       if (error && error.type === 'typeError') {
         return context.createError({
@@ -146,23 +145,22 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
       return getArraySchema(node, config);
     case 'object':
       return getObjectSchema(node, config);
-    case 'null':
-      return mixed().nullable();
     default:
       return mixed();
   }
 }
 
 function getNullValueSchema(schema: Schema) {
-  return schema.nullable().test('is-null', 'Value must be null', (value: unknown) => {
+  return schema.nullable().test('typeError', 'Value must be null', (value: unknown) => {
     return value === null;
   });
 }
 
 function getNullableSchema(schema: Schema, node: JSONSchema) {
   if (typeof node !== 'object' || !node) return schema;
+  if (Array.isArray(node.type) && node.type.includes('null')) return schema.nullable();
   if (node.const === null) return getNullValueSchema(schema);
-  if (node.type === 'null') return schema.nullable();
+  if (node.type === 'null') return getNullValueSchema(schema);
   return schema;
 }
 
