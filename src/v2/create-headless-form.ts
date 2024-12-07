@@ -1,14 +1,16 @@
-import { FromSchema, JSONSchema } from 'json-schema-to-ts';
+import { createFieldState } from './field-state';
+import { JSONSchema, JSONSchemaFormConfiguration, SchemaInstanceType } from './types';
 
-export type JSONSchemaFormConfiguration = {};
-
-export function createHeadlessForm<T>(jsonSchema: T, config: JSONSchemaFormConfiguration = {}) {
-  type jsonSchemaType = FromSchema<T extends JSONSchema ? T : never>;
-
+export function createHeadlessForm<T extends JSONSchema>(
+  jsonSchema: T,
+  config: JSONSchemaFormConfiguration = { initialValues: {} }
+) {
+  type SchemaInstance = SchemaInstanceType<typeof jsonSchema>;
+  const { fields } = createFieldState(jsonSchema, config);
 
   return {
-    fields: [],
-    handleValidation: (values: jsonSchemaType) => {
+    fields,
+    handleValidation: (values: SchemaInstance) => {
       return {
         formErrors: undefined,
       };
