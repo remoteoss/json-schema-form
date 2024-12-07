@@ -2,7 +2,7 @@ import { createHeadlessForm } from '../create-headless-form';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
-    const form = createHeadlessForm({}, {});
+    const form = createHeadlessForm({});
     expect(form).toMatchObject({
       fields: expect.any(Array),
       handleValidation: expect.any(Function),
