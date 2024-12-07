@@ -1,4 +1,4 @@
-import { JSONSchema, SchemaInstanceType } from './types';
+import { JSONSchema, ProcessSchemaConfig } from './types';
 
 function processNode(node: JSONSchema) {
   if (typeof node !== 'object' || node === null) {
@@ -14,20 +14,16 @@ function processNode(node: JSONSchema) {
   ];
 }
 
-type ProcessSchemaConfig<T extends JSONSchema> = {
-  values: unknown;
-};
-
 export function traverseSchema<T extends JSONSchema>(
   schema: T,
   config: ProcessSchemaConfig<T>,
-  processFn: (node: JSONSchema) => unknown
+  processFn: Function
 ) {
   switch (typeof schema === 'object' ? schema.type : undefined) {
     case 'object':
       return [];
     default:
-      return processFn(schema);
+      return processFn(schema, config);
   }
 }
 
