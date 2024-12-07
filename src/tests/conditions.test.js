@@ -479,3 +479,71 @@ describe('Conditional with a minimum value check', () => {
     expect(handleValidation({ salary: 1000, reason: 'reason_one' }).formErrors).toEqual(undefined);
   });
 });
+
+describe('Multiple conditions affected one property', () => {
+  it('Two conditions correctly add validations to the same property', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          x: {
+            type: 'number',
+          },
+        },
+        allOf: [
+          {
+            if: true,
+            then: {
+              properties: {
+                x: { minimum: 10 },
+              },
+            },
+          },
+          {
+            if: true,
+            then: {
+              properties: {
+                x: { maximum: 20 },
+              },
+            },
+          },
+        ],
+        required: ['x'],
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({ x: 21 }).formErrors).toEqual({
+      x: 'Must be smaller or equal to 20',
+    });
+    // expect(handleValidation({ x: 9 }).formErrors).toEqual({
+    //   x: 'Must be greater or equal to 10',
+    // });
+  });
+});
+
+describe('Conditions that create unsatisifable schemas work correctly', () => {});
+
+describe('Competing conditions', () => {
+  it.skip('Should work', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          x: { type: 'number' },
+        },
+        allOf: [
+          {
+            if: true,
+            then: { properties: { x: { minimum: 20 } } },
+          },
+          {
+            if: true,
+            then: { properties: { x: { minimum: 10 } } },
+          },
+        ],
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({ x: 15 }).formErrors).toEqual({
+      x: 'Must be greater or equal to 20',
+    });
+  });
+});

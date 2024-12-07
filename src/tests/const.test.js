@@ -234,3 +234,47 @@ describe('OneOf const', () => {
     expect(handleValidation({ number: null }).formErrors).toEqual(undefined);
   });
 });
+
+describe('Unsatisfiable const', () => {
+  it('correctly cannot be satisfied because the schema is impossible to satisfy when the condition is true', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        properties: {
+          x: {
+            type: 'number',
+            const: 123,
+          },
+          y: {
+            type: 'string',
+            const: 'yes',
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { y: { const: 'yes' } },
+              required: ['y'],
+            },
+            then: {
+              properties: {
+                x: { const: 1234 },
+              },
+            },
+          },
+        ],
+        required: ['x'],
+      },
+      { strictInputType: false }
+    );
+    expect(handleValidation({ x: 123 }).formErrors).toEqual(undefined);
+    expect(handleValidation({ x: 1234 }).formErrors).toEqual({
+      x: 'The only accepted value is 123.',
+    });
+    expect(handleValidation({ x: 123, y: 'yes' }).formErrors).toEqual({
+      x: 'The only accepted value is 1234.',
+    });
+    expect(handleValidation({ x: 1234, y: 'yes' }).formErrors).toEqual({
+      x: 'The only accepted value is 123.',
+    });
+  });
+});
