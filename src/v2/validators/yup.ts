@@ -132,6 +132,8 @@ function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema
 
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   if (typeof node !== 'object' || !node) return mixed();
+  if (!node.type && !node.properties && node.required) return getObjectSchema(node, config);
+  if (!node.type && node.properties) return getObjectSchema(node, config);
 
   switch (node.type) {
     case 'string':
@@ -164,12 +166,39 @@ function getNullableSchema(schema: Schema, node: JSONSchema) {
   return schema;
 }
 
+function processConditionalSchema(
+  schema: Schema,
+  node: JSONSchema,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (typeof node !== 'object' || !node.if || !node.then) return schema;
+  const ifSchema = getYupSchema(node.if, config);
+  const thenSchema = getYupSchema(node.then, config);
+
+  return schema.when('.', {
+    is() {
+      try {
+        ifSchema.validateSync(config.values);
+        return true;
+      } catch {
+        return false;
+      }
+    },
+    then(schema) {
+      // console.log('here?');
+      return schema.concat(thenSchema);
+    },
+    otherwise: (schema) => schema,
+  });
+}
+
 function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   const baseSchema = getBaseSchema(node, config);
   return flow([
     (schema) => getNullableSchema(schema, node),
     (schema) => getSpecificValueSchema(schema, node),
     (schema) => getMultiTypeSchema(schema, node, config),
+    (schema) => processConditionalSchema(schema, node, config),
   ])(baseSchema);
 }
 
