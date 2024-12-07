@@ -192,4 +192,98 @@ export const multiTypeTestCases = [
     values: 1,
     formErrors: { '': 'this must be greater than or equal to 5' },
   },
+  {
+    title: 'string or number but use integer',
+    schema: {
+      type: ['integer', 'string'],
+      minimum: 100,
+    } as const,
+    values: 1.3,
+    formErrors: { '': 'Expected integer or string, but got number.' },
+  },
+];
+
+export const objectTestCases = [
+  {
+    title: 'Basic object',
+    schema: { type: 'object' } as const,
+    values: {},
+    formErrors: undefined,
+  },
+  {
+    title: 'Basic object with random values',
+    schema: { type: 'object' } as const,
+    values: { a: 1, b: 'hello' },
+    formErrors: undefined,
+  },
+  {
+    title: 'Object with a property that is a string',
+    schema: { type: 'object', properties: { a: { type: 'string' } } } as const,
+    values: { a: 'hello' },
+    formErrors: undefined,
+  },
+  {
+    title: 'Object with a property that is a string error',
+    schema: { type: 'object', properties: { a: { type: 'string' } } } as const,
+    values: { a: 1 },
+    formErrors: { a: 'a must be a `string` type, but the final value was: `1`.' },
+  },
+  {
+    title: 'Object with different types',
+    schema: {
+      type: 'object',
+      properties: {
+        string: { type: 'string' },
+        boolean: { type: 'boolean' },
+        number: { type: 'number' },
+        integer: { type: 'integer' },
+      },
+    } as const,
+    values: { string: 'hello', boolean: true, number: 1.332, integer: 1 },
+    formErrors: undefined,
+  },
+  {
+    title: 'Additional properties error when not allowed',
+    schema: {
+      type: 'object',
+      properties: {
+        string: { type: 'string' },
+      },
+      additionalProperties: false,
+    } as const,
+    values: { string: 'hello', x: 1 },
+    formErrors: { '': 'this field has unspecified keys: x' },
+  },
+  {
+    title: 'Required properties',
+    schema: {
+      type: 'object',
+      properties: {
+        required: { type: 'string' },
+        optional: { type: 'number' },
+      },
+      required: ['required'],
+    } as const,
+    values: { optional: 123 },
+    formErrors: { required: 'Field is required' },
+  },
+  {
+    title: 'Nested object validation',
+    schema: {
+      type: 'object',
+      properties: {
+        nested: {
+          type: 'object',
+          properties: {
+            field: { type: 'string' },
+          },
+          required: ['field'],
+        },
+      },
+    } as const,
+    values: { nested: { field: 123 } },
+    formErrors: {
+      nested: { field: 'nested.field must be a `string` type, but the final value was: `123`.' },
+    },
+  },
 ];

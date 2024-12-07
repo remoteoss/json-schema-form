@@ -1,5 +1,4 @@
 import { yupToFormErrors } from '../../helpers';
-import { traverseSchema } from '../process-schema';
 import { JSONSchema, JSONSchemaFormPlugin, ProcessSchemaConfig } from '../types';
 import { string, number, boolean, array, object, lazy, ValidationError, Schema, mixed } from 'yup';
 import flow from 'lodash/flow';
@@ -37,6 +36,7 @@ function getMultiTypeSchema(
   config: ProcessSchemaConfig<JSONSchema>
 ) {
   if (typeof node !== 'object' || !node.type || !Array.isArray(node.type)) return schema;
+
   return schema.test({
     name: 'multi-type',
     test(value, context) {
@@ -45,7 +45,6 @@ function getMultiTypeSchema(
       );
       const errors: ValidationError[] = [];
 
-      // Check if any schema validates
       if (
         schemas.some((schema) => {
           try {
@@ -63,20 +62,37 @@ function getMultiTypeSchema(
       const allowedTypes = node.type as string[];
       const receivedType = typeof value;
 
-      const nonTypeError = errors.find((err) => err.type !== 'typeError');
-      if (nonTypeError) {
+      const error = errors.at(-1);
+      if (error && error.type === 'typeError') {
         return context.createError({
-          message: nonTypeError.message,
+          message: `Expected ${allowedTypes.join(' or ')}, but got ${receivedType}.`,
+          path: context.path,
+        });
+      } else if (error) {
+        return context.createError({
+          message: error.message,
           path: context.path,
         });
       }
-
-      return context.createError({
-        message: `Expected ${allowedTypes.join(' or ')}, but got ${receivedType}.`,
-        path: context.path,
-      });
     },
   });
+}
+
+function getObjectSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>): Schema {
+  if (typeof node !== 'object' || !node.properties) return object().strict();
+
+  const schema = object().shape(
+    Object.fromEntries(
+      Object.entries(node.properties).map(([key, property]) => {
+        const schema = getYupSchema(property as JSONSchema, config);
+        if (node.required?.includes(key)) return [key, schema.required(`Field is required`)];
+        return [key, schema];
+      })
+    )
+  );
+
+  if (node.additionalProperties === false) return schema.strict().noUnknown(true);
+  return schema;
 }
 
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
@@ -93,7 +109,7 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
     case 'array':
       return array().strict();
     case 'object':
-      return object().strict();
+      return getObjectSchema(node, config);
     case 'null':
       return mixed().nullable();
     default:
@@ -123,17 +139,13 @@ function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>)
   ])(baseSchema);
 }
 
-function buildYupSchema(values: unknown, schema: JSONSchema) {
-  return traverseSchema(schema, { values }, getYupSchema);
-}
-
 export const yupValidatorPlugin: JSONSchemaFormPlugin = {
   name: 'yup',
   type: 'validator',
   validate(values, schema) {
     let errors;
 
-    const yupSchema = lazy(() => buildYupSchema(values, schema));
+    const yupSchema = lazy(() => getYupSchema(schema, { values }));
 
     try {
       yupSchema.validateSync(values);
