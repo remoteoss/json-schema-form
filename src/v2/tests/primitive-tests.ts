@@ -70,6 +70,17 @@ export const stringTestCases = [
       },
     ],
   },
+  {
+    title: 'Const with no type',
+    schema: { const: 'yes' } as const,
+    validTestCases: [{ data: 'yes' }],
+    invalidTestCases: [
+      {
+        data: 'no',
+        error: { '': 'this must be one of the following values: yes' },
+      },
+    ],
+  },
 ];
 
 export const numberTestCases = [
@@ -168,6 +179,17 @@ export const nullTestCases = [
       {
         data: 1,
         error: { '': 'Expected string or null, but got number.' },
+      },
+    ],
+  },
+  {
+    title: 'Multi-type with null',
+    schema: { type: ['string', 'number', 'null'] } as const,
+    validTestCases: [{ data: null }, { data: 'hello' }, { data: 1 }],
+    invalidTestCases: [
+      {
+        data: true,
+        error: { '': 'Expected string or number or null, but got boolean.' },
       },
     ],
   },
