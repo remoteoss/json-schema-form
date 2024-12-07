@@ -100,11 +100,17 @@ function getMultiTypeSchema(
 }
 
 function getObjectSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>): Schema {
-  if (typeof node !== 'object' || !node.properties) return object().strict();
+  if (typeof node !== 'object') return object();
 
-  const schema = object().shape(
+  let schema = object().shape(
     Object.fromEntries(
-      Object.entries(node.properties).map(([key, property]) => {
+      (node.required ?? []).map((key) => [key, mixed().required(`Field is required`)])
+    )
+  );
+
+  schema = schema.shape(
+    Object.fromEntries(
+      Object.entries(node.properties ?? {}).map(([key, property]) => {
         const schema = getYupSchema(property as JSONSchema, config);
         if (node.required?.includes(key)) return [key, schema.required(`Field is required`)];
         return [key, schema];

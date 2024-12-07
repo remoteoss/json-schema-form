@@ -377,4 +377,41 @@ export const arrayTestCases = [
       2: 'Expected string or number, but got boolean.',
     },
   },
+  {
+    title: 'Array with items that are objects',
+    schema: { type: 'array', items: { type: 'object' } } as const,
+    values: [{ a: 1 }, { b: 2 }],
+    formErrors: undefined,
+  },
+  {
+    title: 'Array with items that are objects with a required field',
+    schema: {
+      type: 'array',
+      items: { type: 'object', required: ['field'] },
+    } as const,
+    values: [{ field: 1 }, { b: 2 }],
+    formErrors: {
+      1: { field: 'Field is required' },
+    },
+  },
+  {
+    title: 'Array with items that are objects with a required field',
+    schema: {
+      type: 'array',
+      items: { type: 'object', required: ['field'] },
+    } as const,
+    values: [{ field: 1 }, { field: 'hello' }],
+    formErrors: undefined,
+  },
+  {
+    title: 'Array with items that are objects with a required field',
+    schema: {
+      type: 'array',
+      items: { type: 'object', properties: { field: { type: 'string' } }, required: ['field'] },
+    } as const,
+    values: [{ field: 1 }, { field: 'hello' }],
+    formErrors: {
+      0: { field: '[0].field must be a `string` type, but the final value was: `1`.' },
+    },
+  },
 ];
