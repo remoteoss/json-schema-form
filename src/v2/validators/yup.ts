@@ -4,6 +4,17 @@ import { string, number, boolean, array, object, lazy, ValidationError, Schema, 
 import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
 import pick from 'lodash/pick';
+import {
+  isAnyOfNode,
+  isArrayNode,
+  isBooleanNode,
+  isConditionalObjectNode,
+  isMultiTypeValue,
+  isNumberNode,
+  isObjectNode,
+  isOneOfNode,
+  isStringNode,
+} from '../node-checks';
 
 function validateDate(schema: Schema) {
   return schema.test({
@@ -141,52 +152,9 @@ function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema
   return schema;
 }
 
-function isNumberNode(node: JSONSchema) {
-  if (typeof node !== 'object') return false;
-  return node.type === 'number' || node.type === 'integer' || node.minimum || node.maximum;
-}
-
-function isObjectNode(node: JSONSchema) {
-  if (typeof node !== 'object') return false;
-  return (
-    node.type === 'object' ||
-    (!node.type && !node.properties && node.required) ||
-    (!node.type && node.properties) ||
-    isConditionalObjectNode(node)
-  );
-}
-
-function isConditionalObjectNode(node: JSONSchema) {
-  if (typeof node !== 'object') return false;
-  const isIfObjectCondition = !!(node.if && !!node.if?.properties);
-  return isIfObjectCondition;
-}
-
-function isStringNode(node: JSONSchema) {
-  if (typeof node !== 'object') return false;
-  return (
-    node.type === 'string' ||
-    typeof node.const === 'string' ||
-    node.minLength ||
-    node.maxLength ||
-    node.pattern ||
-    node.format
-  );
-}
-
-function isBooleanNode(node: JSONSchema) {
-  if (typeof node !== 'object') return false;
-  return node.type === 'boolean' || typeof node.const === 'boolean';
-}
-
-function isArrayNode(node: JSONSchema) {
-  if (typeof node !== 'object') return false;
-  return node.type === 'array' || node.items || node.minItems || node.maxItems;
-}
-
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   if (typeof node !== 'object' || !node) return mixed();
-  if (Array.isArray(node.type)) return getMultiTypeSchema(mixed(), node, config);
+  if (isMultiTypeValue(node)) return getMultiTypeSchema(mixed(), node, config);
   if (isObjectNode(node)) return getObjectSchema(node, config);
   if (isNumberNode(node)) return getNumberSchema(node);
   if (isStringNode(node)) return getStringSchema(node);
@@ -301,10 +269,6 @@ function handleNotKeyword(
   });
 }
 
-function isAnyOfNode(node: JSONSchema) {
-  return typeof node === 'object' && Object.hasOwn(node, 'anyOf') && Array.isArray(node.anyOf);
-}
-
 function processAnyOfConditions(
   schema: Schema,
   node: JSONSchema,
@@ -342,10 +306,6 @@ function processAnyOfConditions(
       });
     },
   });
-}
-
-function isOneOfNode(node: JSONSchema) {
-  return typeof node === 'object' && Object.hasOwn(node, 'oneOf') && Array.isArray(node.oneOf);
 }
 
 function processOneOfSchema(
