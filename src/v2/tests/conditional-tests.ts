@@ -223,10 +223,10 @@ export const basicConditionalTestCases = [
       { data: { accountType: 'business', balance: 1000, hasOverdraft: true, overdraftLimit: 100 } },
     ],
     invalidTestCases: [
-      //   {
-      //     data: { accountType: 'business', balance: 999 },
-      //     error: { balance: 'number must be greater than or equal to 1000' },
-      //   },
+      {
+        data: { accountType: 'business', balance: 50 },
+        error: { balance: 'balance must be greater than or equal to 1000' },
+      },
       {
         data: { accountType: 'business', balance: 1000, hasOverdraft: true },
         error: { overdraftLimit: 'Field is required' },
