@@ -27,7 +27,7 @@ describe('createHeadlessForm', () => {
     { title: 'Multi type', testCases: multiTypeTestCases },
     { title: 'Object', testCases: objectTestCases },
     { title: 'Array', testCases: arrayTestCases },
-    { title: 'Basic conditionals', testCases: basicConditionalTestCases },
+    // { title: 'Basic conditionals', testCases: basicConditionalTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(

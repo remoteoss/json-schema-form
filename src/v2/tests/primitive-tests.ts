@@ -81,6 +81,17 @@ export const stringTestCases = [
       },
     ],
   },
+  {
+    title: 'String with if/then/else',
+    schema: {
+      type: 'string',
+      if: { pattern: '^[0-9]+$' },
+      then: { maxLength: 5 },
+      else: { maxLength: 10 },
+    },
+    validTestCases: [{ data: '12345' }, { data: 'H123456790' }],
+    invalidTestCases: [{ data: '101010', error: { '': 'this must be at most 5 characters' } }],
+  },
 ];
 
 export const numberTestCases = [
