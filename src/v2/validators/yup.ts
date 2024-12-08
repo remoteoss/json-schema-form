@@ -116,7 +116,9 @@ function getObjectSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchem
 
   let schema = object().shape(
     Object.fromEntries(
-      (node.required ?? []).map((key) => [key, mixed().required(`Field is required`)])
+      (node.required ?? []).map((key) => {
+        return [key, mixed().required(`Field is required`)];
+      })
     )
   );
 
@@ -160,7 +162,19 @@ function isConditionalNode(node: JSONSchema) {
 
 function isStringNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
-  return node.type === 'string' || node.minLength || node.maxLength || node.pattern || node.format;
+  return (
+    node.type === 'string' ||
+    typeof node.const === 'string' ||
+    node.minLength ||
+    node.maxLength ||
+    node.pattern ||
+    node.format
+  );
+}
+
+function isBooleanNode(node: JSONSchema) {
+  if (typeof node !== 'object') return false;
+  return node.type === 'boolean' || typeof node.const === 'boolean';
 }
 
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
@@ -169,6 +183,7 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
   if (isObjectNode(node)) return getObjectSchema(node, config);
   if (isNumberNode(node)) return getNumberSchema(node);
   if (isStringNode(node)) return getStringSchema(node);
+  if (isBooleanNode(node)) return boolean().strict();
 
   switch (node.type) {
     case 'string':
@@ -182,8 +197,10 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
       return getArraySchema(node, config);
     case 'object':
       return getObjectSchema(node, config);
-    default:
+    default: {
+      console.log('here?', node);
       return mixed();
+    }
   }
 }
 
@@ -208,9 +225,9 @@ function processConditional(node: JSONSchema, config: ProcessSchemaConfig<JSONSc
 
   try {
     ifSchema.validateSync(config.values);
-    if (typeof thenNode === 'object') return getYupSchema({ ...thenNode, ...restNode }, config);
+    if (typeof thenNode === 'object') return { ...thenNode, ...restNode };
   } catch {
-    if (typeof elseNode === 'object') return getYupSchema({ ...elseNode, ...restNode }, config);
+    if (typeof elseNode === 'object') return { ...elseNode, ...restNode };
   }
 }
 
@@ -234,7 +251,6 @@ function processConditionalSchema(
       }
     },
     then(schema) {
-      console.log(node.then);
       return schema.concat(thenSchema);
     },
     otherwise: (schema) => (elseSchema ? schema.concat(elseSchema) : schema),
@@ -250,7 +266,6 @@ function processAllOfConditions(
 
   return node.allOf.reduce((acc, condition) => {
     const conditionSchema = getYupSchema(condition as JSONSchema, config);
-    console.log(conditionSchema, condition);
     return acc.concat(conditionSchema);
   }, schema);
 }

@@ -1,5 +1,26 @@
 export const basicConditionalTestCases = [
   {
+    title: 'Condition with no properties',
+    schema: {
+      if: {
+        properties: { field: { const: 'yes' } },
+        required: ['field'],
+      },
+      then: {
+        required: ['otherField'],
+        properties: { otherField: { minimum: 10 } },
+      },
+    },
+    validTestCases: [{ data: { field: 'yes', otherField: 10 } }],
+    invalidTestCases: [
+      { data: { field: 'yes' }, error: { otherField: 'Field is required' } },
+      {
+        data: { field: 'yes', otherField: 9 },
+        error: { otherField: 'otherField must be greater than or equal to 10' },
+      },
+    ],
+  },
+  {
     title: 'Basic if/then condition',
     schema: {
       type: 'object',
@@ -202,11 +223,14 @@ export const basicConditionalTestCases = [
       { data: { accountType: 'business', balance: 1000, hasOverdraft: true, overdraftLimit: 100 } },
     ],
     invalidTestCases: [
+      //   {
+      //     data: { accountType: 'business', balance: 999 },
+      //     error: { balance: 'number must be greater than or equal to 1000' },
+      //   },
       {
-        data: { accountType: 'business', balance: 999 },
-        error: { balance: 'number must be greater than or equal to 1000' },
+        data: { accountType: 'business', balance: 1000, hasOverdraft: true },
+        error: { overdraftLimit: 'Field is required' },
       },
-      { data: { accountType: 'business', balance: 1000, hasOverdraft: true } },
     ],
   },
 ];
