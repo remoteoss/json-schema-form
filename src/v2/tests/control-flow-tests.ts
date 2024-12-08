@@ -546,4 +546,101 @@ export const anyOfTestCases = [
       },
     ],
   },
+  {
+    title: 'anyOf with one empty schema',
+    schema: {
+      anyOf: [
+        { type: 'number' },
+        {}, // empty schema matches anything
+      ],
+    },
+    validTestCases: [
+      { data: 'foo' },
+      { data: 123 },
+      { data: true },
+      { data: null },
+      { data: { key: 'value' } },
+      { data: [1, 2, 3] },
+    ],
+    invalidTestCases: [],
+  },
+  {
+    title: 'anyOf complex types',
+    schema: {
+      anyOf: [
+        {
+          properties: {
+            bar: { type: 'integer' },
+          },
+          required: ['bar'],
+        },
+        {
+          properties: {
+            foo: { type: 'string' },
+          },
+          required: ['foo'],
+        },
+      ],
+    },
+    validTestCases: [
+      { data: { bar: 2 } },
+      { data: { foo: 'baz' } },
+      { data: { foo: 'baz', bar: 2 } },
+      { data: { foo: 'baz', bar: 2 } },
+    ],
+    invalidTestCases: [
+      {
+        data: { foo: 2, bar: 'quux' },
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+    ],
+  },
+  {
+    title: 'anyOf with boolean schemas, all false',
+    schema: {
+      anyOf: [false, false],
+    },
+    validTestCases: [], // nothing can be valid when all schemas are false
+    invalidTestCases: [
+      {
+        data: 'foo',
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+      // Additional test cases to verify all types fail
+      {
+        data: 123,
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+      {
+        data: true,
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+      {
+        data: null,
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+      {
+        data: { key: 'value' },
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+      {
+        data: [],
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+    ],
+  },
 ];
