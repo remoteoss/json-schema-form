@@ -1,5 +1,5 @@
 import { createHeadlessForm } from '../create-headless-form';
-import { conditionalTestCases, notKeywordTestCases } from './control-flow-tests';
+import { conditionalTestCases, notKeywordTestCases, anyOfTestCases } from './control-flow-tests';
 import {
   stringTestCases,
   numberTestCases,
@@ -29,6 +29,7 @@ describe('createHeadlessForm', () => {
     { title: 'Array', testCases: arrayTestCases },
     { title: 'Conditionals', testCases: conditionalTestCases },
     { title: 'Not keyword', testCases: notKeywordTestCases },
+    { title: 'AnyOf keyword', testCases: anyOfTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(
