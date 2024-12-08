@@ -1,5 +1,5 @@
 import { flow } from 'lodash';
-import { JSONSchema, ProcessSchemaConfig } from './types';
+import { JSONSchema, JSONSchemaObject, ProcessSchemaConfig } from './types';
 
 export function isNumberNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
@@ -103,22 +103,30 @@ export function isNotNode(node: JSONSchema) {
 }
 
 export function isConditionalNode(node: JSONSchema) {
-  return typeof node !== 'object' || !node.if || !node.then;
+  return typeof node === 'object' && node.if && node.then;
 }
 
 type KeywordNodeHandlers = {
-  enum: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  const: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  not: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  anyOf: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  allOf: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  oneOf: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  conditional: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  default: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
+  const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
+  not: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
+  anyOf: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
+  allOf: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
+  oneOf: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
+  conditional: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
+  default: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
-  node: JSONSchema,
+  node: JSONSchemaObject,
   handlers: KeywordNodeHandlers,
   config: ProcessSchemaConfig<JSONSchema>
 ) {

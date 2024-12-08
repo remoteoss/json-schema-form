@@ -1,10 +1,10 @@
 import { yupToFormErrors } from '../../helpers';
-import { JSONSchema, JSONSchemaFormPlugin, ProcessSchemaConfig } from '../types';
+import { JSONSchema, JSONSchemaFormPlugin, JSONSchemaObject, ProcessSchemaConfig } from '../types';
 import { string, number, boolean, array, object, lazy, ValidationError, Schema, mixed } from 'yup';
 import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
 import pick from 'lodash/pick';
-import { visitNodeType, isConditionalObjectNode, visitKeywordNode } from '../node-checks';
+import { visitNodeType, visitKeywordNode } from '../node-checks';
 
 function validateDate(schema: Schema) {
   return schema.test({
@@ -20,13 +20,13 @@ function validateDate(schema: Schema) {
   });
 }
 
-function getFormatSchema(schema: Schema, node: JSONSchema) {
+function getFormatSchema(schema: Schema, node: JSONSchemaObject) {
   if (typeof node !== 'object' || !node.format) return schema;
   if (node.format === 'date') return validateDate(schema);
   return schema;
 }
 
-function getStringSchema(node: JSONSchema) {
+function getStringSchema(node: JSONSchemaObject) {
   if (typeof node !== 'object') return string();
   let schema = string().strict();
   if (node.minLength) schema = schema.min(node.minLength);
@@ -36,7 +36,7 @@ function getStringSchema(node: JSONSchema) {
   return schema;
 }
 
-function getNumberSchema(node: JSONSchema) {
+function getNumberSchema(node: JSONSchemaObject) {
   if (typeof node !== 'object') return number().strict();
   let schema = number().strict();
 
@@ -46,7 +46,7 @@ function getNumberSchema(node: JSONSchema) {
   return schema;
 }
 
-function getPropertiesForType(type: JSONSchemaType, node: JSONSchema) {
+function getPropertiesForType(type: JSONSchemaType, node: JSONSchemaObject) {
   if (typeof node !== 'object') return { type };
   if (type === 'string') {
     const stringProperties = pick(node, ['minLength', 'maxLength', 'pattern', 'format']);
@@ -61,10 +61,8 @@ function getPropertiesForType(type: JSONSchemaType, node: JSONSchema) {
 function getMultiTypeSchema(
   schema: Schema,
   node: JSONSchema,
-  config: ProcessSchemaConfig<JSONSchema>
+  config: ProcessSchemaConfig<JSONSchemaObject>
 ) {
-  if (typeof node !== 'object' || !node.type || !Array.isArray(node.type)) return schema;
-
   return schema.test({
     name: 'multi-type',
     test(value, context) {
@@ -105,10 +103,9 @@ function getMultiTypeSchema(
   });
 }
 
-function getObjectSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>): Schema {
-  if (typeof node !== 'object') return object();
-
+function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
   const totalKeys = [...new Set([...(node.required ?? []), ...Object.keys(node.properties ?? {})])];
+
   const schema = object().shape(
     Object.fromEntries(
       totalKeys.map((key) => {
@@ -127,7 +124,6 @@ function getObjectSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchem
 }
 
 function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
-  if (typeof node !== 'object') return mixed();
   let schema = array().strict();
   if (node.items) schema = schema.of(getYupSchema(node.items as JSONSchema, config));
   if (node.minItems) schema = schema.min(node.minItems);
@@ -142,26 +138,9 @@ function getNullValueSchema(schema: Schema) {
 }
 
 function getNullableSchema(schema: Schema, node: JSONSchema) {
-  if (typeof node !== 'object' || !node) return schema;
   if (Array.isArray(node.type) && node.type.includes('null')) return schema.nullable();
   if (node.const === null) return getNullValueSchema(schema);
   return schema;
-}
-
-function processConditional(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
-  if (isConditionalObjectNode(node)) return node;
-  if (typeof node !== 'object' || !node.if || !node.then) return node;
-  const { if: ifNode, then: thenNode, else: elseNode, ...restNode } = node;
-  const ifSchema = getYupSchema(ifNode, config);
-
-  try {
-    ifSchema.validateSync(config.values);
-    if (typeof thenNode === 'object') return { ...thenNode, ...restNode };
-    return { ...restNode };
-  } catch {
-    if (typeof elseNode === 'object') return { ...elseNode, ...restNode };
-    return { ...restNode };
-  }
 }
 
 function processConditionalSchema(
@@ -169,7 +148,6 @@ function processConditionalSchema(
   node: JSONSchema,
   config: ProcessSchemaConfig<JSONSchema>
 ) {
-  if (typeof node !== 'object' || !node.if || !node.then) return schema;
   const ifSchema = getYupSchema(node.if, config);
   const thenSchema = getYupSchema(node.then, config);
   const elseSchema = node.else ? getYupSchema(node.else, config) : null;
@@ -314,7 +292,11 @@ function processBoolean(schema: Schema, node: JSONSchema) {
     .nullable();
 }
 
-function handleKeyword(schema: Schema, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+function handleKeyword(
+  schema: Schema,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
   return visitKeywordNode(
     node,
     {
@@ -323,23 +305,12 @@ function handleKeyword(schema: Schema, node: JSONSchema, config: ProcessSchemaCo
       not: (schema, node) => handleNotKeyword(schema, node, config),
       anyOf: (schema, node) => processAnyOfConditions(schema, node, config),
       allOf: (schema, node) => processAllOfConditions(schema, node, config),
-      conditional: (schema, node) => schema,
+      conditional: (schema, node) => processConditionalSchema(schema, node, config),
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
       default: (schema) => schema,
     },
     config
   )(schema);
-}
-
-function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
-  const nodeWithConditions = processConditional(node, config);
-  return flow([
-    () => getBaseSchema(nodeWithConditions, config),
-    (schema) => getNullableSchema(schema, node),
-    (schema) => handleKeyword(schema, node, config),
-    (schema) => processConditionalSchema(schema, node, config),
-    (schema) => processBoolean(schema, node),
-  ])();
 }
 
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
@@ -357,6 +328,15 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
     },
     config
   );
+}
+
+function getYupSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>) {
+  return flow([
+    () => getBaseSchema(node, config),
+    (schema) => getNullableSchema(schema, node),
+    (schema) => handleKeyword(schema, node, config),
+    (schema) => processBoolean(schema, node),
+  ])();
 }
 
 export const yupValidatorPlugin: JSONSchemaFormPlugin = {
