@@ -114,20 +114,16 @@ function getMultiTypeSchema(
 function getObjectSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>): Schema {
   if (typeof node !== 'object') return object();
 
-  let schema = object().shape(
+  const totalKeys = [...new Set([...(node.required ?? []), ...Object.keys(node.properties ?? {})])];
+  const schema = object().shape(
     Object.fromEntries(
-      (node.required ?? []).map((key) => {
+      totalKeys.map((key) => {
+        if (node.properties?.[key]) {
+          const schema = getYupSchema(node.properties[key] as JSONSchema, config);
+          if (node.required?.includes(key)) return [key, schema.required(`Field is required`)];
+          return [key, schema];
+        }
         return [key, mixed().required(`Field is required`)];
-      })
-    )
-  );
-
-  schema = schema.shape(
-    Object.fromEntries(
-      Object.entries(node.properties ?? {}).map(([key, property]) => {
-        const schema = getYupSchema(property as JSONSchema, config);
-        if (node.required?.includes(key)) return [key, schema.required(`Field is required`)];
-        return [key, schema];
       })
     )
   );
@@ -152,12 +148,18 @@ function isNumberNode(node: JSONSchema) {
 
 function isObjectNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
-  return (!node.type && !node.properties && node.required) || (!node.type && node.properties);
+  return (
+    node.type === 'object' ||
+    (!node.type && !node.properties && node.required) ||
+    (!node.type && node.properties) ||
+    isConditionalObjectNode(node)
+  );
 }
 
-function isConditionalNode(node: JSONSchema) {
+function isConditionalObjectNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
-  return node.if || node.then || node.else;
+  const isIfObjectCondition = !!(node.if && !!node.if?.properties);
+  return isIfObjectCondition;
 }
 
 function isStringNode(node: JSONSchema) {
@@ -186,19 +188,9 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
   if (isBooleanNode(node)) return boolean().strict();
 
   switch (node.type) {
-    case 'string':
-      return getStringSchema(node);
-    case 'number':
-    case 'integer':
-      return getNumberSchema(node);
-    case 'boolean':
-      return boolean().strict();
     case 'array':
       return getArraySchema(node, config);
-    case 'object':
-      return getObjectSchema(node, config);
     default: {
-      console.log('here?', node);
       return mixed();
     }
   }
@@ -219,6 +211,7 @@ function getNullableSchema(schema: Schema, node: JSONSchema) {
 }
 
 function processConditional(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+  if (isConditionalObjectNode(node)) return node;
   if (typeof node !== 'object' || !node.if || !node.then) return node;
   const { if: ifNode, then: thenNode, else: elseNode, ...restNode } = node;
   const ifSchema = getYupSchema(ifNode, config);
@@ -228,6 +221,7 @@ function processConditional(node: JSONSchema, config: ProcessSchemaConfig<JSONSc
     if (typeof thenNode === 'object') return { ...thenNode, ...restNode };
   } catch {
     if (typeof elseNode === 'object') return { ...elseNode, ...restNode };
+    return { ...restNode };
   }
 }
 
@@ -253,7 +247,9 @@ function processConditionalSchema(
     then(schema) {
       return schema.concat(thenSchema);
     },
-    otherwise: (schema) => (elseSchema ? schema.concat(elseSchema) : schema),
+    otherwise(schema) {
+      return elseSchema ? schema.concat(elseSchema) : schema;
+    },
   });
 }
 
@@ -265,8 +261,20 @@ function processAllOfConditions(
   if (typeof node !== 'object' || !node.allOf || !Array.isArray(node.allOf)) return schema;
 
   return node.allOf.reduce((acc, condition) => {
-    const conditionSchema = getYupSchema(condition as JSONSchema, config);
-    return acc.concat(conditionSchema);
+    const conditionSchema = lazy(() => getYupSchema(condition as JSONSchema, config));
+    return acc.when('$', {
+      is() {
+        try {
+          conditionSchema.validateSync(config.values);
+          return true;
+        } catch (e) {
+          throw e;
+        }
+      },
+      then(schema: Schema) {
+        return schema;
+      },
+    });
   }, schema);
 }
 
