@@ -179,6 +179,11 @@ function isBooleanNode(node: JSONSchema) {
   return node.type === 'boolean' || typeof node.const === 'boolean';
 }
 
+function isArrayNode(node: JSONSchema) {
+  if (typeof node !== 'object') return false;
+  return node.type === 'array' || node.items || node.minItems || node.maxItems;
+}
+
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   if (typeof node !== 'object' || !node) return mixed();
   if (Array.isArray(node.type)) return getMultiTypeSchema(mixed(), node, config);
@@ -186,14 +191,8 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
   if (isNumberNode(node)) return getNumberSchema(node);
   if (isStringNode(node)) return getStringSchema(node);
   if (isBooleanNode(node)) return boolean().strict();
-
-  switch (node.type) {
-    case 'array':
-      return getArraySchema(node, config);
-    default: {
-      return mixed();
-    }
-  }
+  if (isArrayNode(node)) return getArraySchema(node, config);
+  return mixed();
 }
 
 function getNullValueSchema(schema: Schema) {
@@ -278,12 +277,36 @@ function processAllOfConditions(
   }, schema);
 }
 
+function handleNotKeyword(
+  schema: Schema,
+  node: JSONSchema,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (typeof node !== 'object' || !node.not) return schema;
+  const notSchema = getYupSchema(node.not, config);
+  return schema.test({
+    name: 'not',
+    test(value, context) {
+      try {
+        notSchema.validateSync(value);
+        return context.createError({
+          message: `does not match not schema`,
+          path: context.path,
+        });
+      } catch {
+        return true;
+      }
+    },
+  });
+}
+
 function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   const nodeWithConditions = processConditional(node, config);
   const baseSchema = getBaseSchema(nodeWithConditions, config);
   return flow([
     (schema) => getNullableSchema(schema, node),
     (schema) => getSpecificValueSchema(schema, node),
+    (schema) => handleNotKeyword(schema, node, config),
     (schema) => processAllOfConditions(schema, node, config),
     (schema) => processConditionalSchema(schema, node, config),
   ])(baseSchema);
