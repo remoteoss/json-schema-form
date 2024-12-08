@@ -1,4 +1,5 @@
-import { JSONSchema } from './types';
+import { flow } from 'lodash';
+import { JSONSchema, ProcessSchemaConfig } from './types';
 
 export function isNumberNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
@@ -53,4 +54,82 @@ export function isAnyOfNode(node: JSONSchema) {
 
 export function isOneOfNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'oneOf') && Array.isArray(node.oneOf);
+}
+
+export function isEnumNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'enum') && Array.isArray(node.enum);
+}
+
+export function isConstNode(node: JSONSchema) {
+  return typeof node === 'object' && node.const;
+}
+
+export function isAllOfNode(node: JSONSchema) {
+  return typeof node === 'object' && node.allOf && Array.isArray(node.allOf);
+}
+
+export function isNullNode(node: JSONSchema) {
+  return typeof node === 'object' && node.type === 'null';
+}
+
+type NodeTypeHandlers = {
+  multiType: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  object: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  number: (node: JSONSchema) => any;
+  string: (node: JSONSchema) => any;
+  boolean: (node: JSONSchema) => any;
+  array: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  nullType: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  default: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+};
+
+export function visitNodeType(
+  node: JSONSchema,
+  handlers: NodeTypeHandlers,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (isMultiTypeValue(node)) return handlers.multiType(node, config);
+  if (isObjectNode(node)) return handlers.object(node, config);
+  if (isNumberNode(node)) return handlers.number(node);
+  if (isStringNode(node)) return handlers.string(node);
+  if (isBooleanNode(node)) return handlers.boolean(node);
+  if (isArrayNode(node)) return handlers.array(node, config);
+  if (isNullNode(node)) return handlers.nullType(node, config);
+  return handlers.default(node, config);
+}
+
+export function isNotNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'not');
+}
+
+export function isConditionalNode(node: JSONSchema) {
+  return typeof node !== 'object' || !node.if || !node.then;
+}
+
+type KeywordNodeHandlers = {
+  enum: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  const: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  not: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  anyOf: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  allOf: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  oneOf: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  conditional: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  default: (input: any, node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+};
+
+export function visitKeywordNode(
+  node: JSONSchema,
+  handlers: KeywordNodeHandlers,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  return flow([
+    (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
+    (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
+    (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),
+    (input) => (isAllOfNode(node) ? handlers.allOf(input, node, config) : input),
+    (input) => (isAnyOfNode(node) ? handlers.anyOf(input, node, config) : input),
+    (input) => (isConditionalNode(node) ? handlers.conditional(input, node, config) : input),
+    (input) => (isOneOfNode(node) ? handlers.oneOf(input, node, config) : input),
+    (input) => handlers.default(input, node, config),
+  ]);
 }
