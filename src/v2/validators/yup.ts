@@ -192,7 +192,7 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
   if (isStringNode(node)) return getStringSchema(node);
   if (isBooleanNode(node)) return boolean().strict();
   if (isArrayNode(node)) return getArraySchema(node, config);
-  return mixed();
+  return mixed().nullable();
 }
 
 function getNullValueSchema(schema: Schema) {
@@ -218,6 +218,7 @@ function processConditional(node: JSONSchema, config: ProcessSchemaConfig<JSONSc
   try {
     ifSchema.validateSync(config.values);
     if (typeof thenNode === 'object') return { ...thenNode, ...restNode };
+    return { ...restNode };
   } catch {
     if (typeof elseNode === 'object') return { ...elseNode, ...restNode };
     return { ...restNode };
@@ -300,26 +301,30 @@ function handleNotKeyword(
   });
 }
 
+function isAnyOfNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'anyOf') && Array.isArray(node.anyOf);
+}
+
 function processAnyOfConditions(
   schema: Schema,
   node: JSONSchema,
   config: ProcessSchemaConfig<JSONSchema>
 ) {
-  if (typeof node !== 'object' || !node.anyOf || !Array.isArray(node.anyOf)) return schema;
+  if (!isAnyOfNode(node)) return schema;
+
   return schema.test({
     name: 'any-of',
     test(value, context) {
       const schemas = node.anyOf.map((subSchema) => getYupSchema(subSchema as JSONSchema, config));
       const errors: ValidationError[] = [];
 
-      // Check if value matches any of the schemas
       if (
         schemas.some((schema) => {
           try {
             schema.validateSync(value);
             return true;
-          } catch (e) {
-            errors.push(e);
+          } catch (e: unknown) {
+            errors.push(e as ValidationError);
             return false;
           }
         })
@@ -328,7 +333,7 @@ function processAnyOfConditions(
       }
 
       return context.createError({
-        message: errors.map((error) => error.message).join(', '),
+        message: 'Invalid anyOf match',
         errors: errors.map((error) => ({
           path: error.path,
           message: error.message,

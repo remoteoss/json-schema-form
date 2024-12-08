@@ -411,14 +411,138 @@ export const anyOfTestCases = [
       {
         data: 'toolong',
         error: {
-          '': 'this must be at most 5 characters, this must be a `number` type, but the final value was: `"toolong"`.',
+          '': 'Invalid anyOf match',
         },
       },
       {
         data: -1,
         error: {
-          '': 'this must be a `string` type, but the final value was: `-1`., this must be greater than or equal to 0',
+          '': 'Invalid anyOf match',
         },
+      },
+    ],
+  },
+  {
+    title: 'anyOf with different types',
+    schema: {
+      anyOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
+    },
+    validTestCases: [{ data: 'hello' }, { data: 42 }, { data: true }],
+    invalidTestCases: [
+      {
+        data: { key: 'value' },
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+      {
+        data: null,
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+    ],
+  },
+  {
+    title: 'anyOf with number ranges',
+    schema: {
+      type: 'number',
+      anyOf: [
+        { minimum: 0, maximum: 10 },
+        { minimum: 20, maximum: 30 },
+        { minimum: 40, maximum: 50 },
+      ],
+    },
+    validTestCases: [{ data: 5 }, { data: 25 }, { data: 45 }],
+    invalidTestCases: [
+      {
+        data: 15,
+        error: { '': 'Invalid anyOf match' },
+      },
+      {
+        data: 35,
+        error: { '': 'Invalid anyOf match' },
+      },
+    ],
+  },
+  {
+    title: 'anyOf with complex dependencies',
+    schema: {
+      type: 'object',
+      anyOf: [
+        {
+          properties: {
+            country: { const: 'US' },
+            zipCode: { pattern: '^\\d{5}$' },
+          },
+          required: ['country', 'zipCode'],
+        },
+        {
+          properties: {
+            country: { const: 'UK' },
+            postcode: { pattern: '^[A-Z]{1,2}\\d[A-Z\\d]? ?\\d[A-Z]{2}$' },
+          },
+          required: ['country', 'postcode'],
+        },
+      ],
+    },
+    validTestCases: [
+      {
+        data: {
+          country: 'US',
+          zipCode: '12345',
+        },
+      },
+      {
+        data: {
+          country: 'UK',
+          postcode: 'SW1A 1AA',
+        },
+      },
+    ],
+    invalidTestCases: [
+      {
+        data: {
+          country: 'US',
+          zipCode: '1234',
+        },
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+      {
+        data: {
+          country: 'UK',
+          zipCode: '12345',
+        },
+        error: {
+          '': 'Invalid anyOf match',
+        },
+      },
+    ],
+  },
+  {
+    description: 'nested anyOf, to check validation semantics',
+    schema: {
+      anyOf: [
+        {
+          anyOf: [
+            {
+              type: 'null',
+            },
+          ],
+        },
+      ],
+    },
+    validTestCases: [
+      {
+        data: null,
+      },
+    ],
+    invalidTestCases: [
+      {
+        data: 123,
+        error: { '': 'Invalid anyOf match' },
       },
     ],
   },
