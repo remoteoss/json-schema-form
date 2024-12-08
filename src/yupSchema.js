@@ -215,6 +215,7 @@ const yupSchemas = {
     'group-array': array().nullable(),
   },
   null: mixed()
+    .nullable()
     .typeError('The value must be null')
     .test(
       'matchesNullValue',

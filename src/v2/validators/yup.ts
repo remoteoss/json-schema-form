@@ -152,16 +152,6 @@ function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema
   return schema;
 }
 
-function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
-  if (typeof node !== 'object' || !node) return mixed();
-  if (isMultiTypeValue(node)) return getMultiTypeSchema(mixed(), node, config);
-  if (isObjectNode(node)) return getObjectSchema(node, config);
-  if (isNumberNode(node)) return getNumberSchema(node);
-  if (isStringNode(node)) return getStringSchema(node);
-  if (isBooleanNode(node)) return boolean().strict();
-  if (isArrayNode(node)) return getArraySchema(node, config);
-  return mixed().nullable();
-}
 
 function getNullValueSchema(schema: Schema) {
   return schema.nullable().test('typeError', 'Value must be null', (value: unknown) => {
@@ -362,6 +352,17 @@ function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>)
     (schema) => processOneOfSchema(schema, node, config),
     (schema) => processBoolean(schema, node),
   ])(baseSchema);
+}
+
+function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+  if (typeof node !== 'object' || !node) return mixed();
+  if (isMultiTypeValue(node)) return getMultiTypeSchema(mixed(), node, config);
+  if (isObjectNode(node)) return getObjectSchema(node, config);
+  if (isNumberNode(node)) return getNumberSchema(node);
+  if (isStringNode(node)) return getStringSchema(node);
+  if (isBooleanNode(node)) return boolean().strict();
+  if (isArrayNode(node)) return getArraySchema(node, config);
+  return mixed().nullable();
 }
 
 export const yupValidatorPlugin: JSONSchemaFormPlugin = {
