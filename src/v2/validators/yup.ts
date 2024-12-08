@@ -344,15 +344,49 @@ function processAnyOfConditions(
   });
 }
 
-function processBoolean(schema: Schema, node: JSONSchema) {
-  if (typeof node !== 'boolean') return schema;
+function isOneOfNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'oneOf') && Array.isArray(node.oneOf);
+}
+
+function processOneOfSchema(
+  schema: Schema,
+  node: JSONSchema,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (!isOneOfNode(node)) return schema;
   return schema.test({
-    name: 'boolean',
-    test() {
-      if (node === true) return true;
-      if (node === false) return false;
+    name: 'one-of',
+    test(value, context) {
+      const errors: ValidationError[] = [];
+      const schemas = node.oneOf.map((subSchema) => getYupSchema(subSchema as JSONSchema, config));
+      const validCount = schemas.reduce((acc, schema) => {
+        try {
+          schema.validateSync(value);
+          return acc + 1;
+        } catch (e) {
+          errors.push(e as ValidationError);
+          return acc;
+        }
+      }, 0);
+      if (validCount === 1) return true;
+      return context.createError({
+        message: `must match exactly one schema but matched ${validCount} schemas`,
+        params: { validCount },
+      });
     },
   });
+}
+
+function processBoolean(schema: Schema, node: JSONSchema) {
+  if (typeof node !== 'boolean') return schema;
+  return schema
+    .test({
+      name: 'boolean',
+      test() {
+        return node;
+      },
+    })
+    .nullable();
 }
 
 function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
@@ -365,6 +399,7 @@ function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>)
     (schema) => processAnyOfConditions(schema, node, config),
     (schema) => processAllOfConditions(schema, node, config),
     (schema) => processConditionalSchema(schema, node, config),
+    (schema) => processOneOfSchema(schema, node, config),
     (schema) => processBoolean(schema, node),
   ])(baseSchema);
 }
