@@ -153,11 +153,22 @@ function isObjectNode(node: JSONSchema) {
   return (!node.type && !node.properties && node.required) || (!node.type && node.properties);
 }
 
+function isConditionalNode(node: JSONSchema) {
+  if (typeof node !== 'object') return false;
+  return node.if || node.then || node.else;
+}
+
+function isStringNode(node: JSONSchema) {
+  if (typeof node !== 'object') return false;
+  return node.type === 'string' || node.minLength || node.maxLength || node.pattern || node.format;
+}
+
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   if (typeof node !== 'object' || !node) return mixed();
   if (Array.isArray(node.type)) return getMultiTypeSchema(mixed(), node, config);
   if (isObjectNode(node)) return getObjectSchema(node, config);
   if (isNumberNode(node)) return getNumberSchema(node);
+  if (isStringNode(node)) return getStringSchema(node);
 
   switch (node.type) {
     case 'string':
@@ -190,6 +201,19 @@ function getNullableSchema(schema: Schema, node: JSONSchema) {
   return schema;
 }
 
+function processConditional(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+  if (typeof node !== 'object' || !node.if || !node.then) return node;
+  const { if: ifNode, then: thenNode, else: elseNode, ...restNode } = node;
+  const ifSchema = getYupSchema(ifNode, config);
+
+  try {
+    ifSchema.validateSync(config.values);
+    if (typeof thenNode === 'object') return getYupSchema({ ...thenNode, ...restNode }, config);
+  } catch {
+    if (typeof elseNode === 'object') return getYupSchema({ ...elseNode, ...restNode }, config);
+  }
+}
+
 function processConditionalSchema(
   schema: Schema,
   node: JSONSchema,
@@ -210,17 +234,34 @@ function processConditionalSchema(
       }
     },
     then(schema) {
+      console.log(node.then);
       return schema.concat(thenSchema);
     },
     otherwise: (schema) => (elseSchema ? schema.concat(elseSchema) : schema),
   });
 }
 
+function processAllOfConditions(
+  schema: Schema,
+  node: JSONSchema,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (typeof node !== 'object' || !node.allOf || !Array.isArray(node.allOf)) return schema;
+
+  return node.allOf.reduce((acc, condition) => {
+    const conditionSchema = getYupSchema(condition as JSONSchema, config);
+    console.log(conditionSchema, condition);
+    return acc.concat(conditionSchema);
+  }, schema);
+}
+
 function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
-  const baseSchema = getBaseSchema(node, config);
+  const nodeWithConditions = processConditional(node, config);
+  const baseSchema = getBaseSchema(nodeWithConditions, config);
   return flow([
     (schema) => getNullableSchema(schema, node),
     (schema) => getSpecificValueSchema(schema, node),
+    (schema) => processAllOfConditions(schema, node, config),
     (schema) => processConditionalSchema(schema, node, config),
   ])(baseSchema);
 }
