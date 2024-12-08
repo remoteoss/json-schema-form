@@ -272,23 +272,23 @@ export const conditionalTestCases = [
       { data: { age: 66 }, error: { age: 'age must be less than or equal to 65' } },
     ],
   },
-  //   {
-  //     title: 'Conditional with not operator',
-  //     schema: {
-  //       properties: {
-  //         age: { type: 'number' },
-  //         guardian: { type: 'string' },
-  //       },
-  //       if: {
-  //         not: { properties: { age: { minimum: 18 } } },
-  //       },
-  //       then: {
-  //         required: ['guardian'],
-  //       },
-  //     },
-  //     validTestCases: [{ data: { age: 17, guardian: 'John Doe' } }, { data: { age: 18 } }],
-  //     invalidTestCases: [{ data: { age: 17 }, error: { guardian: 'Field is required' } }],
-  //   },
+  {
+    title: 'Conditional with not operator',
+    schema: {
+      properties: {
+        age: { type: 'number' },
+        guardian: { type: 'string' },
+      },
+      if: {
+        not: { properties: { age: { minimum: 18 } } },
+      },
+      then: {
+        required: ['guardian'],
+      },
+    },
+    validTestCases: [{ data: { age: 17, guardian: 'John Doe' } }, { data: { age: 18 } }],
+    invalidTestCases: [{ data: { age: 17 }, error: { guardian: 'Field is required' } }],
+  },
 ];
 
 export const notKeywordTestCases = [
@@ -369,5 +369,30 @@ export const notKeywordTestCases = [
     },
     validTestCases: [{ data: [1, 2] }, { data: [1, 'string'] }, { data: [] }],
     invalidTestCases: [{ data: [1, 2, 3], error: { '': 'does not match not schema' } }],
+  },
+  {
+    title: 'Not with number constraints',
+    schema: {
+      type: 'number',
+      not: {
+        minimum: 0,
+        maximum: 100,
+      },
+    },
+    validTestCases: [{ data: -1 }, { data: 101 }],
+    invalidTestCases: [{ data: 50, error: { '': 'does not match not schema' } }],
+  },
+
+  {
+    title: 'Not string with multiple constraints',
+    schema: {
+      not: {
+        type: 'string',
+        minLength: 5,
+        pattern: '^[A-Z]',
+      },
+    },
+    validTestCases: [{ data: 'abc' }, { data: 'lower' }, { data: 123 }],
+    invalidTestCases: [{ data: 'Upper', error: { '': 'does not match not schema' } }],
   },
 ];

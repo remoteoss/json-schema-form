@@ -40,8 +40,8 @@ function getNumberSchema(node: JSONSchema) {
   let schema = number().strict();
 
   if (node.type === 'integer') schema = schema.integer();
-  if (node.minimum) schema = schema.min(node.minimum);
-  if (node.maximum) schema = schema.max(node.maximum);
+  if (typeof node.minimum === 'number') schema = schema.min(node.minimum);
+  if (typeof node.maximum === 'number') schema = schema.max(node.maximum);
   return schema;
 }
 
