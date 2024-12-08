@@ -344,6 +344,17 @@ function processAnyOfConditions(
   });
 }
 
+function processBoolean(schema: Schema, node: JSONSchema) {
+  if (typeof node !== 'boolean') return schema;
+  return schema.test({
+    name: 'boolean',
+    test() {
+      if (node === true) return true;
+      if (node === false) return false;
+    },
+  });
+}
+
 function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   const nodeWithConditions = processConditional(node, config);
   const baseSchema = getBaseSchema(nodeWithConditions, config);
@@ -354,6 +365,7 @@ function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>)
     (schema) => processAnyOfConditions(schema, node, config),
     (schema) => processAllOfConditions(schema, node, config),
     (schema) => processConditionalSchema(schema, node, config),
+    (schema) => processBoolean(schema, node),
   ])(baseSchema);
 }
 
