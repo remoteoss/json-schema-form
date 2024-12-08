@@ -338,7 +338,7 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
 export function createHeadlessForm(jsonSchema, customConfig = {}) {
   const config = {
     strictInputType: true,
-    use_v2: true,
+    use_v2: false,
     ...customConfig,
   };
 

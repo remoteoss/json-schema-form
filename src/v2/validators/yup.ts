@@ -3,6 +3,7 @@ import { JSONSchema, JSONSchemaFormPlugin, ProcessSchemaConfig } from '../types'
 import { string, number, boolean, array, object, lazy, ValidationError, Schema, mixed } from 'yup';
 import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
+import pick from 'lodash/pick';
 
 function validateDate(schema: Schema) {
   return schema.test({
@@ -51,6 +52,18 @@ function getSpecificValueSchema(schema: Schema, node: JSONSchema) {
   return schema;
 }
 
+function getPropertiesForType(type: JSONSchemaType, node: JSONSchema) {
+  if (typeof node !== 'object') return { type };
+  if (type === 'string') {
+    const stringProperties = pick(node, ['minLength', 'maxLength', 'pattern', 'format']);
+    return { type: 'string', ...stringProperties };
+  } else if (type === 'number') {
+    const numberProperties = pick(node, ['minimum', 'maximum']);
+    return { type: 'number', ...numberProperties };
+  }
+  return { type };
+}
+
 function getMultiTypeSchema(
   schema: Schema,
   node: JSONSchema,
@@ -62,7 +75,7 @@ function getMultiTypeSchema(
     name: 'multi-type',
     test(value, context) {
       const schemas = (node.type as Array<JSONSchemaType>).map((type) =>
-        getYupSchema({ ...node, type }, config)
+        getYupSchema(getPropertiesForType(type, node), config)
       );
       const errors: ValidationError[] = [];
 
@@ -130,10 +143,21 @@ function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema
   return schema;
 }
 
+function isNumberNode(node: JSONSchema) {
+  if (typeof node !== 'object') return false;
+  return node.type === 'number' || node.type === 'integer' || node.minimum || node.maximum;
+}
+
+function isObjectNode(node: JSONSchema) {
+  if (typeof node !== 'object') return false;
+  return (!node.type && !node.properties && node.required) || (!node.type && node.properties);
+}
+
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   if (typeof node !== 'object' || !node) return mixed();
-  if (!node.type && !node.properties && node.required) return getObjectSchema(node, config);
-  if (!node.type && node.properties) return getObjectSchema(node, config);
+  if (Array.isArray(node.type)) return getMultiTypeSchema(mixed(), node, config);
+  if (isObjectNode(node)) return getObjectSchema(node, config);
+  if (isNumberNode(node)) return getNumberSchema(node);
 
   switch (node.type) {
     case 'string':
@@ -174,6 +198,7 @@ function processConditionalSchema(
   if (typeof node !== 'object' || !node.if || !node.then) return schema;
   const ifSchema = getYupSchema(node.if, config);
   const thenSchema = getYupSchema(node.then, config);
+  const elseSchema = node.else ? getYupSchema(node.else, config) : null;
 
   return schema.when('.', {
     is() {
@@ -185,10 +210,9 @@ function processConditionalSchema(
       }
     },
     then(schema) {
-      // console.log('here?');
       return schema.concat(thenSchema);
     },
-    otherwise: (schema) => schema,
+    otherwise: (schema) => (elseSchema ? schema.concat(elseSchema) : schema),
   });
 }
 
@@ -197,7 +221,6 @@ function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>)
   return flow([
     (schema) => getNullableSchema(schema, node),
     (schema) => getSpecificValueSchema(schema, node),
-    (schema) => getMultiTypeSchema(schema, node, config),
     (schema) => processConditionalSchema(schema, node, config),
   ])(baseSchema);
 }
