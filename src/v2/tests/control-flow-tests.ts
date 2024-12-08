@@ -396,3 +396,30 @@ export const notKeywordTestCases = [
     invalidTestCases: [{ data: 'Upper', error: { '': 'does not match not schema' } }],
   },
 ];
+
+export const anyOfTestCases = [
+  {
+    title: 'Basic check',
+    schema: {
+      anyOf: [
+        { type: 'string', maxLength: 5 },
+        { type: 'number', minimum: 0 },
+      ],
+    },
+    validTestCases: [{ data: 'short' }, { data: 12 }],
+    invalidTestCases: [
+      {
+        data: 'toolong',
+        error: {
+          '': 'this must be at most 5 characters, this must be a `number` type, but the final value was: `"toolong"`.',
+        },
+      },
+      {
+        data: -1,
+        error: {
+          '': 'this must be a `string` type, but the final value was: `-1`., this must be greater than or equal to 0',
+        },
+      },
+    ],
+  },
+];

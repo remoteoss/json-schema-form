@@ -300,6 +300,45 @@ function handleNotKeyword(
   });
 }
 
+function processAnyOfConditions(
+  schema: Schema,
+  node: JSONSchema,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (typeof node !== 'object' || !node.anyOf || !Array.isArray(node.anyOf)) return schema;
+  return schema.test({
+    name: 'any-of',
+    test(value, context) {
+      const schemas = node.anyOf.map((subSchema) => getYupSchema(subSchema as JSONSchema, config));
+      const errors: ValidationError[] = [];
+
+      // Check if value matches any of the schemas
+      if (
+        schemas.some((schema) => {
+          try {
+            schema.validateSync(value);
+            return true;
+          } catch (e) {
+            errors.push(e);
+            return false;
+          }
+        })
+      ) {
+        return true;
+      }
+
+      return context.createError({
+        message: errors.map((error) => error.message).join(', '),
+        errors: errors.map((error) => ({
+          path: error.path,
+          message: error.message,
+          inner: error.inner,
+        })),
+      });
+    },
+  });
+}
+
 function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   const nodeWithConditions = processConditional(node, config);
   const baseSchema = getBaseSchema(nodeWithConditions, config);
@@ -307,6 +346,7 @@ function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>)
     (schema) => getNullableSchema(schema, node),
     (schema) => getSpecificValueSchema(schema, node),
     (schema) => handleNotKeyword(schema, node, config),
+    (schema) => processAnyOfConditions(schema, node, config),
     (schema) => processAllOfConditions(schema, node, config),
     (schema) => processConditionalSchema(schema, node, config),
   ])(baseSchema);
