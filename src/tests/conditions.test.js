@@ -479,3 +479,71 @@ describe('Conditional with a minimum value check', () => {
     expect(handleValidation({ salary: 1000, reason: 'reason_one' }).formErrors).toEqual(undefined);
   });
 });
+
+describe('Conditional with literal booleans', () => {
+  it('handles true case', () => {
+    const schema = {
+      properties: {
+        is_full_time: {
+          type: 'boolean',
+        },
+        salary: {
+          type: 'number',
+        },
+      },
+      required: [],
+      if: true,
+      then: {
+        required: ['is_full_time'],
+      },
+      else: {
+        required: ['salary'],
+      },
+    };
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    handleValidation({});
+
+    expect(fields[0]).toMatchObject({
+      name: 'is_full_time',
+      required: true,
+    });
+    expect(fields[1]).toMatchObject({
+      name: 'salary',
+      required: false,
+    });
+  });
+
+  it('handles false case', () => {
+    const schema = {
+      properties: {
+        is_full_time: {
+          type: 'boolean',
+        },
+        salary: {
+          type: 'number',
+        },
+      },
+      required: [],
+      if: false,
+      then: {
+        required: ['is_full_time'],
+      },
+      else: {
+        required: ['salary'],
+      },
+    };
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    handleValidation({});
+
+    expect(fields[0]).toMatchObject({
+      name: 'is_full_time',
+      required: false,
+    });
+    expect(fields[1]).toMatchObject({
+      name: 'salary',
+      required: true,
+    });
+  });
+});
