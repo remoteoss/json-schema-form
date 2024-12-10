@@ -162,6 +162,19 @@ function convertJSONSchemaPropertiesToFieldParameters(
  * @param {Object} node - JSON schema node
  */
 function applyFieldsDependencies(fieldsParameters, node) {
+  if (node?.properties) {
+    Object.entries(node.properties ?? {}).forEach(([key, value]) => {
+      if (value['x-jsf-logic-computedAttrs']) {
+        const property = fieldsParameters.find(({ name }) => name === key);
+        property.isDynamic = true;
+        property.dynamicAttributes = [
+          ...(property.dynamicAttributes ?? []),
+          ...Object.keys(value['x-jsf-logic-computedAttrs']),
+        ];
+      }
+    });
+  }
+
   if (node?.then) {
     fieldsParameters
       .filter(
@@ -172,7 +185,16 @@ function applyFieldsDependencies(fieldsParameters, node) {
           node.else?.required?.includes(name)
       )
       .forEach((property) => {
+        const dynamicAttributes = [
+          ...Object.keys(node.then?.properties?.[property.name] ?? {}),
+          ...Object.keys(node.else?.properties?.[property.name] ?? {}),
+        ];
         property.isDynamic = true;
+        if (property.dynamicAttributes) {
+          property.dynamicAttributes.push(...dynamicAttributes);
+        } else {
+          property.dynamicAttributes = dynamicAttributes;
+        }
       });
 
     applyFieldsDependencies(fieldsParameters, node.then);

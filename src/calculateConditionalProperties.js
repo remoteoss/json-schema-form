@@ -92,7 +92,7 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
    *
    * @returns {calculateConditionalPropertiesReturn}
    */
-  return ({ isRequired, conditionBranch, formValues }) => {
+  return ({ dynamicAttributes, isRequired, conditionBranch, formValues }) => {
     // Check if the current field is conditionally declared in the schema
     // console.log('::calc (closure original)', fieldParams.description);
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
@@ -102,10 +102,13 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
 
       const fieldDescription = getFieldDescription(conditionalProperty, customProperties);
 
-      const newFieldParams = extractParametersFromNode({
-        ...conditionalProperty,
-        ...fieldDescription,
-      });
+      const newFieldParams = extractParametersFromNode(
+        {
+          ...conditionalProperty,
+          ...fieldDescription,
+        },
+        Object.keys(dynamicAttributes)
+      );
 
       let fieldSetFields;
 
@@ -134,6 +137,7 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
           : { value: undefined }),
         schema: buildYupSchema(
           {
+            ...dynamicAttributes,
             ...fieldParams,
             ...restNewFieldParams,
             ...calculatedComputedAttributes,
