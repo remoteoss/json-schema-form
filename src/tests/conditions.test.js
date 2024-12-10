@@ -511,4 +511,85 @@ describe('Multiple conditions affecting the same field', () => {
     expect(handleValidation({ answer: 'no', number: 15 }).formErrors).toBeUndefined();
     expect(handleValidation({ answer: 'no', number: 21 }).formErrors).toBeUndefined();
   });
+
+  it('Accepts unsatisfiable conflicting conditions', () => {
+    const unsatisfiableSchema = {
+      properties: {
+        has_books: { type: 'string' },
+        books: {
+          type: 'number',
+          const: 4,
+        },
+      },
+      required: ['books'],
+      allOf: [
+        {
+          if: { properties: { has_books: { const: 'yes' } } },
+          then: {
+            properties: {
+              books: {
+                minimum: 5,
+              },
+            },
+          },
+        },
+      ],
+    };
+
+    // This is intentionally not able to be satisfied.
+    const { handleValidation } = createHeadlessForm(unsatisfiableSchema, {
+      strictInputType: false,
+    });
+    expect(handleValidation({ has_books: 'yes', books: 4 }).formErrors).toEqual({
+      books: 'Must be greater or equal to 5',
+    });
+    expect(handleValidation({ has_books: 'yes', books: 5 }).formErrors).toEqual({
+      books: 'The only accepted value is 4.',
+    });
+  });
+
+  it('Computed attributes also get the same treatment for unsatisfiable conflicting conditions', () => {
+    const unsatisfiableSchema = {
+      properties: {
+        has_books: { type: 'string' },
+        books: {
+          type: 'number',
+          'x-jsf-logic-computedAttrs': {
+            const: 'book_space',
+          },
+        },
+      },
+      required: ['books'],
+      allOf: [
+        {
+          if: { properties: { has_books: { const: 'yes' } } },
+          then: {
+            properties: {
+              books: {
+                minimum: 5,
+              },
+            },
+          },
+        },
+      ],
+      'x-jsf-logic': {
+        computedValues: {
+          book_space: {
+            rule: {
+              '*': [2, 2],
+            },
+          },
+        },
+      },
+    };
+    const { handleValidation } = createHeadlessForm(unsatisfiableSchema, {
+      strictInputType: false,
+    });
+    expect(handleValidation({ has_books: 'yes', books: 4 }).formErrors).toEqual({
+      books: 'Must be greater or equal to 5',
+    });
+    expect(handleValidation({ has_books: 'yes', books: 5 }).formErrors).toEqual({
+      books: 'The only accepted value is 4.',
+    });
+  });
 });
