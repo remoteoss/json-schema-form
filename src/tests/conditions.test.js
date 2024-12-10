@@ -479,3 +479,36 @@ describe('Conditional with a minimum value check', () => {
     expect(handleValidation({ salary: 1000, reason: 'reason_one' }).formErrors).toEqual(undefined);
   });
 });
+
+describe('Multiple conditions affecting the same field', () => {
+  it('Should apply all conditions', () => {
+    const schema = {
+      properties: {
+        answer: { type: 'string' },
+        number: { type: 'number' },
+      },
+      allOf: [
+        {
+          if: { properties: { answer: { const: 'yes' } } },
+          then: { properties: { number: { minimum: 10 } } },
+        },
+        {
+          if: { properties: { answer: { const: 'yes' } } },
+          then: { properties: { number: { maximum: 20 } } },
+        },
+      ],
+    };
+
+    const { handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+    expect(handleValidation({ answer: 'yes', number: 15 }).formErrors).toEqual(undefined);
+    expect(handleValidation({ answer: 'yes', number: 9 }).formErrors).toEqual({
+      number: 'Must be greater or equal to 10',
+    });
+    expect(handleValidation({ answer: 'yes', number: 21 }).formErrors).toEqual({
+      number: 'Must be smaller or equal to 20',
+    });
+    expect(handleValidation({ answer: 'no', number: 9 }).formErrors).toBeUndefined();
+    expect(handleValidation({ answer: 'no', number: 15 }).formErrors).toBeUndefined();
+    expect(handleValidation({ answer: 'no', number: 21 }).formErrors).toBeUndefined();
+  });
+});

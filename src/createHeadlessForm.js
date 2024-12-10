@@ -172,7 +172,16 @@ function applyFieldsDependencies(fieldsParameters, node) {
           node.else?.required?.includes(name)
       )
       .forEach((property) => {
+        const dynamicAttributes = [
+          ...Object.keys(node.then?.properties?.[property.name] ?? {}),
+          ...Object.keys(node.else?.properties?.[property.name] ?? {}),
+        ];
         property.isDynamic = true;
+        if (property.dynamicAttributes) {
+          property.dynamicAttributes.push(...dynamicAttributes);
+        } else {
+          property.dynamicAttributes = dynamicAttributes;
+        }
       });
 
     applyFieldsDependencies(fieldsParameters, node.then);

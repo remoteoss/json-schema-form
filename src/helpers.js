@@ -291,6 +291,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
   // If field has a calculateConditionalProperties closure, run it and update the field properties
   if (field.calculateConditionalProperties) {
     const { rootFieldAttrs, newAttributes } = field.calculateConditionalProperties({
+      dynamicAttributes: Object.fromEntries(
+        (field.dynamicAttributes ?? []).map((attr) => [attr, field[attr]])
+      ),
       isRequired: fieldIsRequired,
       conditionBranch: node,
       formValues,
