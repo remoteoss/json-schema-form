@@ -5,18 +5,12 @@ import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
 import pick from 'lodash/pick';
 import { visitNodeType, visitKeywordNode } from '../node-checks';
-import { canonicalize } from '../utils';
+import { canonicalize, validDate } from '../utils';
 
 function validateDate(schema: Schema) {
   return schema.test({
     name: 'date-format',
-    test(value) {
-      if (typeof value !== 'string') return false;
-      if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
-      const [year, month, day] = value.split('-').map(Number);
-      const date = new Date(year, month - 1, day);
-      return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
-    },
+    test: validDate,
     message: `does not validate against format "date"`,
   });
 }
