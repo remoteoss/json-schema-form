@@ -2,12 +2,18 @@ export const stringTestCases = [
   {
     title: 'Basic string validation',
     schema: { type: 'string' } as const,
-    validTestCases: [{ data: 'hello' }, { data: '' }],
+    validTestCases: [{ data: 'hello' }, { data: '' }, { data: 'foo' }, { data: '1' }],
     invalidTestCases: [
       {
         data: 1,
         error: { '': 'this must be a `string` type, but the final value was: `1`.' },
       },
+      { data: 1.1 },
+      { data: {} },
+      { data: [] },
+      { data: true },
+      { data: false },
+      { data: null },
     ],
   },
   {
@@ -98,12 +104,18 @@ export const numberTestCases = [
   {
     title: 'Basic number validation',
     schema: { type: 'number' } as const,
-    validTestCases: [{ data: 1 }, { data: 1.5 }, { data: 0 }, { data: -1 }],
+    validTestCases: [{ data: 1 }, { data: 1.1 }, { data: 1.0 }, { data: 0 }, { data: -1 }],
     invalidTestCases: [
       {
         data: '1',
         error: { '': 'this must be a `number` type, but the final value was: `"1"`.' },
       },
+      { data: 'foo' },
+      { data: {} },
+      { data: [] },
+      { data: true },
+      { data: false },
+      { data: null },
     ],
   },
   {
@@ -124,12 +136,20 @@ export const numberTestCases = [
   {
     title: 'Integer validation',
     schema: { type: 'integer' } as const,
-    validTestCases: [{ data: 1 }, { data: 0 }, { data: -1 }],
+    validTestCases: [{ data: 1 }, { data: 1.0 }, { data: 0 }, { data: -1 }],
     invalidTestCases: [
       {
         data: 1.5,
         error: { '': 'this must be an integer' },
       },
+      { data: 1.1 },
+      { data: 'foo' },
+      { data: '1' },
+      { data: {} },
+      { data: [] },
+      { data: true },
+      { data: false },
+      { data: null },
     ],
   },
 ];
@@ -144,6 +164,14 @@ export const booleanTestCases = [
         data: 'true',
         error: { '': 'this must be a `boolean` type, but the final value was: `"true"`.' },
       },
+      { data: 1 },
+      { data: 0 },
+      { data: 1.1 },
+      { data: 'foo' },
+      { data: '' },
+      { data: {} },
+      { data: [] },
+      { data: null },
     ],
   },
   {
@@ -169,6 +197,13 @@ export const nullTestCases = [
         data: 'null',
         error: { '': 'Value must be null' },
       },
+      { data: 1 },
+      { data: 1.1 },
+      { data: 'foo' },
+      { data: {} },
+      { data: [] },
+      { data: true },
+      { data: false },
     ],
   },
   {
@@ -229,6 +264,48 @@ export const multiTypeTestCases = [
       },
     ],
   },
+  {
+    title: 'Integer or string validation',
+    schema: { type: ['integer', 'string'] },
+    validTestCases: [{ data: 1 }, { data: 'foo' }],
+    invalidTestCases: [
+      {
+        data: 1.1,
+        error: { '': 'Expected integer or string, but got number.' },
+      },
+      { data: {} },
+      { data: [] },
+      { data: true },
+      { data: false },
+      { data: null },
+    ],
+  },
+  {
+    title: 'Type as array with one item',
+    schema: { type: ['string'] } as const,
+    validTestCases: [{ data: 'hello' }],
+    invalidTestCases: [
+      { data: 1 },
+      { data: 1.1 },
+      { data: {} },
+      { data: [] },
+      { data: true },
+      { data: false },
+      { data: null },
+    ],
+  },
+  {
+    title: 'array or object',
+    schema: { type: ['array', 'object'] } as const,
+    validTestCases: [{ data: [] }, { data: {} }, { data: [1, 2, 3] }, { data: { foo: 123 } }],
+    invalidTestCases: [{ data: 123 }, { data: 'foo' }, { data: null }],
+  },
+  {
+    title: 'array or object or null',
+    schema: { type: ['array', 'object', 'null'] } as const,
+    validTestCases: [{ data: [1, 2, 3] }, { data: { foo: 123 } }, { data: null }],
+    invalidTestCases: [{ data: 123 }, { data: 'foo' }, { data: true }, { data: false }],
+  },
 ];
 
 export const objectTestCases = [
@@ -241,6 +318,13 @@ export const objectTestCases = [
         data: 'not-an-object',
         error: { '': 'this must be a `object` type, but the final value was: `"not-an-object"`.' },
       },
+      { data: 1 },
+      { data: 1.1 },
+      { data: 'foo' },
+      { data: [] },
+      { data: true },
+      { data: false },
+      { data: null },
     ],
   },
   {
@@ -274,6 +358,13 @@ export const arrayTestCases = [
         data: 'not-an-array',
         error: { '': 'this must be a `array` type, but the final value was: `"not-an-array"`.' },
       },
+      { data: 1 },
+      { data: 1.1 },
+      { data: {} },
+      { data: 'foo' },
+      { data: true },
+      { data: false },
+      { data: null },
     ],
   },
   {
