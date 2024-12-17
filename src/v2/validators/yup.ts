@@ -296,13 +296,39 @@ function processBoolean(schema: Schema, node: JSONSchema) {
 function processUniqueItems(
   schema: Schema,
   node: JSONSchema,
-  config: ProcessSchemaConfig<JSONSchema>
+  _config: ProcessSchemaConfig<JSONSchema>
 ) {
+  if (typeof node !== 'object' || !node.uniqueItems) return schema;
   return schema.test({
     name: 'unique-items',
-    test(value) {
+    test(value = []) {
       const canonicalized = value.map(canonicalize);
       return canonicalized.length === new Set(canonicalized).size;
+    },
+  });
+}
+
+function processAdditionalItems(
+  schema: Schema,
+  node: JSONSchema,
+  _config: ProcessSchemaConfig<JSONSchema>
+) {
+  if (typeof node !== 'object' || node.additionalItems !== false || !Array.isArray(node.items)) {
+    return schema;
+  }
+
+  return schema.test({
+    name: 'additional-items',
+    test(value, context) {
+      if (!Array.isArray(value)) return true;
+      if (value.length > (node.items as JSONSchema[]).length) {
+        return context.createError({
+          message: `array length ${value.length} is greater than allowed length ${
+            (node.items as JSONSchema[]).length
+          }`,
+        });
+      }
+      return true;
     },
   });
 }
@@ -323,6 +349,7 @@ function handleKeyword(
       conditional: (schema, node) => processConditionalSchema(schema, node, config),
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
       uniqueItems: (schema, node) => processUniqueItems(schema, node, config),
+      additionalItems: (schema, node) => processAdditionalItems(schema, node, config),
       default: (schema) => schema,
     },
     config

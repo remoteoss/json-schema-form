@@ -122,4 +122,57 @@ export const uniqueItemsTestCases = [
       },
     ],
   },
+  {
+    title: 'uniqueItems with an array of items',
+    schema: {
+      items: [{ type: 'boolean' }, { type: 'boolean' }],
+      uniqueItems: true,
+    },
+    validTestCases: [
+      { data: [true, false] },
+      { data: [false, true] },
+      { data: [false, true, 'foo', 'bar'] },
+      { data: [true, false, 'foo', 'bar'] },
+    ],
+    invalidTestCases: [
+      { data: [true, true] },
+      { data: [false, false] },
+      { data: [false, true, 'foo', 'foo'] },
+      { data: [true, false, 'foo', 'foo'] },
+    ],
+  },
+  {
+    title: 'uniqueItems with an array of items and additionalItems=false',
+    schema: {
+      items: [{ type: 'boolean' }, { type: 'boolean' }],
+      uniqueItems: true,
+      additionalItems: false,
+    },
+    validTestCases: [{ data: [true, false] }, { data: [false, true] }],
+    invalidTestCases: [
+      { data: [true, true] },
+      { data: [false, false] },
+      { data: [false, true, null] },
+    ],
+  },
+  {
+    title: 'uniqueItems=false with an array of items and additionalItems=false',
+    schema: {
+      items: [{ type: 'boolean' }, { type: 'boolean' }],
+      uniqueItems: false,
+      additionalItems: false,
+    },
+    validTestCases: [
+      { data: [false, true] },
+      { data: [true, false] },
+      { data: [false, false] },
+      { data: [true, true] },
+    ],
+    invalidTestCases: [
+      {
+        data: [false, true, null],
+      },
+    ],
+  },
 ];
+
