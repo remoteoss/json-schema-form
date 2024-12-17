@@ -106,6 +106,10 @@ export function isConditionalNode(node: JSONSchema) {
   return typeof node === 'object' && node.if && node.then;
 }
 
+export function isUniqueItemsNode(node: JSONSchema) {
+  return typeof node === 'object' && node.uniqueItems;
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -119,6 +123,11 @@ type KeywordNodeHandlers = {
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
   default: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
+  uniqueItems: (
     input: any,
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
@@ -138,6 +147,7 @@ export function visitKeywordNode(
     (input) => (isAnyOfNode(node) ? handlers.anyOf(input, node, config) : input),
     (input) => (isConditionalNode(node) ? handlers.conditional(input, node, config) : input),
     (input) => (isOneOfNode(node) ? handlers.oneOf(input, node, config) : input),
+    (input) => (isUniqueItemsNode(node) ? handlers.uniqueItems(input, node, config) : input),
     (input) => handlers.default(input, node, config),
   ]);
 }

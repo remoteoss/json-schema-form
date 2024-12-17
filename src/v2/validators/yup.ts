@@ -5,6 +5,7 @@ import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
 import pick from 'lodash/pick';
 import { visitNodeType, visitKeywordNode } from '../node-checks';
+import { canonicalize } from '../utils';
 
 function validateDate(schema: Schema) {
   return schema.test({
@@ -292,6 +293,20 @@ function processBoolean(schema: Schema, node: JSONSchema) {
     .nullable();
 }
 
+function processUniqueItems(
+  schema: Schema,
+  node: JSONSchema,
+  config: ProcessSchemaConfig<JSONSchema>
+) {
+  return schema.test({
+    name: 'unique-items',
+    test(value) {
+      const canonicalized = value.map(canonicalize);
+      return canonicalized.length === new Set(canonicalized).size;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -307,6 +322,7 @@ function handleKeyword(
       allOf: (schema, node) => processAllOfConditions(schema, node, config),
       conditional: (schema, node) => processConditionalSchema(schema, node, config),
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
+      uniqueItems: (schema, node) => processUniqueItems(schema, node, config),
       default: (schema) => schema,
     },
     config
