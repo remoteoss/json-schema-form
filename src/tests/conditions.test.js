@@ -518,6 +518,46 @@ describe('Multiple conditions affecting the same field', () => {
     expect(handleValidation({ answer: 'no', number: 21 }).formErrors).toBeUndefined();
   });
 
+  it('Should apply all conditions - same keyword', () => {
+    const schema = {
+      properties: {
+        answer: { type: 'string' },
+        number: { type: 'number' },
+      },
+      allOf: [
+        {
+          if: {
+            properties: { answer: { const: 'yes' } },
+            required: ['answer'],
+          },
+          then: { properties: { number: { minimum: 30 } } },
+        },
+        {
+          if: {
+            properties: { answer: { const: 'yes' } },
+            required: ['answer'],
+          },
+          then: { properties: { number: { minimum: 10 } } },
+        },
+      ],
+    };
+
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+    // console.log('::fields', fields);
+
+    expect(fields[1].minimum).toBe(undefined);
+
+    expect(handleValidation({ answer: 'no', number: 9 }).formErrors).toBeUndefined();
+
+    const { formErrors } = handleValidation({ answer: 'yes', number: 15 });
+
+    expect(fields[1].minimum).toBe(10); // This is wrong.
+    // it should be 30, that's why the next assertion fails.
+    expect(formErrors).toEqual({
+      number: 'Must be greater or equal to 30',
+    });
+  });
+
   it('Accepts unsatisfiable conflicting conditions', () => {
     const unsatisfiableSchema = {
       properties: {
