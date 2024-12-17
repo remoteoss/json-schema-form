@@ -489,11 +489,17 @@ describe('Multiple conditions affecting the same field', () => {
       },
       allOf: [
         {
-          if: { properties: { answer: { const: 'yes' } } },
+          if: {
+            properties: { answer: { const: 'yes' } },
+            required: ['answer'],
+          },
           then: { properties: { number: { minimum: 10 } } },
         },
         {
-          if: { properties: { answer: { const: 'yes' } } },
+          if: {
+            properties: { answer: { const: 'yes' } },
+            required: ['answer'],
+          },
           then: { properties: { number: { maximum: 20 } } },
         },
       ],
@@ -524,7 +530,10 @@ describe('Multiple conditions affecting the same field', () => {
       required: ['books'],
       allOf: [
         {
-          if: { properties: { has_books: { const: 'yes' } } },
+          if: {
+            properties: { has_books: { const: 'yes' } },
+            required: ['has_books'],
+          },
           then: {
             properties: {
               books: {
@@ -562,7 +571,10 @@ describe('Multiple conditions affecting the same field', () => {
       required: ['books'],
       allOf: [
         {
-          if: { properties: { has_books: { const: 'yes' } } },
+          if: {
+            properties: { has_books: { const: 'yes' } },
+            required: ['has_books'],
+          },
           then: {
             properties: {
               books: {
