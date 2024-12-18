@@ -100,10 +100,14 @@ function getMultiTypeSchema(
 function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
   const propertyKeys = Object.keys(node.properties ?? {});
   const objectSchema = mixed().when('$', {
-    is(value: unknown) {
-      const isAnObjectType = node.type === 'object';
-      if (isAnObjectType) return true;
-      return false;
+    is() {
+      const skipObjectValidation =
+        !node.type &&
+        Object.hasOwn(node, 'properties') &&
+        (typeof config.values !== 'object' || Array.isArray(config.values));
+
+      if (skipObjectValidation) return false;
+      return node.type === 'object' || Object.hasOwn(node, 'properties');
     },
     then() {
       return object().shape(
