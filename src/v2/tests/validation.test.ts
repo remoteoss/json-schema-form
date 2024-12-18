@@ -17,6 +17,7 @@ import {
 import { uniqueItemsTestCases } from './unique-items-test-cases';
 import { requiredTestCases } from './required';
 import { propertiesTestCases } from './properties';
+import { patternPropertiesTestCases } from './pattern-properties';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -42,6 +43,7 @@ describe('createHeadlessForm', () => {
     { title: 'Unique items', testCases: uniqueItemsTestCases },
     { title: 'Required', testCases: requiredTestCases },
     { title: 'Properties', testCases: propertiesTestCases },
+    { title: 'Pattern properties', testCases: patternPropertiesTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(
