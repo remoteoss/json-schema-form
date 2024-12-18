@@ -99,7 +99,7 @@ function getMultiTypeSchema(
 
 function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>) {
   const propertyKeys = Object.keys(node.properties ?? {});
-  return object().shape(
+  let schema = object().shape(
     Object.fromEntries(
       propertyKeys.map((key) => {
         if (node.properties?.[key]) {
@@ -113,10 +113,14 @@ function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<J
       })
     )
   );
+  if (node.patternProperties) {
+    schema = processPatternProperties(schema, node, config);
+  }
+  return schema;
 }
 
 function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
-  const objectSchema = mixed().when('$', {
+  return mixed().when('$', {
     is() {
       const skipObjectValidation =
         !node.type &&
@@ -130,11 +134,9 @@ function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSO
       return processProperties(node, config);
     },
     otherwise(schema) {
-      return schema.nullable();
+      return schema;
     },
   });
-
-  return objectSchema;
 }
 
 function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
@@ -373,6 +375,46 @@ function processRequired(
   return schema;
 }
 
+function processPatternProperties(
+  schema: Schema,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'pattern-properties',
+    test(value, context) {
+      let errors: ValidationError[] = [];
+
+      Object.entries(value).forEach(([key, propValue]) => {
+        Object.entries(node.patternProperties).forEach(([pattern, patternNode]) => {
+          const isMatch = new RegExp(pattern).test(key);
+          if (isMatch) {
+            const patternSchema = getYupSchema(patternNode as JSONSchema, config);
+            try {
+              patternSchema.validateSync(propValue);
+            } catch (e) {
+              errors.push({
+                ...(e as ValidationError),
+                path: context.path ? `${context.path}.${key}` : key,
+              });
+            }
+          }
+        });
+      });
+
+      const error = errors.at(-1);
+      if (error) {
+        return context.createError({
+          message: error.message,
+          path: error.path,
+        });
+      }
+
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -382,6 +424,7 @@ function handleKeyword(
     node,
     {
       required: (schema, node) => processRequired(schema, node, config),
+      patternProperties: (schema, node) => processPatternProperties(schema, node, config),
       enum: (schema, node) => schema.oneOf(node.enum),
       const: (schema, node) => schema.oneOf([node.const]),
       not: (schema, node) => handleNotKeyword(schema, node, config),
