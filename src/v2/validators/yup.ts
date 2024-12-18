@@ -102,7 +102,17 @@ function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<J
   let schema = object().shape(
     Object.fromEntries(
       propertyKeys.map((key) => {
-        if (node.properties?.[key]) {
+        if (Object.hasOwn(node.properties, key)) {
+          if (node.properties[key] === false) {
+            return [
+              key,
+              mixed().test('never-valid-when-value-present', (value) => {
+                if (value === undefined) return true;
+                return false;
+              }),
+            ];
+          }
+
           const propertySchema = getYupSchema(node.properties[key] as JSONSchema, config);
           if (node.required?.includes(key)) {
             return [key, propertySchema.required('Field is required')];
