@@ -122,6 +122,10 @@ export function isPatternPropertiesNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'patternProperties');
 }
 
+export function isAdditionalPropertiesNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'additionalProperties');
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -159,6 +163,11 @@ type KeywordNodeHandlers = {
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
+  additionalProperties: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
@@ -170,6 +179,8 @@ export function visitKeywordNode(
     (input) => (isRequiredNode(node) ? handlers.required(input, node, config) : input),
     (input) =>
       isPatternPropertiesNode(node) ? handlers.patternProperties(input, node, config) : input,
+    (input) =>
+      isAdditionalPropertiesNode(node) ? handlers.additionalProperties(input, node, config) : input,
     (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
     (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
     (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),

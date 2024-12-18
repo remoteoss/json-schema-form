@@ -116,6 +116,9 @@ function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<J
   if (node.patternProperties) {
     schema = processPatternProperties(schema, node, config);
   }
+  if (node.additionalProperties) {
+    schema = processAdditionalProperties(schema, node, config);
+  }
   return schema;
 }
 
@@ -415,6 +418,34 @@ function processPatternProperties(
   });
 }
 
+function processAdditionalProperties(
+  schema: Schema,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  // If additionalProperties is false, make the object strict
+  if (node.additionalProperties === false) {
+    return schema.strict().noUnknown(true);
+  }
+
+  return schema.test({
+    name: 'additional-properties',
+    test(value, context) {
+      const knownProps = Object.keys(node.properties || {});
+      const patternProps = Object.keys(node.patternProperties || {});
+      const additionalProps = Object.keys(value).filter((key) => {
+        const matchesPattern = patternProps.some((pattern) => new RegExp(pattern).test(key));
+        return !knownProps.includes(key) && !matchesPattern;
+      });
+      const additionalSchema = getYupSchema(node.additionalProperties as JSONSchema, config);
+      for (const key of additionalProps) {
+        additionalSchema.validateSync(value[key]);
+      }
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -425,6 +456,7 @@ function handleKeyword(
     {
       required: (schema, node) => processRequired(schema, node, config),
       patternProperties: (schema, node) => processPatternProperties(schema, node, config),
+      additionalProperties: (schema, node) => processAdditionalProperties(schema, node, config),
       enum: (schema, node) => schema.oneOf(node.enum),
       const: (schema, node) => schema.oneOf([node.const]),
       not: (schema, node) => handleNotKeyword(schema, node, config),
