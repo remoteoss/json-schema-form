@@ -97,8 +97,25 @@ function getMultiTypeSchema(
   });
 }
 
-function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
+function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>) {
   const propertyKeys = Object.keys(node.properties ?? {});
+  return object().shape(
+    Object.fromEntries(
+      propertyKeys.map((key) => {
+        if (node.properties?.[key]) {
+          const propertySchema = getYupSchema(node.properties[key] as JSONSchema, config);
+          if (node.required?.includes(key)) {
+            return [key, propertySchema.required('Field is required')];
+          }
+          return [key, propertySchema];
+        }
+        return [key, mixed()];
+      })
+    )
+  );
+}
+
+function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
   const objectSchema = mixed().when('$', {
     is() {
       const skipObjectValidation =
@@ -110,20 +127,7 @@ function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSO
       return node.type === 'object' || Object.hasOwn(node, 'properties');
     },
     then() {
-      return object().shape(
-        Object.fromEntries(
-          propertyKeys.map((key) => {
-            if (node.properties?.[key]) {
-              const propertySchema = getYupSchema(node.properties[key] as JSONSchema, config);
-              if (node.required?.includes(key)) {
-                return [key, propertySchema.required('Field is required')];
-              }
-              return [key, propertySchema];
-            }
-            return [key, mixed()];
-          })
-        )
-      );
+      return processProperties(node, config);
     },
     otherwise(schema) {
       return schema.nullable();
