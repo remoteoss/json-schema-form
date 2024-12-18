@@ -431,6 +431,7 @@ function processAdditionalProperties(
   return schema.test({
     name: 'additional-properties',
     test(value, context) {
+      let errors: ValidationError[] = [];
       const knownProps = Object.keys(node.properties || {});
       const patternProps = Object.keys(node.patternProperties || {});
       const additionalProps = Object.keys(value).filter((key) => {
@@ -439,7 +440,21 @@ function processAdditionalProperties(
       });
       const additionalSchema = getYupSchema(node.additionalProperties as JSONSchema, config);
       for (const key of additionalProps) {
-        additionalSchema.validateSync(value[key]);
+        try {
+          additionalSchema.validateSync(value[key]);
+        } catch (e) {
+          errors.push({
+            ...(e as ValidationError),
+            path: context.path ? `${context.path}.${key}` : key,
+          });
+        }
+      }
+      let error = errors.at(-1);
+      if (error) {
+        return context.createError({
+          message: error.message,
+          path: error.path,
+        });
       }
       return true;
     },
