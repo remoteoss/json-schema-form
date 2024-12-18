@@ -22,7 +22,6 @@ function getFormatSchema(schema: Schema, node: JSONSchemaObject) {
 }
 
 function getStringSchema(node: JSONSchemaObject) {
-  if (typeof node !== 'object') return string();
   let schema = string().strict();
   if (node.minLength) schema = schema.min(node.minLength);
   if (node.maxLength) schema = schema.max(node.maxLength);
@@ -100,33 +99,32 @@ function getMultiTypeSchema(
 
 function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
   const propertyKeys = Object.keys(node.properties ?? {});
-  const objectSchema = object()
-    .transform((value) => {
-      // handle when there are `properties` but the `type` is not "object"
-      const isNotAnObjectType = node.type !== 'object';
-      const isIgnorableValue = typeof value !== 'object' || Array.isArray(value);
-      if (isNotAnObjectType && isIgnorableValue) {
-        return undefined; // This will skip validation
-      }
-      return value;
-    })
-    .when('$', {
-      is: (value) => {
-        return node.type === 'object' || typeof value === 'object';
-      },
-      then: (schema) =>
-        schema.shape(
-          Object.fromEntries(
-            propertyKeys.map((key) => {
-              if (node.properties?.[key]) {
-                return [key, getYupSchema(node.properties[key] as JSONSchema, config)];
+  const objectSchema = mixed().when('$', {
+    is(value: unknown) {
+      const isAnObjectType = node.type === 'object';
+      if (isAnObjectType) return true;
+      return false;
+    },
+    then() {
+      return object().shape(
+        Object.fromEntries(
+          propertyKeys.map((key) => {
+            if (node.properties?.[key]) {
+              const propertySchema = getYupSchema(node.properties[key] as JSONSchema, config);
+              if (node.required?.includes(key)) {
+                return [key, propertySchema.required('Field is required')];
               }
-              return [key, mixed()];
-            })
-          )
-        ),
-      otherwise: (schema) => schema.nullable(),
-    });
+              return [key, propertySchema];
+            }
+            return [key, mixed()];
+          })
+        )
+      );
+    },
+    otherwise(schema) {
+      return schema.nullable();
+    },
+  });
 
   return objectSchema;
 }
@@ -347,14 +345,14 @@ function processRequired(
   _config: ProcessSchemaConfig<JSONSchemaObject>
 ) {
   if (!node.required?.length) return schema;
-  node.required.forEach((key) => {
+  node.required.forEach((key: string) => {
     schema = schema.test({
       name: 'required',
       test(value, context) {
         if (typeof value !== 'object' || Array.isArray(value)) {
           return true;
         }
-        if (key in value) {
+        if (Object.hasOwn(value, key)) {
           return true;
         }
         return context.createError({
@@ -375,6 +373,7 @@ function handleKeyword(
   return visitKeywordNode(
     node,
     {
+      required: (schema, node) => processRequired(schema, node, config),
       enum: (schema, node) => schema.oneOf(node.enum),
       const: (schema, node) => schema.oneOf([node.const]),
       not: (schema, node) => handleNotKeyword(schema, node, config),
@@ -384,7 +383,6 @@ function handleKeyword(
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
       uniqueItems: (schema, node) => processUniqueItems(schema, node, config),
       additionalItems: (schema, node) => processAdditionalItems(schema, node, config),
-      required: (schema, node) => processRequired(schema, node, config),
       default: (schema) => schema,
     },
     config
@@ -411,8 +409,8 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
 function getYupSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>) {
   return flow([
     () => getBaseSchema(node, config),
-    (schema) => getNullableSchema(schema, node),
     (schema) => handleKeyword(schema, node, config),
+    (schema) => getNullableSchema(schema, node),
     (schema) => processBoolean(schema, node),
   ])();
 }

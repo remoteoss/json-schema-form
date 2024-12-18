@@ -158,6 +158,7 @@ export function visitKeywordNode(
   config: ProcessSchemaConfig<JSONSchema>
 ) {
   return flow([
+    (input) => (isRequiredNode(node) ? handlers.required(input, node, config) : input),
     (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
     (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
     (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),
@@ -168,7 +169,6 @@ export function visitKeywordNode(
     (input) => (isUniqueItemsNode(node) ? handlers.uniqueItems(input, node, config) : input),
     (input) =>
       isAdditionalItemsNode(node) ? handlers.additionalItems(input, node, config) : input,
-    (input) => (isRequiredNode(node) ? handlers.required(input, node, config) : input),
     (input) => handlers.default(input, node, config),
   ]);
 }

@@ -1,3 +1,8 @@
+const specialObjectWithProto = Object.create(null);
+specialObjectWithProto.toString = { length: 'foo' };
+specialObjectWithProto.constructor = 37;
+specialObjectWithProto.__proto__ = 12;
+
 export const requiredTestCases = [
   {
     title: 'required validation',
@@ -54,6 +59,23 @@ export const requiredTestCases = [
           'foo"bar': '1',
         },
       },
+    ],
+  },
+  {
+    title: 'required properties whose names are Javascript object property names',
+    schema: { required: ['__proto__', 'toString', 'constructor'] } as const,
+    validTestCases: [
+      { data: [] },
+      { data: 12 },
+      {
+        data: specialObjectWithProto,
+      },
+    ],
+    invalidTestCases: [
+      { data: {} },
+      { data: { __proto__: 'foo' } },
+      { data: { toString: { length: 37 } } },
+      { data: { constructor: { length: 37 } } },
     ],
   },
 ];
