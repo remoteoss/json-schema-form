@@ -99,30 +99,27 @@ function getMultiTypeSchema(
 }
 
 function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
-  const totalKeys = [...new Set([...(node.required ?? []), ...Object.keys(node.properties ?? {})])];
-
-  const schema = object().shape(
+  const propertyKeys = Object.keys(node.properties ?? {});
+  const objectSchema = object().shape(
     Object.fromEntries(
-      totalKeys.map((key) => {
+      propertyKeys.map((key) => {
         if (node.properties?.[key]) {
-          const schema = getYupSchema(node.properties[key] as JSONSchema, config);
-          if (node.required?.includes(key)) return [key, schema.required(`Field is required`)];
-          return [key, schema];
+          return [key, getYupSchema(node.properties[key] as JSONSchema, config)];
         }
-        return [key, mixed().required(`Field is required`)];
+        return [key, mixed()];
       })
     )
   );
 
-  if (node.additionalProperties === false) return schema.strict().noUnknown(true);
-  return schema;
+  return objectSchema;
 }
 
 function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   let schema = array().strict();
-  if (node.items) schema = schema.of(getYupSchema(node.items as JSONSchema, config));
-  if (node.minItems) schema = schema.min(node.minItems);
-  if (node.maxItems) schema = schema.max(node.maxItems);
+  if (typeof node === 'object' && node.items)
+    schema = schema.of(getYupSchema(node.items as JSONSchema, config));
+  if (typeof node === 'object' && node.minItems) schema = schema.min(node.minItems);
+  if (typeof node === 'object' && node.maxItems) schema = schema.max(node.maxItems);
   return schema;
 }
 
@@ -327,6 +324,32 @@ function processAdditionalItems(
   });
 }
 
+function processRequired(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  if (!node.required?.length) return schema;
+  node.required.forEach((key) => {
+    schema = schema.test({
+      name: 'required',
+      test(value, context) {
+        if (typeof value !== 'object' || Array.isArray(value)) {
+          return true;
+        }
+        if (key in value) {
+          return true;
+        }
+        return context.createError({
+          message: 'Field is required',
+          path: `${context.path ? context.path + '.' : ''}${key}`,
+        });
+      },
+    });
+  });
+  return schema;
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -344,6 +367,7 @@ function handleKeyword(
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
       uniqueItems: (schema, node) => processUniqueItems(schema, node, config),
       additionalItems: (schema, node) => processAdditionalItems(schema, node, config),
+      required: (schema, node) => processRequired(schema, node, config),
       default: (schema) => schema,
     },
     config
@@ -400,3 +424,5 @@ export const yupValidatorPlugin: JSONSchemaFormPlugin = {
     };
   },
 };
+
+//   if (node.additionalProperties === false) return schema.strict().noUnknown(true);

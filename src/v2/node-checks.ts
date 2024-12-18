@@ -114,6 +114,10 @@ export function isAdditionalItemsNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'additionalItems');
 }
 
+export function isRequiredNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'required');
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -141,6 +145,11 @@ type KeywordNodeHandlers = {
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
+  required: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
@@ -159,6 +168,7 @@ export function visitKeywordNode(
     (input) => (isUniqueItemsNode(node) ? handlers.uniqueItems(input, node, config) : input),
     (input) =>
       isAdditionalItemsNode(node) ? handlers.additionalItems(input, node, config) : input,
+    (input) => (isRequiredNode(node) ? handlers.required(input, node, config) : input),
     (input) => handlers.default(input, node, config),
   ]);
 }
