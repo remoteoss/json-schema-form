@@ -15,6 +15,7 @@ import {
   arrayTestCases,
 } from './primitive-tests';
 import { uniqueItemsTestCases } from './unique-items-test-cases';
+import { requiredTestCases } from './required';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -38,6 +39,7 @@ describe('createHeadlessForm', () => {
     { title: 'AnyOf keyword', testCases: anyOfTestCases },
     { title: 'OneOf keyword', testCases: oneOfTestCases },
     { title: 'Unique items', testCases: uniqueItemsTestCases },
+    { title: 'Required', testCases: requiredTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(
