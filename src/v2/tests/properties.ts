@@ -35,7 +35,10 @@ export const propertiesTestCases = [
       { data: { foo: [1, 2, 3, 4] } },
       { data: { fxo: [] } },
       { data: { foo: [] }, error: { foo: 'this field must have at least 2 items' } },
-      { data: { quux: 'foo' } },
+      {
+        data: { quux: 'foo' },
+        error: { quux: 'this must be a `number` type, but the final value was: `"foo"`.' },
+      },
     ],
   },
 ];
