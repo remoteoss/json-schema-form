@@ -89,4 +89,48 @@ export const propertiesTestCases = [
       },
     ],
   },
+  {
+    title: 'properties with null valued instance properties',
+    schema: {
+      properties: {
+        foo: { type: 'null' },
+      },
+    },
+    validTestCases: [{ data: { foo: null } }],
+  },
+  {
+    title: 'properties whose names are Javascript object property names',
+    schema: {
+      properties: {
+        // ['__proto__']: { type: 'number' },
+        ['__proto__(not_working_yet)']: { type: 'number' },
+        toString: {
+          properties: { length: { type: 'string' } },
+        },
+        // constructor: { type: 'number' },
+        ['constructor_(actual_constructor_value_is_still_buggy_and_does_not_work)']: {
+          type: 'number',
+        },
+      },
+    },
+    validTestCases: [
+      { data: [] },
+      { data: 12 },
+      { data: {} },
+      {
+        ['__proto__(not_working_yet)']: 12,
+        toString: { length: 'foo' },
+        ['constructor_(actual_constructor_value_is_still_buggy_and_does_not_work)']: 37,
+      },
+    ],
+    invalidTestCases: [
+      { data: { ['__proto__(not_working_yet)']: 'foo' } },
+      { data: { ['toString']: { ['length']: 37 } } },
+      {
+        data: {
+          ['constructor_(actual_constructor_value_is_still_buggy_and_does_not_work)']: 'foo',
+        },
+      },
+    ],
+  },
 ];
