@@ -100,16 +100,33 @@ function getMultiTypeSchema(
 
 function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>): Schema {
   const propertyKeys = Object.keys(node.properties ?? {});
-  const objectSchema = object().shape(
-    Object.fromEntries(
-      propertyKeys.map((key) => {
-        if (node.properties?.[key]) {
-          return [key, getYupSchema(node.properties[key] as JSONSchema, config)];
-        }
-        return [key, mixed()];
-      })
-    )
-  );
+  const objectSchema = object()
+    .transform((value) => {
+      // handle when there are `properties` but the `type` is not "object"
+      const isNotAnObjectType = node.type !== 'object';
+      const isIgnorableValue = typeof value !== 'object' || Array.isArray(value);
+      if (isNotAnObjectType && isIgnorableValue) {
+        return undefined; // This will skip validation
+      }
+      return value;
+    })
+    .when('$', {
+      is: (value) => {
+        return node.type === 'object' || typeof value === 'object';
+      },
+      then: (schema) =>
+        schema.shape(
+          Object.fromEntries(
+            propertyKeys.map((key) => {
+              if (node.properties?.[key]) {
+                return [key, getYupSchema(node.properties[key] as JSONSchema, config)];
+              }
+              return [key, mixed()];
+            })
+          )
+        ),
+      otherwise: (schema) => schema.nullable(),
+    });
 
   return objectSchema;
 }
