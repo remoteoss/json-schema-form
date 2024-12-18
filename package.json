@@ -1,6 +1,6 @@
 {
   "name": "@remoteoss/json-schema-form",
-  "version": "0.12.0-dev.20241218054539",
+  "version": "0.12.0-dev.20241218054712",
   "description": "Headless UI form powered by JSON Schemas",
   "author": "Remote.com <engineering@remote.com> (https://remote.com/)",
   "license": "MIT",
