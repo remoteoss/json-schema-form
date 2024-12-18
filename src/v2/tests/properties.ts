@@ -41,4 +41,52 @@ export const propertiesTestCases = [
       },
     ],
   },
+  {
+    title: 'properties with boolean schema',
+    schema: {
+      properties: {
+        foo: true,
+        bar: false,
+      },
+    },
+    validTestCases: [{ data: {} }, { data: { foo: 1 } }],
+    invalidTestCases: [{ data: { bar: 2 } }, { data: { foo: 1, bar: 2 } }],
+  },
+  {
+    title: 'properties with escaped characters',
+    schema: {
+      properties: {
+        'foo\nbar': { type: 'number' },
+        'foo"bar': { type: 'number' },
+        'foo\\bar': { type: 'number' },
+        'foo\rbar': { type: 'number' },
+        'foo\tbar': { type: 'number' },
+        'foo\fbar': { type: 'number' },
+      },
+    },
+    validTestCases: [
+      {
+        data: {
+          'foo\nbar': 1,
+          'foo"bar': 1,
+          'foo\\bar': 1,
+          'foo\rbar': 1,
+          'foo\tbar': 1,
+          'foo\fbar': 1,
+        },
+      },
+    ],
+    invalidTestCases: [
+      {
+        data: {
+          'foo\nbar': '1',
+          'foo"bar': '1',
+          'foo\\bar': '1',
+          'foo\rbar': '1',
+          'foo\tbar': '1',
+          'foo\fbar': '1',
+        },
+      },
+    ],
+  },
 ];
