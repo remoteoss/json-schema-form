@@ -2,7 +2,10 @@
   "root": true,
   "extends": ["eslint:recommended", "prettier"],
   "plugins": ["import", "jest", "sort-keys", "unused-imports"],
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
+  "parserOptions": {
+    "requireConfigFile": true
+  },
   "env": {
     "es6": true,
     "browser": true,
