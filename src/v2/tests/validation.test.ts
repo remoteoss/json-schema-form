@@ -70,7 +70,7 @@ describe('createHeadlessForm', () => {
             if (invalidTestCases) {
               invalidTestCases.forEach(
                 ({ data, error }: { data: any; error?: any }, index: number) => {
-                  it(`Invalid: ${index + 1}`, () => {
+                  it(`Invalid: ${JSON.stringify(data)}`, () => {
                     const result = form.handleValidation(data).formErrors;
                     expect(result).toBeTruthy();
                     if (error) {
