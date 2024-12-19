@@ -28,14 +28,7 @@ export function isMultiTypeValue(node: JSONSchema) {
 
 export function isStringNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
-  return (
-    node.type === 'string' ||
-    typeof node.const === 'string' ||
-    node.minLength ||
-    node.maxLength ||
-    node.pattern ||
-    node.format
-  );
+  return node.type === 'string';
 }
 
 export function isBooleanNode(node: JSONSchema) {
@@ -126,6 +119,10 @@ export function isAdditionalPropertiesNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'additionalProperties');
 }
 
+export function isPatternNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'pattern');
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -168,6 +165,11 @@ type KeywordNodeHandlers = {
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
+  pattern: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
@@ -181,6 +183,7 @@ export function visitKeywordNode(
       isPatternPropertiesNode(node) ? handlers.patternProperties(input, node, config) : input,
     (input) =>
       isAdditionalPropertiesNode(node) ? handlers.additionalProperties(input, node, config) : input,
+    (input) => (isPatternNode(node) ? handlers.pattern(input, node, config) : input),
     (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
     (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
     (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),

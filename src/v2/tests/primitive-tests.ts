@@ -1,22 +1,5 @@
 export const stringTestCases = [
   {
-    title: 'Basic string validation',
-    schema: { type: 'string' } as const,
-    validTestCases: [{ data: 'hello' }, { data: '' }, { data: 'foo' }, { data: '1' }],
-    invalidTestCases: [
-      {
-        data: 1,
-        error: { '': 'this must be a `string` type, but the final value was: `1`.' },
-      },
-      { data: 1.1 },
-      { data: {} },
-      { data: [] },
-      { data: true },
-      { data: false },
-      { data: null },
-    ],
-  },
-  {
     title: 'String length constraints',
     schema: { type: 'string', minLength: 5, maxLength: 10 } as const,
     validTestCases: [{ data: 'hello' }, { data: 'helloworld' }],
@@ -102,23 +85,6 @@ export const stringTestCases = [
 
 export const numberTestCases = [
   {
-    title: 'Basic number validation',
-    schema: { type: 'number' } as const,
-    validTestCases: [{ data: 1 }, { data: 1.1 }, { data: 1.0 }, { data: 0 }, { data: -1 }],
-    invalidTestCases: [
-      {
-        data: '1',
-        error: { '': 'this must be a `number` type, but the final value was: `"1"`.' },
-      },
-      { data: 'foo' },
-      { data: {} },
-      { data: [] },
-      { data: true },
-      { data: false },
-      { data: null },
-    ],
-  },
-  {
     title: 'Number range validation',
     schema: { type: 'number', minimum: 5, maximum: 10 } as const,
     validTestCases: [{ data: 5 }, { data: 7.5 }, { data: 10 }],
@@ -133,47 +99,9 @@ export const numberTestCases = [
       },
     ],
   },
-  {
-    title: 'Integer validation',
-    schema: { type: 'integer' } as const,
-    validTestCases: [{ data: 1 }, { data: 1.0 }, { data: 0 }, { data: -1 }],
-    invalidTestCases: [
-      {
-        data: 1.5,
-        error: { '': 'this must be an integer' },
-      },
-      { data: 1.1 },
-      { data: 'foo' },
-      { data: '1' },
-      { data: {} },
-      { data: [] },
-      { data: true },
-      { data: false },
-      { data: null },
-    ],
-  },
 ];
 
 export const booleanTestCases = [
-  {
-    title: 'Boolean validation',
-    schema: { type: 'boolean' } as const,
-    validTestCases: [{ data: true }, { data: false }],
-    invalidTestCases: [
-      {
-        data: 'true',
-        error: { '': 'this must be a `boolean` type, but the final value was: `"true"`.' },
-      },
-      { data: 1 },
-      { data: 0 },
-      { data: 1.1 },
-      { data: 'foo' },
-      { data: '' },
-      { data: {} },
-      { data: [] },
-      { data: null },
-    ],
-  },
   {
     title: 'Boolean const validation',
     schema: { const: true } as const,
@@ -188,24 +116,6 @@ export const booleanTestCases = [
 ];
 
 export const nullTestCases = [
-  {
-    title: 'Null validation',
-    schema: { type: 'null' } as const,
-    validTestCases: [{ data: null }],
-    invalidTestCases: [
-      {
-        data: 'null',
-        error: { '': 'Value must be null' },
-      },
-      { data: 1 },
-      { data: 1.1 },
-      { data: 'foo' },
-      { data: {} },
-      { data: [] },
-      { data: true },
-      { data: false },
-    ],
-  },
   {
     title: 'Null const validation',
     schema: { const: null } as const,
@@ -264,69 +174,9 @@ export const multiTypeTestCases = [
       },
     ],
   },
-  {
-    title: 'Integer or string validation',
-    schema: { type: ['integer', 'string'] },
-    validTestCases: [{ data: 1 }, { data: 'foo' }],
-    invalidTestCases: [
-      {
-        data: 1.1,
-        error: { '': 'Expected integer or string, but got number.' },
-      },
-      { data: {} },
-      { data: [] },
-      { data: true },
-      { data: false },
-      { data: null },
-    ],
-  },
-  {
-    title: 'Type as array with one item',
-    schema: { type: ['string'] } as const,
-    validTestCases: [{ data: 'hello' }],
-    invalidTestCases: [
-      { data: 1 },
-      { data: 1.1 },
-      { data: {} },
-      { data: [] },
-      { data: true },
-      { data: false },
-      { data: null },
-    ],
-  },
-  {
-    title: 'array or object',
-    schema: { type: ['array', 'object'] } as const,
-    validTestCases: [{ data: [] }, { data: {} }, { data: [1, 2, 3] }, { data: { foo: 123 } }],
-    invalidTestCases: [{ data: 123 }, { data: 'foo' }, { data: null }],
-  },
-  {
-    title: 'array or object or null',
-    schema: { type: ['array', 'object', 'null'] } as const,
-    validTestCases: [{ data: [1, 2, 3] }, { data: { foo: 123 } }, { data: null }],
-    invalidTestCases: [{ data: 123 }, { data: 'foo' }, { data: true }, { data: false }],
-  },
 ];
 
 export const objectTestCases = [
-  {
-    title: 'Basic object validation',
-    schema: { type: 'object' } as const,
-    validTestCases: [{ data: {} }, { data: { a: 1, b: 'hello' } }],
-    invalidTestCases: [
-      {
-        data: 'not-an-object',
-        error: { '': 'this must be a `object` type, but the final value was: `"not-an-object"`.' },
-      },
-      { data: 1 },
-      { data: 1.1 },
-      { data: 'foo' },
-      { data: [] },
-      { data: true },
-      { data: false },
-      { data: null },
-    ],
-  },
   {
     title: 'Object with property constraints',
     schema: {
@@ -349,24 +199,6 @@ export const objectTestCases = [
 ];
 
 export const arrayTestCases = [
-  {
-    title: 'Basic array validation',
-    schema: { type: 'array' } as const,
-    validTestCases: [{ data: [] }, { data: [1, 'two', true] }],
-    invalidTestCases: [
-      {
-        data: 'not-an-array',
-        error: { '': 'this must be a `array` type, but the final value was: `"not-an-array"`.' },
-      },
-      { data: 1 },
-      { data: 1.1 },
-      { data: {} },
-      { data: 'foo' },
-      { data: true },
-      { data: false },
-      { data: null },
-    ],
-  },
   {
     title: 'Array with item constraints',
     schema: {

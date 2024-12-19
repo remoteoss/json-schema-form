@@ -25,7 +25,6 @@ function getStringSchema(node: JSONSchemaObject) {
   let schema = string().strict();
   if (node.minLength) schema = schema.min(node.minLength);
   if (node.maxLength) schema = schema.max(node.maxLength);
-  if (node.pattern) schema = schema.matches(new RegExp(node.pattern));
   if (node.format) schema = getFormatSchema(schema, node);
   return schema;
 }
@@ -471,6 +470,20 @@ function processAdditionalProperties(
   });
 }
 
+function processPattern(
+  schema: Schema,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'pattern',
+    test(value) {
+      if (typeof value !== 'string') return true;
+      return new RegExp(node.pattern).test(value);
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -481,6 +494,7 @@ function handleKeyword(
     {
       required: (schema, node) => processRequired(schema, node, config),
       patternProperties: (schema, node) => processPatternProperties(schema, node, config),
+      pattern: (schema, node) => processPattern(schema, node, config),
       additionalProperties: (schema, node) => processAdditionalProperties(schema, node, config),
       enum: (schema, node) => schema.oneOf(node.enum),
       const: (schema, node) => schema.oneOf([node.const]),
@@ -498,6 +512,7 @@ function handleKeyword(
 }
 
 function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+  const schema = mixed();
   return visitNodeType(
     node,
     {
@@ -507,8 +522,8 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
       string: () => getStringSchema(node),
       boolean: () => boolean().strict(),
       array: () => getArraySchema(node, config),
-      nullType: () => getNullValueSchema(mixed()),
-      default: () => mixed().nullable(),
+      nullType: () => getNullValueSchema(schema),
+      default: () => schema.nullable(),
     },
     config
   );
