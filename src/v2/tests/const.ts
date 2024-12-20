@@ -62,7 +62,31 @@ export const constTestCases = [
   {
     title: 'const with 0 does not match other zero-like types',
     schema: { const: 0 },
-    validTestCases: [{ data: 0 }],
-    invalidTestCases: [{ data: false }],
+    validTestCases: [{ data: 0 }, { data: 0.0 }],
+    invalidTestCases: [{ data: false }, { data: {} }, { data: [] }, { data: '' }],
+  },
+  {
+    title: 'const with 1 does not match true',
+    schema: { const: 1 },
+    validTestCases: [{ data: 1 }, { data: 1.0 }],
+    invalidTestCases: [{ data: true }],
+  },
+  {
+    title: 'const with -2.0 does not match -2',
+    schema: { const: -2.0 },
+    validTestCases: [{ data: -2.0 }, { data: -2 }],
+    invalidTestCases: [{ data: 2 }, { data: 2.0 }, { data: -2.00001 }],
+  },
+  {
+    title: 'float and integers are equal up to 64-bit representation limits',
+    schema: { const: 9007199254740992 },
+    validTestCases: [{ data: 9007199254740992 }, { data: 9007199254740992.0 }],
+    invalidTestCases: [{ data: 9007199254740991 }, { data: 9007199254740991.0 }],
+  },
+  {
+    title: 'nul characters in strings',
+    schema: { const: 'hello\u0000there' },
+    validTestCases: [{ data: 'hello\u0000there' }],
+    invalidTestCases: [{ data: 'hellothere' }],
   },
 ];
