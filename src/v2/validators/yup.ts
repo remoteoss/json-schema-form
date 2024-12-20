@@ -767,6 +767,31 @@ function processFormat(
   });
 }
 
+function processEnum(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'enum',
+    test(value, context) {
+      if (value === undefined) return true;
+
+      const hasValue = node.enum.findIndex(
+        (v: unknown) => JSON.stringify(v) === JSON.stringify(value)
+      );
+
+      if (hasValue === -1) {
+        return context.createError({
+          message: `this must be one of the following values: ${node.enum.join(', ')}`,
+          path: context.path,
+        });
+      }
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -785,7 +810,7 @@ function handleKeyword(
       exclusiveMaximum: (schema, node) => processExclusiveMaximum(schema, node, config),
       exclusiveMinimum: (schema, node) => processExclusiveMinimum(schema, node, config),
       additionalProperties: (schema, node) => processAdditionalProperties(schema, node, config),
-      enum: (schema, node) => schema.oneOf(node.enum),
+      enum: (schema, node) => processEnum(schema, node, config),
       const: (schema, node) => schema.oneOf([node.const]),
       not: (schema, node) => handleNotKeyword(schema, node, config),
       anyOf: (schema, node) => processAnyOfConditions(schema, node, config),
