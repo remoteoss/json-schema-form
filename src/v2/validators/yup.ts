@@ -5,7 +5,7 @@ import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
 import pick from 'lodash/pick';
 import { visitNodeType, visitKeywordNode } from '../node-checks';
-import { canonicalize, validDate } from '../utils';
+import { canonicalize, getGraphemeLength, validDate } from '../utils';
 
 function validateDate(schema: Schema) {
   return schema.test({
@@ -494,7 +494,8 @@ function processMinLength(
     name: 'min-length',
     test(value, context) {
       if (typeof value !== 'string') return true;
-      const valid = value.length >= node.minLength;
+      const length = getGraphemeLength(value);
+      const valid = length >= node.minLength;
       if (!valid) {
         return context.createError({
           message: `this must be at least ${node.minLength} characters`,
@@ -515,7 +516,8 @@ function processMaxLength(
     name: 'max-length',
     test(value, context) {
       if (typeof value !== 'string') return true;
-      const valid = value.length <= node.maxLength;
+      const length = getGraphemeLength(value);
+      const valid = length <= node.maxLength;
       if (!valid) {
         return context.createError({
           message: `this must be at most ${node.maxLength} characters`,

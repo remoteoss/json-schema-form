@@ -19,3 +19,13 @@ export function validDate(value: string) {
   const date = new Date(year, month - 1, day);
   return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
 }
+
+export function getGraphemeLength(str: string) {
+  // Use Intl.Segmenter if available (modern browsers)
+  if (typeof Intl !== 'undefined' && Intl.Segmenter) {
+    const segmenter = new Intl.Segmenter();
+    return Array.from(segmenter.segment(str)).length;
+  }
+  // Fallback: count surrogate pairs as single characters
+  return [...str].length;
+}
