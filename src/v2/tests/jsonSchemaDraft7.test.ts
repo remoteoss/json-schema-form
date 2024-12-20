@@ -44,13 +44,13 @@ describe('createHeadlessForm', () => {
     // { title: 'AnyOf keyword', testCases: anyOfTestCases },
     // { title: 'OneOf keyword', testCases: oneOfTestCases },
     { title: 'OneOf', testCases: oneOfTestCases },
-    // { title: 'Pattern', testCases: patternTestCases },
-    // { title: 'Pattern properties', testCases: patternPropertiesTestCases },
-    // { title: 'Properties', testCases: propertiesTestCases },
+    { title: 'Pattern', testCases: patternTestCases },
+    { title: 'Pattern properties', testCases: patternPropertiesTestCases },
+    { title: 'Properties', testCases: propertiesTestCases },
     // // property names todo
-    // { title: 'Required', testCases: requiredTestCases },
-    // { title: 'Type', testCases: typeTestCases },
-    // { title: 'Unique items', testCases: uniqueItemsTestCases },
+    { title: 'Required', testCases: requiredTestCases },
+    { title: 'Type', testCases: typeTestCases },
+    { title: 'Unique items', testCases: uniqueItemsTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(

@@ -109,7 +109,6 @@ function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<J
               }),
             ];
           }
-
           const propertySchema = getYupSchema(node.properties[key] as JSONSchema, config);
           if (node.required?.includes(key)) {
             return [key, propertySchema.required('Field is required')];
@@ -120,12 +119,7 @@ function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<J
       })
     )
   );
-  if (node.patternProperties) {
-    schema = processPatternProperties(schema, node, config);
-  }
-  if (node.additionalProperties) {
-    schema = processAdditionalProperties(schema, node, config);
-  }
+  schema = handleKeyword(schema, node, config);
   return schema;
 }
 
@@ -284,7 +278,7 @@ function processOneOfSchema(
   node: JSONSchema,
   config: ProcessSchemaConfig<JSONSchema>
 ) {
-  return schema.test({
+  schema = schema.test({
     name: 'one-of',
     test(value, context) {
       const errors: ValidationError[] = [];
@@ -305,6 +299,7 @@ function processOneOfSchema(
       });
     },
   });
+  return schema;
 }
 
 function processBoolean(schema: Schema, node: JSONSchema) {
@@ -364,7 +359,6 @@ function processRequired(
   node: JSONSchemaObject,
   _config: ProcessSchemaConfig<JSONSchemaObject>
 ) {
-  if (!node.required?.length) return schema;
   node.required.forEach((key: string) => {
     schema = schema.test({
       name: 'required',
@@ -590,5 +584,3 @@ export const yupValidatorPlugin: JSONSchemaFormPlugin = {
     };
   },
 };
-
-//   if (node.additionalProperties === false) return schema.strict().noUnknown(true);
