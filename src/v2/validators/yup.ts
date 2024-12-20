@@ -469,9 +469,16 @@ function processPattern(
 ) {
   return schema.test({
     name: 'pattern',
-    test(value) {
+    test(value, context) {
       if (typeof value !== 'string') return true;
-      return new RegExp(node.pattern).test(value);
+      const match = new RegExp(node.pattern).test(value);
+      if (!match) {
+        return context.createError({
+          message: `this must match the following: "/${node.pattern}/"`,
+          path: context.path,
+        });
+      }
+      return true;
     },
   });
 }
@@ -485,7 +492,14 @@ function processMinLength(
     name: 'min-length',
     test(value, context) {
       if (typeof value !== 'string') return true;
-      return value.length >= node.minLength;
+      const valid = value.length >= node.minLength;
+      if (!valid) {
+        return context.createError({
+          message: `this must be at least ${node.minLength} characters`,
+          path: context.path,
+        });
+      }
+      return valid;
     },
   });
 }
@@ -499,7 +513,14 @@ function processMaxLength(
     name: 'max-length',
     test(value, context) {
       if (typeof value !== 'string') return true;
-      return value.length <= node.maxLength;
+      const valid = value.length <= node.maxLength;
+      if (!valid) {
+        return context.createError({
+          message: `this must be at most ${node.maxLength} characters`,
+          path: context.path,
+        });
+      }
+      return valid;
     },
   });
 }
