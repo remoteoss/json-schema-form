@@ -143,8 +143,6 @@ function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSO
 
 function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
   let schema = array().strict();
-  if (typeof node === 'object' && node.items)
-    schema = schema.of(getYupSchema(node.items as JSONSchema, config));
   return schema;
 }
 
@@ -307,7 +305,8 @@ function processBoolean(schema: Schema, node: JSONSchema) {
   return schema
     .test({
       name: 'boolean',
-      test() {
+      test(value) {
+        if (value === undefined) return true;
         return node;
       },
     })
@@ -636,6 +635,58 @@ function processMaxItems(
   });
 }
 
+function processItems(
+  schema: Schema,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'items',
+    test(value, context) {
+      if (!Array.isArray(value)) return true;
+
+      // Handle array of schemas case
+      if (Array.isArray(node.items)) {
+        let errors: ValidationError[] = [];
+        node.items.forEach((itemSchema, index) => {
+          const item = value[index];
+          try {
+            const schema = getYupSchema(itemSchema as JSONSchema, config);
+            schema.validateSync(item);
+          } catch (e) {
+            errors.push({
+              ...(e as ValidationError),
+              path: context.path ? `${context.path}.${index}` : String(index),
+            });
+          }
+        });
+        if (errors.length > 0) {
+          return context.createError({
+            message: errors.at(-1)?.message,
+            path: errors.at(-1)?.path,
+          });
+        }
+        return true;
+      }
+
+      // Handle single schema case
+      const itemsSchema = getYupSchema(node.items as JSONSchema, config);
+      for (let index = 0; index < value.length; index++) {
+        const item = value[index];
+        try {
+          itemsSchema.validateSync(item);
+        } catch (e) {
+          return context.createError({
+            message: (e as ValidationError).message.replace(/^this/, `[${index}]`),
+            path: context.path ? `${context.path}.${index}` : String(index),
+          });
+        }
+      }
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -657,6 +708,7 @@ function handleKeyword(
       not: (schema, node) => handleNotKeyword(schema, node, config),
       anyOf: (schema, node) => processAnyOfConditions(schema, node, config),
       multipleOf: (schema, node) => processMultipleOf(schema, node, config),
+      items: (schema, node) => processItems(schema, node, config),
       allOf: (schema, node) => processAllOfConditions(schema, node, config),
       conditional: (schema, node) => processConditionalSchema(schema, node, config),
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
