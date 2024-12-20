@@ -223,7 +223,10 @@ function handleNotKeyword(
   return schema.test({
     name: 'not',
     test(value, context) {
+      // edge case handling for boolean schema
+      if (value === false || value === null) return !node.not;
       if (!value) return true;
+
       try {
         notSchema.validateSync(value);
         return context.createError({
