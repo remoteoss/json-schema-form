@@ -6,10 +6,16 @@ export function isNumberNode(node: JSONSchema) {
   return node.type === 'number' || node.type === 'integer';
 }
 
-export function isConditionalObjectNode(node: JSONSchema) {
-  if (typeof node !== 'object') return false;
-  const isIfObjectCondition = !!(node.if && !!node.if?.properties);
-  return isIfObjectCondition;
+export function isIfNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'if');
+}
+
+export function isThenNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'then');
+}
+
+export function isElseNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'else');
 }
 
 export function isObjectNode(node: JSONSchema) {
@@ -18,7 +24,9 @@ export function isObjectNode(node: JSONSchema) {
     node.type === 'object' ||
     (!node.type && !node.properties && node.required) ||
     (!node.type && node.properties) ||
-    isConditionalObjectNode(node)
+    isIfNode(node) ||
+    isThenNode(node) ||
+    isElseNode(node)
   );
 }
 
@@ -95,10 +103,6 @@ export function isNotNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'not');
 }
 
-export function isConditionalNode(node: JSONSchema) {
-  return typeof node === 'object' && node.if && node.then;
-}
-
 export function isUniqueItemsNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'uniqueItems');
 }
@@ -155,89 +159,45 @@ export function isItemsNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'items');
 }
 
+export function isExclusiveMaximumNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'exclusiveMaximum');
+}
+
+export function isExclusiveMinimumNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'exclusiveMinimum');
+}
+
+type NodeHandler = (
+  input: any,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchemaObject>
+) => any;
+
 type KeywordNodeHandlers = {
-  enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
-  const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
-  not: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
-  anyOf: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
-  allOf: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
-  oneOf: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
-  conditional: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  default: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  uniqueItems: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  additionalItems: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  required: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  patternProperties: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  additionalProperties: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  pattern: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  minLength: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  maxLength: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  multipleOf: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  minimum: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  maximum: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  minItems: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  maxItems: (
-    input: any,
-    node: JSONSchemaObject,
-    config: ProcessSchemaConfig<JSONSchemaObject>
-  ) => any;
-  items: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
+  enum: NodeHandler;
+  const: NodeHandler;
+  not: NodeHandler;
+  anyOf: NodeHandler;
+  allOf: NodeHandler;
+  oneOf: NodeHandler;
+  default: NodeHandler;
+  uniqueItems: NodeHandler;
+  additionalItems: NodeHandler;
+  required: NodeHandler;
+  patternProperties: NodeHandler;
+  additionalProperties: NodeHandler;
+  pattern: NodeHandler;
+  minLength: NodeHandler;
+  maxLength: NodeHandler;
+  multipleOf: NodeHandler;
+  minimum: NodeHandler;
+  maximum: NodeHandler;
+  minItems: NodeHandler;
+  maxItems: NodeHandler;
+  items: NodeHandler;
+  exclusiveMaximum: NodeHandler;
+  exclusiveMinimum: NodeHandler;
+  if: NodeHandler;
 };
 
 export function visitKeywordNode(
@@ -257,13 +217,17 @@ export function visitKeywordNode(
     (input) => (isMinimumNode(node) ? handlers.minimum(input, node, config) : input),
     (input) => (isMaximumNode(node) ? handlers.maximum(input, node, config) : input),
     (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
+    (input) =>
+      isExclusiveMaximumNode(node) ? handlers.exclusiveMaximum(input, node, config) : input,
+    (input) =>
+      isExclusiveMinimumNode(node) ? handlers.exclusiveMinimum(input, node, config) : input,
     (input) => (isItemsNode(node) ? handlers.items(input, node, config) : input),
     (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
     (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),
     (input) => (isMultipleOfNode(node) ? handlers.multipleOf(input, node, config) : input),
     (input) => (isAllOfNode(node) ? handlers.allOf(input, node, config) : input),
     (input) => (isAnyOfNode(node) ? handlers.anyOf(input, node, config) : input),
-    (input) => (isConditionalNode(node) ? handlers.conditional(input, node, config) : input),
+    (input) => (isIfNode(node) ? handlers.if(input, node, config) : input),
     (input) => (isOneOfNode(node) ? handlers.oneOf(input, node, config) : input),
     (input) => (isUniqueItemsNode(node) ? handlers.uniqueItems(input, node, config) : input),
     (input) =>

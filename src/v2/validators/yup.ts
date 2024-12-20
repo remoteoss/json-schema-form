@@ -164,7 +164,7 @@ function processConditionalSchema(
   config: ProcessSchemaConfig<JSONSchema>
 ) {
   const ifSchema = getYupSchema(node.if, config);
-  const thenSchema = getYupSchema(node.then, config);
+  const thenSchema = node.then ? getYupSchema(node.then, config) : null;
   const elseSchema = node.else ? getYupSchema(node.else, config) : null;
 
   return schema.when('.', {
@@ -687,6 +687,48 @@ function processItems(
   });
 }
 
+function processExclusiveMaximum(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'exclusive-maximum',
+    test(value, context) {
+      if (typeof value !== 'number') return true;
+      const valid = value < node.exclusiveMaximum;
+      if (!valid) {
+        return context.createError({
+          message: `this must be less than ${node.exclusiveMaximum}`,
+          path: context.path,
+        });
+      }
+      return valid;
+    },
+  });
+}
+
+function processExclusiveMinimum(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'exclusive-minimum',
+    test(value, context) {
+      if (typeof value !== 'number') return true;
+      const valid = value > node.exclusiveMinimum;
+      if (!valid) {
+        return context.createError({
+          message: `this must be greater than ${node.exclusiveMinimum}`,
+          path: context.path,
+        });
+      }
+      return valid;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -702,6 +744,8 @@ function handleKeyword(
       maxLength: (schema, node) => processMaxLength(schema, node, config),
       minimum: (schema, node) => processMinimum(schema, node, config),
       maximum: (schema, node) => processMaximum(schema, node, config),
+      exclusiveMaximum: (schema, node) => processExclusiveMaximum(schema, node, config),
+      exclusiveMinimum: (schema, node) => processExclusiveMinimum(schema, node, config),
       additionalProperties: (schema, node) => processAdditionalProperties(schema, node, config),
       enum: (schema, node) => schema.oneOf(node.enum),
       const: (schema, node) => schema.oneOf([node.const]),
@@ -710,7 +754,7 @@ function handleKeyword(
       multipleOf: (schema, node) => processMultipleOf(schema, node, config),
       items: (schema, node) => processItems(schema, node, config),
       allOf: (schema, node) => processAllOfConditions(schema, node, config),
-      conditional: (schema, node) => processConditionalSchema(schema, node, config),
+      if: (schema, node) => processConditionalSchema(schema, node, config),
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
       uniqueItems: (schema, node) => processUniqueItems(schema, node, config),
       additionalItems: (schema, node) => processAdditionalItems(schema, node, config),
