@@ -881,6 +881,32 @@ function processContains(
   });
 }
 
+function processConst(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'const',
+    test(value, context) {
+      // Skip validation if value is undefined
+      if (value === undefined) return true;
+
+      const isEqual =
+        JSON.stringify(canonicalize(value)) === JSON.stringify(canonicalize(node.const));
+
+      if (!isEqual) {
+        return context.createError({
+          message: `this must be equal to constant: ${JSON.stringify(node.const)}`,
+          path: context.path,
+        });
+      }
+
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -901,7 +927,7 @@ function handleKeyword(
       exclusiveMinimum: (schema, node) => processExclusiveMinimum(schema, node, config),
       additionalProperties: (schema, node) => processAdditionalProperties(schema, node, config),
       enum: (schema, node) => processEnum(schema, node, config),
-      const: (schema, node) => schema.oneOf([node.const]),
+      const: (schema, node) => processConst(schema, node, config),
       not: (schema, node) => handleNotKeyword(schema, node, config),
       anyOf: (schema, node) => processAnyOfConditions(schema, node, config),
       multipleOf: (schema, node) => processMultipleOf(schema, node, config),

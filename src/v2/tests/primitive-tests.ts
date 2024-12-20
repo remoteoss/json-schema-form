@@ -66,21 +66,21 @@ export const stringTestCases = [
     invalidTestCases: [
       {
         data: 'no',
-        error: { '': 'this must be one of the following values: yes' },
+        error: { '': 'this must be equal to constant: "yes"' },
       },
     ],
   },
-  // {
-  //   title: 'String with if/then/else',
-  //   schema: {
-  //     type: 'string',
-  //     if: { pattern: '^[0-9]+$' },
-  //     then: { maxLength: 5 },
-  //     else: { maxLength: 10 },
-  //   },
-  //   validTestCases: [{ data: '12345' }, { data: 'H123456790' }],
-  //   invalidTestCases: [{ data: '101010', error: { '': 'this must be at most 5 characters' } }],
-  // },
+  {
+    title: 'String with if/then/else',
+    schema: {
+      type: 'string',
+      if: { pattern: '^[0-9]+$' },
+      then: { maxLength: 5 },
+      else: { maxLength: 10 },
+    },
+    validTestCases: [{ data: '12345' }, { data: 'H123456790' }],
+    invalidTestCases: [{ data: '101010', error: { '': 'this must be at most 5 characters' } }],
+  },
 ];
 
 export const numberTestCases = [
@@ -109,7 +109,7 @@ export const booleanTestCases = [
     invalidTestCases: [
       {
         data: false,
-        error: { '': 'this must be one of the following values: true' },
+        error: { '': 'this must be equal to constant: true' },
       },
     ],
   },
@@ -123,7 +123,7 @@ export const nullTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { '': 'Value must be null' },
+        error: { '': 'this must be equal to constant: null' },
       },
     ],
   },

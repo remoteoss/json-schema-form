@@ -62,7 +62,7 @@ export function isEnumNode(node: JSONSchema) {
 }
 
 export function isConstNode(node: JSONSchema) {
-  return typeof node === 'object' && node.const;
+  return typeof node === 'object' && Object.hasOwn(node, 'const');
 }
 
 export function isAllOfNode(node: JSONSchema) {

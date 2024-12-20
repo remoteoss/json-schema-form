@@ -33,6 +33,7 @@ import { enumTests } from './enum';
 import { dependenciesTestCases } from './dependencies';
 import { defaultTestCases } from './default';
 import { containsTestCases } from './contains';
+import { constTestCases } from './const';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -54,6 +55,7 @@ describe('createHeadlessForm', () => {
     // { title: 'Conditionals', testCases: conditionalTestCases },
     // { title: 'AnyOf keyword', testCases: anyOfTestCases },
 
+    { title: 'Const', testCases: constTestCases },
     { title: 'Contains', testCases: containsTestCases },
     { title: 'Default', testCases: defaultTestCases },
     // definitions todo
