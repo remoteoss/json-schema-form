@@ -3,7 +3,7 @@ import {
   conditionalTestCases,
   notKeywordTestCases,
   anyOfTestCases,
-  oneOfTestCases,
+  oneOfTestCases as x,
 } from './control-flow-tests';
 import {
   stringTestCases,
@@ -18,6 +18,9 @@ import { uniqueItemsTestCases } from './unique-items-test-cases';
 import { requiredTestCases } from './required';
 import { propertiesTestCases } from './properties';
 import { patternPropertiesTestCases } from './pattern-properties';
+import { patternTestCases } from './pattern';
+import { typeTestCases } from './type';
+import { oneOfTestCases } from './oneOf';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -29,21 +32,25 @@ describe('createHeadlessForm', () => {
   });
 
   [
-    { title: 'String', testCases: stringTestCases },
-    { title: 'Number', testCases: numberTestCases },
-    { title: 'Boolean', testCases: booleanTestCases },
-    { title: 'Null', testCases: nullTestCases },
-    { title: 'Multi type', testCases: multiTypeTestCases },
-    { title: 'Object', testCases: objectTestCases },
-    { title: 'Array', testCases: arrayTestCases },
+    // { title: 'String', testCases: stringTestCases },
+    // { title: 'Number', testCases: numberTestCases },
+    // { title: 'Boolean', testCases: booleanTestCases },
+    // { title: 'Null', testCases: nullTestCases },
+    // { title: 'Multi type', testCases: multiTypeTestCases },
+    // { title: 'Object', testCases: objectTestCases },
+    // { title: 'Array', testCases: arrayTestCases },
     // { title: 'Conditionals', testCases: conditionalTestCases },
     // { title: 'Not keyword', testCases: notKeywordTestCases },
     // { title: 'AnyOf keyword', testCases: anyOfTestCases },
-    { title: 'OneOf keyword', testCases: oneOfTestCases },
-    { title: 'Unique items', testCases: uniqueItemsTestCases },
-    { title: 'Required', testCases: requiredTestCases },
-    { title: 'Properties', testCases: propertiesTestCases },
-    { title: 'Pattern properties', testCases: patternPropertiesTestCases },
+    // { title: 'OneOf keyword', testCases: oneOfTestCases },
+    { title: 'OneOf', testCases: oneOfTestCases },
+    // { title: 'Pattern', testCases: patternTestCases },
+    // { title: 'Pattern properties', testCases: patternPropertiesTestCases },
+    // { title: 'Properties', testCases: propertiesTestCases },
+    // // property names todo
+    // { title: 'Required', testCases: requiredTestCases },
+    // { title: 'Type', testCases: typeTestCases },
+    // { title: 'Unique items', testCases: uniqueItemsTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(

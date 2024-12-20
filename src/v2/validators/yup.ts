@@ -23,8 +23,6 @@ function getFormatSchema(schema: Schema, node: JSONSchemaObject) {
 
 function getStringSchema(node: JSONSchemaObject) {
   let schema = string().strict();
-  if (node.minLength) schema = schema.min(node.minLength);
-  if (node.maxLength) schema = schema.max(node.maxLength);
   if (node.format) schema = getFormatSchema(schema, node);
   return schema;
 }
@@ -484,6 +482,34 @@ function processPattern(
   });
 }
 
+function processMinLength(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'min-length',
+    test(value, context) {
+      if (typeof value !== 'string') return true;
+      return value.length >= node.minLength;
+    },
+  });
+}
+
+function processMaxLength(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'max-length',
+    test(value, context) {
+      if (typeof value !== 'string') return true;
+      return value.length <= node.maxLength;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -495,6 +521,8 @@ function handleKeyword(
       required: (schema, node) => processRequired(schema, node, config),
       patternProperties: (schema, node) => processPatternProperties(schema, node, config),
       pattern: (schema, node) => processPattern(schema, node, config),
+      minLength: (schema, node) => processMinLength(schema, node, config),
+      maxLength: (schema, node) => processMaxLength(schema, node, config),
       additionalProperties: (schema, node) => processAdditionalProperties(schema, node, config),
       enum: (schema, node) => schema.oneOf(node.enum),
       const: (schema, node) => schema.oneOf([node.const]),

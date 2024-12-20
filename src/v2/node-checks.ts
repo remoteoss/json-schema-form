@@ -123,6 +123,14 @@ export function isPatternNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'pattern');
 }
 
+export function isMinLengthNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'minLength');
+}
+
+export function isMaxLengthNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'maxLength');
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -170,6 +178,16 @@ type KeywordNodeHandlers = {
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
+  minLength: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
+  maxLength: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
@@ -184,6 +202,8 @@ export function visitKeywordNode(
     (input) =>
       isAdditionalPropertiesNode(node) ? handlers.additionalProperties(input, node, config) : input,
     (input) => (isPatternNode(node) ? handlers.pattern(input, node, config) : input),
+    (input) => (isMinLengthNode(node) ? handlers.minLength(input, node, config) : input),
+    (input) => (isMaxLengthNode(node) ? handlers.maxLength(input, node, config) : input),
     (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
     (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
     (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),
