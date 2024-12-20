@@ -1,9 +1,8 @@
 import { createHeadlessForm } from '../create-headless-form';
-import { conditionalTestCases, anyOfTestCases } from './control-flow-tests';
+import { conditionalTestCases, anyOfTestCases as x } from './control-flow-tests';
 import {
   stringTestCases,
   numberTestCases,
-  // booleanTestCases,
   nullTestCases,
   multiTypeTestCases,
   objectTestCases,
@@ -35,6 +34,7 @@ import { defaultTestCases } from './default';
 import { containsTestCases } from './contains';
 import { constTestCases } from './const';
 import { booleanTestCases } from './boolean_schema';
+import { anyOfTestCases } from './anyOf';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -48,7 +48,6 @@ describe('createHeadlessForm', () => {
   [
     { title: 'String', testCases: stringTestCases },
     { title: 'Number', testCases: numberTestCases },
-    // { title: 'Boolean', testCases: booleanTestCases },
     { title: 'Null', testCases: nullTestCases },
     { title: 'Multi type', testCases: multiTypeTestCases },
     { title: 'Object', testCases: objectTestCases },
@@ -56,6 +55,7 @@ describe('createHeadlessForm', () => {
     // { title: 'Conditionals', testCases: conditionalTestCases },
     // { title: 'AnyOf keyword', testCases: anyOfTestCases },
 
+    { title: 'AnyOf', testCases: anyOfTestCases },
     { title: 'Boolean Schemas', testCases: booleanTestCases },
     { title: 'Const', testCases: constTestCases },
     { title: 'Contains', testCases: containsTestCases },

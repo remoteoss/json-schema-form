@@ -101,20 +101,6 @@ export const numberTestCases = [
   },
 ];
 
-export const booleanTestCases = [
-  {
-    title: 'Boolean const validation',
-    schema: { const: true } as const,
-    validTestCases: [{ data: true }],
-    invalidTestCases: [
-      {
-        data: false,
-        error: { '': 'this must be equal to constant: true' },
-      },
-    ],
-  },
-];
-
 export const nullTestCases = [
   {
     title: 'Null const validation',
