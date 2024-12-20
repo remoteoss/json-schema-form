@@ -32,8 +32,6 @@ function getNumberSchema(node: JSONSchemaObject) {
   let schema = number().strict();
 
   if (node.type === 'integer') schema = schema.integer();
-  if (typeof node.minimum === 'number') schema = schema.min(node.minimum);
-  if (typeof node.maximum === 'number') schema = schema.max(node.maximum);
   return schema;
 }
 
@@ -554,6 +552,48 @@ function processMultipleOf(
   });
 }
 
+function processMinimum(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'minimum',
+    test(value, context) {
+      if (typeof value !== 'number') return true;
+      const valid = value >= node.minimum;
+      if (!valid) {
+        return context.createError({
+          message: `this must be greater than or equal to ${node.minimum}`,
+          path: context.path,
+        });
+      }
+      return valid;
+    },
+  });
+}
+
+function processMaximum(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'maximum',
+    test(value, context) {
+      if (typeof value !== 'number') return true;
+      const valid = value <= node.maximum;
+      if (!valid) {
+        return context.createError({
+          message: `this must be less than or equal to ${node.maximum}`,
+          path: context.path,
+        });
+      }
+      return valid;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -567,6 +607,8 @@ function handleKeyword(
       pattern: (schema, node) => processPattern(schema, node, config),
       minLength: (schema, node) => processMinLength(schema, node, config),
       maxLength: (schema, node) => processMaxLength(schema, node, config),
+      minimum: (schema, node) => processMinimum(schema, node, config),
+      maximum: (schema, node) => processMaximum(schema, node, config),
       additionalProperties: (schema, node) => processAdditionalProperties(schema, node, config),
       enum: (schema, node) => schema.oneOf(node.enum),
       const: (schema, node) => schema.oneOf([node.const]),

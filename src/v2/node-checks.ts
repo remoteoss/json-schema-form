@@ -3,7 +3,7 @@ import { JSONSchema, JSONSchemaObject, ProcessSchemaConfig } from './types';
 
 export function isNumberNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
-  return node.type === 'number' || node.type === 'integer' || node.minimum || node.maximum;
+  return node.type === 'number' || node.type === 'integer';
 }
 
 export function isConditionalObjectNode(node: JSONSchema) {
@@ -135,6 +135,14 @@ export function isMultipleOfNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'multipleOf');
 }
 
+export function isMinimumNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'minimum');
+}
+
+export function isMaximumNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'maximum');
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -197,6 +205,16 @@ type KeywordNodeHandlers = {
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
+  minimum: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
+  maximum: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
@@ -213,6 +231,8 @@ export function visitKeywordNode(
     (input) => (isPatternNode(node) ? handlers.pattern(input, node, config) : input),
     (input) => (isMinLengthNode(node) ? handlers.minLength(input, node, config) : input),
     (input) => (isMaxLengthNode(node) ? handlers.maxLength(input, node, config) : input),
+    (input) => (isMinimumNode(node) ? handlers.minimum(input, node, config) : input),
+    (input) => (isMaximumNode(node) ? handlers.maximum(input, node, config) : input),
     (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
     (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
     (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),
