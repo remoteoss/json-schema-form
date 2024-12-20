@@ -93,7 +93,7 @@ function processProperties(node: JSONSchemaObject, config: ProcessSchemaConfig<J
           }
           const propertySchema = getYupSchema(node.properties[key] as JSONSchema, config);
           if (node.required?.includes(key)) {
-            return [key, propertySchema.required('Field is required')];
+            return [key, processRequired(propertySchema, { required: [key] }, config)];
           }
           return [key, propertySchema];
         }
@@ -346,6 +346,7 @@ function processRequired(
     schema = schema.test({
       name: 'required',
       test(value, context) {
+        if (value === null) return true;
         if (typeof value !== 'object' || Array.isArray(value)) {
           return true;
         }

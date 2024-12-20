@@ -1,5 +1,5 @@
 import { createHeadlessForm } from '../create-headless-form';
-import { conditionalTestCases, anyOfTestCases as x } from './control-flow-tests';
+import { conditionalTestCases } from './control-flow-tests';
 import {
   stringTestCases,
   numberTestCases,
@@ -35,6 +35,7 @@ import { containsTestCases } from './contains';
 import { constTestCases } from './const';
 import { booleanTestCases } from './boolean_schema';
 import { anyOfTestCases } from './anyOf';
+import { allOfTestCases } from './allOf';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -53,8 +54,8 @@ describe('createHeadlessForm', () => {
     { title: 'Object', testCases: objectTestCases },
     { title: 'Array', testCases: arrayTestCases },
     // { title: 'Conditionals', testCases: conditionalTestCases },
-    // { title: 'AnyOf keyword', testCases: anyOfTestCases },
 
+    { title: 'AllOf', testCases: allOfTestCases },
     { title: 'AnyOf', testCases: anyOfTestCases },
     { title: 'Boolean Schemas', testCases: booleanTestCases },
     { title: 'Const', testCases: constTestCases },
