@@ -17,6 +17,7 @@ import { patternTestCases } from './pattern';
 import { typeTestCases } from './type';
 import { oneOfTestCases } from './oneOf';
 import { notTestCases } from './not';
+import { multipleOfTests } from './multipleOf';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -37,6 +38,7 @@ describe('createHeadlessForm', () => {
     { title: 'Array', testCases: arrayTestCases },
     // { title: 'Conditionals', testCases: conditionalTestCases },
     { title: 'AnyOf keyword', testCases: anyOfTestCases },
+    { title: 'MultipleOf', testCases: multipleOfTests },
     { title: 'Not', testCases: notTestCases },
     { title: 'OneOf', testCases: oneOfTestCases },
     { title: 'Pattern', testCases: patternTestCases },

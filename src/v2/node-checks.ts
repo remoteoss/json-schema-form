@@ -131,6 +131,10 @@ export function isMaxLengthNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'maxLength');
 }
 
+export function isMultipleOfNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'multipleOf');
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -188,6 +192,11 @@ type KeywordNodeHandlers = {
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
+  multipleOf: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
@@ -207,6 +216,7 @@ export function visitKeywordNode(
     (input) => (isEnumNode(node) ? handlers.enum(input, node, config) : input),
     (input) => (isConstNode(node) ? handlers.const(input, node, config) : input),
     (input) => (isNotNode(node) ? handlers.not(input, node, config) : input),
+    (input) => (isMultipleOfNode(node) ? handlers.multipleOf(input, node, config) : input),
     (input) => (isAllOfNode(node) ? handlers.allOf(input, node, config) : input),
     (input) => (isAnyOfNode(node) ? handlers.anyOf(input, node, config) : input),
     (input) => (isConditionalNode(node) ? handlers.conditional(input, node, config) : input),

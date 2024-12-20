@@ -529,6 +529,31 @@ function processMaxLength(
   });
 }
 
+function processMultipleOf(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'multiple-of',
+    test(value, context) {
+      if (typeof value !== 'number') return true;
+      // Handle floating point precision by rounding to a safe number of decimal places
+      const remainder = (value / node.multipleOf) % 1;
+      const isMultiple =
+        Math.abs(remainder) < Number.EPSILON || Math.abs(1 - remainder) < Number.EPSILON;
+
+      if (!isMultiple) {
+        return context.createError({
+          message: `this must be a multiple of ${node.multipleOf}`,
+          path: context.path,
+        });
+      }
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -547,6 +572,7 @@ function handleKeyword(
       const: (schema, node) => schema.oneOf([node.const]),
       not: (schema, node) => handleNotKeyword(schema, node, config),
       anyOf: (schema, node) => processAnyOfConditions(schema, node, config),
+      multipleOf: (schema, node) => processMultipleOf(schema, node, config),
       allOf: (schema, node) => processAllOfConditions(schema, node, config),
       conditional: (schema, node) => processConditionalSchema(schema, node, config),
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
