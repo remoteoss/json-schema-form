@@ -53,7 +53,7 @@ describe('createHeadlessForm', () => {
     { title: 'Multi type', testCases: multiTypeTestCases },
     { title: 'Object', testCases: objectTestCases },
     { title: 'Array', testCases: arrayTestCases },
-    // { title: 'Conditionals', testCases: conditionalTestCases },
+    { title: 'Conditionals', testCases: conditionalTestCases },
 
     { title: 'AllOf', testCases: allOfTestCases },
     { title: 'AnyOf', testCases: anyOfTestCases },

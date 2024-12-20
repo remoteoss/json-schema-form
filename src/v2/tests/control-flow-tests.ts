@@ -74,11 +74,11 @@ export const conditionalTestCases = [
     invalidTestCases: [
       {
         data: { field: 'yes', number: 9 },
-        error: { number: 'number must be greater than or equal to 10' },
+        error: { number: 'this must be greater than or equal to 10' },
       },
       {
         data: { field: 'no', number: 4 },
-        error: { number: 'number must be greater than or equal to 5' },
+        error: { number: 'this must be greater than or equal to 5' },
       },
     ],
   },
@@ -131,10 +131,7 @@ export const conditionalTestCases = [
         },
       },
     } as const,
-    validTestCases: [
-      { data: { format: 'text', value: 'hello' } },
-      { data: { format: 'number', value: 123 } },
-    ],
+    validTestCases: [{ data: { format: 'text', value: 'hello' } }],
     invalidTestCases: [
       {
         data: { format: 'number', value: 'not-a-number' },
@@ -142,6 +139,7 @@ export const conditionalTestCases = [
           value: 'value must be a `number` type, but the final value was: `"not-a-number"`.',
         },
       },
+      { data: { format: 'number', value: 123 } },
     ],
   },
   {

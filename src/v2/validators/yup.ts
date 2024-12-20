@@ -161,10 +161,22 @@ function processConditionalSchema(
       }
     },
     then(schema) {
-      return schema.concat(thenSchema);
+      return schema.test({
+        name: 'then-conditional',
+        test(value) {
+          if (!thenSchema) return true;
+          return schema.validateSync(value) && thenSchema.validateSync(value);
+        },
+      });
     },
     otherwise(schema) {
-      return elseSchema ? schema.concat(elseSchema) : schema;
+      return schema.test({
+        name: 'else-conditional',
+        test(value) {
+          if (!elseSchema) return true;
+          return schema.validateSync(value) && elseSchema.validateSync(value);
+        },
+      });
     },
   });
 }
