@@ -93,6 +93,45 @@ export const oneOfTestCases = [
       type: 'object',
       oneOf: [{ required: ['foo', 'bar'] }, { required: ['foo', 'baz'] }],
     },
-    invalidTestCases: [{ data: { bar: 2 } }],
+    validTestCases: [{ data: { foo: 1, bar: 2 } }, { data: { foo: 1, baz: 3 } }],
+    invalidTestCases: [{ data: { bar: 2 } }, { foo: 1, bar: 2, baz: 3 }],
+  },
+  {
+    title: 'oneOf with missing optional property',
+    schema: {
+      oneOf: [
+        {
+          properties: {
+            bar: true,
+            baz: true,
+          },
+          required: ['bar'],
+        },
+        {
+          properties: {
+            foo: true,
+          },
+          required: ['foo'],
+        },
+      ],
+    },
+    validTestCases: [{ data: { bar: 8 } }, { data: { foo: 'foo' } }],
+    invalidTestCases: [{ data: { foo: 'foo', bar: 8 } }, { data: { baz: 'quux' } }],
+  },
+  {
+    title: 'nested oneOf, to check validation semantics',
+    schema: {
+      oneOf: [
+        {
+          oneOf: [
+            {
+              type: 'null',
+            },
+          ],
+        },
+      ],
+    },
+    validTestCases: [{ data: null }],
+    invalidTestCases: [{ data: 123 }],
   },
 ];
