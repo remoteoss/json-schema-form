@@ -47,6 +47,7 @@
     ]
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "json-logic-js": "^2.0.2",
     "lodash": "^4.17.21",
     "randexp": "^0.5.3",

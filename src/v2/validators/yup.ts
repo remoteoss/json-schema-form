@@ -5,7 +5,7 @@ import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
 import pick from 'lodash/pick';
 import { visitNodeType, visitKeywordNode } from '../node-checks';
-import { canonicalize, getGraphemeLength, validDate } from '../utils';
+import { canonicalize, getGraphemeLength, validDate, validDateTime } from '../utils';
 
 function getStringSchema(node: JSONSchemaObject) {
   return string().strict();
@@ -722,14 +722,25 @@ function processFormat(
     name: 'format',
     test(value, context) {
       if (typeof value !== 'string') return true;
-      const valid = validDate(value);
-      if (!valid) {
-        return context.createError({
-          message: `this must be a valid date`,
-          path: context.path,
-        });
+      if (node.format === 'date') {
+        const valid = validDate(value);
+        if (!valid) {
+          return context.createError({
+            message: `this must be a valid date`,
+            path: context.path,
+          });
+        }
+        return valid;
+      } else if (node.format === 'date-time') {
+        const valid = validDateTime(value);
+        if (!valid) {
+          return context.createError({
+            message: `this must be a valid date-time`,
+            path: context.path,
+          });
+        }
+        return valid;
       }
-      return valid;
     },
   });
 }

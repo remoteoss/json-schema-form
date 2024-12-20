@@ -1,3 +1,5 @@
+import { isValid, parseISO } from 'date-fns';
+
 export function canonicalize(obj: unknown): string {
   if (typeof obj !== 'object' || obj === null) {
     return JSON.stringify(obj);
@@ -18,14 +20,31 @@ export function validDate(value: string) {
   if (!dateRegex.test(value)) {
     return false;
   }
+  const parsed = parseISO(value);
+  return isValid(parsed);
+}
 
-  const [year, month, day] = value.split('-').map(Number);
-  if (month < 1 || month > 12) {
-    return false;
+export function validDateTime(value: string) {
+  // KNOWN ISSUE: Date.parse does not handle leap seconds (23:59:60)
+  const normalizedValue = value.replace(/t/i, 'T').replace(/z/i, 'Z');
+  const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|([+-])(\d{2}):?(\d{2}))$/;
+  const match = isoRegex.exec(normalizedValue);
+  if (!match) return false;
+  // If there's a timezone offset, validate it
+  if (match[1]) {
+    // match[1] contains the +/- sign
+    const hours = parseInt(match[2], 10);
+    const minutes = parseInt(match[3], 10);
+
+    // Hours must be 0-23, minutes 0-59
+    if (hours > 23 || minutes > 59) {
+      return false;
+    }
   }
 
-  const date = new Date(year, month - 1, day);
-  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+  // Use date-fns to parse and validate the actual date
+  const parsed = parseISO(normalizedValue);
+  return isValid(parsed);
 }
 
 export function getGraphemeLength(str: string) {
