@@ -32,6 +32,7 @@ import { exclusiveMaximumTests } from './exclusiveMaximum';
 import { enumTests } from './enum';
 import { dependenciesTestCases } from './dependencies';
 import { defaultTestCases } from './default';
+import { containsTestCases } from './contains';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -53,6 +54,7 @@ describe('createHeadlessForm', () => {
     // { title: 'Conditionals', testCases: conditionalTestCases },
     // { title: 'AnyOf keyword', testCases: anyOfTestCases },
 
+    { title: 'Contains', testCases: containsTestCases },
     { title: 'Default', testCases: defaultTestCases },
     // definitions todo
     { title: 'Dependencies', testCases: dependenciesTestCases },

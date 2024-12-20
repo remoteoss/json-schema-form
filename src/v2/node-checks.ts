@@ -175,6 +175,10 @@ export function isDependenciesNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'dependencies');
 }
 
+export function isContainsNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'contains');
+}
+
 type NodeHandler = (
   input: any,
   node: JSONSchemaObject,
@@ -208,6 +212,7 @@ type KeywordNodeHandlers = {
   if: NodeHandler;
   format: NodeHandler;
   dependencies: NodeHandler;
+  contains: NodeHandler;
 };
 
 export function visitKeywordNode(
@@ -217,6 +222,7 @@ export function visitKeywordNode(
 ) {
   return flow([
     (input) => (isRequiredNode(node) ? handlers.required(input, node, config) : input),
+    (input) => (isContainsNode(node) ? handlers.contains(input, node, config) : input),
     (input) =>
       isPatternPropertiesNode(node) ? handlers.patternProperties(input, node, config) : input,
     (input) =>

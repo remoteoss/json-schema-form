@@ -847,6 +847,40 @@ function processDependencies(
   });
 }
 
+function processContains(
+  schema: Schema,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  if (!node.contains) return schema;
+
+  return schema.test({
+    name: 'contains',
+    test(value, context) {
+      if (!Array.isArray(value)) return true;
+
+      const containsSchema = getYupSchema(node.contains as JSONSchema, config);
+      const hasMatch = value.some((item) => {
+        try {
+          containsSchema.validateSync(item);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+
+      if (!hasMatch) {
+        return context.createError({
+          message: 'array must contain at least one matching item',
+          path: context.path,
+        });
+      }
+
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -855,6 +889,7 @@ function handleKeyword(
   return visitKeywordNode(
     node,
     {
+      contains: (schema, node) => processContains(schema, node, config),
       required: (schema, node) => processRequired(schema, node, config),
       patternProperties: (schema, node) => processPatternProperties(schema, node, config),
       pattern: (schema, node) => processPattern(schema, node, config),
