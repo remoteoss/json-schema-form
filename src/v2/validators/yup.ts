@@ -223,6 +223,7 @@ function handleNotKeyword(
   return schema.test({
     name: 'not',
     test(value, context) {
+      if (!value) return true;
       try {
         notSchema.validateSync(value);
         return context.createError({

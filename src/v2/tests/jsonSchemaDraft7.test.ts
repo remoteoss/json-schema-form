@@ -1,5 +1,5 @@
 import { createHeadlessForm } from '../create-headless-form';
-import { conditionalTestCases, notKeywordTestCases, anyOfTestCases } from './control-flow-tests';
+import { conditionalTestCases, anyOfTestCases } from './control-flow-tests';
 import {
   stringTestCases,
   numberTestCases,
@@ -16,6 +16,7 @@ import { patternPropertiesTestCases } from './pattern-properties';
 import { patternTestCases } from './pattern';
 import { typeTestCases } from './type';
 import { oneOfTestCases } from './oneOf';
+import { notTestCases } from './not';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -35,8 +36,8 @@ describe('createHeadlessForm', () => {
     { title: 'Object', testCases: objectTestCases },
     { title: 'Array', testCases: arrayTestCases },
     // { title: 'Conditionals', testCases: conditionalTestCases },
-    { title: 'Not keyword', testCases: notKeywordTestCases },
     { title: 'AnyOf keyword', testCases: anyOfTestCases },
+    { title: 'Not', testCases: notTestCases },
     { title: 'OneOf', testCases: oneOfTestCases },
     { title: 'Pattern', testCases: patternTestCases },
     { title: 'Pattern properties', testCases: patternPropertiesTestCases },
@@ -65,7 +66,7 @@ describe('createHeadlessForm', () => {
             const form = createHeadlessForm(schema);
 
             if (validTestCases) {
-              validTestCases.forEach(({ data }: { data: any }, index: number) => {
+              validTestCases.forEach(({ data }: { data: any }) => {
                 it(`${JSON.stringify(data)}`, () => {
                   expect(form.handleValidation(data).formErrors).toEqual(undefined);
                 });
@@ -73,17 +74,15 @@ describe('createHeadlessForm', () => {
             }
 
             if (invalidTestCases) {
-              invalidTestCases.forEach(
-                ({ data, error }: { data: any; error?: any }, index: number) => {
-                  it(`Invalid: ${JSON.stringify(data)}`, () => {
-                    const result = form.handleValidation(data).formErrors;
-                    expect(result).toBeTruthy();
-                    if (error) {
-                      expect(result).toMatchObject(error);
-                    }
-                  });
-                }
-              );
+              invalidTestCases.forEach(({ data, error }: { data: any; error?: any }) => {
+                it(`Invalid: ${JSON.stringify(data)}`, () => {
+                  const result = form.handleValidation(data).formErrors;
+                  expect(result).toBeTruthy();
+                  if (error) {
+                    expect(result).toMatchObject(error);
+                  }
+                });
+              });
             }
 
             if (fields) {
