@@ -3,7 +3,6 @@ import { JSONSchema, JSONSchemaFormPlugin, JSONSchemaObject, ProcessSchemaConfig
 import { string, number, boolean, array, object, lazy, ValidationError, Schema, mixed } from 'yup';
 import { JSONSchemaType } from 'json-schema-to-ts/lib/types/definitions';
 import flow from 'lodash/flow';
-import pick from 'lodash/pick';
 import { visitNodeType, visitKeywordNode } from '../node-checks';
 import { canonicalize, getGraphemeLength, validDate, validDateTime } from '../utils';
 
@@ -12,23 +11,9 @@ function getStringSchema(node: JSONSchemaObject) {
 }
 
 function getNumberSchema(node: JSONSchemaObject) {
-  if (typeof node !== 'object') return number().strict();
   let schema = number().strict();
-
   if (node.type === 'integer') schema = schema.integer();
   return schema;
-}
-
-function getPropertiesForType(type: JSONSchemaType, node: JSONSchemaObject) {
-  if (typeof node !== 'object') return { type };
-  if (type === 'string') {
-    const stringProperties = pick(node, ['minLength', 'maxLength', 'pattern', 'format']);
-    return { type: 'string', ...stringProperties };
-  } else if (type === 'number') {
-    const numberProperties = pick(node, ['minimum', 'maximum']);
-    return { type: 'number', ...numberProperties };
-  }
-  return { type };
 }
 
 function getMultiTypeSchema(
@@ -40,7 +25,7 @@ function getMultiTypeSchema(
     name: 'multi-type',
     test(value, context) {
       const schemas = (node.type as Array<JSONSchemaType>).map((type) =>
-        getYupSchema(getPropertiesForType(type, node), config)
+        getYupSchema({ ...node, type }, config)
       );
       const errors: ValidationError[] = [];
 
@@ -125,9 +110,8 @@ function getObjectSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSO
   });
 }
 
-function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
-  let schema = array().strict();
-  return schema;
+function getArraySchema(_node: JSONSchema, _config: ProcessSchemaConfig<JSONSchema>) {
+  return array().strict();
 }
 
 function getNullValueSchema(schema: Schema) {
@@ -138,7 +122,6 @@ function getNullValueSchema(schema: Schema) {
 
 function getNullableSchema(schema: Schema, node: JSONSchema) {
   if (Array.isArray(node.type) && node.type.includes('null')) return schema.nullable();
-  if (node.const === null) return getNullValueSchema(schema);
   return schema;
 }
 
