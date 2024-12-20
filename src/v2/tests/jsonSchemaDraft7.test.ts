@@ -20,6 +20,7 @@ import { notTestCases } from './not';
 import { multipleOfTests } from './multipleOf';
 import { minimumTests } from './minimum';
 import { minLengthTests } from './minLength';
+import { minItemsTests } from './minItems';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -40,6 +41,7 @@ describe('createHeadlessForm', () => {
     { title: 'Array', testCases: arrayTestCases },
     // { title: 'Conditionals', testCases: conditionalTestCases },
     { title: 'AnyOf keyword', testCases: anyOfTestCases },
+    { title: 'MinItems', testCases: minItemsTests },
     { title: 'MinLength', testCases: minLengthTests },
     // min properties todo
     { title: 'Minimum', testCases: minimumTests },

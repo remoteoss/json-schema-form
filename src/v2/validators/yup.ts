@@ -145,8 +145,6 @@ function getArraySchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema
   let schema = array().strict();
   if (typeof node === 'object' && node.items)
     schema = schema.of(getYupSchema(node.items as JSONSchema, config));
-  if (typeof node === 'object' && node.minItems) schema = schema.min(node.minItems);
-  if (typeof node === 'object' && node.maxItems) schema = schema.max(node.maxItems);
   return schema;
 }
 
@@ -596,6 +594,48 @@ function processMaximum(
   });
 }
 
+function processMinItems(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'min-items',
+    test(value, context) {
+      if (!Array.isArray(value)) return true;
+      const valid = value.length >= node.minItems;
+      if (!valid) {
+        return context.createError({
+          message: `this field must have at least ${node.minItems} items`,
+          path: context.path,
+        });
+      }
+      return valid;
+    },
+  });
+}
+
+function processMaxItems(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'max-items',
+    test(value, context) {
+      if (!Array.isArray(value)) return true;
+      const valid = value.length <= node.maxItems;
+      if (!valid) {
+        return context.createError({
+          message: `this field must have less than or equal to ${node.maxItems} items`,
+          path: context.path,
+        });
+      }
+      return valid;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -622,6 +662,8 @@ function handleKeyword(
       oneOf: (schema, node) => processOneOfSchema(schema, node, config),
       uniqueItems: (schema, node) => processUniqueItems(schema, node, config),
       additionalItems: (schema, node) => processAdditionalItems(schema, node, config),
+      minItems: (schema, node) => processMinItems(schema, node, config),
+      maxItems: (schema, node) => processMaxItems(schema, node, config),
       default: (schema) => schema,
     },
     config

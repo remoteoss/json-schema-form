@@ -38,7 +38,7 @@ export function isBooleanNode(node: JSONSchema) {
 
 export function isArrayNode(node: JSONSchema) {
   if (typeof node !== 'object') return false;
-  return node.type === 'array' || node.items || node.minItems || node.maxItems;
+  return node.type === 'array';
 }
 
 export function isAnyOfNode(node: JSONSchema) {
@@ -143,6 +143,14 @@ export function isMaximumNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'maximum');
 }
 
+export function isMinItemsNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'minItems');
+}
+
+export function isMaxItemsNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'maxItems');
+}
+
 type KeywordNodeHandlers = {
   enum: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
   const: (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchemaObject>) => any;
@@ -215,6 +223,16 @@ type KeywordNodeHandlers = {
     node: JSONSchemaObject,
     config: ProcessSchemaConfig<JSONSchemaObject>
   ) => any;
+  minItems: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
+  maxItems: (
+    input: any,
+    node: JSONSchemaObject,
+    config: ProcessSchemaConfig<JSONSchemaObject>
+  ) => any;
 };
 
 export function visitKeywordNode(
@@ -244,6 +262,8 @@ export function visitKeywordNode(
     (input) => (isUniqueItemsNode(node) ? handlers.uniqueItems(input, node, config) : input),
     (input) =>
       isAdditionalItemsNode(node) ? handlers.additionalItems(input, node, config) : input,
+    (input) => (isMinItemsNode(node) ? handlers.minItems(input, node, config) : input),
+    (input) => (isMaxItemsNode(node) ? handlers.maxItems(input, node, config) : input),
     (input) => handlers.default(input, node, config),
   ]);
 }
