@@ -26,6 +26,7 @@ import { maxLengthTests } from './maxLength';
 import { maxItemsTests } from './maxItems';
 import { itemsTests } from './items';
 import { ifThenElseTests } from './if-then-else';
+import { formatTests } from './format';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -47,6 +48,7 @@ describe('createHeadlessForm', () => {
     // { title: 'Conditionals', testCases: conditionalTestCases },
     // { title: 'AnyOf keyword', testCases: anyOfTestCases },
 
+    { title: 'Format', testCases: formatTests },
     { title: 'If/Then/Else', testCases: ifThenElseTests },
     // infinite loop detection case todo
     { title: 'Items', testCases: itemsTests },

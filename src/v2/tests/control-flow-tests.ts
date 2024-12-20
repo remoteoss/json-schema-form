@@ -16,7 +16,7 @@ export const conditionalTestCases = [
       { data: { field: 'yes' }, error: { otherField: 'Field is required' } },
       {
         data: { field: 'yes', otherField: 9 },
-        error: { otherField: 'otherField must be greater than or equal to 10' },
+        error: { otherField: 'this must be greater than or equal to 10' },
       },
     ],
   },
@@ -225,7 +225,7 @@ export const conditionalTestCases = [
     invalidTestCases: [
       {
         data: { accountType: 'business', balance: 50 },
-        error: { balance: 'balance must be greater than or equal to 1000' },
+        error: { balance: 'this must be greater than or equal to 1000' },
       },
       {
         data: { accountType: 'business', balance: 1000, hasOverdraft: true },
@@ -241,7 +241,7 @@ export const conditionalTestCases = [
     },
     validTestCases: [{ data: { field: 10 } }],
     invalidTestCases: [
-      { data: { field: 9 }, error: { field: 'field must be greater than or equal to 10' } },
+      { data: { field: 9 }, error: { field: 'this must be greater than or equal to 10' } },
     ],
   },
   {
@@ -268,8 +268,8 @@ export const conditionalTestCases = [
     },
     validTestCases: [{ data: { age: 20 } }],
     invalidTestCases: [
-      { data: { age: 17 }, error: { age: 'age must be greater than or equal to 18' } },
-      { data: { age: 66 }, error: { age: 'age must be less than or equal to 65' } },
+      { data: { age: 17 }, error: { age: 'this must be greater than or equal to 18' } },
+      { data: { age: 66 }, error: { age: 'this must be less than or equal to 65' } },
     ],
   },
   {

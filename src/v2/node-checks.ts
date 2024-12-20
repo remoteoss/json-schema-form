@@ -167,6 +167,10 @@ export function isExclusiveMinimumNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'exclusiveMinimum');
 }
 
+export function isFormatNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'format');
+}
+
 type NodeHandler = (
   input: any,
   node: JSONSchemaObject,
@@ -198,6 +202,7 @@ type KeywordNodeHandlers = {
   exclusiveMaximum: NodeHandler;
   exclusiveMinimum: NodeHandler;
   if: NodeHandler;
+  format: NodeHandler;
 };
 
 export function visitKeywordNode(
@@ -227,6 +232,7 @@ export function visitKeywordNode(
     (input) => (isMultipleOfNode(node) ? handlers.multipleOf(input, node, config) : input),
     (input) => (isAllOfNode(node) ? handlers.allOf(input, node, config) : input),
     (input) => (isAnyOfNode(node) ? handlers.anyOf(input, node, config) : input),
+    (input) => (isFormatNode(node) ? handlers.format(input, node, config) : input),
     (input) => (isIfNode(node) ? handlers.if(input, node, config) : input),
     (input) => (isOneOfNode(node) ? handlers.oneOf(input, node, config) : input),
     (input) => (isUniqueItemsNode(node) ? handlers.uniqueItems(input, node, config) : input),

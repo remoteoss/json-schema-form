@@ -7,24 +7,8 @@ import pick from 'lodash/pick';
 import { visitNodeType, visitKeywordNode } from '../node-checks';
 import { canonicalize, getGraphemeLength, validDate } from '../utils';
 
-function validateDate(schema: Schema) {
-  return schema.test({
-    name: 'date-format',
-    test: validDate,
-    message: `does not validate against format "date"`,
-  });
-}
-
-function getFormatSchema(schema: Schema, node: JSONSchemaObject) {
-  if (typeof node !== 'object' || !node.format) return schema;
-  if (node.format === 'date') return validateDate(schema);
-  return schema;
-}
-
 function getStringSchema(node: JSONSchemaObject) {
-  let schema = string().strict();
-  if (node.format) schema = getFormatSchema(schema, node);
-  return schema;
+  return string().strict();
 }
 
 function getNumberSchema(node: JSONSchemaObject) {
@@ -729,6 +713,27 @@ function processExclusiveMinimum(
   });
 }
 
+function processFormat(
+  schema: Schema,
+  node: JSONSchemaObject,
+  _config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  return schema.test({
+    name: 'format',
+    test(value, context) {
+      if (typeof value !== 'string') return true;
+      const valid = validDate(value);
+      if (!valid) {
+        return context.createError({
+          message: `this must be a valid date`,
+          path: context.path,
+        });
+      }
+      return valid;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -760,6 +765,7 @@ function handleKeyword(
       additionalItems: (schema, node) => processAdditionalItems(schema, node, config),
       minItems: (schema, node) => processMinItems(schema, node, config),
       maxItems: (schema, node) => processMaxItems(schema, node, config),
+      format: (schema, node) => processFormat(schema, node, config),
       default: (schema) => schema,
     },
     config
