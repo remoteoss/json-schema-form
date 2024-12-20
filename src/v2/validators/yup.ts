@@ -792,6 +792,61 @@ function processEnum(
   });
 }
 
+function processDependencies(
+  schema: Schema,
+  node: JSONSchemaObject,
+  config: ProcessSchemaConfig<JSONSchemaObject>
+) {
+  if (!node.dependencies) return schema;
+
+  return schema.test({
+    name: 'dependencies',
+    test(value, context) {
+      if (typeof value !== 'object' || value === null) return true;
+
+      for (const [prop, dependency] of Object.entries(node.dependencies)) {
+        // Skip if the property that triggers the dependency isn't present
+        if (!Object.hasOwn(value, prop)) continue;
+
+        // Handle boolean dependencies
+        if (typeof dependency === 'boolean') {
+          if (!dependency) {
+            return context.createError({
+              message: `Property ${prop} is not allowed`,
+              path: context.path,
+            });
+          }
+          continue;
+        }
+
+        // Handle property dependencies (array of required properties)
+        if (Array.isArray(dependency)) {
+          const missing = dependency.filter((dep) => !Object.hasOwn(value, dep));
+          if (missing.length > 0) {
+            return context.createError({
+              message: `Property ${prop} requires properties ${missing.join(', ')}`,
+              path: context.path,
+            });
+          }
+        }
+        // Handle schema dependencies
+        else if (typeof dependency === 'object') {
+          try {
+            const dependencySchema = getYupSchema(dependency as JSONSchema, config);
+            dependencySchema.validateSync(value);
+          } catch (e) {
+            return context.createError({
+              message: (e as ValidationError).message,
+              path: (e as ValidationError).path,
+            });
+          }
+        }
+      }
+      return true;
+    },
+  });
+}
+
 function handleKeyword(
   schema: Schema,
   node: JSONSchemaObject,
@@ -824,6 +879,7 @@ function handleKeyword(
       minItems: (schema, node) => processMinItems(schema, node, config),
       maxItems: (schema, node) => processMaxItems(schema, node, config),
       format: (schema, node) => processFormat(schema, node, config),
+      dependencies: (schema, node) => processDependencies(schema, node, config),
       default: (schema) => schema,
     },
     config

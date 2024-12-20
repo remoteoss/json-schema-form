@@ -171,6 +171,10 @@ export function isFormatNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'format');
 }
 
+export function isDependenciesNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'dependencies');
+}
+
 type NodeHandler = (
   input: any,
   node: JSONSchemaObject,
@@ -203,6 +207,7 @@ type KeywordNodeHandlers = {
   exclusiveMinimum: NodeHandler;
   if: NodeHandler;
   format: NodeHandler;
+  dependencies: NodeHandler;
 };
 
 export function visitKeywordNode(
@@ -240,6 +245,7 @@ export function visitKeywordNode(
       isAdditionalItemsNode(node) ? handlers.additionalItems(input, node, config) : input,
     (input) => (isMinItemsNode(node) ? handlers.minItems(input, node, config) : input),
     (input) => (isMaxItemsNode(node) ? handlers.maxItems(input, node, config) : input),
+    (input) => (isDependenciesNode(node) ? handlers.dependencies(input, node, config) : input),
     (input) => handlers.default(input, node, config),
   ]);
 }
