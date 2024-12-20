@@ -713,6 +713,40 @@ function processExclusiveMinimum(
   });
 }
 
+function handleDateFormat(value: any, context: any) {
+  const valid = validDate(value);
+  if (!valid) {
+    return context.createError({
+      message: `this must be a valid date`,
+      path: context.path,
+    });
+  }
+  return valid;
+}
+
+function handleDateTimeFormat(value: any, context: any) {
+  const valid = validDateTime(value);
+  if (!valid) {
+    return context.createError({
+      message: `this must be a valid date-time`,
+      path: context.path,
+    });
+  }
+  return valid;
+}
+
+function handleEmailFormat(value: any, context: any) {
+  try {
+    string().email().validateSync(value);
+    return true;
+  } catch (e) {
+    return context.createError({
+      message: `this must be a valid email`,
+      path: context.path,
+    });
+  }
+}
+
 function processFormat(
   schema: Schema,
   node: JSONSchemaObject,
@@ -723,23 +757,11 @@ function processFormat(
     test(value, context) {
       if (typeof value !== 'string') return true;
       if (node.format === 'date') {
-        const valid = validDate(value);
-        if (!valid) {
-          return context.createError({
-            message: `this must be a valid date`,
-            path: context.path,
-          });
-        }
-        return valid;
+        return handleDateFormat(value, context);
       } else if (node.format === 'date-time') {
-        const valid = validDateTime(value);
-        if (!valid) {
-          return context.createError({
-            message: `this must be a valid date-time`,
-            path: context.path,
-          });
-        }
-        return valid;
+        return handleDateTimeFormat(value, context);
+      } else if (node.format === 'email') {
+        return handleEmailFormat(value, context);
       }
     },
   });

@@ -9,6 +9,17 @@ export const formatTests = [
       { data: [] },
       { data: false },
       { data: null },
+      { data: 'joe.bloggs@example.com' },
+      { data: 'te~st@example.com' },
+      { data: '~test@example.com' },
+      { data: 'test~@example.com' },
+      { data: 'te.s.t@example.com' },
+    ],
+    invalidTestCases: [
+      { data: '2962' },
+      // { data: '.test@example.com' }, // valid under yup validation
+      // { data: 'test.@example.com' }, // valid under yup validation
+      // { data: 'te..st@example.com' }, // valid under yup validation
     ],
   },
   {
