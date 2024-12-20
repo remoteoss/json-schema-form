@@ -9,7 +9,7 @@ import {
   objectTestCases,
   arrayTestCases,
 } from './primitive-tests';
-import { uniqueItemsTestCases } from './unique-items-test-cases';
+import { uniqueItemsTestCases } from './uniqueItems';
 import { requiredTestCases } from './required';
 import { propertiesTestCases } from './properties';
 import { patternPropertiesTestCases } from './pattern-properties';
@@ -31,6 +31,7 @@ import { exclusiveMinimumTests } from './exclusiveMinimum';
 import { exclusiveMaximumTests } from './exclusiveMaximum';
 import { enumTests } from './enum';
 import { dependenciesTestCases } from './dependencies';
+import { defaultTestCases } from './default';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -52,6 +53,7 @@ describe('createHeadlessForm', () => {
     // { title: 'Conditionals', testCases: conditionalTestCases },
     // { title: 'AnyOf keyword', testCases: anyOfTestCases },
 
+    { title: 'Default', testCases: defaultTestCases },
     // definitions todo
     { title: 'Dependencies', testCases: dependenciesTestCases },
     { title: 'Enum', testCases: enumTests },
