@@ -22,6 +22,7 @@ import { minimumTests } from './minimum';
 import { minLengthTests } from './minLength';
 import { minItemsTests } from './minItems';
 import { maximumTests } from './maximum';
+import { maxLengthTests } from './maxLength';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
@@ -43,6 +44,8 @@ describe('createHeadlessForm', () => {
     // { title: 'Conditionals', testCases: conditionalTestCases },
     { title: 'AnyOf keyword', testCases: anyOfTestCases },
 
+    { title: 'MaxLength', testCases: maxLengthTests },
+    // max properties todo
     { title: 'Maximum', testCases: maximumTests },
     { title: 'MinItems', testCases: minItemsTests },
     { title: 'MinLength', testCases: minLengthTests },
