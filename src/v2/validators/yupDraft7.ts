@@ -973,6 +973,7 @@ function getYupSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSc
 export const yupValidatorPlugin: JSONSchemaFormPlugin = {
   name: 'yup',
   type: 'validator',
+  jsonSchemaVersion: 'draft7',
   validate(values, schema) {
     let errors;
 

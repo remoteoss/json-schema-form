@@ -1,7 +1,7 @@
 import { createFieldState } from './field-state';
 import { JSONSchema, JSONSchemaFormConfiguration, SchemaInstanceType } from './types';
 import { getValidator } from './validators';
-import { yupValidatorPlugin } from './validators/yup';
+import { yupValidatorPlugin } from './validators/yupDraft7';
 
 const defaultConfig: JSONSchemaFormConfiguration = {
   initialValues: {},

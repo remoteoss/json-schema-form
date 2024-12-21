@@ -15,6 +15,7 @@ export type ProcessSchemaConfig<T extends JSONSchema> = {
 export type JSONSchemaFormValidatorPlugin = {
   type: 'validator';
   validate: (values: unknown, fields: JSONSchema) => { formErrors: FormErrors | undefined };
+  jsonSchemaVersion: 'draft7';
 };
 
 export type JSONSchemaFormPlugin = { name: string } & JSONSchemaFormValidatorPlugin;
