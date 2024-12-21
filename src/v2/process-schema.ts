@@ -5,8 +5,8 @@ import { JSONSchema, ProcessSchemaConfig } from './types';
 function processNode(contents: any, schema: JSONSchema, config: ProcessSchemaConfig) {
   return [
     {
+      ...contents,
       name: '#',
-      type: contents.type,
       label: contents.title,
       description: contents.description,
       value: config.values,
@@ -21,7 +21,7 @@ export function traverseSchema<T extends JSONSchema>(schema: T, config: ProcessS
       object: () => [],
       multiType: () => [],
       number: () => [],
-      string: () => ({ type: 'string' }),
+      string: () => ({ jsonType: 'string', inputType: 'text' }),
       boolean: () => [],
       array: () => [],
       nullType: () => [],
