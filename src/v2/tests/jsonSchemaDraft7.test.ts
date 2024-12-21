@@ -48,46 +48,46 @@ describe('createHeadlessForm', () => {
 
   [
     { title: 'String', testCases: stringTestCases },
-    // { title: 'Number', testCases: numberTestCases },
-    // { title: 'Null', testCases: nullTestCases },
-    // { title: 'Multi type', testCases: multiTypeTestCases },
-    // { title: 'Object', testCases: objectTestCases },
-    // { title: 'Array', testCases: arrayTestCases },
-    // { title: 'Conditionals', testCases: conditionalTestCases },
+    { title: 'Number', testCases: numberTestCases },
+    { title: 'Null', testCases: nullTestCases },
+    { title: 'Multi type', testCases: multiTypeTestCases },
+    { title: 'Object', testCases: objectTestCases },
+    { title: 'Array', testCases: arrayTestCases },
+    { title: 'Conditionals', testCases: conditionalTestCases },
 
-    // { title: 'AllOf', testCases: allOfTestCases },
-    // { title: 'AnyOf', testCases: anyOfTestCases },
-    // { title: 'Boolean Schemas', testCases: booleanTestCases },
-    // { title: 'Const', testCases: constTestCases },
-    // { title: 'Contains', testCases: containsTestCases },
-    // { title: 'Default', testCases: defaultTestCases },
-    // // definitions todo
-    // { title: 'Dependencies', testCases: dependenciesTestCases },
-    // { title: 'Enum', testCases: enumTests },
-    // { title: 'Exclusive maximum', testCases: exclusiveMaximumTests },
-    // { title: 'Exclusive minimum', testCases: exclusiveMinimumTests },
-    // { title: 'Format', testCases: formatTests },
-    // { title: 'If/Then/Else', testCases: ifThenElseTests },
-    // // infinite loop detection case todo
-    // { title: 'Items', testCases: itemsTests },
-    // { title: 'MaxItems', testCases: maxItemsTests },
-    // { title: 'MaxLength', testCases: maxLengthTests },
-    // // max properties todo
-    // { title: 'Maximum', testCases: maximumTests },
-    // { title: 'MinItems', testCases: minItemsTests },
-    // { title: 'MinLength', testCases: minLengthTests },
-    // // min properties todo
-    // { title: 'Minimum', testCases: minimumTests },
-    // { title: 'MultipleOf', testCases: multipleOfTests },
-    // { title: 'Not', testCases: notTestCases },
-    // { title: 'OneOf', testCases: oneOfTestCases },
-    // { title: 'Pattern', testCases: patternTestCases },
-    // { title: 'Pattern properties', testCases: patternPropertiesTestCases },
-    // { title: 'Properties', testCases: propertiesTestCases },
-    // // property names todo
-    // { title: 'Required', testCases: requiredTestCases },
-    // { title: 'Type', testCases: typeTestCases },
-    // { title: 'Unique items', testCases: uniqueItemsTestCases },
+    { title: 'AllOf', testCases: allOfTestCases },
+    { title: 'AnyOf', testCases: anyOfTestCases },
+    { title: 'Boolean Schemas', testCases: booleanTestCases },
+    { title: 'Const', testCases: constTestCases },
+    { title: 'Contains', testCases: containsTestCases },
+    { title: 'Default', testCases: defaultTestCases },
+    // definitions todo
+    { title: 'Dependencies', testCases: dependenciesTestCases },
+    { title: 'Enum', testCases: enumTests },
+    { title: 'Exclusive maximum', testCases: exclusiveMaximumTests },
+    { title: 'Exclusive minimum', testCases: exclusiveMinimumTests },
+    { title: 'Format', testCases: formatTests },
+    { title: 'If/Then/Else', testCases: ifThenElseTests },
+    // infinite loop detection case todo
+    { title: 'Items', testCases: itemsTests },
+    { title: 'MaxItems', testCases: maxItemsTests },
+    { title: 'MaxLength', testCases: maxLengthTests },
+    // max properties todo
+    { title: 'Maximum', testCases: maximumTests },
+    { title: 'MinItems', testCases: minItemsTests },
+    { title: 'MinLength', testCases: minLengthTests },
+    // min properties todo
+    { title: 'Minimum', testCases: minimumTests },
+    { title: 'MultipleOf', testCases: multipleOfTests },
+    { title: 'Not', testCases: notTestCases },
+    { title: 'OneOf', testCases: oneOfTestCases },
+    { title: 'Pattern', testCases: patternTestCases },
+    { title: 'Pattern properties', testCases: patternPropertiesTestCases },
+    { title: 'Properties', testCases: propertiesTestCases },
+    // property names todo
+    { title: 'Required', testCases: requiredTestCases },
+    { title: 'Type', testCases: typeTestCases },
+    { title: 'Unique items', testCases: uniqueItemsTestCases },
   ].forEach(({ title, testCases }) => {
     describe(title, () => {
       testCases.forEach(
@@ -107,10 +107,12 @@ describe('createHeadlessForm', () => {
             const form = createHeadlessForm(schema);
 
             if (validTestCases) {
-              validTestCases.forEach(({ data, fields }: { data: any; fields: any }) => {
+              validTestCases.forEach(({ data, fields }: { data: any; fields?: any }) => {
                 it(`${JSON.stringify(data)}`, () => {
                   expect(form.handleValidation(data).formErrors).toEqual(undefined);
-                  expect(form.fields).toMatchObject(fields);
+                  if (fields) {
+                    expect(form.fields).toMatchObject(fields);
+                  }
                 });
               });
             }

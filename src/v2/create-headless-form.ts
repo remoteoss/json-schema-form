@@ -23,9 +23,11 @@ export function createHeadlessForm<T extends JSONSchema>(
 
   return {
     fields,
+    validationSchema: validator.yupSchema,
     handleValidation(values: SchemaInstance) {
-      updateFields(values);
-      return validator.validate(values, jsonSchema);
+      const newFields = updateFields(values);
+      const errors = validator.validate(values, jsonSchema);
+      return { fields: newFields, ...errors };
     },
   };
 }

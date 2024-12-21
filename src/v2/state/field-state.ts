@@ -7,13 +7,11 @@ export function createFieldState<T extends JSONSchema>(
   schema: T,
   config: JSONSchemaFormConfiguration
 ) {
-  let publicState = processSchema(schema, {
-    values: config.initialValues,
-    schemaValidator: config.schemaValidator,
-  });
-
-  const store = createStore<{ fields: ProcessSchemaReturnType }>((set) => ({
-    fields: publicState,
+  const store = createStore<{ fields: ProcessSchemaReturnType }>(() => ({
+    fields: processSchema(schema, {
+      values: config.initialValues,
+      schemaValidator: config.schemaValidator,
+    }),
   }));
 
   function updateFields(values: unknown) {
@@ -24,17 +22,8 @@ export function createFieldState<T extends JSONSchema>(
     return newFields;
   }
 
-  store.subscribe((state) => {
-    // deeply mutate the fields one by one, property by property
-    for (let i = 0; i < state.fields.length; i++) {
-      for (const key in state.fields[i]) {
-        publicState[i][key] = state.fields[i][key];
-      }
-    }
-  });
-
   return {
-    fields: publicState,
+    fields: store.getState().fields,
     updateFields,
   };
 }

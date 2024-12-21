@@ -9,11 +9,11 @@ export const stringTestCases = [
     // invalidTestCases: [
     //   {
     //     data: 'hi',
-    //     error: { '': 'this must be at least 5 characters' },
+    //     error: { 'this': 'this must be at least 5 characters' },
     //   },
     //   {
     //     data: 'helloworldtoolong',
-    //     error: { '': 'this must be at most 10 characters' },
+    //     error: { 'this': 'this must be at most 10 characters' },
     //   },
     // ],
   },
@@ -24,11 +24,11 @@ export const stringTestCases = [
   //   invalidTestCases: [
   //     {
   //       data: 'hello!',
-  //       error: { '': 'this must match the following: "/^[a-z]+$/"' },
+  //       error: { 'this': 'this must match the following: "/^[a-z]+$/"' },
   //     },
   //     {
   //       data: 'Hello',
-  //       error: { '': 'this must match the following: "/^[a-z]+$/"' },
+  //       error: { 'this': 'this must match the following: "/^[a-z]+$/"' },
   //     },
   //   ],
   // },
@@ -39,7 +39,7 @@ export const stringTestCases = [
   //   invalidTestCases: [
   //     {
   //       data: 'goodbye',
-  //       error: { '': 'this must be one of the following values: hello, world' },
+  //       error: { 'this': 'this must be one of the following values: hello, world' },
   //     },
   //   ],
   // },
@@ -50,15 +50,15 @@ export const stringTestCases = [
   //   invalidTestCases: [
   //     {
   //       data: 'banana',
-  //       error: { '': 'this must be a valid date' },
+  //       error: { 'this': 'this must be a valid date' },
   //     },
   //     {
   //       data: '2024-02-31',
-  //       error: { '': 'this must be a valid date' },
+  //       error: { 'this': 'this must be a valid date' },
   //     },
   //     {
   //       data: '2024-2-1',
-  //       error: { '': 'this must be a valid date' },
+  //       error: { 'this': 'this must be a valid date' },
   //     },
   //   ],
   // },
@@ -69,7 +69,7 @@ export const stringTestCases = [
   //   invalidTestCases: [
   //     {
   //       data: 'no',
-  //       error: { '': 'this must be equal to constant: "yes"' },
+  //       error: { 'this': 'this must be equal to constant: "yes"' },
   //     },
   //   ],
   // },
@@ -82,7 +82,7 @@ export const stringTestCases = [
   //     else: { maxLength: 10 },
   //   },
   //   validTestCases: [{ data: '12345' }, { data: 'H123456790' }],
-  //   invalidTestCases: [{ data: '101010', error: { '': 'this must be at most 5 characters' } }],
+  //   invalidTestCases: [{ data: '101010', error: { 'this': 'this must be at most 5 characters' } }],
   // },
 ];
 
@@ -94,11 +94,11 @@ export const numberTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { '': 'this must be greater than or equal to 5' },
+        error: { this: 'this must be greater than or equal to 5' },
       },
       {
         data: 11,
-        error: { '': 'this must be less than or equal to 10' },
+        error: { this: 'this must be less than or equal to 10' },
       },
     ],
   },
@@ -112,7 +112,7 @@ export const nullTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { '': 'this must be equal to constant: null' },
+        error: { 'this': 'this must be equal to constant: null' },
       },
     ],
   },
@@ -123,7 +123,7 @@ export const nullTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { '': 'Expected string or null, but got number.' },
+        error: { 'this': 'Expected string or null, but got number.' },
       },
     ],
   },
@@ -134,7 +134,7 @@ export const nullTestCases = [
     invalidTestCases: [
       {
         data: true,
-        error: { '': 'Expected string or number or null, but got boolean.' },
+        error: { 'this': 'Expected string or number or null, but got boolean.' },
       },
     ],
   },
@@ -148,7 +148,7 @@ export const multiTypeTestCases = [
     invalidTestCases: [
       {
         data: true,
-        error: { '': 'Expected string or number, but got boolean.' },
+        error: { 'this': 'Expected string or number, but got boolean.' },
       },
     ],
   },
@@ -159,7 +159,7 @@ export const multiTypeTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { '': 'this must be greater than or equal to 5' },
+        error: { 'this': 'this must be greater than or equal to 5' },
       },
     ],
   },
@@ -200,11 +200,11 @@ export const arrayTestCases = [
     invalidTestCases: [
       {
         data: [],
-        error: { '': 'this field must have at least 1 items' },
+        error: { 'this': 'this field must have at least 1 items' },
       },
       {
         data: ['one', 'two', 'three', 'four'],
-        error: { '': 'this field must have less than or equal to 3 items' },
+        error: { 'this': 'this field must have less than or equal to 3 items' },
       },
       {
         data: ['one', 2],

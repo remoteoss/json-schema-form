@@ -1,7 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "display": "Node 18",
-    "extends": "./tsconfig.json",
     "compilerOptions": {
         "lib": ["es2023"],
         "module": "node16",

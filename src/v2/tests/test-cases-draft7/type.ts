@@ -6,7 +6,7 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: 1.5,
-        error: { '': 'this must be an integer' },
+        error: { this: 'this must be an integer' },
       },
       { data: 1.1 },
       { data: 'foo' },
@@ -25,7 +25,7 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: '1',
-        error: { '': 'this must be a `number` type, but the final value was: `"1"`.' },
+        error: { this: 'this must be a `number` type, but the final value was: `"1"`.' },
       },
       { data: 'foo' },
       { data: {} },
@@ -42,7 +42,7 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { '': 'this must be a `string` type, but the final value was: `1`.' },
+        error: { this: 'this must be a `string` type, but the final value was: `1`.' },
       },
       { data: 1.1 },
       { data: {} },
@@ -59,7 +59,9 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: 'not-an-object',
-        error: { '': 'this must be a `object` type, but the final value was: `"not-an-object"`.' },
+        error: {
+          this: 'this must be a `object` type, but the final value was: `"not-an-object"`. If "null" is intended as an empty value be sure to mark the schema as `.nullable()`',
+        },
       },
       { data: 1 },
       { data: 1.1 },
@@ -77,7 +79,7 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: 'not-an-array',
-        error: { '': 'this must be a `array` type, but the final value was: `"not-an-array"`.' },
+        error: { this: 'this must be a `array` type, but the final value was: `"not-an-array"`.' },
       },
       { data: 1 },
       { data: 1.1 },
@@ -95,7 +97,7 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: 'true',
-        error: { '': 'this must be a `boolean` type, but the final value was: `"true"`.' },
+        error: { this: 'this must be a `boolean` type, but the final value was: `"true"`.' },
       },
       { data: 1 },
       { data: 0 },
@@ -114,7 +116,7 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: 'null',
-        error: { '': 'Value must be null' },
+        error: { this: 'Value must be null' },
       },
       { data: 1 },
       { data: 1.1 },
@@ -132,7 +134,7 @@ export const typeTestCases = [
     invalidTestCases: [
       {
         data: 1.1,
-        error: { '': 'Expected integer or string, but got number.' },
+        error: { this: 'Expected integer or string, but got number.' },
       },
       { data: {} },
       { data: [] },

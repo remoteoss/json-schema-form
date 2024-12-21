@@ -401,11 +401,29 @@ function processPatternProperties(
 function processAdditionalProperties(
   schema: Schema,
   node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchemaObject>
+  config: ProcessSchemaConfig
 ) {
   // If additionalProperties is false, make the object strict
   if (node.additionalProperties === false) {
-    return schema.strict().noUnknown(true);
+    return schema.strict().test({
+      name: 'additional-properties',
+      test(value, context) {
+        if (typeof value !== 'object' || Array.isArray(value)) return true;
+        const knownProps = Object.keys(node.properties || {});
+        const patternProps = Object.keys(node.patternProperties || {});
+        const additionalProps = Object.keys(value).filter((key) => {
+          const matchesPattern = patternProps.some((pattern) => new RegExp(pattern).test(key));
+          return !knownProps.includes(key) && !matchesPattern;
+        });
+        if (additionalProps.length > 0) {
+          return context.createError({
+            message: 'Additional properties are not allowed',
+            path: context,
+          });
+        }
+        return true;
+      },
+    });
   }
 
   return schema.test({

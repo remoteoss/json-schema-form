@@ -294,7 +294,7 @@ export const notKeywordTestCases = [
     title: 'Not a string',
     schema: { not: { type: 'string' } },
     validTestCases: [{ data: 123 }, { data: true }, { data: { foo: 'bar' } }, { data: [1, 2, 3] }],
-    invalidTestCases: [{ data: 'hello', error: { '': 'does not match not schema' } }],
+    invalidTestCases: [{ data: 'hello', error: { this: 'does not match not schema' } }],
   },
   {
     title: 'Not with enum values',
@@ -304,8 +304,8 @@ export const notKeywordTestCases = [
     },
     validTestCases: [{ data: 'approved' }, { data: 'completed' }],
     invalidTestCases: [
-      { data: 'pending', error: { '': 'does not match not schema' } },
-      { data: 'rejected', error: { '': 'does not match not schema' } },
+      { data: 'pending', error: { this: 'does not match not schema' } },
+      { data: 'rejected', error: { this: 'does not match not schema' } },
     ],
   },
   {
@@ -315,7 +315,7 @@ export const notKeywordTestCases = [
       not: { pattern: '^[0-9]+$' },
     },
     validTestCases: [{ data: 'abc' }, { data: 'abc123' }],
-    invalidTestCases: [{ data: '123', error: { '': 'does not match not schema' } }],
+    invalidTestCases: [{ data: '123', error: { this: 'does not match not schema' } }],
   },
   {
     title: 'Not with object properties',
@@ -337,7 +337,7 @@ export const notKeywordTestCases = [
     invalidTestCases: [
       {
         data: { type: 'admin', active: true },
-        error: { '': 'does not match not schema' },
+        error: { this: 'does not match not schema' },
       },
     ],
   },
@@ -352,8 +352,8 @@ export const notKeywordTestCases = [
     },
     validTestCases: [{ data: 42 }],
     invalidTestCases: [
-      { data: 'string', error: { '': 'does not match not schema' } },
-      { data: true, error: { '': 'does not match not schema' } },
+      { data: 'string', error: { this: 'does not match not schema' } },
+      { data: true, error: { this: 'does not match not schema' } },
     ],
   },
   {

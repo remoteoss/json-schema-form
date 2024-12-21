@@ -15,13 +15,18 @@ function processNode(contents: any, schema: JSONSchema, config: ProcessSchemaCon
 }
 
 export function traverseSchema<T extends JSONSchema>(schema: T, config: ProcessSchemaConfig) {
+  const validator = config.schemaValidator.validate(config.values, schema);
   return visitNodeType(
     schema,
     {
       object: () => [],
       multiType: () => [],
       number: () => [],
-      string: () => ({ jsonType: 'string', inputType: 'text' }),
+      string: () => ({
+        jsonType: 'string',
+        inputType: 'text',
+        schema: validator.yupSchema.resolve({}),
+      }),
       boolean: () => [],
       array: () => [],
       nullType: () => [],
