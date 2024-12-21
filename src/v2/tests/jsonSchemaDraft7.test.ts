@@ -54,7 +54,6 @@ describe('createHeadlessForm', () => {
     { title: 'Object', testCases: objectTestCases },
     { title: 'Array', testCases: arrayTestCases },
     { title: 'Conditionals', testCases: conditionalTestCases },
-
     { title: 'AllOf', testCases: allOfTestCases },
     { title: 'AnyOf', testCases: anyOfTestCases },
     { title: 'Boolean Schemas', testCases: booleanTestCases },

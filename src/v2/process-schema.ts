@@ -21,7 +21,11 @@ export function traverseSchema<T extends JSONSchema>(schema: T, config: ProcessS
     {
       object: () => [],
       multiType: () => [],
-      number: () => [],
+      number: () => ({
+        jsonType: 'number',
+        inputType: 'number',
+        schema: validator.yupSchema.resolve({}),
+      }),
       string: () => ({
         jsonType: 'string',
         inputType: 'text',

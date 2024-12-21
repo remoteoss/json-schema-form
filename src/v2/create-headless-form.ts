@@ -23,7 +23,6 @@ export function createHeadlessForm<T extends JSONSchema>(
 
   return {
     fields,
-    validationSchema: validator.yupSchema,
     handleValidation(values: SchemaInstance) {
       const newFields = updateFields(values);
       const errors = validator.validate(values, jsonSchema);

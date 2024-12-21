@@ -16,11 +16,7 @@ function getNumberSchema(node: JSONSchemaObject) {
   return schema;
 }
 
-function getMultiTypeSchema(
-  schema: Schema,
-  node: JSONSchema,
-  config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function getMultiTypeSchema(schema: Schema, node: JSONSchema, config: ProcessSchemaConfig) {
   return schema.test({
     name: 'multi-type',
     test(value, context) {
@@ -301,6 +297,7 @@ function processUniqueItems(
   return schema.test({
     name: 'unique-items',
     test(value = []) {
+      if (!Array.isArray(value)) return true;
       const canonicalized = value.map(canonicalize);
       return canonicalized.length === new Set(canonicalized).size;
     },
@@ -332,11 +329,7 @@ function processAdditionalItems(
   });
 }
 
-function processRequired(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processRequired(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   node.required.forEach((key: string) => {
     schema = schema.test({
       name: 'required',
@@ -361,7 +354,7 @@ function processRequired(
 function processPatternProperties(
   schema: Schema,
   node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchemaObject>
+  config: ProcessSchemaConfig
 ) {
   return schema.test({
     name: 'pattern-properties',
@@ -459,11 +452,7 @@ function processAdditionalProperties(
   });
 }
 
-function processPattern(
-  schema: Schema,
-  node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processPattern(schema: Schema, node: JSONSchemaObject, config: ProcessSchemaConfig) {
   return schema.test({
     name: 'pattern',
     test(value, context) {
@@ -480,11 +469,7 @@ function processPattern(
   });
 }
 
-function processMinLength(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processMinLength(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'min-length',
     test(value, context) {
@@ -502,11 +487,7 @@ function processMinLength(
   });
 }
 
-function processMaxLength(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processMaxLength(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'max-length',
     test(value, context) {
@@ -524,11 +505,7 @@ function processMaxLength(
   });
 }
 
-function processMultipleOf(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processMultipleOf(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'multiple-of',
     test(value, context) {
@@ -549,11 +526,7 @@ function processMultipleOf(
   });
 }
 
-function processMinimum(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processMinimum(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'minimum',
     test(value, context) {
@@ -570,11 +543,7 @@ function processMinimum(
   });
 }
 
-function processMaximum(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processMaximum(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'maximum',
     test(value, context) {
@@ -591,11 +560,7 @@ function processMaximum(
   });
 }
 
-function processMinItems(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processMinItems(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'min-items',
     test(value, context) {
@@ -612,11 +577,7 @@ function processMinItems(
   });
 }
 
-function processMaxItems(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processMaxItems(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'max-items',
     test(value, context) {
@@ -633,11 +594,7 @@ function processMaxItems(
   });
 }
 
-function processItems(
-  schema: Schema,
-  node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processItems(schema: Schema, node: JSONSchemaObject, config: ProcessSchemaConfig) {
   return schema.test({
     name: 'items',
     test(value, context) {
@@ -688,7 +645,7 @@ function processItems(
 function processExclusiveMaximum(
   schema: Schema,
   node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
+  _config: ProcessSchemaConfig
 ) {
   return schema.test({
     name: 'exclusive-maximum',
@@ -709,7 +666,7 @@ function processExclusiveMaximum(
 function processExclusiveMinimum(
   schema: Schema,
   node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
+  _config: ProcessSchemaConfig
 ) {
   return schema.test({
     name: 'exclusive-minimum',
@@ -761,11 +718,7 @@ function handleEmailFormat(value: any, context: any) {
   }
 }
 
-function processFormat(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processFormat(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'format',
     test(value, context) {
@@ -781,11 +734,7 @@ function processFormat(
   });
 }
 
-function processEnum(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processEnum(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'enum',
     test(value, context) {
@@ -806,11 +755,7 @@ function processEnum(
   });
 }
 
-function processDependencies(
-  schema: Schema,
-  node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processDependencies(schema: Schema, node: JSONSchemaObject, config: ProcessSchemaConfig) {
   if (!node.dependencies) return schema;
 
   return schema.test({
@@ -861,11 +806,7 @@ function processDependencies(
   });
 }
 
-function processContains(
-  schema: Schema,
-  node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processContains(schema: Schema, node: JSONSchemaObject, config: ProcessSchemaConfig) {
   if (!node.contains) return schema;
 
   return schema.test({
@@ -895,11 +836,7 @@ function processContains(
   });
 }
 
-function processConst(
-  schema: Schema,
-  node: JSONSchemaObject,
-  _config: ProcessSchemaConfig<JSONSchemaObject>
-) {
+function processConst(schema: Schema, node: JSONSchemaObject, _config: ProcessSchemaConfig) {
   return schema.test({
     name: 'const',
     test(value, context) {
