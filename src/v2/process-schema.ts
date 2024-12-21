@@ -1,3 +1,4 @@
+import { visitNodeType } from './node-checks';
 import { JSONSchema, ProcessSchemaConfig } from './types';
 
 function processNode(node: JSONSchema) {
@@ -16,18 +17,26 @@ function processNode(node: JSONSchema) {
 
 export function traverseSchema<T extends JSONSchema>(
   schema: T,
-  config: ProcessSchemaConfig<T>,
+  config: ProcessSchemaConfig,
   processFn: Function
 ) {
-  switch (typeof schema === 'object' ? schema.type : undefined) {
-    case 'object':
-      return [];
-    default:
-      return processFn(schema, config);
-  }
+  return visitNodeType(
+    schema,
+    {
+      object: () => [],
+      multiType: () => [],
+      number: () => [],
+      string: () => [],
+      boolean: () => [],
+      array: () => [],
+      nullType: () => [],
+      default: () => [],
+    },
+    config
+  );
 }
 
-export function processSchema<T extends JSONSchema>(schema: T, config: ProcessSchemaConfig<T>) {
+export function processSchema<T extends JSONSchema>(schema: T, config: ProcessSchemaConfig) {
   return traverseSchema(schema, config, processNode);
 }
 

@@ -74,20 +74,20 @@ export function isNullNode(node: JSONSchema) {
 }
 
 type NodeTypeHandlers = {
-  multiType: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  object: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  multiType: (node: JSONSchema, config: ProcessSchemaConfig) => any;
+  object: (node: JSONSchema, config: ProcessSchemaConfig) => any;
   number: (node: JSONSchema) => any;
   string: (node: JSONSchema) => any;
   boolean: (node: JSONSchema) => any;
-  array: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  nullType: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
-  default: (node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) => any;
+  array: (node: JSONSchema, config: ProcessSchemaConfig) => any;
+  nullType: (node: JSONSchema, config: ProcessSchemaConfig) => any;
+  default: (node: JSONSchema, config: ProcessSchemaConfig) => any;
 };
 
 export function visitNodeType(
   node: JSONSchema,
   handlers: NodeTypeHandlers,
-  config: ProcessSchemaConfig<JSONSchema>
+  config: ProcessSchemaConfig
 ) {
   if (isMultiTypeValue(node)) return handlers.multiType(node, config);
   if (isObjectNode(node)) return handlers.object(node, config);
@@ -179,11 +179,7 @@ export function isContainsNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'contains');
 }
 
-type NodeHandler = (
-  input: any,
-  node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchemaObject>
-) => any;
+type NodeHandler = (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig) => any;
 
 type KeywordNodeHandlers = {
   enum: NodeHandler;
@@ -218,7 +214,7 @@ type KeywordNodeHandlers = {
 export function visitKeywordNode(
   node: JSONSchemaObject,
   handlers: KeywordNodeHandlers,
-  config: ProcessSchemaConfig<JSONSchema>
+  config: ProcessSchemaConfig
 ) {
   return flow([
     (input) => (isRequiredNode(node) ? handlers.required(input, node, config) : input),

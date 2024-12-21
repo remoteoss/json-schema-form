@@ -4,12 +4,15 @@ export type JSONSchemaFormConfiguration = {
   initialValues?: Record<string, unknown>;
   validator?: 'yup';
   plugins?: JSONSchemaFormPlugin[];
+  jsonSchemaVersion: 'draft7';
+  schemaValidator: JSONSchemaFormValidatorPlugin;
 };
 
 export type FormErrors = Record<string, string>;
 
 export type ProcessSchemaConfig = {
   values: unknown;
+  schemaValidator: JSONSchemaFormValidatorPlugin;
 };
 
 export type JSONSchemaFormValidatorPlugin = {

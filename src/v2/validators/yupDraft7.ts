@@ -903,15 +903,11 @@ function processConst(
   });
 }
 
-function handleKeyword(
-  schema: Schema,
-  node: JSONSchemaObject,
-  config: ProcessSchemaConfig<JSONSchema>
-) {
+function handleKeyword(schema: Schema, node: JSONSchemaObject, config: ProcessSchemaConfig) {
   return visitKeywordNode(
     node,
     {
-      contains: (schema, node) => processContains(schema, node, config),
+      contains: (schema) => processContains(schema, node, config),
       required: (schema, node) => processRequired(schema, node, config),
       patternProperties: (schema, node) => processPatternProperties(schema, node, config),
       pattern: (schema, node) => processPattern(schema, node, config),
@@ -943,7 +939,7 @@ function handleKeyword(
   )(schema);
 }
 
-function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>) {
+function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig) {
   const schema = mixed();
   return visitNodeType(
     node,
@@ -961,7 +957,7 @@ function getBaseSchema(node: JSONSchema, config: ProcessSchemaConfig<JSONSchema>
   );
 }
 
-function getYupSchema(node: JSONSchemaObject, config: ProcessSchemaConfig<JSONSchema>) {
+function getYupSchema(node: JSONSchema, config: ProcessSchemaConfig) {
   return flow([
     () => getBaseSchema(node, config),
     (schema) => handleKeyword(schema, node, config),
@@ -990,6 +986,7 @@ export const yupValidatorPlugin: JSONSchemaFormPlugin = {
     }
 
     return {
+      yupSchema,
       yupError: errors,
       formErrors: yupToFormErrors(errors),
     };
