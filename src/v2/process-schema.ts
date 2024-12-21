@@ -1,32 +1,27 @@
+import flow from 'lodash/flow';
 import { visitNodeType } from './node-checks';
 import { JSONSchema, ProcessSchemaConfig } from './types';
 
-function processNode(node: JSONSchema) {
-  if (typeof node !== 'object' || node === null) {
-    return node;
-  }
-
+function processNode(contents: any, schema: JSONSchema, config: ProcessSchemaConfig) {
   return [
     {
-      type: node.type,
-      label: node.title,
-      description: node.description,
+      name: '#',
+      type: contents.type,
+      label: contents.title,
+      description: contents.description,
+      value: config.values,
     },
   ];
 }
 
-export function traverseSchema<T extends JSONSchema>(
-  schema: T,
-  config: ProcessSchemaConfig,
-  processFn: Function
-) {
+export function traverseSchema<T extends JSONSchema>(schema: T, config: ProcessSchemaConfig) {
   return visitNodeType(
     schema,
     {
       object: () => [],
       multiType: () => [],
       number: () => [],
-      string: () => [],
+      string: () => ({ type: 'string' }),
       boolean: () => [],
       array: () => [],
       nullType: () => [],
@@ -37,7 +32,10 @@ export function traverseSchema<T extends JSONSchema>(
 }
 
 export function processSchema<T extends JSONSchema>(schema: T, config: ProcessSchemaConfig) {
-  return traverseSchema(schema, config, processNode);
+  return flow([
+    () => traverseSchema(schema, config),
+    (contents) => processNode(contents, schema, config),
+  ])();
 }
 
 export type ProcessSchemaReturnType = ReturnType<typeof processSchema>;
