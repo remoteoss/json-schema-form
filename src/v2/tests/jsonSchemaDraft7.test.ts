@@ -109,9 +109,10 @@ describe('createHeadlessForm', () => {
             if (validTestCases) {
               validTestCases.forEach(({ data, fields }: { data: any; fields?: any }) => {
                 it(`${JSON.stringify(data)}`, () => {
-                  expect(form.handleValidation(data).formErrors).toEqual(undefined);
+                  const result = form.handleValidation(data);
+                  expect(result.formErrors).toEqual(undefined);
                   if (fields) {
-                    expect(form.fields).toMatchObject(fields);
+                    expect(result.fields).toMatchObject(fields);
                   }
                 });
               });

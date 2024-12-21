@@ -4,86 +4,86 @@ export const stringTestCases = [
     schema: { type: 'string', minLength: 5, maxLength: 10 } as const,
     validTestCases: [
       { data: 'hello', fields: [{ name: '#', value: 'hello', jsonType: 'string' }] },
-      // { data: 'helloworld' }
+      { data: 'helloworld' },
     ],
-    // invalidTestCases: [
-    //   {
-    //     data: 'hi',
-    //     error: { 'this': 'this must be at least 5 characters' },
-    //   },
-    //   {
-    //     data: 'helloworldtoolong',
-    //     error: { 'this': 'this must be at most 10 characters' },
-    //   },
-    // ],
+    invalidTestCases: [
+      {
+        data: 'hi',
+        error: { '': 'this must be at least 5 characters' },
+      },
+      {
+        data: 'helloworldtoolong',
+        error: { '': 'this must be at most 10 characters' },
+      },
+    ],
   },
-  // {
-  //   title: 'String pattern matching',
-  //   schema: { type: 'string', pattern: '^[a-z]+$' } as const,
-  //   validTestCases: [{ data: 'hello' }, { data: 'world' }],
-  //   invalidTestCases: [
-  //     {
-  //       data: 'hello!',
-  //       error: { 'this': 'this must match the following: "/^[a-z]+$/"' },
-  //     },
-  //     {
-  //       data: 'Hello',
-  //       error: { 'this': 'this must match the following: "/^[a-z]+$/"' },
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: 'String enum validation',
-  //   schema: { type: 'string', enum: ['hello', 'world'] } as const,
-  //   validTestCases: [{ data: 'hello' }, { data: 'world' }],
-  //   invalidTestCases: [
-  //     {
-  //       data: 'goodbye',
-  //       error: { 'this': 'this must be one of the following values: hello, world' },
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: 'Date format validation',
-  //   schema: { type: 'string', format: 'date' } as const,
-  //   validTestCases: [{ data: '2024-01-01' }, { data: '2024-12-31' }],
-  //   invalidTestCases: [
-  //     {
-  //       data: 'banana',
-  //       error: { 'this': 'this must be a valid date' },
-  //     },
-  //     {
-  //       data: '2024-02-31',
-  //       error: { 'this': 'this must be a valid date' },
-  //     },
-  //     {
-  //       data: '2024-2-1',
-  //       error: { 'this': 'this must be a valid date' },
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: 'Const with no type',
-  //   schema: { const: 'yes' } as const,
-  //   validTestCases: [{ data: 'yes' }],
-  //   invalidTestCases: [
-  //     {
-  //       data: 'no',
-  //       error: { 'this': 'this must be equal to constant: "yes"' },
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: 'String with if/then/else',
-  //   schema: {
-  //     type: 'string',
-  //     if: { pattern: '^[0-9]+$' },
-  //     then: { maxLength: 5 },
-  //     else: { maxLength: 10 },
-  //   },
-  //   validTestCases: [{ data: '12345' }, { data: 'H123456790' }],
-  //   invalidTestCases: [{ data: '101010', error: { 'this': 'this must be at most 5 characters' } }],
-  // },
+  {
+    title: 'String pattern matching',
+    schema: { type: 'string', pattern: '^[a-z]+$' } as const,
+    validTestCases: [{ data: 'hello' }, { data: 'world' }],
+    invalidTestCases: [
+      {
+        data: 'hello!',
+        error: { '': 'this must match the following: "/^[a-z]+$/"' },
+      },
+      {
+        data: 'Hello',
+        error: { '': 'this must match the following: "/^[a-z]+$/"' },
+      },
+    ],
+  },
+  {
+    title: 'String enum validation',
+    schema: { type: 'string', enum: ['hello', 'world'] } as const,
+    validTestCases: [{ data: 'hello' }, { data: 'world' }],
+    invalidTestCases: [
+      {
+        data: 'goodbye',
+        error: { '': 'this must be one of the following values: hello, world' },
+      },
+    ],
+  },
+  {
+    title: 'Date format validation',
+    schema: { type: 'string', format: 'date' } as const,
+    validTestCases: [{ data: '2024-01-01' }, { data: '2024-12-31' }],
+    invalidTestCases: [
+      {
+        data: 'banana',
+        error: { '': 'this must be a valid date' },
+      },
+      {
+        data: '2024-02-31',
+        error: { '': 'this must be a valid date' },
+      },
+      {
+        data: '2024-2-1',
+        error: { '': 'this must be a valid date' },
+      },
+    ],
+  },
+  {
+    title: 'Const with no type',
+    schema: { const: 'yes' } as const,
+    validTestCases: [{ data: 'yes' }],
+    invalidTestCases: [
+      {
+        data: 'no',
+        error: { '': 'this must be equal to constant: "yes"' },
+      },
+    ],
+  },
+  {
+    title: 'String with if/then/else',
+    schema: {
+      type: 'string',
+      if: { pattern: '^[0-9]+$' },
+      then: { maxLength: 5 },
+      else: { maxLength: 10 },
+    },
+    validTestCases: [{ data: '12345' }, { data: 'H123456790' }],
+    invalidTestCases: [{ data: '101010', error: { '': 'this must be at most 5 characters' } }],
+  },
 ];
 
 export const numberTestCases = [
@@ -94,11 +94,11 @@ export const numberTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { this: 'this must be greater than or equal to 5' },
+        error: { '': 'this must be greater than or equal to 5' },
       },
       {
         data: 11,
-        error: { this: 'this must be less than or equal to 10' },
+        error: { '': 'this must be less than or equal to 10' },
       },
     ],
   },
@@ -112,7 +112,7 @@ export const nullTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { 'this': 'this must be equal to constant: null' },
+        error: { '': 'this must be equal to constant: null' },
       },
     ],
   },
@@ -123,7 +123,7 @@ export const nullTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { 'this': 'Expected string or null, but got number.' },
+        error: { '': 'Expected string or null, but got number.' },
       },
     ],
   },
@@ -134,7 +134,7 @@ export const nullTestCases = [
     invalidTestCases: [
       {
         data: true,
-        error: { 'this': 'Expected string or number or null, but got boolean.' },
+        error: { '': 'Expected string or number or null, but got boolean.' },
       },
     ],
   },
@@ -148,7 +148,7 @@ export const multiTypeTestCases = [
     invalidTestCases: [
       {
         data: true,
-        error: { 'this': 'Expected string or number, but got boolean.' },
+        error: { '': 'Expected string or number, but got boolean.' },
       },
     ],
   },
@@ -159,7 +159,7 @@ export const multiTypeTestCases = [
     invalidTestCases: [
       {
         data: 1,
-        error: { 'this': 'this must be greater than or equal to 5' },
+        error: { '': 'this must be greater than or equal to 5' },
       },
     ],
   },
@@ -200,11 +200,11 @@ export const arrayTestCases = [
     invalidTestCases: [
       {
         data: [],
-        error: { 'this': 'this field must have at least 1 items' },
+        error: { '': 'this field must have at least 1 items' },
       },
       {
         data: ['one', 'two', 'three', 'four'],
-        error: { 'this': 'this field must have less than or equal to 3 items' },
+        error: { '': 'this field must have less than or equal to 3 items' },
       },
       {
         data: ['one', 2],
