@@ -11,13 +11,20 @@ export type JSONSchemaFormConfiguration = {
 export type FormErrors = Record<string, string>;
 
 export type ProcessSchemaConfig = {
+  parentPath: any;
   values: unknown;
   schemaValidator: JSONSchemaFormValidatorPlugin;
 };
 
 export type JSONSchemaFormValidatorPlugin = {
   type: 'validator';
-  validate: (values: unknown, fields: JSONSchema) => { formErrors: FormErrors | undefined };
+  validate: (
+    values: unknown,
+    fields: JSONSchema
+  ) => {
+    yupSchema: any;
+    formErrors: FormErrors | undefined;
+  };
   jsonSchemaVersion: 'draft7';
 };
 

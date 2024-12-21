@@ -179,6 +179,14 @@ export function isContainsNode(node: JSONSchema) {
   return typeof node === 'object' && Object.hasOwn(node, 'contains');
 }
 
+export function isTitleNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'title');
+}
+
+export function isDescriptionNode(node: JSONSchema) {
+  return typeof node === 'object' && Object.hasOwn(node, 'description');
+}
+
 type NodeHandler = (input: any, node: JSONSchemaObject, config: ProcessSchemaConfig) => any;
 
 type KeywordNodeHandlers = {
@@ -209,10 +217,12 @@ type KeywordNodeHandlers = {
   format: NodeHandler;
   dependencies: NodeHandler;
   contains: NodeHandler;
+  title: NodeHandler;
+  description: NodeHandler;
 };
 
 export function visitKeywordNode(
-  node: JSONSchemaObject,
+  node: JSONSchema,
   handlers: KeywordNodeHandlers,
   config: ProcessSchemaConfig
 ) {
@@ -248,6 +258,8 @@ export function visitKeywordNode(
     (input) => (isMinItemsNode(node) ? handlers.minItems(input, node, config) : input),
     (input) => (isMaxItemsNode(node) ? handlers.maxItems(input, node, config) : input),
     (input) => (isDependenciesNode(node) ? handlers.dependencies(input, node, config) : input),
+    (input) => (isTitleNode(node) ? handlers.title(input, node, config) : input),
+    (input) => (isDescriptionNode(node) ? handlers.description(input, node, config) : input),
     (input) => handlers.default(input, node, config),
   ]);
 }

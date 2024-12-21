@@ -888,6 +888,8 @@ function handleKeyword(schema: Schema, node: JSONSchemaObject, config: ProcessSc
       maxItems: (schema, node) => processMaxItems(schema, node, config),
       format: (schema, node) => processFormat(schema, node, config),
       dependencies: (schema, node) => processDependencies(schema, node, config),
+      title: (schema, node) => schema,
+      description: (schema, node) => schema,
       default: (schema) => schema,
     },
     config
@@ -925,6 +927,7 @@ export const yupValidatorPlugin: JSONSchemaFormPlugin = {
   name: 'yup',
   type: 'validator',
   jsonSchemaVersion: 'draft7',
+  initialSchema: (schema, config) => lazy(() => getYupSchema(schema, config.values)),
   validate(values, schema) {
     let errors;
 

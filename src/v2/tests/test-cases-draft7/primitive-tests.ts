@@ -3,7 +3,7 @@ export const stringTestCases = [
     title: 'String length constraints',
     schema: { type: 'string', minLength: 5, maxLength: 10 } as const,
     validTestCases: [
-      { data: 'hello', fields: [{ name: '#', value: 'hello', jsonType: 'string' }] },
+      { data: 'hello', fields: [{ name: '', value: 'hello', jsonType: 'string' }] },
       { data: 'helloworld' },
     ],
     invalidTestCases: [
