@@ -1,5 +1,5 @@
-import { createHeadlessForm } from '../create-headless-form';
-import { conditionalTestCases } from './test-cases-draft7/control-flow-tests';
+import { createHeadlessForm } from '../../create-headless-form';
+import { conditionalTestCases } from './control-flow-tests';
 import {
   stringTestCases,
   numberTestCases,
@@ -7,35 +7,35 @@ import {
   multiTypeTestCases,
   objectTestCases,
   arrayTestCases,
-} from './test-cases-draft7/primitive-tests';
-import { uniqueItemsTestCases } from './test-cases-draft7/uniqueItems';
-import { requiredTestCases } from './test-cases-draft7/required';
-import { propertiesTestCases } from './test-cases-draft7/properties';
-import { patternPropertiesTestCases } from './test-cases-draft7/pattern-properties';
-import { patternTestCases } from './test-cases-draft7/pattern';
-import { typeTestCases } from './test-cases-draft7/type';
-import { oneOfTestCases } from './test-cases-draft7/oneOf';
-import { notTestCases } from './test-cases-draft7/not';
-import { multipleOfTests } from './test-cases-draft7/multipleOf';
-import { minimumTests } from './test-cases-draft7/minimum';
-import { minLengthTests } from './test-cases-draft7/minLength';
-import { minItemsTests } from './test-cases-draft7/minItems';
-import { maximumTests } from './test-cases-draft7/maximum';
-import { maxLengthTests } from './test-cases-draft7/maxLength';
-import { maxItemsTests } from './test-cases-draft7/maxItems';
-import { itemsTests } from './test-cases-draft7/items';
-import { ifThenElseTests } from './test-cases-draft7/if-then-else';
-import { formatTests } from './test-cases-draft7/format';
-import { exclusiveMinimumTests } from './test-cases-draft7/exclusiveMinimum';
-import { exclusiveMaximumTests } from './test-cases-draft7/exclusiveMaximum';
-import { enumTests } from './test-cases-draft7/enum';
-import { dependenciesTestCases } from './test-cases-draft7/dependencies';
-import { defaultTestCases } from './test-cases-draft7/default';
-import { containsTestCases } from './test-cases-draft7/contains';
-import { constTestCases } from './test-cases-draft7/const';
-import { booleanTestCases } from './test-cases-draft7/boolean_schema';
-import { anyOfTestCases } from './test-cases-draft7/anyOf';
-import { allOfTestCases } from './test-cases-draft7/allOf';
+} from './primitive-tests';
+import { uniqueItemsTestCases } from './uniqueItems';
+import { requiredTestCases } from './required';
+import { propertiesTestCases } from './properties';
+import { patternPropertiesTestCases } from './pattern-properties';
+import { patternTestCases } from './pattern';
+import { typeTestCases } from './type';
+import { oneOfTestCases } from './oneOf';
+import { notTestCases } from './not';
+import { multipleOfTests } from './multipleOf';
+import { minimumTests } from './minimum';
+import { minLengthTests } from './minLength';
+import { minItemsTests } from './minItems';
+import { maximumTests } from './maximum';
+import { maxLengthTests } from './maxLength';
+import { maxItemsTests } from './maxItems';
+import { itemsTests } from './items';
+import { ifThenElseTests } from './if-then-else';
+import { formatTests } from './format';
+import { exclusiveMinimumTests } from './exclusiveMinimum';
+import { exclusiveMaximumTests } from './exclusiveMaximum';
+import { enumTests } from './enum';
+import { dependenciesTestCases } from './dependencies';
+import { defaultTestCases } from './default';
+import { containsTestCases } from './contains';
+import { constTestCases } from './const';
+import { booleanTestCases } from './boolean_schema';
+import { anyOfTestCases } from './anyOf';
+import { allOfTestCases } from './allOf';
 
 describe('createHeadlessForm', () => {
   it('should create a headless form and return the correct structure', () => {
