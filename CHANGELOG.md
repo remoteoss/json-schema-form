@@ -1,3 +1,9 @@
+#### 0.11.9-beta.0 (2024-12-17)
+
+##### Bug Fixes
+
+*  Add support for boolean values in the if condition ([#100](https://github.com/remoteoss/json-schema-form/pull/100)) ([b3dca67d](https://github.com/remoteoss/json-schema-form/commit/b3dca67da14a7e4f5339a14a1e2f14ac014d2b92))
+
 #### 0.11.8-beta.0 (2024-11-20)
 
 ##### Bug Fixes
