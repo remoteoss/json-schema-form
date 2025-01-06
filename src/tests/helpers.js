@@ -3,8 +3,8 @@
 // -------------------------------------
 
 export const mockTextInput = {
-  title: 'ID number',
-  description: 'The number of your national identification (max 10 digits)',
+  title: 'Username',
+  description: 'Your username (max 10 characters)',
   maxLength: 10,
   'x-jsf-presentation': {
     inputType: 'text',
@@ -14,8 +14,8 @@ export const mockTextInput = {
 };
 
 export const mockTextInputDeprecated = {
-  title: 'ID number',
-  description: 'The number of your national identification (max 10 digits)',
+  title: 'Username',
+  description: 'Your username (max 10 characters)',
   maxLength: 10,
   presentation: {
     inputType: 'text',
@@ -57,6 +57,21 @@ export const schemaInputTypeNumberZeroMaximum = {
       minimum: -100,
       maximum: 0,
       type: 'number',
+    },
+  },
+};
+
+export const schemaInputTypeIntegerNumber = {
+  properties: {
+    tabs: {
+      title: 'Tabs',
+      description: 'How many open tabs do you have?',
+      'x-jsf-presentation': {
+        inputType: 'number',
+      },
+      minimum: 1,
+      maximum: 10,
+      type: 'integer',
     },
   },
 };
@@ -110,7 +125,7 @@ export const mockRadioInputDeprecated = {
   },
 };
 
-export const mockRadioInput = {
+export const mockRadioInputString = {
   title: 'Has siblings',
   description: 'Do you have any siblings?',
   oneOf: [
@@ -127,6 +142,67 @@ export const mockRadioInput = {
     inputType: 'radio',
   },
   type: 'string',
+};
+
+export const mockRadioInputBoolean = {
+  title: 'Over 18',
+  description: 'Are you over 18 years old?',
+  oneOf: [
+    {
+      title: 'Yes',
+      const: true,
+    },
+    {
+      title: 'No',
+      const: false,
+    },
+  ],
+  'x-jsf-presentation': {
+    inputType: 'radio',
+  },
+  type: 'boolean',
+};
+
+export const mockRadioInputStringY = {
+  title: 'Has siblings',
+  description: 'Do you have any siblings?',
+  oneOf: [
+    {
+      title: 'Yes',
+      const: 'true',
+    },
+    {
+      title: 'No',
+      const: 'false',
+    },
+  ],
+  'x-jsf-presentation': {
+    inputType: 'radio',
+  },
+  type: 'string',
+};
+
+export const mockRadioInputNumber = {
+  title: 'Number of siblings',
+  description: 'How many siblings do you have?',
+  oneOf: [
+    {
+      title: 'One',
+      const: 1,
+    },
+    {
+      title: 'Two',
+      const: 2,
+    },
+    {
+      title: 'Three',
+      const: 3,
+    },
+  ],
+  'x-jsf-presentation': {
+    inputType: 'radio',
+  },
+  type: 'number',
 };
 
 export const mockRadioCardExpandableInput = {
@@ -313,10 +389,10 @@ export const mockFieldset = {
     inputType: 'fieldset',
   },
   properties: {
-    id_number: mockTextInput,
+    username: mockTextInput,
     tabs: mockNumberInput,
   },
-  required: ['id_number'],
+  required: ['username'],
   type: 'object',
 };
 
@@ -328,10 +404,10 @@ export const mockFocusedFieldset = {
     variant: 'focused',
   },
   properties: {
-    id_number: mockTextInput,
+    username: mockTextInput,
     tabs: mockNumberInput,
   },
-  required: ['id_number'],
+  required: ['username'],
   type: 'object',
 };
 
@@ -501,7 +577,7 @@ export const mockTelWithPattern = {
  * @returns {Object} A JSON schema
  * @example
  *  JSONSchemaBuilder().addInput({
-      id_number: mockTextInput,
+      username: mockTextInput,
     })
     .build();
  */
@@ -708,9 +784,9 @@ export const schemaWithoutTypes = {
 
 export const schemaInputTypeText = {
   properties: {
-    id_number: mockTextInput,
+    username: mockTextInput,
   },
-  required: ['id_number'],
+  required: ['username'],
 };
 
 export const schemaInputWithStatement = {
@@ -732,6 +808,25 @@ export const schemaInputWithStatement = {
         inputType: 'text',
         statement: {
           description: 'This is another statement message, but more severe.',
+          inputType: 'statement',
+          severity: 'warning',
+        },
+      },
+    },
+  },
+};
+
+export const schemaHiddenInputWithStatement = {
+  properties: {
+    a_field_statement: {
+      type: 'null',
+      title: 'Company statement',
+      'x-jsf-presentation': {
+        inputType: 'hidden',
+        statement: {
+          title: 'Important statement',
+          description:
+            "This statement message will be shown at all times, irrespective of this field's visibility.",
           inputType: 'statement',
           severity: 'warning',
         },
@@ -831,11 +926,32 @@ export const schemaInputTypeRadioDeprecated = {
   required: ['has_siblings'],
 };
 
-export const schemaInputTypeRadio = {
+export const schemaInputTypeRadioString = {
   properties: {
-    has_siblings: mockRadioInput,
+    has_siblings: mockRadioInputString,
   },
   required: ['has_siblings'],
+};
+
+export const schemaInputTypeRadioStringY = {
+  properties: {
+    has_siblings: mockRadioInputStringY,
+  },
+  required: ['has_siblings'],
+};
+
+export const schemaInputTypeRadioBoolean = {
+  properties: {
+    over_18: mockRadioInputBoolean,
+  },
+  required: ['over_18'],
+};
+
+export const schemaInputTypeRadioNumber = {
+  properties: {
+    siblings_count: mockRadioInputNumber,
+  },
+  required: ['siblings_count'],
 };
 
 export const mockRadioInputOptionalNull = {
@@ -853,7 +969,7 @@ export const mockRadioInputOptionalNull = {
 
 export const schemaInputTypeRadioRequiredAndOptional = {
   properties: {
-    has_siblings: mockRadioInput,
+    has_siblings: mockRadioInputString,
     has_car: {
       ...mockRadioInputOptionalNull,
       description: 'Do you have a car? (optional field, check oneOf)',
@@ -1085,6 +1201,23 @@ export const schemaInputTypeCheckboxBooleans = JSONSchemaBuilder()
   .setRequiredFields(['boolean_required'])
   .build();
 
+export const schemaInputTypeNull = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    name: {
+      type: 'null',
+      title: '(Optional) Name',
+    },
+    username: {
+      type: 'string',
+      title: 'Username',
+      maxLength: 4,
+    },
+  },
+  required: ['username'],
+};
+
 export const schemaCustomErrorMessageByField = {
   properties: {
     tabs: {
@@ -1292,7 +1425,7 @@ export const schemaDynamicValidationConst = {
   then: {
     properties: {
       a_fieldset: {
-        required: ['id_number', 'tabs'],
+        required: ['username', 'tabs'],
       },
     },
   },
@@ -1369,7 +1502,7 @@ export const schemaDynamicValidationContains = JSONSchemaBuilder()
       type: 'array',
       description: 'Select what fieldset fields are required',
       items: {
-        enum: ['all', 'id_number'],
+        enum: ['all', 'username'],
       },
       'x-jsf-presentation': {
         inputType: 'select',
@@ -1379,8 +1512,8 @@ export const schemaDynamicValidationContains = JSONSchemaBuilder()
             value: 'all',
           },
           {
-            label: 'ID Number',
-            value: 'id_number',
+            label: 'Username',
+            value: 'username',
           },
         ],
         placeholder: 'Select...',
@@ -1401,7 +1534,7 @@ export const schemaDynamicValidationContains = JSONSchemaBuilder()
     {
       properties: {
         a_fieldset: {
-          required: ['id_number', 'tabs'],
+          required: ['username', 'tabs'],
         },
       },
     }
@@ -1440,7 +1573,7 @@ export const schemaAnyOfValidation = JSONSchemaBuilder()
 
 export const schemaWithConditionalPresentationProperties = JSONSchemaBuilder()
   .addInput({
-    mock_radio: mockRadioInput,
+    mock_radio: mockRadioInputString,
   })
   .addAllOf([
     {
@@ -1477,7 +1610,7 @@ export const schemaWithConditionalPresentationProperties = JSONSchemaBuilder()
   .build();
 
 export const schemaWithConditionalReadOnlyProperty = JSONSchemaBuilder()
-  .addInput({ field_a: mockRadioInput })
+  .addInput({ field_a: mockRadioInputString })
   .addInput({ field_b: mockTextInput })
   .addAllOf([
     {
@@ -1526,7 +1659,7 @@ export const schemaWithConditionalReadOnlyProperty = JSONSchemaBuilder()
   .build();
 
 export const schemaWithConditionalAcknowledgementProperty = JSONSchemaBuilder()
-  .addInput({ field_a: mockRadioInput })
+  .addInput({ field_a: mockRadioInputString })
   .addInput({ field_b: mockCheckboxInput })
   .addAllOf([
     {
@@ -1554,9 +1687,9 @@ export const schemaWithConditionalAcknowledgementProperty = JSONSchemaBuilder()
 // Note: The second conditional (field_a_wrong) is incorrect,
 // it's used to test/catch the scenario where devs forget to add the if.required[]
 export const schemaWithWrongConditional = JSONSchemaBuilder()
-  .addInput({ field_a: mockRadioInput })
+  .addInput({ field_a: mockRadioInputString })
   .addInput({ field_b: mockTextInput })
-  .addInput({ field_a_wrong: mockRadioInput })
+  .addInput({ field_a_wrong: mockRadioInputString })
   .addInput({ field_b_wrong: mockTextInput })
   .addAllOf([
     {

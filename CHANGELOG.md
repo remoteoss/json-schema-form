@@ -1,32 +1,128 @@
+#### 0.11.9-beta.0 (2024-12-17)
+
+##### Bug Fixes
+
+*  Add support for boolean values in the if condition ([#100](https://github.com/remoteoss/json-schema-form/pull/100)) ([b3dca67d](https://github.com/remoteoss/json-schema-form/commit/b3dca67da14a7e4f5339a14a1e2f14ac014d2b92))
+
+#### 0.11.8-beta.0 (2024-11-20)
+
+##### Bug Fixes
+
+* **integer:**  support integer field type ([#11](https://github.com/remoteoss/json-schema-form/pull/11)) ([14f34971](https://github.com/remoteoss/json-schema-form/commit/14f349714ce7b294ae710801168b017692c659af))
+
+#### 0.11.7-beta.0 (2024-11-14)
+
+##### Bug Fixes
+
+* **validation:**  validate radio with string-y types; ([#94](https://github.com/remoteoss/json-schema-form/pull/94)) ([606913d8](https://github.com/remoteoss/json-schema-form/commit/606913d8412a02d9a38a43e903add58b8e11a7e4))
+
+#### 0.11.6-beta.0 (2024-10-15)
+
+##### Bug Fixes
+
+* **modify:**  Support json schemas without allOf ([#93](https://github.com/remoteoss/json-schema-form/pull/93)) ([03795d0a](https://github.com/remoteoss/json-schema-form/commit/03795d0ac1a7ae0d523cd8418b83342676f221cf))
+
+#### 0.11.5-beta.0 (2024-08-22)
+
+##### Bug Fixes
+
+* **validation:**  Validate null field type correctly ([#91](https://github.com/remoteoss/json-schema-form/pull/91)) ([1cb8b61f](https://github.com/remoteoss/json-schema-form/commit/1cb8b61fec06d851832f9e76b3156d6f574b5d41))
+* **files:** accept object value with `name` property ([#91](https://github.com/remoteoss/json-schema-form/pull/91)) ([1cb8b61f](https://github.com/remoteoss/json-schema-form/commit/1cb8b61fec06d851832f9e76b3156d6f574b5d41))
+
+
+#### 0.11.4-beta.0 (2024-08-20)
+
+##### Bug Fixes
+
+* **file:**  Validate the value is an instance of File ([#87](https://github.com/remoteoss/json-schema-form/pull/87)) ([8361df0d](https://github.com/remoteoss/json-schema-form/commit/8361df0d4e9f7d83342cdc91c41efb493e391307))
+
+##### Chores
+
+* **tests:**  Move code in global test scope to inside beforeAll ([#90](https://github.com/remoteoss/json-schema-form/pull/90)) ([88f7d3c9](https://github.com/remoteoss/json-schema-form/commit/88f7d3c95330c828fc2539962b878c43b61ca8a0))
+
+#### 0.11.3-beta.0 (2024-08-19)
+
+##### Bug Fixes
+
+* **select/radio:**  Add support for options with boolean type ([#89](https://github.com/remoteoss/json-schema-form/pull/89)) ([127f70b3](https://github.com/remoteoss/json-schema-form/commit/127f70b3b19974a404e710548b83d4e4b17e1339))
+
+#### 0.11.2-beta.0 (2024-07-30)
+
+##### Bug Fixes
+
+- **modify:**
+
+  - Support x-jsf shorthands in all methods, fix TS declarations; ([#85](https://github.com/remoteoss/json-schema-form/pull/85)) ([9a87c19b](https://github.com/remoteoss/json-schema-form/commit/9a87c19b6d373a8f660dd24b20a48725f3dbe8d0))
+
+- **createHeadlessForm:**
+
+  - mark createHeadlessForm config.customProperties as deprecated ([#85](https://github.com/remoteoss/json-schema-form/pull/85)) ([9a87c19b](https://github.com/remoteoss/json-schema-form/commit/9a87c19b6d373a8f660dd24b20a48725f3dbe8d0))
+  - support custom attributes as functions (do not execute them) ([#86](https://github.com/remoteoss/json-schema-form/pull/86)) ([3674fc87](https://github.com/remoteoss/json-schema-form/commit/3674fc87d44df44a5ba9b13b40465c2ccda448ca))
+
+#### 0.11.1-beta.0 (2024-07-26)
+
+##### Chores
+
+- **modify:** Add missing Typescript declarations ([#84](https://github.com/remoteoss/json-schema-form/pull/84)) ([86b3af2a](https://github.com/remoteoss/json-schema-form/commit/86b3af2a31981718ad349ac8d08fbdce3aa86acf))
+
+#### 0.11.0-beta.0 (2024-07-25)
+
+##### Breaking changes
+
+- **modify:**
+  - Change the return result to include warnings ([#83](https://github.com/remoteoss/json-schema-form/pull/83)) ([e07fcec8](https://github.com/remoteoss/json-schema-form/commit/e07fcec8e11cfcba2b477e5e6339cebbcc42038c))
+
+##### New Features
+
+- **modify:**
+  - Allow picking fields ([#79](https://github.com/remoteoss/json-schema-form/pull/79)) ([2e044021](https://github.com/remoteoss/json-schema-form/commit/2e044021f30292be81cede3805eefb4f1ea96dd9))
+  - Add x-jsf-presentation shorthand ([#81](https://github.com/remoteoss/json-schema-form/pull/81)) ([7cfaab0b](https://github.com/remoteoss/json-schema-form/commit/7cfaab0bdbb05a1555f6c1d74b26b1e6d7fa8c43))
+  - Allow creating fields ([#80](https://github.com/remoteoss/json-schema-form/pull/80)) ([8a82254d](https://github.com/remoteoss/json-schema-form/commit/8a82254d7cf5799471fa0bf2d3d09179f1327187))
+  - Allow customize fields order ([#78](https://github.com/remoteoss/json-schema-form/pull/78)) ([adc88179](https://github.com/remoteoss/json-schema-form/commit/adc88179a5d1e5bd85371c0cc581b35964bf6edf))
+
+##### Bug Fixes
+
+- **modify:** Customize attrs as Array now overrides the value ([#82](https://github.com/remoteoss/json-schema-form/pull/82)) ([7cc0853e](https://github.com/remoteoss/json-schema-form/commit/7cc0853e30f0c06ff160d8a3e4c4b4e402a1e520))
+
+#### 0.10.1-beta.0 (2024-07-23)
+
+##### Chores
+
+- **Text field docs:** Change naming of ID number property ([#74](https://github.com/remoteoss/json-schema-form/pull/74)) ([338ddd2a](https://github.com/remoteoss/json-schema-form/commit/338ddd2a5f008ec089f38db834f075100b856001))
+
+#### 0.10.0-beta.0 (2024-06-20)
+
+Adds `modify` utility for better customizations ([#75](https://github.com/remoteoss/json-schema-form/pull/75))
+
 #### 0.9.1-beta.0 (2024-03-26)
 
 ##### Bug Fixes
 
-* **select/radio:**  Allow numbers in oneOf ([#49](https://github.com/remoteoss/json-schema-form/pull/49)) ([04c2598a](https://github.com/remoteoss/json-schema-form/commit/04c2598a3f4e31d8a9495e0d69c0427b6b8c9f56))
+- **select/radio:** Allow numbers in oneOf ([#49](https://github.com/remoteoss/json-schema-form/pull/49)) ([04c2598a](https://github.com/remoteoss/json-schema-form/commit/04c2598a3f4e31d8a9495e0d69c0427b6b8c9f56))
 
 #### 0.9.0-beta.0 (2024-03-11)
 
 ##### Breaking changes
 
-*  Rename `value` -> `forcedValue`. This is in regards to the `json-logic`, where a "forced value" will now be returned in each relevant field (i.e. fields where the schema `const` and `default` are the same) with `forcedValue` over `value`. ([#66](https://github.com/remoteoss/json-schema-form/pull/66)) ([77c445a9](https://github.com/remoteoss/json-schema-form/commit/77c445a9dce657a7648642312f22c18f972187c7))
+- Rename `value` -> `forcedValue`. This is in regards to the `json-logic`, where a "forced value" will now be returned in each relevant field (i.e. fields where the schema `const` and `default` are the same) with `forcedValue` over `value`. ([#66](https://github.com/remoteoss/json-schema-form/pull/66)) ([77c445a9](https://github.com/remoteoss/json-schema-form/commit/77c445a9dce657a7648642312f22c18f972187c7))
 
 #### 0.8.2-beta.0 (2024-02-13)
 
 ##### Bug Fixes
 
-* **helpers:**  getFieldOptions - return empty array if oneOf missing in radio ([#67](https://github.com/remoteoss/json-schema-form/pull/67)) ([6511330f](https://github.com/remoteoss/json-schema-form/commit/6511330f55a2accedb1c58a61ff915a3a0186dbb))
+- **helpers:** getFieldOptions - return empty array if oneOf missing in radio ([#67](https://github.com/remoteoss/json-schema-form/pull/67)) ([6511330f](https://github.com/remoteoss/json-schema-form/commit/6511330f55a2accedb1c58a61ff915a3a0186dbb))
 
 #### 0.8.1-beta.0 (2024-02-12)
 
 ##### Bug Fixes
 
-* **conditionals:**  Certain conditions in a JSON schema were failing. This bugfix adds missing field context to the evaluation to prevent the error. ([#65](https://github.com/remoteoss/json-schema-form/pull/65)) ([6755a2fd](https://github.com/remoteoss/json-schema-form/commit/6755a2fd29f3f806a57ba19e29ad7e21daf9e51b))
+- **conditionals:** Certain conditions in a JSON schema were failing. This bugfix adds missing field context to the evaluation to prevent the error. ([#65](https://github.com/remoteoss/json-schema-form/pull/65)) ([6755a2fd](https://github.com/remoteoss/json-schema-form/commit/6755a2fd29f3f806a57ba19e29ad7e21daf9e51b))
 
 #### 0.8.0-beta.0 (2024-02-01)
 
 ##### Bug Fixes
 
-* **fieldset:**  Support customProperties with sub-fields clashing with reserved words. ([#64](https://github.com/remoteoss/json-schema-form/pull/64)) ([8340cdea](https://github.com/remoteoss/json-schema-form/commit/8340cdea27b711064079055af939a595d1c38031))
+- **fieldset:** Support customProperties with sub-fields clashing with reserved words. ([#64](https://github.com/remoteoss/json-schema-form/pull/64)) ([8340cdea](https://github.com/remoteoss/json-schema-form/commit/8340cdea27b711064079055af939a595d1c38031))
 
 #### 0.7.6-beta.0 (2024-01-23)
 

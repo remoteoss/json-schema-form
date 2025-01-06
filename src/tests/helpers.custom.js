@@ -194,7 +194,7 @@ export const schemaInputTypeHidden = {
       title: 'Money hidden',
       'x-jsf-presentation': { inputType: 'hidden', currency: 'EUR' },
       minimum: 0,
-      default: 12.3,
+      default: 1099,
     },
     a_hidden_select: {
       ...mockSelectInputSolo,

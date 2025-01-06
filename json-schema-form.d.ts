@@ -2,7 +2,6 @@
  * Shorthand to lookup for keys with `x-jsf-*` preffix.
  */
 export function pickXKey(node: Object, key: 'presentation' | 'errorMessage'): Object | undefined;
-
 type ValidationTypes =
   | 'type'
   | 'minimum'
@@ -104,6 +103,52 @@ type HeadlessFormOutput = {
 };
 
 type JSONSchemaObjectType = Record<string, unknown>;
+type FieldName = string;
+type FieldAttrs = Record<string, unknown>;
+
+type ModifyConfig = {
+  /**
+   * An object with the fields to be modified with the returned attributes.
+   */
+  fields?: Record<FieldName, FieldAttrs | ((fieldAttrs: FieldAttrs) => FieldAttrs)>;
+  /**
+   * A callback function that runs through all fields, to modify them with the returned attributes.
+   */
+  allFields?: (fieldName: FieldName, fieldAttrs: FieldAttrs) => FieldAttrs;
+  /**
+   * An object of new fields to be created with the new attributes.
+   */
+  create?: Record<FieldName, FieldAttrs>;
+  /**
+   * An array of the fields to keep, removing the remaining fields.
+   */
+  pick?: FieldName[];
+  /**
+   * An array of fieldNames with the new order. Can be an object or callback function
+   * */
+  orderRoot?: FieldName[] | ((originalOrder: FieldName[]) => FieldName[]);
+  /**
+   * Mutes any logs or warnings from the library.
+   */
+  muteLogging?: boolean;
+};
+
+type WarningType =
+  | 'FIELD_TO_CHANGE_NOT_FOUND'
+  | 'ORDER_MISSING_FIELDS'
+  | 'FIELD_TO_CREATE_EXISTS'
+  | 'PICK_MISSED_FIELD';
+
+type Warning = {
+  message: string;
+  type: WarningType;
+  meta?: Record<string, unknown>;
+};
+
+type ModifyOutput = {
+  schema: JSONSchemaObjectType;
+  warnings: Warning[];
+};
 
 /**
  * Generates the Headless form based on the provided JSON schema
@@ -113,3 +158,18 @@ export function createHeadlessForm(
   jsonSchema: JSONSchemaObjectType,
   customConfig?: JSFConfig
 ): HeadlessFormOutput;
+
+/**
+ * Returns a new JSON Schema modified based a given configuration.
+ * This does not mutate the original JSON Schema.
+ */
+export function modify(
+  /**
+   * The original JSON schema as base to the modifications.
+   */
+  originalSchema: JSONSchemaObjectType,
+  /**
+   * The configuration object to create a new JSON Schema based on the originalSchema.
+   */
+  config?: ModifyConfig
+): ModifyOutput;

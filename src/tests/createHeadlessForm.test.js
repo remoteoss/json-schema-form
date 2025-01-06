@@ -8,7 +8,10 @@ import {
   JSONSchemaBuilder,
   schemaInputTypeText,
   schemaInputTypeRadioDeprecated,
-  schemaInputTypeRadio,
+  schemaInputTypeRadioString,
+  schemaInputTypeRadioStringY,
+  schemaInputTypeRadioBoolean,
+  schemaInputTypeRadioNumber,
   schemaInputTypeRadioRequiredAndOptional,
   schemaInputRadioOptionalNull,
   schemaInputRadioOptionalConventional,
@@ -20,6 +23,7 @@ import {
   schemaInputTypeSelectMultiple,
   schemaInputTypeSelectMultipleOptional,
   schemaInputTypeFieldset,
+  schemaInputTypeIntegerNumber,
   schemaInputTypeNumber,
   schemaInputTypeNumberZeroMaximum,
   schemaInputTypeDate,
@@ -27,6 +31,7 @@ import {
   schemaInputWithStatement,
   schemaInputTypeCheckbox,
   schemaInputTypeCheckboxBooleans,
+  schemaInputTypeNull,
   schemaWithOrderKeyword,
   schemaWithPositionDeprecated,
   schemaDynamicValidationConst,
@@ -58,6 +63,7 @@ import {
   schemaInputTypeNumberWithPercentage,
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
+  schemaInputTypeFile,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 
@@ -432,7 +438,7 @@ describe('createHeadlessForm', () => {
   });
 
   describe('field support', () => {
-    function assertOptionsAllowed({ handleValidation, fieldName, validOptions }) {
+    function assertOptionsAllowed({ handleValidation, fieldName, validOptions, type = 'string' }) {
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       // All allowed options are valid
@@ -440,19 +446,21 @@ describe('createHeadlessForm', () => {
         expect(validateForm({ [fieldName]: value })).toBeUndefined();
       });
 
-      // Any other arbitrary value is not valid.
-      expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
-        [fieldName]: 'The option "blah-blah" is not valid.',
-      });
+      if (type === 'string') {
+        // Any other arbitrary value is not valid.
+        expect(validateForm({ [fieldName]: 'blah-blah' })).toEqual({
+          [fieldName]: 'The option "blah-blah" is not valid.',
+        });
+
+        // As required field, empty string ("") is also considered empty. @BUG RMT-518
+        // Expectation: The error to be "The option '' is not valid."
+        expect(validateForm({ [fieldName]: '' })).toEqual({
+          [fieldName]: 'Required field',
+        });
+      }
 
       // Given undefined, it says it's a required field.
       expect(validateForm({})).toEqual({
-        [fieldName]: 'Required field',
-      });
-
-      // As required field, empty string ("") is also considered empty. @BUG RMT-518
-      // Expectation: The error to be "The option '' is not valid."
-      expect(validateForm({ [fieldName]: '' })).toEqual({
         [fieldName]: 'Required field',
       });
 
@@ -467,9 +475,9 @@ describe('createHeadlessForm', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaInputTypeText);
 
       expect(fields[0]).toMatchObject({
-        description: 'The number of your national identification (max 10 digits)',
-        label: 'ID number',
-        name: 'id_number',
+        description: 'Your username (max 10 characters)',
+        label: 'Username',
+        name: 'username',
         required: true,
         schema: expect.any(Object),
         inputType: 'text',
@@ -485,8 +493,8 @@ describe('createHeadlessForm', () => {
       expect(fieldValidator.isValidSync(1)).toBe(false);
       expect(fieldValidator.isValidSync(0)).toBe(false);
 
-      expect(handleValidation({ id_number: 1 }).formErrors).toEqual({
-        id_number: 'id_number must be a `string` type, but the final value was: `1`.',
+      expect(handleValidation({ username: 1 }).formErrors).toEqual({
+        username: 'username must be a `string` type, but the final value was: `1`.',
       });
 
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
@@ -496,20 +504,18 @@ describe('createHeadlessForm', () => {
       const resultsWithRootDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: mockTextInput,
+            username: mockTextInput,
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
-      expect(resultsWithRootDescription.fields[0].description).toMatch(
-        /the number of your national/i
-      );
+      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
 
       const resultsWithPresentationDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: {
+            username: {
               ...mockTextInput,
               'x-jsf-presentation': {
                 inputType: 'text',
@@ -519,7 +525,7 @@ describe('createHeadlessForm', () => {
               },
             },
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
@@ -532,20 +538,18 @@ describe('createHeadlessForm', () => {
       const resultsWithRootDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: mockTextInputDeprecated,
+            username: mockTextInputDeprecated,
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
-      expect(resultsWithRootDescription.fields[0].description).toMatch(
-        /the number of your national/i
-      );
+      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
 
       const resultsWithPresentationDescription = createHeadlessForm(
         JSONSchemaBuilder()
           .addInput({
-            id_number: {
+            username: {
               ...mockTextInputDeprecated,
               presentation: {
                 inputType: 'text',
@@ -555,7 +559,7 @@ describe('createHeadlessForm', () => {
               },
             },
           })
-          .setRequiredFields(['id_number'])
+          .setRequiredFields(['username'])
           .build()
       );
 
@@ -749,8 +753,8 @@ describe('createHeadlessForm', () => {
         validOptions: ['yes', 'no'],
       });
     });
-    it('support "radio" field type', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadio);
+    it('support "radio" field string type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioString);
 
       expect(fields).toMatchObject([
         {
@@ -777,6 +781,125 @@ describe('createHeadlessForm', () => {
         handleValidation,
         fieldName: 'has_siblings',
         validOptions: ['yes', 'no'],
+      });
+    });
+
+    it('support "radio" field boolean type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioBoolean);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields).toMatchObject([
+        {
+          description: 'Are you over 18 years old?',
+          label: 'Over 18',
+          name: 'over_18',
+          options: [
+            {
+              label: 'Yes',
+              value: true,
+            },
+            {
+              label: 'No',
+              value: false,
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsAllowed({
+        handleValidation,
+        fieldName: 'over_18',
+        validOptions: [true, false],
+        type: schemaInputTypeRadioBoolean.properties.over_18.type,
+      });
+
+      expect(validateForm({ over_18: 'true' })).toEqual({
+        over_18: 'The option "true" is not valid.',
+      });
+    });
+
+    // @BUG COD-1859
+    // it should validate when type is string but value is not a boolean
+    it('support "radio" field string-y type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioStringY);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields).toMatchObject([
+        {
+          description: 'Do you have any siblings?',
+          label: 'Has siblings',
+          name: 'has_siblings',
+          options: [
+            {
+              label: 'Yes',
+              value: 'true',
+            },
+            {
+              label: 'No',
+              value: 'false',
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsAllowed({
+        handleValidation,
+        fieldName: 'has_siblings',
+        validOptions: ['true', 'false'],
+      });
+
+      expect(validateForm({ has_siblings: false })).toEqual({
+        has_siblings: 'The option "false" is not valid.',
+      });
+    });
+
+    it('support "radio" field number type', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioNumber);
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(fields).toMatchObject([
+        {
+          description: 'How many siblings do you have?',
+          label: 'Number of siblings',
+          name: 'siblings_count',
+          options: [
+            {
+              label: 'One',
+              value: 1,
+            },
+            {
+              label: 'Two',
+              value: 2,
+            },
+            {
+              label: 'Three',
+              value: 3,
+            },
+          ],
+          required: true,
+          schema: expect.any(Object),
+          type: 'radio',
+        },
+      ]);
+
+      assertOptionsAllowed({
+        handleValidation,
+        fieldName: 'siblings_count',
+        validOptions: [1, 2, 3],
+        type: schemaInputTypeRadioNumber.properties.siblings_count.type,
+      });
+
+      expect(validateForm({ siblings_count: '3' })).toEqual({
+        siblings_count: 'The option "3" is not valid.',
       });
     });
 
@@ -910,6 +1033,41 @@ describe('createHeadlessForm', () => {
 
       const fieldOptions = result.fields[0].options;
       expect(fieldOptions).toEqual([]);
+    });
+
+    it('support "integer" field type', () => {
+      const result = createHeadlessForm(schemaInputTypeIntegerNumber);
+      expect(result).toMatchObject({
+        fields: [
+          {
+            description: 'How many open tabs do you have?',
+            label: 'Tabs',
+            name: 'tabs',
+            required: false,
+            schema: expect.any(Object),
+            type: 'number',
+            jsonType: 'integer',
+            inputType: 'number',
+            minimum: 1,
+            maximum: 10,
+          },
+        ],
+      });
+
+      const fieldValidator = result.fields[0].schema;
+      expect(fieldValidator.isValidSync('0')).toBe(false);
+      expect(fieldValidator.isValidSync('10')).toBe(true);
+      expect(fieldValidator.isValidSync('11')).toBe(false);
+      expect(fieldValidator.isValidSync('5.5')).toBe(false);
+      expect(fieldValidator.isValidSync('1.0')).toBe(true);
+      expect(fieldValidator.isValidSync('this is text with a number 1')).toBe(false);
+      expect(() => fieldValidator.validateSync('5.5')).toThrowError(
+        'Must not contain decimal points. E.g. 5 instead of 5.5'
+      );
+      expect(() => fieldValidator.validateSync('some text')).toThrowError(
+        'The value must be a number'
+      );
+      expect(() => fieldValidator.validateSync('')).toThrowError('The value must be a number');
     });
 
     it('support "number" field type', () => {
@@ -1498,6 +1656,48 @@ describe('createHeadlessForm', () => {
       });
     });
 
+    it('supports "null" field type', () => {
+      const { handleValidation, fields } = createHeadlessForm(schemaInputTypeNull, {
+        strictInputType: false,
+      });
+
+      expect(fields).toMatchObject([
+        {
+          name: 'name',
+          label: '(Optional) Name',
+          type: undefined,
+          jsonType: 'null',
+          schema: expect.any(Object),
+        },
+        {
+          name: 'username',
+          label: 'Username',
+          type: 'text',
+          jsonType: 'string',
+          inputType: 'text',
+          maxLength: 4,
+          schema: expect.any(Object),
+        },
+      ]);
+
+      // jsonType `null` fields do not have a corresponding inputType
+      expect(fields[0].inputType).toBeUndefined();
+
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toEqual({
+        username: 'Required field',
+      });
+
+      expect(validateForm({ username: 'hello', name: 'John' })).toEqual({
+        username: 'Please insert up to 4 characters',
+        name: 'The value "John" is not valid.',
+      });
+
+      expect(validateForm({ username: 'john' })).toBeUndefined();
+      expect(validateForm({ username: 'john', name: null })).toBeUndefined();
+    });
+
     it('supports oneOf pattern validation', () => {
       const result = createHeadlessForm(mockTelWithPattern);
 
@@ -1561,9 +1761,9 @@ describe('createHeadlessForm', () => {
               required: false,
               fields: [
                 {
-                  description: 'The number of your national identification (max 10 digits)',
-                  label: 'ID number',
-                  name: 'id_number',
+                  description: 'Your username (max 10 characters)',
+                  label: 'Username',
+                  name: 'username',
                   type: 'text',
                   required: true,
                 },
@@ -1608,9 +1808,9 @@ describe('createHeadlessForm', () => {
                   required: false,
                   fields: [
                     {
-                      description: 'The number of your national identification (max 10 digits)',
-                      label: 'ID number',
-                      name: 'id_number',
+                      description: 'Your username (max 10 characters)',
+                      label: 'Username',
+                      name: 'username',
                       type: 'text',
                       required: true,
                     },
@@ -1718,15 +1918,22 @@ describe('createHeadlessForm', () => {
         // Then the fieldset perks.food changes (the "no" option gets removed)
 
         // Setup (arrange)
-        const { fields, handleValidation } = createHeadlessForm(schemaWithConditionalToFieldset);
+        let validateForm;
+        let fields;
+        let originalFood;
+        let perksForLowWorkHours;
 
-        const validateForm = (vals) => friendlyError(handleValidation(vals));
-        const originalFood = getField(fields, 'perks', 'food');
+        beforeAll(() => {
+          const form = createHeadlessForm(schemaWithConditionalToFieldset);
+          fields = form.fields;
+          validateForm = (vals) => friendlyError(form.handleValidation(vals));
+          originalFood = getField(fields, 'perks', 'food');
 
-        const perksForLowWorkHours = {
-          food: 'no', // this option will be removed when the condition happens.
-          retirement: 'basic',
-        };
+          perksForLowWorkHours = {
+            food: 'no', // this option will be removed when the condition happens.
+            retirement: 'basic',
+          };
+        });
 
         it('by default, the Perks.food has 4 options', () => {
           expect(originalFood.options).toHaveLength(4);
@@ -2018,12 +2225,12 @@ describe('createHeadlessForm', () => {
 
       // Assert the yupError shape is really a YupError
       expect(yupError).toEqual(expect.any(Error));
-      expect(yupError.inner[0].path).toBe('id_number');
+      expect(yupError.inner[0].path).toBe('username');
       expect(yupError.inner[0].message).toBe('Required field');
 
       // Assert the converted YupError to formErrors
       expect(formErrors).toEqual({
-        id_number: 'Required field',
+        username: 'Required field',
       });
     });
   });
@@ -2178,6 +2385,75 @@ describe('createHeadlessForm', () => {
 
       expect(result).toMatchObject({
         fields: [{ description: 'I am regular' }, { description: 'I am <b>bold</b>.' }],
+      });
+    });
+
+    it('pass custom attributes as function', () => {
+      function FakeComponent(props) {
+        const { label, description } = props;
+        return `A React component with ${label} and ${description}`;
+      }
+      // Any custom attributes must be inside "x-jsf-presentation"
+      const { fields, handleValidation } = createHeadlessForm({
+        properties: {
+          field_a: {
+            title: 'Field A',
+            'x-jsf-presentation': {
+              inputType: 'text',
+              MyComponent: FakeComponent,
+            },
+          },
+          field_b: {
+            title: 'Field B',
+            'x-jsf-presentation': {
+              inputType: 'text',
+              MyComponent: FakeComponent,
+            },
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                field_a: { const: 'yes' },
+              },
+              required: ['field_a'],
+            },
+            then: {
+              required: ['field_b'],
+            },
+          },
+        ],
+      });
+
+      const fieldA = getField(fields, 'field_a');
+      expect(fieldA).toMatchObject({
+        label: 'Field A',
+        MyComponent: expect.any(Function),
+      });
+
+      const fieldB = getField(fields, 'field_b');
+      expect(fieldB).toMatchObject({
+        label: 'Field B',
+        required: false,
+        MyComponent: expect.any(Function),
+      });
+
+      const fakeProps = { label: 'Field B', description: 'fake description' };
+      expect(fieldB.MyComponent(fakeProps)).toBe(
+        'A React component with Field B and fake description'
+      );
+
+      // Ensure "MyComponent" attribute still exsits after a validation cycle.
+      // This covers the updateField(). Check PR for more context.
+      handleValidation({ field_a: 'yes' });
+
+      expect(getField(fields, 'field_a')).toMatchObject({
+        MyComponent: expect.any(Function),
+      });
+      expect(getField(fields, 'field_b')).toMatchObject({
+        required: true,
+        MyComponent: expect.any(Function),
       });
     });
 
@@ -2574,6 +2850,35 @@ describe('createHeadlessForm', () => {
           .validate(emptyFile)
       ).resolves.toEqual(emptyFile);
     });
+
+    it('it validates missing file correctly', () => {
+      const { handleValidation } = createHeadlessForm(
+        JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
+      );
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toBeUndefined();
+      expect(validateForm({ fileInput: null })).toBeUndefined();
+    });
+  });
+
+  describe('when a field file is required', () => {
+    it('it validates missing file correctly', () => {
+      const { handleValidation } = createHeadlessForm(schemaInputTypeFile);
+      const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+      expect(validateForm({})).toEqual({
+        a_file: 'Required field',
+      });
+
+      expect(
+        validateForm({
+          a_file: null,
+        })
+      ).toEqual({
+        a_file: 'Required field',
+      });
+    });
   });
 
   describe('when a field has accepted extensions', () => {
@@ -2584,7 +2889,7 @@ describe('createHeadlessForm', () => {
       );
       fields = result.fields;
     });
-    describe('and file is of inccorrect format', () => {
+    describe('and file is of incorrect format', () => {
       const file = new File(['foo'], 'file.txt', {
         type: 'text/plain',
       });
@@ -2632,6 +2937,47 @@ describe('createHeadlessForm', () => {
             })
             .validate({ fileInput: [file] })
         ).resolves.toEqual(assertObj));
+    });
+
+    describe('and file is not instance of a File', () => {
+      it('accepts if file object has name property', async () => {
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.pdf' }] })
+        ).resolves.toEqual({ fileInput: [{ name: 'foo.pdf' }] });
+      });
+
+      it('should validate format', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.txt' }] })
+        ).rejects.toMatchObject({
+          errors: ['Unsupported file format. The acceptable formats are .png,.jpg,.jpeg,.pdf.'],
+        }));
+
+      it('should validate max size', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ name: 'foo.txt', size: 1024 * 1024 * 1024 }] })
+        ).rejects.toMatchObject({ errors: ['File size too large. The limit is 20 MB.'] }));
+
+      it('throw an error if invalid file object', async () =>
+        expect(
+          object()
+            .shape({
+              fileInput: fields[0].schema,
+            })
+            .validate({ fileInput: [{ path: 'foo.txt' }] })
+        ).rejects.toMatchObject({ errors: ['Not a valid file.'] }));
     });
   });
 
@@ -2812,7 +3158,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'no',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
             mandatory_group_array: 'no',
           })
@@ -2827,7 +3173,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
             mandatory_group_array: 'no',
           })
@@ -2843,7 +3189,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
             mandatory_group_array: 'yes',
             a_group_array: [{ full_name: 'adfs' }],
@@ -2854,7 +3200,7 @@ describe('createHeadlessForm', () => {
           validateForm({
             validate_tabs: 'yes',
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
               tabs: 2,
             },
             mandatory_group_array: 'no',
@@ -2943,18 +3289,18 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number'],
+            validate_fieldset: ['username'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toBeUndefined();
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toEqual({
@@ -2965,9 +3311,9 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
               tabs: 2,
             },
           })
@@ -2980,18 +3326,18 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number'],
+            validate_fieldset: ['username'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toBeUndefined();
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
             },
           })
         ).toEqual({
@@ -3002,9 +3348,9 @@ describe('createHeadlessForm', () => {
 
         expect(
           validateForm({
-            validate_fieldset: ['id_number', 'all'],
+            validate_fieldset: ['username', 'all'],
             a_fieldset: {
-              id_number: '123',
+              username: 'abc',
               tabs: 2,
             },
           })
@@ -3584,7 +3930,7 @@ describe('createHeadlessForm', () => {
 
         // It returns fields without errors
         expect(result.fields).toBeDefined();
-        expect(result.fields[0].fields[0].name).toBe('id_number');
+        expect(result.fields[0].fields[0].name).toBe('username');
         expect(result.fields[0].fields[1].name).toBe('tabs');
 
         // Warn about those missmatched values
@@ -3727,14 +4073,14 @@ describe('createHeadlessForm', () => {
             id_number: { 'data-field': 'field' },
             fieldset: {
               customProperties: {
-                id_number: { 'data-fieldset': 'fieldset' },
+                username: { 'data-fieldset': 'fieldset' },
               },
             },
             nestedFieldset: {
               customProperties: {
                 innerFieldset: {
                   customProperties: {
-                    id_number: { 'data-nested-fieldset': 'nested-fieldset' },
+                    username: { 'data-nested-fieldset': 'nested-fieldset' },
                   },
                 },
               },
@@ -3753,7 +4099,7 @@ describe('createHeadlessForm', () => {
             name: 'fieldset',
             fields: [
               {
-                name: 'id_number',
+                name: 'username',
                 'data-fieldset': 'fieldset',
               },
               {
@@ -3768,7 +4114,7 @@ describe('createHeadlessForm', () => {
                 name: 'innerFieldset',
                 fields: [
                   {
-                    name: 'id_number',
+                    name: 'username',
                     'data-nested-fieldset': 'nested-fieldset',
                   },
                   {
@@ -3790,8 +4136,8 @@ describe('createHeadlessForm', () => {
       expect(fieldResult).not.toHaveProperty('data-fieldset');
       expect(fieldResult).not.toHaveProperty('data-nested-fieldset');
 
-      // $.fieldset.id_number
-      expect(fildsetResult.fields[0]).toHaveProperty('name', 'id_number');
+      // $.fieldset.username
+      expect(fildsetResult.fields[0]).toHaveProperty('name', 'username');
       expect(fildsetResult.fields[0]).toHaveProperty('data-fieldset', 'fieldset');
       expect(fildsetResult.fields[0]).not.toHaveProperty('data-field');
       expect(fildsetResult.fields[0]).not.toHaveProperty('data-nested-fieldset');
@@ -3799,7 +4145,7 @@ describe('createHeadlessForm', () => {
       expect(fildsetResult.fields[1]).not.toHaveProperty('data-nested-fieldset');
 
       // $.nestedFieldset.innerFieldset.id_number
-      expect(nestedFieldsetResult.fields[0].fields[0]).toHaveProperty('name', 'id_number');
+      expect(nestedFieldsetResult.fields[0].fields[0]).toHaveProperty('name', 'username');
       expect(nestedFieldsetResult.fields[0].fields[0]).toHaveProperty(
         'data-nested-fieldset',
         'nested-fieldset'

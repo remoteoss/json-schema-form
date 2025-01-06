@@ -58,11 +58,11 @@ const validateMaxDate = (value, minDate) => {
   return compare === 'LESSER' || compare === 'EQUAL' ? true : false;
 };
 
-/* 
+/*
   Custom test determines if the value either:
   - Matches a specific option by value
   - Matches a pattern
-  If the option is undefined do not test, to allow for optional fields. 
+  If the option is undefined do not test, to allow for optional fields.
 */
 const validateRadioOrSelectOptions = (value, options) => {
   if (value === undefined) return true;
@@ -99,7 +99,7 @@ const yupSchemas = {
 
           Disallowing "" would be a major BREAKING CHANGE
           because previously any string was allowed but now only the options[].value are,
-          which means we'd need to also exclude "" from being accepted.   
+          which means we'd need to also exclude "" from being accepted.
           This would be a dangerous change as it can disrupt existing UI Form integrations
           that might handle empty fields differently ("" vs null vs undefined).
 
@@ -117,7 +117,17 @@ const yupSchemas = {
       .test(
         'matchesOptionOrPattern',
         ({ value }) => `The option ${JSON.stringify(value)} is not valid.`,
-        (value) => validateRadioOrSelectOptions(value, options)
+        (castValue, { originalValue }) => {
+          /*
+            @BUG COD-1859
+            additional check to allow only string values to be validated
+          */
+          if (castValue !== undefined && typeof originalValue !== 'string') {
+            return false;
+          }
+
+          return validateRadioOrSelectOptions(castValue, options);
+        }
       );
   },
   date: ({ minDate, maxDate }) => {
@@ -173,6 +183,27 @@ const yupSchemas = {
         }
       )
       .nullable(),
+  radioOrSelectBoolean: (options) => {
+    return boolean()
+      .nullable()
+      .transform((value) => {
+        // @BUG RMT-518 - Same reason to radioOrSelectString above.
+        if (options?.some((option) => option.value === null)) {
+          return value;
+        }
+        return value === null ? undefined : value;
+      })
+      .test(
+        'matchesOptionOrPattern',
+        ({ originalValue }) => {
+          return `The option ${JSON.stringify(originalValue)} is not valid.`;
+        },
+        (castValue, { originalValue }) => {
+          if (typeof originalValue !== 'boolean' && castValue !== undefined) return false;
+          return validateRadioOrSelectOptions(castValue, options);
+        }
+      );
+  },
   number: number().typeError('The value must be a number').nullable(),
   file: array().nullable(),
   email: string().trim().email('Please enter a valid email address').nullable(),
@@ -183,6 +214,13 @@ const yupSchemas = {
     select: array().nullable(),
     'group-array': array().nullable(),
   },
+  null: mixed()
+    .typeError('The value must be null')
+    .test(
+      'matchesNullValue',
+      ({ value }) => `The value ${JSON.stringify(value)} is not valid.`,
+      (value) => value === undefined || value === null
+    ),
 };
 
 const yupSchemasToJsonTypes = {
@@ -192,7 +230,7 @@ const yupSchemasToJsonTypes = {
   object: yupSchemas.fieldset,
   array: yupSchemas.multiple.select,
   boolean: yupSchemas.checkboxBool,
-  null: noop,
+  null: yupSchemas.null,
 };
 
 function getRequiredErrorMessage(inputType, { inlineError, configError }) {
@@ -230,9 +268,14 @@ const getYupSchema = ({ inputType, ...field }) => {
 
   const generateOptionSchema = (type) => {
     const optionValues = getOptions(field);
-    return type === 'number'
-      ? yupSchemas.radioOrSelectNumber(optionValues)
-      : yupSchemas.radioOrSelectString(optionValues);
+    switch (type) {
+      case 'number':
+        return yupSchemas.radioOrSelectNumber(optionValues);
+      case 'boolean':
+        return yupSchemas.radioOrSelectBoolean(optionValues);
+      default:
+        return yupSchemas.radioOrSelectString(optionValues);
+    }
   };
 
   if (hasOptions) {
@@ -260,6 +303,7 @@ export function buildYupSchema(field, config, logic) {
   const isCheckboxBoolean = typeof propertyFields.checkboxValue === 'boolean';
   let baseSchema;
   const errorMessageFromConfig = config?.inputTypes?.[inputType]?.errorMessage || {};
+  const jsonType = getJsonTypeInArray(field.jsonType);
 
   if (propertyFields.multiple) {
     // keep inputType while non-core are being removed #RMT-439
@@ -287,6 +331,18 @@ export function buildYupSchema(field, config, logic) {
     }
     return yupSchema.required(requiredMessage);
   }
+
+  function withInteger(yupSchema) {
+    return yupSchema.integer(
+      (message) =>
+        errorMessage.integer ??
+        errorMessageFromConfig.integer ??
+        `Must not contain decimal points. E.g. ${Math.floor(message.value)} instead of ${
+          message.value
+        }`
+    );
+  }
+
   function withMin(yupSchema) {
     return yupSchema.min(
       propertyFields.minimum,
@@ -337,13 +393,34 @@ export function buildYupSchema(field, config, logic) {
     );
   }
 
+  function isValidFileInput(files) {
+    /**  A file input is considered valid if:
+     * - it is undefined or null
+     * - it is an empty array (files.every([]) === true)
+     * - it is an array consisting only of File instances or objects with a 'name' property
+     */
+    return (
+      files === undefined ||
+      files === null ||
+      files.every(
+        (file) => file instanceof File || Object.prototype.hasOwnProperty.call(file, 'name')
+      )
+    );
+  }
+
+  function withFile(yupSchema) {
+    return yupSchema.test('isValidFile', 'Not a valid file.', isValidFileInput);
+  }
+
   function withMaxFileSize(yupSchema) {
     return yupSchema.test(
       'isValidFileSize',
       errorMessage.maxFileSize ??
         errorMessageFromConfig.maxFileSize ??
         `File size too large. The limit is ${convertKbBytesToMB(propertyFields.maxFileSize)} MB.`,
-      (files) => !files?.some((file) => convertBytesToKB(file.size) > propertyFields.maxFileSize)
+      (files) =>
+        isValidFileInput(files) &&
+        !files?.some((file) => convertBytesToKB(file.size) > propertyFields.maxFileSize)
     );
   }
 
@@ -354,7 +431,7 @@ export function buildYupSchema(field, config, logic) {
         errorMessageFromConfig.accept ??
         `Unsupported file format. The acceptable formats are ${propertyFields.accept}.`,
       (files) =>
-        files && files?.length > 0
+        isValidFileInput(files) && files?.length > 0
           ? files.some((file) => {
               const fileType = file.name.split('.').pop();
               return propertyFields.accept.includes(fileType.toLowerCase());
@@ -428,6 +505,14 @@ export function buildYupSchema(field, config, logic) {
 
   if (propertyFields.required) {
     validators.push(withRequired);
+  }
+
+  if (inputType === supportedTypes.FILE) {
+    validators.push(withFile);
+  }
+
+  if (jsonType === 'integer') {
+    validators.push(withInteger);
   }
 
   // support minimum with 0 value

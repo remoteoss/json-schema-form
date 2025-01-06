@@ -244,10 +244,18 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
 
   const updateAttributes = (fieldAttrs) => {
     Object.entries(fieldAttrs).forEach(([key, value]) => {
-      // some attributes' value (eg "schema") are a function, so we need to call it here
-      field[key] = typeof value === 'function' ? value() : value;
+      field[key] = value;
+
+      if (key === 'schema' && typeof value === 'function') {
+        // key "schema" refers to YupSchema that needs to be processed for validations.
+        field[key] = value();
+      }
 
       if (key === 'value') {
+        /* NOTE/TODO: This section does not have any unit test. Be careful when changing this.
+         You'll need to check the internal MRs !9266 and !6572 (or other through git blame)
+         to better understand the reason. Then try to remove this workaround and/or write comprehensive unit tests. */
+
         // The value of the field should not be driven by the json-schema,
         // unless it's a read-only field
         // If the readOnly property has changed, use that updated value,
@@ -340,7 +348,7 @@ export function processNode({
     });
   });
 
-  if (node.if) {
+  if (node.if !== undefined) {
     const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
     // BUG HERE (unreleated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
