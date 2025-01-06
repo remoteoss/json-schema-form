@@ -10,7 +10,7 @@
     "es2021": true,
     "jest": true
   },
-  "extends": ["eslint:recommended", "plugin:react/recommended", "prettier"],
+  "extends": ["eslint:recommended", "prettier"],
   "plugins": ["import", "jest", "sort-keys", "unused-imports"],
   "rules": {
     "jest/no-focused-tests": "error",
@@ -28,8 +28,6 @@
         }
       }
     ],
-    "no-unused-vars": "warn",
-    "no-console": "off",
     "no-unused-vars": ["error", { "ignoreRestSiblings": true }]
   }
 }
