@@ -1,6 +1,6 @@
 import { convertDiskSizeFromTo } from '../utils';
 
-describe('utils', () => {
+describe('convertDiskSizeFromTo()', () => {
   it('should convert bytes to KB', () => {
     const convert = convertDiskSizeFromTo('Bytes', 'KB');
     expect(convert(1024)).toBe(1);

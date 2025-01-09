@@ -500,150 +500,17 @@ describe('createHeadlessForm', () => {
       expect(() => fieldValidator.validateSync('')).toThrowError('Required field');
     });
 
-    it('supports both root level "description" and "x-jsf-presentation.description"', () => {
-      const resultsWithRootDescription = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            username: mockTextInput,
-          })
-          .setRequiredFields(['username'])
-          .build()
-      );
+    describe('support "select" field type', () => {
+      it('support "select" field type @deprecated', () => {
+        const { fields, handleValidation } = createHeadlessForm(
+          schemaInputTypeSelectSoloDeprecated
+        );
 
-      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
-
-      const resultsWithPresentationDescription = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            username: {
-              ...mockTextInput,
-              'x-jsf-presentation': {
-                inputType: 'text',
-                maskSecret: 2,
-                // should override the root level description
-                description: 'a different description with <span>markup</span>',
-              },
-            },
-          })
-          .setRequiredFields(['username'])
-          .build()
-      );
-
-      expect(resultsWithPresentationDescription.fields[0].description).toMatch(
-        /a different description /i
-      );
-    });
-
-    it('supports both root level "description" and "presentation.description" (deprecated)', () => {
-      const resultsWithRootDescription = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            username: mockTextInputDeprecated,
-          })
-          .setRequiredFields(['username'])
-          .build()
-      );
-
-      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
-
-      const resultsWithPresentationDescription = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            username: {
-              ...mockTextInputDeprecated,
-              presentation: {
-                inputType: 'text',
-                maskSecret: 2,
-                // should override the root level description
-                description: 'a different description with <span>markup</span>',
-              },
-            },
-          })
-          .setRequiredFields(['username'])
-          .build()
-      );
-
-      expect(resultsWithPresentationDescription.fields[0].description).toMatch(
-        /a different description /i
-      );
-    });
-
-    it('support "select" field type @deprecated', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectSoloDeprecated);
-
-      expect(fields).toMatchObject([
-        {
-          description: 'Life Insurance',
-          label: 'Benefits (solo)',
-          name: 'benefits',
-          placeholder: 'Select...',
-          type: 'select',
-          options: [
-            {
-              label: 'Medical Insurance',
-              value: 'Medical Insurance',
-            },
-            {
-              label: 'Health Insurance',
-              value: 'Health Insurance',
-            },
-            {
-              label: 'Travel Bonus',
-              value: 'Travel Bonus',
-            },
-          ],
-        },
-      ]);
-
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'benefits',
-        validOptions: ['Medical Insurance', 'Health Insurance', 'Travel Bonus'],
-      });
-    });
-
-    it('support "select" field type', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectSolo);
-
-      const fieldSelect = fields[0];
-      expect(fieldSelect).toMatchObject({
-        name: 'browsers',
-        label: 'Browsers (solo)',
-        description: 'This solo select also includes a disabled option.',
-        options: [
-          {
-            value: 'chr',
-            label: 'Chrome',
-          },
-          {
-            value: 'ff',
-            label: 'Firefox',
-          },
-          {
-            value: 'ie',
-            label: 'Internet Explorer',
-            disabled: true,
-          },
-        ],
-      });
-
-      expect(fieldSelect).not.toHaveProperty('multiple');
-
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'browsers',
-        validOptions: ['chr', 'ff', 'ie'],
-      });
-    });
-
-    it('supports "select" field type with multiple options @deprecated', () => {
-      const result = createHeadlessForm(schemaInputTypeSelectMultipleDeprecated);
-      expect(result).toMatchObject({
-        fields: [
+        expect(fields).toMatchObject([
           {
             description: 'Life Insurance',
-            label: 'Benefits (multiple)',
-            name: 'benefits_multi',
+            label: 'Benefits (solo)',
+            name: 'benefits',
             placeholder: 'Select...',
             type: 'select',
             options: [
@@ -660,290 +527,423 @@ describe('createHeadlessForm', () => {
                 value: 'Travel Bonus',
               },
             ],
-            multiple: true,
           },
-        ],
+        ]);
+
+        assertOptionsAllowed({
+          handleValidation,
+          fieldName: 'benefits',
+          validOptions: ['Medical Insurance', 'Health Insurance', 'Travel Bonus'],
+        });
+      });
+
+      it('support "select" field type', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeSelectSolo);
+
+        const fieldSelect = fields[0];
+        expect(fieldSelect).toMatchObject({
+          name: 'browsers',
+          label: 'Browsers (solo)',
+          description: 'This solo select also includes a disabled option.',
+          options: [
+            {
+              value: 'chr',
+              label: 'Chrome',
+            },
+            {
+              value: 'ff',
+              label: 'Firefox',
+            },
+            {
+              value: 'ie',
+              label: 'Internet Explorer',
+              disabled: true,
+            },
+          ],
+        });
+
+        expect(fieldSelect).not.toHaveProperty('multiple');
+
+        assertOptionsAllowed({
+          handleValidation,
+          fieldName: 'browsers',
+          validOptions: ['chr', 'ff', 'ie'],
+        });
+      });
+
+      it('supports "select" field type with multiple options @deprecated', () => {
+        const result = createHeadlessForm(schemaInputTypeSelectMultipleDeprecated);
+        expect(result).toMatchObject({
+          fields: [
+            {
+              description: 'Life Insurance',
+              label: 'Benefits (multiple)',
+              name: 'benefits_multi',
+              placeholder: 'Select...',
+              type: 'select',
+              options: [
+                {
+                  label: 'Medical Insurance',
+                  value: 'Medical Insurance',
+                },
+                {
+                  label: 'Health Insurance',
+                  value: 'Health Insurance',
+                },
+                {
+                  label: 'Travel Bonus',
+                  value: 'Travel Bonus',
+                },
+              ],
+              multiple: true,
+            },
+          ],
+        });
+      });
+      it('supports "select" field type with multiple options', () => {
+        const result = createHeadlessForm(schemaInputTypeSelectMultiple);
+        expect(result).toMatchObject({
+          fields: [
+            {
+              name: 'browsers_multi',
+              label: 'Browsers (multiple)',
+              description: 'This multi-select also includes a disabled option.',
+              options: [
+                {
+                  value: 'chr',
+                  label: 'Chrome',
+                },
+                {
+                  value: 'ff',
+                  label: 'Firefox',
+                },
+                {
+                  value: 'ie',
+                  label: 'Internet Explorer',
+                  disabled: true,
+                },
+              ],
+              multiple: true,
+            },
+          ],
+        });
+      });
+
+      it('supports "select" field type with multiple options and optional', () => {
+        const result = createHeadlessForm(schemaInputTypeSelectMultipleOptional);
+        expect(result).toMatchObject({
+          fields: [
+            {
+              name: 'browsers_multi_optional',
+              label: 'Browsers (multiple) (optional)',
+              description: 'This optional multi-select also includes a disabled option.',
+              options: [
+                {
+                  value: 'chr',
+                  label: 'Chrome',
+                },
+                {
+                  value: 'ff',
+                  label: 'Firefox',
+                },
+                {
+                  value: 'ie',
+                  label: 'Internet Explorer',
+                  disabled: true,
+                },
+              ],
+              multiple: true,
+            },
+          ],
+        });
       });
     });
-    it('supports "select" field type with multiple options', () => {
-      const result = createHeadlessForm(schemaInputTypeSelectMultiple);
-      expect(result).toMatchObject({
-        fields: [
+    describe('support "radio" field type', () => {
+      it('support "radio" field type @deprecated', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioDeprecated);
+
+        expect(fields).toMatchObject([
           {
-            name: 'browsers_multi',
-            label: 'Browsers (multiple)',
-            description: 'This multi-select also includes a disabled option.',
+            description: 'Do you have any siblings?',
+            label: 'Has siblings',
+            name: 'has_siblings',
             options: [
               {
-                value: 'chr',
-                label: 'Chrome',
+                label: 'Yes',
+                value: 'yes',
               },
               {
-                value: 'ff',
-                label: 'Firefox',
-              },
-              {
-                value: 'ie',
-                label: 'Internet Explorer',
-                disabled: true,
+                label: 'No',
+                value: 'no',
               },
             ],
-            multiple: true,
+            required: true,
+            schema: expect.any(Object),
+            type: 'radio',
           },
-        ],
-      });
-    });
+        ]);
 
-    it('supports "select" field type with multiple options and optional', () => {
-      const result = createHeadlessForm(schemaInputTypeSelectMultipleOptional);
-      expect(result).toMatchObject({
-        fields: [
+        assertOptionsAllowed({
+          handleValidation,
+          fieldName: 'has_siblings',
+          validOptions: ['yes', 'no'],
+        });
+      });
+      it('support "radio" field string type', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioString);
+
+        expect(fields).toMatchObject([
           {
-            name: 'browsers_multi_optional',
-            label: 'Browsers (multiple) (optional)',
-            description: 'This optional multi-select also includes a disabled option.',
+            description: 'Do you have any siblings?',
+            label: 'Has siblings',
+            name: 'has_siblings',
             options: [
               {
-                value: 'chr',
-                label: 'Chrome',
+                label: 'Yes',
+                value: 'yes',
               },
               {
-                value: 'ff',
-                label: 'Firefox',
-              },
-              {
-                value: 'ie',
-                label: 'Internet Explorer',
-                disabled: true,
+                label: 'No',
+                value: 'no',
               },
             ],
-            multiple: true,
+            required: true,
+            schema: expect.any(Object),
+            type: 'radio',
           },
-        ],
+        ]);
+
+        assertOptionsAllowed({
+          handleValidation,
+          fieldName: 'has_siblings',
+          validOptions: ['yes', 'no'],
+        });
       });
-    });
 
-    it('support "radio" field type @deprecated', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioDeprecated);
+      it('support "radio" field boolean type', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioBoolean);
 
-      expect(fields).toMatchObject([
-        {
-          description: 'Do you have any siblings?',
-          label: 'Has siblings',
-          name: 'has_siblings',
-          options: [
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        expect(fields).toMatchObject([
+          {
+            description: 'Are you over 18 years old?',
+            label: 'Over 18',
+            name: 'over_18',
+            options: [
+              {
+                label: 'Yes',
+                value: true,
+              },
+              {
+                label: 'No',
+                value: false,
+              },
+            ],
+            required: true,
+            schema: expect.any(Object),
+            type: 'radio',
+          },
+        ]);
+
+        assertOptionsAllowed({
+          handleValidation,
+          fieldName: 'over_18',
+          validOptions: [true, false],
+          type: schemaInputTypeRadioBoolean.properties.over_18.type,
+        });
+
+        expect(validateForm({ over_18: 'true' })).toEqual({
+          over_18: 'The option "true" is not valid.',
+        });
+      });
+
+      it('supports "radio" field type with its "card" and "card-expandable" variants', () => {
+        const result = createHeadlessForm(
+          JSONSchemaBuilder()
+            .addInput({
+              experience_level: mockRadioCardExpandableInput,
+              payment_method: mockRadioCardInput,
+            })
+            .build()
+        );
+
+        expect(result).toMatchObject({
+          fields: [
             {
-              label: 'Yes',
-              value: 'yes',
+              description:
+                'Please select the experience level that aligns with this role based on the job description (not the employees overall experience)',
+              label: 'Experience level',
+              name: 'experience_level',
+              type: 'radio',
+              required: false,
+              variant: 'card-expandable',
+              options: [
+                {
+                  label: 'Junior level',
+                  value: 'junior',
+                  description:
+                    'Entry level employees who perform tasks under the supervision of a more experienced employee.',
+                },
+                {
+                  label: 'Mid level',
+                  value: 'mid',
+                  description:
+                    'Employees who perform tasks with a good degree of autonomy and/or with coordination and control functions.',
+                },
+                {
+                  label: 'Senior level',
+                  value: 'senior',
+                  description:
+                    'Employees who perform tasks with a high degree of autonomy and/or with coordination and control functions.',
+                },
+              ],
             },
             {
-              label: 'No',
-              value: 'no',
+              description: 'Chose how you want to be paid',
+              label: 'Payment method',
+              name: 'payment_method',
+              type: 'radio',
+              variant: 'card',
+              required: false,
+              options: [
+                {
+                  label: 'Credit Card',
+                  value: 'cc',
+                  description: 'Plastic money, which is still money',
+                },
+                {
+                  label: 'Cash',
+                  value: 'cash',
+                  description: 'Rules Everything Around Me',
+                },
+              ],
             },
           ],
-          required: true,
-          schema: expect.any(Object),
-          type: 'radio',
-        },
-      ]);
-
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'has_siblings',
-        validOptions: ['yes', 'no'],
-      });
-    });
-    it('support "radio" field string type', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioString);
-
-      expect(fields).toMatchObject([
-        {
-          description: 'Do you have any siblings?',
-          label: 'Has siblings',
-          name: 'has_siblings',
-          options: [
-            {
-              label: 'Yes',
-              value: 'yes',
-            },
-            {
-              label: 'No',
-              value: 'no',
-            },
-          ],
-          required: true,
-          schema: expect.any(Object),
-          type: 'radio',
-        },
-      ]);
-
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'has_siblings',
-        validOptions: ['yes', 'no'],
-      });
-    });
-
-    it('support "radio" field boolean type', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioBoolean);
-
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-      expect(fields).toMatchObject([
-        {
-          description: 'Are you over 18 years old?',
-          label: 'Over 18',
-          name: 'over_18',
-          options: [
-            {
-              label: 'Yes',
-              value: true,
-            },
-            {
-              label: 'No',
-              value: false,
-            },
-          ],
-          required: true,
-          schema: expect.any(Object),
-          type: 'radio',
-        },
-      ]);
-
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'over_18',
-        validOptions: [true, false],
-        type: schemaInputTypeRadioBoolean.properties.over_18.type,
+        });
       });
 
-      expect(validateForm({ over_18: 'true' })).toEqual({
-        over_18: 'The option "true" is not valid.',
-      });
-    });
+      // @BUG COD-1859
+      // it should validate when type is string but value is not a boolean
+      it('support "radio" field string-y type', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioStringY);
 
-    // @BUG COD-1859
-    // it should validate when type is string but value is not a boolean
-    it('support "radio" field string-y type', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioStringY);
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
 
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
+        expect(fields).toMatchObject([
+          {
+            description: 'Do you have any siblings?',
+            label: 'Has siblings',
+            name: 'has_siblings',
+            options: [
+              {
+                label: 'Yes',
+                value: 'true',
+              },
+              {
+                label: 'No',
+                value: 'false',
+              },
+            ],
+            required: true,
+            schema: expect.any(Object),
+            type: 'radio',
+          },
+        ]);
 
-      expect(fields).toMatchObject([
-        {
-          description: 'Do you have any siblings?',
-          label: 'Has siblings',
-          name: 'has_siblings',
-          options: [
-            {
-              label: 'Yes',
-              value: 'true',
-            },
-            {
-              label: 'No',
-              value: 'false',
-            },
-          ],
-          required: true,
-          schema: expect.any(Object),
-          type: 'radio',
-        },
-      ]);
+        assertOptionsAllowed({
+          handleValidation,
+          fieldName: 'has_siblings',
+          validOptions: ['true', 'false'],
+        });
 
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'has_siblings',
-        validOptions: ['true', 'false'],
-      });
-
-      expect(validateForm({ has_siblings: false })).toEqual({
-        has_siblings: 'The option "false" is not valid.',
-      });
-    });
-
-    it('support "radio" field number type', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioNumber);
-
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-      expect(fields).toMatchObject([
-        {
-          description: 'How many siblings do you have?',
-          label: 'Number of siblings',
-          name: 'siblings_count',
-          options: [
-            {
-              label: 'One',
-              value: 1,
-            },
-            {
-              label: 'Two',
-              value: 2,
-            },
-            {
-              label: 'Three',
-              value: 3,
-            },
-          ],
-          required: true,
-          schema: expect.any(Object),
-          type: 'radio',
-        },
-      ]);
-
-      assertOptionsAllowed({
-        handleValidation,
-        fieldName: 'siblings_count',
-        validOptions: [1, 2, 3],
-        type: schemaInputTypeRadioNumber.properties.siblings_count.type,
+        expect(validateForm({ has_siblings: false })).toEqual({
+          has_siblings: 'The option "false" is not valid.',
+        });
       });
 
-      expect(validateForm({ siblings_count: '3' })).toEqual({
-        siblings_count: 'The option "3" is not valid.',
+      it('support "radio" field number type', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeRadioNumber);
+
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        expect(fields).toMatchObject([
+          {
+            description: 'How many siblings do you have?',
+            label: 'Number of siblings',
+            name: 'siblings_count',
+            options: [
+              {
+                label: 'One',
+                value: 1,
+              },
+              {
+                label: 'Two',
+                value: 2,
+              },
+              {
+                label: 'Three',
+                value: 3,
+              },
+            ],
+            required: true,
+            schema: expect.any(Object),
+            type: 'radio',
+          },
+        ]);
+
+        assertOptionsAllowed({
+          handleValidation,
+          fieldName: 'siblings_count',
+          validOptions: [1, 2, 3],
+          type: schemaInputTypeRadioNumber.properties.siblings_count.type,
+        });
+
+        expect(validateForm({ siblings_count: '3' })).toEqual({
+          siblings_count: 'The option "3" is not valid.',
+        });
       });
-    });
 
-    it('support "radio" optional field', () => {
-      const { fields, handleValidation } = createHeadlessForm(
-        schemaInputTypeRadioRequiredAndOptional
-      );
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
+      it('support "radio" optional field', () => {
+        const { fields, handleValidation } = createHeadlessForm(
+          schemaInputTypeRadioRequiredAndOptional
+        );
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
 
-      expect(fields).toMatchObject([
-        {},
-        {
-          name: 'has_car',
-          label: 'Has car',
-          description: 'Do you have a car? (optional field, check oneOf)',
-          options: [
-            {
-              label: 'Yes',
-              value: 'yes',
-            },
-            {
-              label: 'No',
-              value: 'no',
-            },
-          ],
-          required: false,
-          schema: expect.any(Object),
-          type: 'radio',
-        },
-      ]);
+        expect(fields).toMatchObject([
+          {},
+          {
+            name: 'has_car',
+            label: 'Has car',
+            description: 'Do you have a car? (optional field, check oneOf)',
+            options: [
+              {
+                label: 'Yes',
+                value: 'yes',
+              },
+              {
+                label: 'No',
+                value: 'no',
+              },
+            ],
+            required: false,
+            schema: expect.any(Object),
+            type: 'radio',
+          },
+        ]);
 
-      expect(
-        validateForm({
-          has_siblings: 'yes',
-          has_car: 'yes',
-        })
-      ).toBeUndefined();
+        expect(
+          validateForm({
+            has_siblings: 'yes',
+            has_car: 'yes',
+          })
+        ).toBeUndefined();
 
-      expect(validateForm({})).toEqual({
-        has_siblings: 'Required field',
+        expect(validateForm({})).toEqual({
+          has_siblings: 'Required field',
+        });
       });
-    });
 
-    describe('support "radio" optional field - more examples @BUG RMT-518', () => {
       function assertCommonBehavior(validateForm) {
         // Note: Very similar to assertOptionsAllowed()
         // We could reuse it in a next iteration.
@@ -969,13 +969,13 @@ describe('createHeadlessForm', () => {
         expect(validateForm({ has_car: '' })).toBeUndefined();
       }
 
-      it('normal optional (conventional way)', () => {
+      it('support "radio" optional field - optional (conventional way) - @BUG RMT-518', () => {
         const { handleValidation } = createHeadlessForm(schemaInputRadioOptionalConventional);
         const validateForm = (vals) => friendlyError(handleValidation(vals));
 
         assertCommonBehavior(validateForm);
 
-        // Accepts null, even though it shoudln't @BUG RMT-518
+        // Accepts null, even though it shouldn't @BUG RMT-518
         // This is for cases where we (Remote) still have incorrect
         // JSON Schemas in our Platform.
         expect(validateForm({ has_car: null })).toBeUndefined();
@@ -986,7 +986,7 @@ describe('createHeadlessForm', () => {
         // });
       });
 
-      it('with null option (as Remote does)', () => {
+      it('support "radio" optional field - optional with null option (as Remote does) - @BUG RMT-518', () => {
         const { handleValidation } = createHeadlessForm(schemaInputRadioOptionalNull);
         const validateForm = (vals) => friendlyError(handleValidation(vals));
 
@@ -995,44 +995,89 @@ describe('createHeadlessForm', () => {
         // Accepts null value
         expect(validateForm({ has_car: null })).toBeUndefined();
       });
-    });
 
-    it('support "radio" field type with extra info inside each option', () => {
-      const result = createHeadlessForm(schemaInputTypeRadioOptionsWithDetails);
+      it('support "radio" field type with extra info inside each option', () => {
+        const result = createHeadlessForm(schemaInputTypeRadioOptionsWithDetails);
 
-      expect(result.fields).toHaveLength(1);
+        expect(result.fields).toHaveLength(1);
 
-      const fieldOptions = result.fields[0].options;
+        const fieldOptions = result.fields[0].options;
 
-      // The x-jsf-presentation content was spread to the root:
-      expect(fieldOptions[0]).not.toHaveProperty('x-jsf-presentation');
-      expect(fieldOptions).toEqual([
-        {
-          label: 'Basic',
-          value: 'basic',
-          meta: {
-            displayCost: '$30.00/mo',
+        // The x-jsf-presentation content was spread to the root:
+        expect(fieldOptions[0]).not.toHaveProperty('x-jsf-presentation');
+        expect(fieldOptions).toEqual([
+          {
+            label: 'Basic',
+            value: 'basic',
+            meta: {
+              displayCost: '$30.00/mo',
+            },
+            // Other x-* keywords are kept as it is.
+            'x-another': 'extra-thing',
           },
-          // Other x-* keywords are kept as it is.
-          'x-another': 'extra-thing',
-        },
-        {
-          label: 'Standard',
-          value: 'standard',
-          meta: {
-            displayCost: '$50.00/mo',
+          {
+            label: 'Standard',
+            value: 'standard',
+            meta: {
+              displayCost: '$50.00/mo',
+            },
           },
-        },
-      ]);
-    });
+        ]);
+      });
 
-    it('support "radio" field type without oneOf options', () => {
-      const result = createHeadlessForm(schemaInputTypeRadioWithoutOptions);
+      it('supports oneOf pattern validation', () => {
+        const result = createHeadlessForm(mockTelWithPattern);
 
-      expect(result.fields).toHaveLength(1);
+        expect(result).toMatchObject({
+          fields: [
+            {
+              label: 'Phone number',
+              name: 'phone_number',
+              type: 'tel',
+              required: false,
+              options: [
+                {
+                  label: 'Portugal',
+                  pattern: '^(\\+351)[0-9]{9,}$',
+                },
+                {
+                  label: 'United Kingdom (UK)',
+                  pattern: '^(\\+44)[0-9]{1,}$',
+                },
+                {
+                  label: 'Bolivia',
+                  pattern: '^(\\+591)[0-9]{9,}$',
+                },
+                {
+                  label: 'Canada',
+                  pattern: '^(\\+1)(206|224)[0-9]{1,}$',
+                },
+                {
+                  label: 'United States',
+                  pattern: '^(\\+1)[0-9]{1,}$',
+                },
+              ],
+            },
+          ],
+        });
 
-      const fieldOptions = result.fields[0].options;
-      expect(fieldOptions).toEqual([]);
+        const fieldValidator = result.fields[0].schema;
+
+        expect(fieldValidator.isValidSync('+351123123123')).toBe(true);
+        expect(() => fieldValidator.validateSync('+35100')).toThrowError(
+          'The option "+35100" is not valid.'
+        );
+        expect(fieldValidator.isValidSync(undefined)).toBe(true);
+      });
+
+      it('support "radio" field type without oneOf options', () => {
+        const result = createHeadlessForm(schemaInputTypeRadioWithoutOptions);
+
+        expect(result.fields).toHaveLength(1);
+
+        const fieldOptions = result.fields[0].options;
+        expect(fieldOptions).toEqual([]);
+      });
     });
 
     it('support "integer" field type', () => {
@@ -1201,110 +1246,298 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('support "date" field type with a minDate', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeDate);
+    describe('support "date" field type', () => {
+      it('support "date" field type with a minDate', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeDate);
 
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
 
-      expect(fields[0]).toMatchObject({
-        label: 'Birthdate',
-        name: 'birthdate',
-        required: true,
-        schema: expect.any(Object),
-        type: 'date',
-        minDate: '1922-03-01',
-        maxDate: '2022-03-17',
+        expect(fields[0]).toMatchObject({
+          label: 'Birthdate',
+          name: 'birthdate',
+          required: true,
+          schema: expect.any(Object),
+          type: 'date',
+          minDate: '1922-03-01',
+          maxDate: '2022-03-17',
+        });
+
+        expect(validateForm({})).toEqual({
+          birthdate: 'Required field',
+        });
+
+        expect(validateForm({ birthdate: '' })).toEqual({
+          birthdate: `Required field`,
+        });
+
+        expect(validateForm({ birthdate: '1922-02-01' })).toEqual({
+          birthdate: 'The date must be 1922-03-01 or after.',
+        });
+
+        expect(validateForm({ birthdate: '1922-03-01' })).toBeUndefined();
+
+        expect(validateForm({ birthdate: '2021-03-01' })).toBeUndefined();
       });
 
-      expect(validateForm({})).toEqual({
-        birthdate: 'Required field',
+      it('support "date" field type with a maxDate', () => {
+        const { fields, handleValidation } = createHeadlessForm(schemaInputTypeDate);
+
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        expect(fields[0]).toMatchObject({
+          label: 'Birthdate',
+          name: 'birthdate',
+          required: true,
+          schema: expect.any(Object),
+          type: 'date',
+          minDate: '1922-03-01',
+          maxDate: '2022-03-17',
+        });
+
+        expect(validateForm({ birthdate: '' })).toEqual({
+          birthdate: `Required field`,
+        });
+
+        expect(validateForm({ birthdate: '2022-02-01' })).toBeUndefined();
+        expect(validateForm({ birthdate: '2022-03-01' })).toBeUndefined();
+        expect(validateForm({ birthdate: '2022-04-01' })).toEqual({
+          birthdate: 'The date must be 2022-03-17 or before.',
+        });
       });
 
-      expect(validateForm({ birthdate: '' })).toEqual({
-        birthdate: `Required field`,
-      });
-
-      expect(validateForm({ birthdate: '1922-02-01' })).toEqual({
-        birthdate: 'The date must be 1922-03-01 or after.',
-      });
-
-      expect(validateForm({ birthdate: '1922-03-01' })).toBeUndefined();
-
-      expect(validateForm({ birthdate: '2021-03-01' })).toBeUndefined();
-    });
-
-    it('support "date" field type with a maxDate', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInputTypeDate);
-
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-      expect(fields[0]).toMatchObject({
-        label: 'Birthdate',
-        name: 'birthdate',
-        required: true,
-        schema: expect.any(Object),
-        type: 'date',
-        minDate: '1922-03-01',
-        maxDate: '2022-03-17',
-      });
-
-      expect(validateForm({ birthdate: '' })).toEqual({
-        birthdate: `Required field`,
-      });
-
-      expect(validateForm({ birthdate: '2022-02-01' })).toBeUndefined();
-      expect(validateForm({ birthdate: '2022-03-01' })).toBeUndefined();
-      expect(validateForm({ birthdate: '2022-04-01' })).toEqual({
-        birthdate: 'The date must be 2022-03-17 or before.',
-      });
-    });
-
-    it('support format date with minDate and maxDate', () => {
-      const schemaFormatDate = {
-        properties: {
-          birthdate: {
-            title: 'Birthdate',
-            type: 'string',
-            format: 'date',
-            'x-jsf-presentation': {
-              inputType: 'myDateType',
-              maxDate: '2022-03-01',
-              minDate: '1922-03-01',
+      it('support format date with minDate and maxDate', () => {
+        const schemaFormatDate = {
+          properties: {
+            birthdate: {
+              title: 'Birthdate',
+              type: 'string',
+              format: 'date',
+              'x-jsf-presentation': {
+                inputType: 'myDateType',
+                maxDate: '2022-03-01',
+                minDate: '1922-03-01',
+              },
             },
           },
-        },
-      };
+        };
 
-      const { handleValidation } = createHeadlessForm(schemaFormatDate);
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
+        const { handleValidation } = createHeadlessForm(schemaFormatDate);
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
 
-      expect(validateForm({ birthdate: '1922-02-01' })).toEqual({
-        birthdate: 'The date must be 1922-03-01 or after.',
+        expect(validateForm({ birthdate: '1922-02-01' })).toEqual({
+          birthdate: 'The date must be 1922-03-01 or after.',
+        });
       });
     });
 
-    it('supports "file" field type', () => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            fileInput: mockFileInput,
-          })
-          .build()
-      );
+    describe('supports "file" field type', () => {
+      it('supports "file" field type', () => {
+        const result = createHeadlessForm(
+          JSONSchemaBuilder()
+            .addInput({
+              fileInput: mockFileInput,
+            })
+            .build()
+        );
 
-      expect(result).toMatchObject({
-        fields: [
-          {
-            type: 'file',
-            fileDownload: 'http://some.domain.com/file-name.pdf',
-            description: 'File Input Description',
-            fileName: 'My File',
-            label: 'File Input',
-            name: 'fileInput',
-            required: false,
-            accept: '.png,.jpg,.jpeg,.pdf',
-          },
-        ],
+        expect(result).toMatchObject({
+          fields: [
+            {
+              type: 'file',
+              fileDownload: 'http://some.domain.com/file-name.pdf',
+              description: 'File Input Description',
+              fileName: 'My File',
+              label: 'File Input',
+              name: 'fileInput',
+              required: false,
+              accept: '.png,.jpg,.jpeg,.pdf',
+            },
+          ],
+        });
+      });
+
+      describe('when a field has accepted extensions', () => {
+        let fields;
+        beforeEach(() => {
+          const result = createHeadlessForm(
+            JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
+          );
+          fields = result.fields;
+        });
+
+        describe('and file is of incorrect format', () => {
+          const file = new File(['foo'], 'file.txt', {
+            type: 'text/plain',
+          });
+
+          it('should throw an error', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [file] })
+            ).rejects.toMatchObject({
+              errors: ['Unsupported file format. The acceptable formats are .png,.jpg,.jpeg,.pdf.'],
+            }));
+        });
+
+        describe('and file is of correct format', () => {
+          const file = new File(['foo'], 'file.png', {
+            type: 'image/png',
+          });
+          Object.defineProperty(file, 'size', { value: 1024 * 1024 });
+
+          const assertObj = { fileInput: [file] };
+          it('should validate field', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [file] })
+            ).resolves.toEqual(assertObj));
+        });
+
+        describe('and file is of correct but uppercase format ', () => {
+          const file = new File(['foo'], 'file.PNG', {
+            type: 'image/png',
+          });
+          Object.defineProperty(file, 'size', { value: 1024 * 1024 });
+
+          const assertObj = { fileInput: [file] };
+          it('should validate field', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [file] })
+            ).resolves.toEqual(assertObj));
+        });
+
+        describe('and file is not instance of a File', () => {
+          it('accepts if file object has name property', async () => {
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [{ name: 'foo.pdf' }] })
+            ).resolves.toEqual({ fileInput: [{ name: 'foo.pdf' }] });
+          });
+
+          it('should validate format', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [{ name: 'foo.txt' }] })
+            ).rejects.toMatchObject({
+              errors: ['Unsupported file format. The acceptable formats are .png,.jpg,.jpeg,.pdf.'],
+            }));
+
+          it('should validate max size', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [{ name: 'foo.txt', size: 1024 * 1024 * 1024 }] })
+            ).rejects.toMatchObject({ errors: ['File size too large. The limit is 20 MB.'] }));
+
+          it('throw an error if invalid file object', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [{ path: 'foo.txt' }] })
+            ).rejects.toMatchObject({ errors: ['Not a valid file.'] }));
+        });
+      });
+
+      describe('when a field has max file size', () => {
+        let fields;
+        beforeEach(() => {
+          const result = createHeadlessForm(
+            JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
+          );
+          fields = result.fields;
+        });
+        describe('and file is greater than that', () => {
+          const file = new File([''], 'file.png');
+          Object.defineProperty(file, 'size', { value: 1024 * 1024 * 1024 });
+
+          it('should throw an error', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [file] })
+            ).rejects.toMatchObject({ errors: ['File size too large. The limit is 20 MB.'] }));
+        });
+        describe('and file is smaller than that', () => {
+          const file = new File([''], 'file.png');
+          Object.defineProperty(file, 'size', { value: 1024 * 1024 });
+
+          const assertObj = { fileInput: [file] };
+          it('should validate field', async () =>
+            expect(
+              object()
+                .shape({
+                  fileInput: fields[0].schema,
+                })
+                .validate({ fileInput: [file] })
+            ).resolves.toEqual(assertObj));
+        });
+      });
+
+      describe('when a field file is optional', () => {
+        it('it accepts an empty array', () => {
+          const result = createHeadlessForm(
+            JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
+          );
+          const emptyFile = { fileInput: [] };
+          expect(
+            object()
+              .shape({
+                fileInput: result.fields[0].schema,
+              })
+              .validate(emptyFile)
+          ).resolves.toEqual(emptyFile);
+        });
+
+        it('it validates missing file correctly', () => {
+          const { handleValidation } = createHeadlessForm(
+            JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+          expect(validateForm({})).toBeUndefined();
+          expect(validateForm({ fileInput: null })).toBeUndefined();
+        });
+      });
+
+      describe('when a field file is required', () => {
+        it('it validates missing file correctly', () => {
+          const { handleValidation } = createHeadlessForm(schemaInputTypeFile);
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+          expect(validateForm({})).toEqual({
+            a_file: 'Required field',
+          });
+
+          expect(
+            validateForm({
+              a_file: null,
+            })
+          ).toEqual({
+            a_file: 'Required field',
+          });
+        });
       });
     });
 
@@ -1591,71 +1824,6 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('supports "radio" field type with its "card" and "card-expandable" variants', () => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder()
-          .addInput({
-            experience_level: mockRadioCardExpandableInput,
-            payment_method: mockRadioCardInput,
-          })
-          .build()
-      );
-
-      expect(result).toMatchObject({
-        fields: [
-          {
-            description:
-              'Please select the experience level that aligns with this role based on the job description (not the employees overall experience)',
-            label: 'Experience level',
-            name: 'experience_level',
-            type: 'radio',
-            required: false,
-            variant: 'card-expandable',
-            options: [
-              {
-                label: 'Junior level',
-                value: 'junior',
-                description:
-                  'Entry level employees who perform tasks under the supervision of a more experienced employee.',
-              },
-              {
-                label: 'Mid level',
-                value: 'mid',
-                description:
-                  'Employees who perform tasks with a good degree of autonomy and/or with coordination and control functions.',
-              },
-              {
-                label: 'Senior level',
-                value: 'senior',
-                description:
-                  'Employees who perform tasks with a high degree of autonomy and/or with coordination and control functions.',
-              },
-            ],
-          },
-          {
-            description: 'Chose how you want to be paid',
-            label: 'Payment method',
-            name: 'payment_method',
-            type: 'radio',
-            variant: 'card',
-            required: false,
-            options: [
-              {
-                label: 'Credit Card',
-                value: 'cc',
-                description: 'Plastic money, which is still money',
-              },
-              {
-                label: 'Cash',
-                value: 'cash',
-                description: 'Rules Everything Around Me',
-              },
-            ],
-          },
-        ],
-      });
-    });
-
     it('supports "null" field type', () => {
       const { handleValidation, fields } = createHeadlessForm(schemaInputTypeNull, {
         strictInputType: false,
@@ -1696,51 +1864,6 @@ describe('createHeadlessForm', () => {
 
       expect(validateForm({ username: 'john' })).toBeUndefined();
       expect(validateForm({ username: 'john', name: null })).toBeUndefined();
-    });
-
-    it('supports oneOf pattern validation', () => {
-      const result = createHeadlessForm(mockTelWithPattern);
-
-      expect(result).toMatchObject({
-        fields: [
-          {
-            label: 'Phone number',
-            name: 'phone_number',
-            type: 'tel',
-            required: false,
-            options: [
-              {
-                label: 'Portugal',
-                pattern: '^(\\+351)[0-9]{9,}$',
-              },
-              {
-                label: 'United Kingdom (UK)',
-                pattern: '^(\\+44)[0-9]{1,}$',
-              },
-              {
-                label: 'Bolivia',
-                pattern: '^(\\+591)[0-9]{9,}$',
-              },
-              {
-                label: 'Canada',
-                pattern: '^(\\+1)(206|224)[0-9]{1,}$',
-              },
-              {
-                label: 'United States',
-                pattern: '^(\\+1)[0-9]{1,}$',
-              },
-            ],
-          },
-        ],
-      });
-
-      const fieldValidator = result.fields[0].schema;
-
-      expect(fieldValidator.isValidSync('+351123123123')).toBe(true);
-      expect(() => fieldValidator.validateSync('+35100')).toThrowError(
-        'The option "+35100" is not valid.'
-      );
-      expect(fieldValidator.isValidSync(undefined)).toBe(true);
     });
 
     describe('supports "fieldset" field type', () => {
@@ -2274,37 +2397,6 @@ describe('createHeadlessForm', () => {
     expect(fieldValidator.isValidSync(null)).toBe(true);
   });
 
-  describe('x-jsf-presentation attribute', () => {
-    it('support field with "x-jsf-presentation.statement"', () => {
-      const result = createHeadlessForm(schemaInputWithStatement);
-
-      expect(result).toMatchObject({
-        fields: [
-          {
-            name: 'bonus',
-            label: 'Bonus',
-            type: 'text',
-            statement: {
-              description: 'This is a custom statement message.',
-              inputType: 'statement',
-              severity: 'info',
-            },
-          },
-          {
-            name: 'role',
-            label: 'Role',
-            type: 'text',
-            statement: {
-              description: 'This is another statement message, but more severe.',
-              inputType: 'statement',
-              severity: 'warning',
-            },
-          },
-        ],
-      });
-    });
-  });
-
   describe('property misc attributes', () => {
     it('pass readOnly to field', () => {
       const result = createHeadlessForm({
@@ -2364,27 +2456,93 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('pass "description" to field', () => {
-      const result = createHeadlessForm({
+    it('pass both root level "description" and "x-jsf-presentation.description"', () => {
+      const resultsWithRootDescription = createHeadlessForm({
         properties: {
-          plain: {
-            title: 'Regular',
-            description: 'I am regular',
-            presentation: { inputType: 'text' },
-          },
-          html: {
-            title: 'Name',
-            description: 'I am regular',
-            presentation: {
-              description: 'I am <b>bold</b>.',
+          username: mockTextInput,
+        },
+        required: ['username'],
+      });
+
+      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
+
+      const resultsWithPresentationDescription = createHeadlessForm({
+        properties: {
+          username: {
+            ...mockTextInput,
+            'x-jsf-presentation': {
               inputType: 'text',
+              // should override the root level description
+              description: 'a different description with <span>markup</span>',
             },
           },
         },
+        required: ['username'],
       });
 
+      expect(resultsWithPresentationDescription.fields[0].description).toMatch(
+        /a different description /i
+      );
+    });
+
+    it('pass both root level "description" and "presentation.description" (deprecated)', () => {
+      const resultsWithRootDescription = createHeadlessForm({
+        properties: {
+          username: mockTextInputDeprecated,
+        },
+        required: ['username'],
+      });
+
+      expect(resultsWithRootDescription.fields[0].description).toMatch(/your username/i);
+
+      const resultsWithPresentationDescription = createHeadlessForm(
+        JSONSchemaBuilder()
+          .addInput({
+            username: {
+              ...mockTextInputDeprecated,
+              presentation: {
+                inputType: 'text',
+                maskSecret: 2,
+                // should override the root level description
+                description: 'a different description with <span>markup</span>',
+              },
+            },
+          })
+          .setRequiredFields(['username'])
+          .build()
+      );
+
+      expect(resultsWithPresentationDescription.fields[0].description).toMatch(
+        /a different description /i
+      );
+    });
+
+    it('support field with "x-jsf-presentation.statement"', () => {
+      const result = createHeadlessForm(schemaInputWithStatement);
+
       expect(result).toMatchObject({
-        fields: [{ description: 'I am regular' }, { description: 'I am <b>bold</b>.' }],
+        fields: [
+          {
+            name: 'bonus',
+            label: 'Bonus',
+            type: 'text',
+            statement: {
+              description: 'This is a custom statement message.',
+              inputType: 'statement',
+              severity: 'info',
+            },
+          },
+          {
+            name: 'role',
+            label: 'Role',
+            type: 'text',
+            statement: {
+              description: 'This is another statement message, but more severe.',
+              inputType: 'statement',
+              severity: 'warning',
+            },
+          },
+        ],
       });
     });
 
@@ -2457,7 +2615,7 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('passes scopedJsonSchema to each field', () => {
+    it('pass scopedJsonSchema to each field', () => {
       const { fields } = createHeadlessForm(schemaWithoutInputTypes, {
         strictInputType: false,
       });
@@ -2522,7 +2680,7 @@ describe('createHeadlessForm', () => {
         expect(fieldsetByName).toEqual(['line_one', 'number', 'postal_code']);
       });
 
-      it('sorts fields based on original properties (wihout x-jsf-order)', () => {
+      it('sorts fields based on original properties (without x-jsf-order)', () => {
         // Assert the sample schema has x-jsf-order
         expect(schemaWithOrderKeyword['x-jsf-order']).toBeDefined();
 
@@ -2543,467 +2701,276 @@ describe('createHeadlessForm', () => {
     });
   });
 
-  describe('when a field is required', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        buildJSONSchemaInput({ presentationFields: { inputType: 'text' }, required: true })
-      );
-      fields = result.fields;
-    });
-    describe('and value is empty', () => {
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate({ test: '' })
-        ).rejects.toMatchObject({ errors: ['Required field'] }));
-    });
-    describe('and value is defined', () => {
-      it('should validate field', async () => {
-        const assertObj = { test: 'Hello' };
-        return expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate(assertObj)
-        ).resolves.toEqual(assertObj);
+  describe('more validations', () => {
+    describe('when a field is required', () => {
+      let fields;
+      beforeEach(() => {
+        const result = createHeadlessForm(
+          buildJSONSchemaInput({ presentationFields: { inputType: 'text' }, required: true })
+        );
+        fields = result.fields;
+      });
+      describe('and value is empty', () => {
+        it('should throw an error', async () =>
+          expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate({ test: '' })
+          ).rejects.toMatchObject({ errors: ['Required field'] }));
+      });
+      describe('and value is defined', () => {
+        it('should validate field', async () => {
+          const assertObj = { test: 'Hello' };
+          return expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate(assertObj)
+          ).resolves.toEqual(assertObj);
+        });
       });
     });
-  });
 
-  describe('when a field is number', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        buildJSONSchemaInput({ presentationFields: { inputType: 'number' } })
-      );
-      fields = result.fields;
-    });
-    describe('and value is a string', () => {
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate({ test: 'Hello' })
-        ).rejects.toThrow());
-    });
-    describe('and value is a number', () => {
-      it('should validate field', async () => {
-        const assertObj = { test: 3 };
-        return expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate(assertObj)
-        ).resolves.toEqual(assertObj);
+    describe('when a field is number', () => {
+      let fields;
+      beforeEach(() => {
+        const result = createHeadlessForm(
+          buildJSONSchemaInput({ presentationFields: { inputType: 'number' } })
+        );
+        fields = result.fields;
+      });
+      describe('and value is a string', () => {
+        it('should throw an error', async () =>
+          expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate({ test: 'Hello' })
+          ).rejects.toThrow());
+      });
+      describe('and value is a number', () => {
+        it('should validate field', async () => {
+          const assertObj = { test: 3 };
+          return expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate(assertObj)
+          ).resolves.toEqual(assertObj);
+        });
+      });
+      describe('and maximum is set to zero', () => {
+        it('shows the correct validation', () => {
+          const { handleValidation } = createHeadlessForm(schemaInputTypeNumberZeroMaximum);
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+          expect(validateForm({ tabs: '0' })).toBeUndefined();
+          expect(validateForm({ tabs: '-10' })).toBeUndefined();
+
+          expect(validateForm({ tabs: 1 })).toEqual({
+            tabs: 'Must be smaller or equal to 0',
+          });
+        });
       });
     });
-    describe('and maximum is set to zero', () => {
-      it('shows the correct validation', () => {
-        const { handleValidation } = createHeadlessForm(schemaInputTypeNumberZeroMaximum);
-        const validateForm = (vals) => friendlyError(handleValidation(vals));
 
-        expect(validateForm({ tabs: '0' })).toBeUndefined();
-        expect(validateForm({ tabs: '-10' })).toBeUndefined();
+    describe('when a field has a maxLength of 10', () => {
+      let fields;
+      beforeEach(() => {
+        const result = createHeadlessForm(
+          buildJSONSchemaInput({
+            presentationFields: { inputType: 'text' },
+            inputFields: { maxLength: 10 },
+          })
+        );
+        fields = result.fields;
+      });
+      describe('and value is greater than that', () => {
+        it('should throw an error', async () =>
+          expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate({ test: 'Hello Mr John Doe' })
+          ).rejects.toMatchObject({ errors: ['Please insert up to 10 characters'] }));
+      });
+      describe('and value is less than that', () => {
+        it('should validate field', async () => {
+          const assertObj = { test: 'Hello John' };
+          return expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate(assertObj)
+          ).resolves.toEqual(assertObj);
+        });
+      });
+    });
 
-        expect(validateForm({ tabs: 1 })).toEqual({
-          tabs: 'Must be smaller or equal to 0',
+    describe('when a field has a minLength of 2', () => {
+      let fields;
+      beforeEach(() => {
+        const result = createHeadlessForm(
+          buildJSONSchemaInput({
+            presentationFields: { inputType: 'text' },
+            inputFields: { minLength: 2 },
+          })
+        );
+        fields = result.fields;
+      });
+      describe('and value is smaller than that', () => {
+        it('should throw an error', async () =>
+          expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate({ test: 'H' })
+          ).rejects.toMatchObject({ errors: ['Please insert at least 2 characters'] }));
+      });
+      describe('and value is greater than that', () => {
+        it('should validate field', async () => {
+          const assertObj = { test: 'Hello John' };
+          return expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate(assertObj)
+          ).resolves.toEqual(assertObj);
+        });
+      });
+    });
+
+    describe('when a field has a minimum of 0', () => {
+      let fields;
+      beforeEach(() => {
+        const result = createHeadlessForm(
+          buildJSONSchemaInput({
+            presentationFields: { inputType: 'number' },
+            inputFields: { minimum: 0 },
+          })
+        );
+        fields = result.fields;
+      });
+
+      describe('and value is less than that', () => {
+        it('should throw an error', async () =>
+          expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate({ test: -1 })
+          ).rejects.toMatchObject({ errors: ['Must be greater or equal to 0'] }));
+      });
+
+      describe('and value is greater than that', () => {
+        it('should validate field', async () => {
+          const assertObj = { test: 4 };
+          return expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate(assertObj)
+          ).resolves.toEqual(assertObj);
+        });
+      });
+    });
+
+    describe('when a field has a maximum of 10', () => {
+      let fields;
+      beforeEach(() => {
+        const result = createHeadlessForm(
+          buildJSONSchemaInput({
+            presentationFields: { inputType: 'number' },
+            inputFields: { maximum: 10 },
+          })
+        );
+        fields = result.fields;
+      });
+
+      describe('and value is greater than that', () => {
+        it('should throw an error', async () =>
+          expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate({ test: 11 })
+          ).rejects.toMatchObject({ errors: ['Must be smaller or equal to 10'] }));
+      });
+
+      describe('and value is greater than that', () => {
+        it('should validate field', async () => {
+          const assertObj = { test: 4 };
+          return expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate(assertObj)
+          ).resolves.toEqual(assertObj);
+        });
+      });
+    });
+
+    describe('when a field has a pattern', () => {
+      let fields;
+      beforeEach(() => {
+        const result = createHeadlessForm(
+          buildJSONSchemaInput({
+            presentationFields: { inputType: 'text' },
+            inputFields: { pattern: '^[0-9]{3}-[0-9]{2}-(?!0{4})[0-9]{4}$' },
+          })
+        );
+        fields = result.fields;
+      });
+      describe('and value does not match the pattern', () => {
+        it('should throw an error', async () =>
+          expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate({ test: 'Hello' })
+          ).rejects.toMatchObject({ errors: [expect.any(String)] }));
+      });
+      describe('and value matches the pattern', () => {
+        it('should validate field', async () => {
+          const assertObj = { test: '401-85-1950' };
+          return expect(
+            object()
+              .shape({
+                test: fields[0].schema,
+              })
+              .validate(assertObj)
+          ).resolves.toEqual(assertObj);
         });
       });
     });
   });
 
-  describe('when a field has a maxLength of 10', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        buildJSONSchemaInput({
-          presentationFields: { inputType: 'text' },
-          inputFields: { maxLength: 10 },
-        })
-      );
-      fields = result.fields;
-    });
-    describe('and value is greater than that', () => {
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate({ test: 'Hello Mr John Doe' })
-        ).rejects.toMatchObject({ errors: ['Please insert up to 10 characters'] }));
-    });
-    describe('and value is less than that', () => {
-      it('should validate field', async () => {
-        const assertObj = { test: 'Hello John' };
-        return expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate(assertObj)
-        ).resolves.toEqual(assertObj);
-      });
-    });
-  });
-
-  describe('when a field has a minLength of 2', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        buildJSONSchemaInput({
-          presentationFields: { inputType: 'text' },
-          inputFields: { minLength: 2 },
-        })
-      );
-      fields = result.fields;
-    });
-    describe('and value is smaller than that', () => {
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate({ test: 'H' })
-        ).rejects.toMatchObject({ errors: ['Please insert at least 2 characters'] }));
-    });
-    describe('and value is greater than that', () => {
-      it('should validate field', async () => {
-        const assertObj = { test: 'Hello John' };
-        return expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate(assertObj)
-        ).resolves.toEqual(assertObj);
-      });
-    });
-  });
-
-  describe('when a field has a minimum of 0', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        buildJSONSchemaInput({
-          presentationFields: { inputType: 'number' },
-          inputFields: { minimum: 0 },
-        })
-      );
-      fields = result.fields;
-    });
-
-    describe('and value is less than that', () => {
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate({ test: -1 })
-        ).rejects.toMatchObject({ errors: ['Must be greater or equal to 0'] }));
-    });
-
-    describe('and value is greater than that', () => {
-      it('should validate field', async () => {
-        const assertObj = { test: 4 };
-        return expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate(assertObj)
-        ).resolves.toEqual(assertObj);
-      });
-    });
-  });
-
-  describe('when a field has a maximum of 10', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        buildJSONSchemaInput({
-          presentationFields: { inputType: 'number' },
-          inputFields: { maximum: 10 },
-        })
-      );
-      fields = result.fields;
-    });
-
-    describe('and value is greater than that', () => {
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate({ test: 11 })
-        ).rejects.toMatchObject({ errors: ['Must be smaller or equal to 10'] }));
-    });
-
-    describe('and value is greater than that', () => {
-      it('should validate field', async () => {
-        const assertObj = { test: 4 };
-        return expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate(assertObj)
-        ).resolves.toEqual(assertObj);
-      });
-    });
-  });
-
-  describe('when a field has a pattern', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        buildJSONSchemaInput({
-          presentationFields: { inputType: 'text' },
-          inputFields: { pattern: '^[0-9]{3}-[0-9]{2}-(?!0{4})[0-9]{4}$' },
-        })
-      );
-      fields = result.fields;
-    });
-    describe('and value does not match the pattern', () => {
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate({ test: 'Hello' })
-        ).rejects.toMatchObject({ errors: [expect.any(String)] }));
-    });
-    describe('and value matches the pattern', () => {
-      it('should validate field', async () => {
-        const assertObj = { test: '401-85-1950' };
-        return expect(
-          object()
-            .shape({
-              test: fields[0].schema,
-            })
-            .validate(assertObj)
-        ).resolves.toEqual(assertObj);
-      });
-    });
-  });
-
-  describe('when a field has max file size', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
-      );
-      fields = result.fields;
-    });
-    describe('and file is greater than that', () => {
-      const file = new File([''], 'file.png');
-      Object.defineProperty(file, 'size', { value: 1024 * 1024 * 1024 });
-
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [file] })
-        ).rejects.toMatchObject({ errors: ['File size too large. The limit is 20 MB.'] }));
-    });
-    describe('and file is smaller than that', () => {
-      const file = new File([''], 'file.png');
-      Object.defineProperty(file, 'size', { value: 1024 * 1024 });
-
-      const assertObj = { fileInput: [file] };
-      it('should validate field', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [file] })
-        ).resolves.toEqual(assertObj));
-    });
-  });
-
-  describe('when a field file is optional', () => {
-    it('it accepts an empty array', () => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
-      );
-      const emptyFile = { fileInput: [] };
-      expect(
-        object()
-          .shape({
-            fileInput: result.fields[0].schema,
-          })
-          .validate(emptyFile)
-      ).resolves.toEqual(emptyFile);
-    });
-
-    it('it validates missing file correctly', () => {
-      const { handleValidation } = createHeadlessForm(
-        JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
-      );
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-      expect(validateForm({})).toBeUndefined();
-      expect(validateForm({ fileInput: null })).toBeUndefined();
-    });
-  });
-
-  describe('when a field file is required', () => {
-    it('it validates missing file correctly', () => {
-      const { handleValidation } = createHeadlessForm(schemaInputTypeFile);
-      const validateForm = (vals) => friendlyError(handleValidation(vals));
-
-      expect(validateForm({})).toEqual({
-        a_file: 'Required field',
-      });
-
-      expect(
-        validateForm({
-          a_file: null,
-        })
-      ).toEqual({
-        a_file: 'Required field',
-      });
-    });
-  });
-
-  describe('when a field has accepted extensions', () => {
-    let fields;
-    beforeEach(() => {
-      const result = createHeadlessForm(
-        JSONSchemaBuilder().addInput({ fileInput: mockFileInput }).build()
-      );
-      fields = result.fields;
-    });
-    describe('and file is of incorrect format', () => {
-      const file = new File(['foo'], 'file.txt', {
-        type: 'text/plain',
-      });
-
-      it('should throw an error', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [file] })
-        ).rejects.toMatchObject({
-          errors: ['Unsupported file format. The acceptable formats are .png,.jpg,.jpeg,.pdf.'],
-        }));
-    });
-    describe('and file is of correct format', () => {
-      const file = new File(['foo'], 'file.png', {
-        type: 'image/png',
-      });
-      Object.defineProperty(file, 'size', { value: 1024 * 1024 });
-
-      const assertObj = { fileInput: [file] };
-      it('should validate field', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [file] })
-        ).resolves.toEqual(assertObj));
-    });
-
-    describe('and file is of correct but uppercase format ', () => {
-      const file = new File(['foo'], 'file.PNG', {
-        type: 'image/png',
-      });
-      Object.defineProperty(file, 'size', { value: 1024 * 1024 });
-
-      const assertObj = { fileInput: [file] };
-      it('should validate field', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [file] })
-        ).resolves.toEqual(assertObj));
-    });
-
-    describe('and file is not instance of a File', () => {
-      it('accepts if file object has name property', async () => {
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [{ name: 'foo.pdf' }] })
-        ).resolves.toEqual({ fileInput: [{ name: 'foo.pdf' }] });
-      });
-
-      it('should validate format', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [{ name: 'foo.txt' }] })
-        ).rejects.toMatchObject({
-          errors: ['Unsupported file format. The acceptable formats are .png,.jpg,.jpeg,.pdf.'],
-        }));
-
-      it('should validate max size', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [{ name: 'foo.txt', size: 1024 * 1024 * 1024 }] })
-        ).rejects.toMatchObject({ errors: ['File size too large. The limit is 20 MB.'] }));
-
-      it('throw an error if invalid file object', async () =>
-        expect(
-          object()
-            .shape({
-              fileInput: fields[0].schema,
-            })
-            .validate({ fileInput: [{ path: 'foo.txt' }] })
-        ).rejects.toMatchObject({ errors: ['Not a valid file.'] }));
-    });
-  });
-
-  describe('when a field has conditional presentation properties', () => {
-    it('returns the nested properties when the conditional matches', () => {
-      const { fields } = createHeadlessForm(schemaWithConditionalPresentationProperties, {
-        initialValues: {
-          // show the hidden statement
-          mock_radio: 'no',
-        },
-      });
-
-      expect(fields[0].statement.description).toBe(`<a href="">conditional statement markup</a>`);
-    });
-  });
-
-  describe('when a JSON Schema is provided', () => {
+  describe('even more validations', () => {
     describe('and all fields are optional', () => {
       let handleValidation;
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       beforeEach(() => {
-        const result = JSONSchemaBuilder()
-          .addInput({ textInput: mockTextInput })
-          .addInput({ numberInput: mockNumberInput })
-          .build();
+        const result = {
+          properties: {
+            textInput: mockTextInput,
+            numberInput: mockNumberInput,
+          },
+        };
         const { handleValidation: handleValidationEach } = createHeadlessForm(result);
         handleValidation = handleValidationEach;
       });
@@ -3034,11 +3001,13 @@ describe('createHeadlessForm', () => {
       const validateForm = (vals) => friendlyError(handleValidation(vals));
 
       beforeEach(() => {
-        const result = JSONSchemaBuilder()
-          .addInput({ textInput: mockTextInput })
-          .addInput({ numberInput: mockNumberInput })
-          .setRequiredFields(['numberInput', 'textInput'])
-          .build();
+        const result = {
+          properties: {
+            textInput: mockTextInput,
+            numberInput: mockNumberInput,
+          },
+          required: ['numberInput', 'textInput'],
+        };
         const { handleValidation: handleValidationEach } = createHeadlessForm(result);
         handleValidation = handleValidationEach;
       });
@@ -3865,7 +3834,19 @@ describe('createHeadlessForm', () => {
     });
   });
 
-  describe('when default values are provided', () => {
+  describe('given default values', () => {
+    describe('and a field with conditional presentation properties', () => {
+      it('returns the nested properties when the conditional matches', () => {
+        const { fields } = createHeadlessForm(schemaWithConditionalPresentationProperties, {
+          initialValues: {
+            // show the hidden statement
+            mock_radio: 'no',
+          },
+        });
+
+        expect(fields[0].statement.description).toBe(`<a href="">conditional statement markup</a>`);
+      });
+    });
     describe('and "fieldset" has scoped conditionals', () => {
       it('should show conditionals fields when values fullfil conditions', () => {
         const result = createHeadlessForm(schemaFieldsetScopedCondition, {

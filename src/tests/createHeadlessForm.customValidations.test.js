@@ -140,7 +140,8 @@ afterAll(() => {
   console.warn.mockRestore();
 });
 
-describe('createHeadlessForm() - custom validations', () => {
+// @deprecated - customProperties won't be supported in v2.
+describe('createHeadlessForm() - custom validations (deprecated)', () => {
   describe('simple validation (eg maximum)', () => {
     it('works as a number', () => {
       const { fields, validateForm } = createScenario({

@@ -5,7 +5,7 @@ import omitBy from 'lodash/omitBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
-import { checkIfConditionMatchesProperties } from './checkIfConditionMatches';
+import { checkIfConditionMatchesProperties } from './internals/checkIfConditionMatches';
 import { supportedTypes, getInputType } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { processJSONLogicNode } from './jsonLogic';
