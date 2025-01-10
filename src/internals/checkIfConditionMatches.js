@@ -1,5 +1,5 @@
-import { compareFormValueWithSchemaValue, getField, validateFieldSchema } from './helpers';
-import { hasProperty } from './utils';
+import { compareFormValueWithSchemaValue, getField, validateFieldSchema } from '../helpers';
+import { hasProperty } from '../utils';
 
 /**
  * Checks if a "IF" condition matches given the current form state

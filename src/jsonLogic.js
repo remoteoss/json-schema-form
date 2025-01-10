@@ -1,10 +1,10 @@
 import jsonLogic from 'json-logic-js';
 
+import { processNode } from './helpers';
 import {
   checkIfConditionMatchesProperties,
   checkIfMatchesValidationsAndComputedValues,
-} from './checkIfConditionMatches';
-import { processNode } from './helpers';
+} from './internals/checkIfConditionMatches';
 import { buildYupSchema } from './yupSchema';
 
 /**
