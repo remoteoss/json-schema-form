@@ -549,8 +549,8 @@ describe('Conditional with literal booleans', () => {
 });
 
 describe('Conditionals - bugs and code-smells', () => {
-  // Why do these bugs happens?
-  // To be honest we never realized it until years later.
+  // Why do we have these bugs?
+  // To be honest we never realized it much later later.
   // We will fix them in the next major version.
 
   const schemaHasPet = {
@@ -561,26 +561,13 @@ describe('Conditionals - bugs and code-smells', () => {
         title: 'Has Pet',
         description: 'Do you have a pet?',
         oneOf: [
-          {
-            title: 'Yes',
-            const: 'yes',
-          },
-          {
-            title: 'No',
-            const: 'no',
-          },
+          { title: 'Yes', const: 'yes' },
+          { title: 'No', const: 'no' },
         ],
-        'x-jsf-presentation': {
-          inputType: 'radio',
-        },
         type: 'string',
       },
       pet_name: {
         title: "Pet's name",
-        description: "What's your pet's name?",
-        'x-jsf-presentation': {
-          inputType: 'text',
-        },
         type: 'string',
       },
     },
@@ -589,9 +576,7 @@ describe('Conditionals - bugs and code-smells', () => {
       {
         if: {
           properties: {
-            has_pet: {
-              const: 'yes',
-            },
+            has_pet: { const: 'yes' },
           },
           required: ['has_pet'],
         },
@@ -608,7 +593,9 @@ describe('Conditionals - bugs and code-smells', () => {
   };
 
   it('Given values from hidden fields, it does not thrown an error (bug behavior)', () => {
-    const { fields, handleValidation } = createHeadlessForm(schemaHasPet);
+    const { fields, handleValidation } = createHeadlessForm(schemaHasPet, {
+      strictInputType: false,
+    });
 
     const petNameField = fields[1];
 
@@ -628,7 +615,9 @@ describe('Conditionals - bugs and code-smells', () => {
   });
 
   it('Given values from hidden fields, it mutates the values (bug behavior)', () => {
-    const { handleValidation } = createHeadlessForm(schemaHasPet);
+    const { handleValidation } = createHeadlessForm(schemaHasPet, {
+      strictInputType: false,
+    });
 
     const newValues = { has_pet: 'no', pet_name: 'Max' };
 
