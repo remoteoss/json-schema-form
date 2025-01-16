@@ -547,3 +547,83 @@ describe('Conditional with literal booleans', () => {
     });
   });
 });
+
+describe('Conditionals - bugs and code-smells', () => {
+  // Why do these bugs happens?
+  // To be honest we never realized it until years later.
+  // We will fix them in the next major version.
+
+  const schemaHasPet = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      has_pet: {
+        title: 'Has Pet',
+        description: 'Do you have a pet?',
+        oneOf: [
+          {
+            title: 'Yes',
+            const: 'yes',
+          },
+          {
+            title: 'No',
+            const: 'no',
+          },
+        ],
+        'x-jsf-presentation': {
+          inputType: 'radio',
+        },
+        type: 'string',
+      },
+      pet_name: {
+        title: "Pet's name",
+        description: "What's your pet's name?",
+        'x-jsf-presentation': {
+          inputType: 'text',
+        },
+        type: 'string',
+      },
+    },
+    required: ['has_pet'],
+    allOf: [
+      {
+        if: {
+          properties: {
+            has_pet: {
+              const: 'yes',
+            },
+          },
+          required: ['has_pet'],
+        },
+        then: {
+          required: ['pet_name'],
+        },
+        else: {
+          properties: {
+            pet_name: false,
+          },
+        },
+      },
+    ],
+  };
+
+  it('Given values from hidden fields, it does not thrown an error (bug behavior)', () => {
+    const { fields, handleValidation } = createHeadlessForm(schemaHasPet);
+
+    const petNameField = fields[1];
+
+    const validation1 = handleValidation({ has_pet: 'yes' });
+    expect(petNameField.isVisible).toBe(true);
+    expect(validation1.formErrors).toEqual({
+      pet_name: 'Required field',
+    });
+
+    const validation2 = handleValidation({ has_pet: 'no', pet_name: 'Max' });
+    expect(petNameField.isVisible).toBe(false);
+    // Bug: 🐛 It does not thrown an error,
+    // but it should to be compliant with JSON Schema specs.
+    expect(validation2.formErrors).toBeUndefined();
+    // The error should be something like:
+    // expect(validation2.formErrors).toEqual({ pet_name: 'Not allowed.'});
+  });
+});
