@@ -626,4 +626,20 @@ describe('Conditionals - bugs and code-smells', () => {
     // The error should be something like:
     // expect(validation2.formErrors).toEqual({ pet_name: 'Not allowed.'});
   });
+
+  it('Given values from hidden fields, it mutates the values (bug behavior)', () => {
+    const { handleValidation } = createHeadlessForm(schemaHasPet);
+
+    const newValues = { has_pet: 'no', pet_name: 'Max' };
+
+    const validation = handleValidation(newValues);
+
+    expect(newValues).toEqual({
+      has_pet: 'no',
+      pet_name: null, // BUG! 🐛 Should still be "Max", should not be mutated.
+    });
+
+    // Same bug as explained in the previous test.
+    expect(validation.formErrors).toBeUndefined();
+  });
 });
