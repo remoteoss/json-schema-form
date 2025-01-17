@@ -547,3 +547,165 @@ describe('Conditional with literal booleans', () => {
     });
   });
 });
+
+describe('Conditionals - bugs and code-smells', () => {
+  // Why do we have these bugs?
+  // To be honest we never realized it much later later.
+  // We will fix them in the next major version.
+
+  const schemaHasPet = {
+    type: 'object',
+    additionalProperties: false,
+    properties: {
+      has_pet: {
+        title: 'Has Pet',
+        description: 'Do you have a pet?',
+        oneOf: [
+          { title: 'Yes', const: 'yes' },
+          { title: 'No', const: 'no' },
+        ],
+        type: 'string',
+      },
+      pet_name: {
+        title: "Pet's name",
+        type: 'string',
+      },
+    },
+    required: ['has_pet'],
+    allOf: [
+      {
+        if: {
+          properties: {
+            has_pet: { const: 'yes' },
+          },
+          required: ['has_pet'],
+        },
+        then: {
+          required: ['pet_name'],
+        },
+        else: {
+          properties: {
+            pet_name: false,
+          },
+        },
+      },
+    ],
+  };
+
+  it('Given values from hidden fields, it does not thrown an error (@bug)', () => {
+    const { fields, handleValidation } = createHeadlessForm(schemaHasPet, {
+      strictInputType: false,
+    });
+
+    const petNameField = fields[1];
+
+    const validation = handleValidation({ has_pet: 'no', pet_name: 'Max' });
+    expect(petNameField.isVisible).toBe(false);
+
+    // Bug: 🐛 It does not thrown an error,
+    // but it should to be compliant with JSON Schema specs.
+    expect(validation.formErrors).toBeUndefined();
+    // The error should be something like:
+    // expect(validation.formErrors).toEqual({ pet_name: 'Not allowed.'});
+  });
+
+  it('Given values from hidden fields, it mutates the values (@bug)', () => {
+    const { handleValidation } = createHeadlessForm(schemaHasPet, {
+      strictInputType: false,
+    });
+
+    const newValues = { has_pet: 'no', pet_name: 'Max' };
+
+    const validation = handleValidation(newValues);
+
+    expect(newValues).toEqual({
+      has_pet: 'no',
+      pet_name: null, // BUG! 🐛 Should still be "Max", should not be mutated.
+    });
+
+    // Same bug as explained in the previous test.
+    expect(validation.formErrors).toBeUndefined();
+  });
+
+  it('Given multiple conditionals to the same field, it only applies the last one (@bug) - case 1', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        additionalProperties: false,
+        properties: {
+          field_a: { type: 'string' },
+          field_b: { type: 'string' },
+          field_c: { type: 'number' },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { field_a: { const: 'yes' } },
+              required: ['field_a'],
+            },
+            then: { properties: { field_c: { minimum: 30 } } },
+          },
+          {
+            if: {
+              properties: { field_b: { const: 'yes' } },
+              required: ['field_b'],
+            },
+            then: { properties: { field_c: { minimum: 10 } } },
+          },
+        ],
+      },
+      {
+        strictInputType: false,
+      }
+    );
+
+    const validation = handleValidation({ field_a: 'yes', field_b: 'yes', field_c: 5 });
+    expect(validation.formErrors).toEqual({
+      // BUG: 🐛 it should be "Must be greater or equal to 30"
+      field_c: 'Must be greater or equal to 10',
+    });
+  });
+
+  it('Given multiple conditionals to the same field, it only applies the last one (@bug) - case 2', () => {
+    const { handleValidation } = createHeadlessForm(
+      {
+        additionalProperties: false,
+        properties: {
+          field_a: { type: 'string' },
+          field_b: { type: 'string' },
+          field_c: { type: 'number' },
+        },
+        allOf: [
+          {
+            if: {
+              properties: { field_a: { const: 'yes' } },
+              required: ['field_a'],
+            },
+            then: { properties: { field_c: { minimum: 5 } } },
+          },
+          {
+            if: {
+              properties: { field_b: { const: 'yes' } },
+              required: ['field_b'],
+            },
+            then: { properties: { field_c: { maximum: 10 } } },
+          },
+        ],
+      },
+      {
+        strictInputType: false,
+      }
+    );
+
+    const validation1 = handleValidation({ field_a: 'yes', field_b: 'yes', field_c: 12 });
+    expect(validation1.formErrors).toEqual({
+      field_c: 'Must be smaller or equal to 10',
+    });
+
+    const validation2 = handleValidation({ field_a: 'yes', field_b: 'yes', field_c: 3 });
+    // BUG: 🐛 it should be "Must be greater or equal to 5"
+    expect(validation2.formErrors).toBeUndefined();
+    // expect(validation1.formErrors).toEqual({
+    //   field_c: 'Must be greater or equal to 5',
+    // });
+  });
+});
