@@ -592,7 +592,7 @@ describe('Conditionals - bugs and code-smells', () => {
     ],
   };
 
-  it('Given values from hidden fields, it does not thrown an error (bug behavior)', () => {
+  it('Given values from hidden fields, it does not thrown an error (@bug)', () => {
     const { fields, handleValidation } = createHeadlessForm(schemaHasPet, {
       strictInputType: false,
     });
@@ -614,7 +614,7 @@ describe('Conditionals - bugs and code-smells', () => {
     // expect(validation2.formErrors).toEqual({ pet_name: 'Not allowed.'});
   });
 
-  it('Given values from hidden fields, it mutates the values (bug behavior)', () => {
+  it('Given values from hidden fields, it mutates the values (@bug)', () => {
     const { handleValidation } = createHeadlessForm(schemaHasPet, {
       strictInputType: false,
     });
@@ -632,7 +632,7 @@ describe('Conditionals - bugs and code-smells', () => {
     expect(validation.formErrors).toBeUndefined();
   });
 
-  it('Given multiple conditionals to the same field, it only applies the last one (bug behavior) - case 1', () => {
+  it('Given multiple conditionals to the same field, it only applies the last one (@bug) - case 1', () => {
     const { handleValidation } = createHeadlessForm(
       {
         additionalProperties: false,
@@ -670,7 +670,7 @@ describe('Conditionals - bugs and code-smells', () => {
     });
   });
 
-  it('Given multiple conditionals to the same field, it only applies the last one (bug behavior) - case 2', () => {
+  it('Given multiple conditionals to the same field, it only applies the last one (@bug) - case 2', () => {
     const { handleValidation } = createHeadlessForm(
       {
         additionalProperties: false,
