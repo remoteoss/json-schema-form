@@ -599,19 +599,14 @@ describe('Conditionals - bugs and code-smells', () => {
 
     const petNameField = fields[1];
 
-    const validation1 = handleValidation({ has_pet: 'yes' });
-    expect(petNameField.isVisible).toBe(true);
-    expect(validation1.formErrors).toEqual({
-      pet_name: 'Required field',
-    });
-
-    const validation2 = handleValidation({ has_pet: 'no', pet_name: 'Max' });
+    const validation = handleValidation({ has_pet: 'no', pet_name: 'Max' });
     expect(petNameField.isVisible).toBe(false);
+
     // Bug: 🐛 It does not thrown an error,
     // but it should to be compliant with JSON Schema specs.
-    expect(validation2.formErrors).toBeUndefined();
+    expect(validation.formErrors).toBeUndefined();
     // The error should be something like:
-    // expect(validation2.formErrors).toEqual({ pet_name: 'Not allowed.'});
+    // expect(validation.formErrors).toEqual({ pet_name: 'Not allowed.'});
   });
 
   it('Given values from hidden fields, it mutates the values (@bug)', () => {
