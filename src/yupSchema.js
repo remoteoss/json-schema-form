@@ -209,7 +209,9 @@ const yupSchemas = {
   email: string().trim().email('Please enter a valid email address').nullable(),
   fieldset: object().nullable(),
   checkbox: string().trim().nullable(),
-  checkboxBool: boolean(),
+  checkboxBool: boolean()
+    .typeError('The value must be a boolean, but received "${value}"')
+    .nullable(),
   multiple: {
     select: array().nullable(),
     'group-array': array().nullable(),
