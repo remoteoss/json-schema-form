@@ -1,6 +1,7 @@
 {
   "name": "@remoteoss/json-schema-form",
   "version": "2.0.0-alpha.1",
+  "packageManager": "pnpm@9.15.2",
   "description": "WIP V2 – Headless UI form powered by JSON Schemas",
   "author": "Remote.com <engineering@remote.com> (https://remote.com/)",
   "license": "MIT",
@@ -9,15 +10,18 @@
     "type": "git",
     "url": "https://github.com/remoteoss/json-schema-form.git"
   },
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "keywords": [
     "JSON",
     "schema",
     "json-schema",
     "form"
   ],
-  "packageManager": "pnpm@9.15.2"
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@antfu/eslint-config": "^3.14.0",
+    "eslint": "^9.18.0"
+  }
 }
