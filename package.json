@@ -57,6 +57,7 @@
     "@babel/eslint-parser": "^7.25.9",
     "@babel/preset-env": "^7.21.5",
     "babel-jest": "^29.5.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "child-process-promise": "^2.2.1",
     "esbuild": "^0.17.15",
     "eslint": "^7.32.0",

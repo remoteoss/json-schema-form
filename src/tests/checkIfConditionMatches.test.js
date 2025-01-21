@@ -1,4 +1,4 @@
-import { checkIfConditionMatchesProperties } from '../internals/checkIfConditionMatches';
+import { checkIfConditionMatchesProperties } from '@/internals/checkIfConditionMatches';
 
 describe('checkIfConditionMatchesProperties()', () => {
   it('True if is always going to be true', () => {
