@@ -2272,8 +2272,7 @@ describe('createHeadlessForm', () => {
 
         it('conditional: it works as undefined value', () => {
           const { fields, handleValidation } = createHeadlessForm(
-            schemaInputTypeCheckboxBooleanConditional,
-            { strictInputType: false }
+            schemaInputTypeCheckboxBooleanConditional
           );
           const checkboxField = fields.find((field) => field.name === 'pet_is_cat');
 
