@@ -18,7 +18,7 @@
   ],
   "main": "index.js",
   "scripts": {
-    "lint": "tsc",
+    "lint": "eslint --max-warnings 0 .",
     "build": "tsup"
   },
   "devDependencies": {
