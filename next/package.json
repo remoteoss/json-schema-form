@@ -18,10 +18,13 @@
   ],
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint --max-warnings 0 .",
+    "build": "tsup"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.14.0",
-    "eslint": "^9.18.0"
+    "eslint": "^9.18.0",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3"
   }
 }
