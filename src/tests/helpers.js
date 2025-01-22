@@ -1201,6 +1201,43 @@ export const schemaInputTypeCheckboxBooleans = JSONSchemaBuilder()
   .setRequiredFields(['boolean_required'])
   .build();
 
+export const schemaInputTypeCheckboxBooleanConditional = {
+  type: 'object',
+  additionalProperties: false,
+  properties: {
+    has_pet: {
+      title: 'Has Pet',
+      'x-jsf-presentation': {
+        inputType: 'checkbox',
+      },
+      type: 'boolean',
+    },
+    pet_is_cat: {
+      title: 'Pet is cat',
+      'x-jsf-presentation': {
+        inputType: 'checkbox',
+      },
+      type: 'boolean',
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          has_pet: { const: true },
+        },
+        required: ['has_pet'],
+      },
+      then: {},
+      else: {
+        properties: {
+          pet_is_cat: false,
+        },
+      },
+    },
+  ],
+};
+
 export const schemaInputTypeNull = {
   additionalProperties: false,
   type: 'object',

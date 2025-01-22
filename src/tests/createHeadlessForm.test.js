@@ -31,6 +31,7 @@ import {
   schemaInputWithStatement,
   schemaInputTypeCheckbox,
   schemaInputTypeCheckboxBooleans,
+  schemaInputTypeCheckboxBooleanConditional,
   schemaInputTypeNull,
   schemaWithOrderKeyword,
   schemaWithPositionDeprecated,
@@ -2240,7 +2241,7 @@ describe('createHeadlessForm', () => {
           expect(fieldValidator.isValidSync(false)).toBe(true);
           expect(fieldValidator.isValidSync(undefined)).toBe(true);
           expect(() => fieldValidator.validateSync('foo')).toThrowError(
-            'this must be a `boolean` type, but the final value was: `"foo"`.'
+            'The value must be a boolean, but received "foo"'
           );
         });
 
@@ -2267,6 +2268,27 @@ describe('createHeadlessForm', () => {
             checkboxValue: true,
             default: true,
           });
+        });
+
+        it('conditional: it works as undefined value', () => {
+          const { fields, handleValidation } = createHeadlessForm(
+            schemaInputTypeCheckboxBooleanConditional
+          );
+          const checkboxField = fields.find((field) => field.name === 'pet_is_cat');
+
+          expect(handleValidation({ has_pet: false }).formErrors).toBeUndefined();
+          expect(checkboxField.isVisible).toBe(false);
+
+          expect(handleValidation({ has_pet: true, pet_is_cat: true }).formErrors).toBeUndefined();
+          expect(checkboxField.isVisible).toBe(true);
+
+          expect(handleValidation({ has_pet: true, pet_is_cat: 'foo' }).formErrors).toEqual({
+            pet_is_cat: 'The value must be a boolean, but received "foo"',
+          });
+
+          // Bug: It should throw an error saying pet_is_cat is not allowed, but it doesn't.
+          // Explained at "Given values from hidden fields, it does not thrown an error"
+          expect(handleValidation({ has_pet: false, pet_is_cat: true }).formErrors).toBeUndefined();
         });
       });
     });
