@@ -1,3 +1,23 @@
+#### 0.11.10-beta.0 (2025-01-22)
+
+##### Bug Fixes
+
+* **checkbox:**  Boolean - allow nullable values, and throw friendly error message ([#109](https://github.com/remoteoss/json-schema-form/pull/109)) ([63286eee](https://github.com/remoteoss/json-schema-form/commit/63286eee57591b97c9c5bbbcfbf9231cfabde864))
+
+##### Chores
+
+* **conditionals:**  Highlight bugs related to validations and conditional fields  ([#107](https://github.com/remoteoss/json-schema-form/pull/107)) ([85dc3d6d](https://github.com/remoteoss/json-schema-form/commit/85dc3d6dbb0a0483a32479563ef9cd65cd36a210))
+*  Update eslint dependencies  ([#99](https://github.com/remoteoss/json-schema-form/pull/99)) ([ff2e6ed5](https://github.com/remoteoss/json-schema-form/commit/ff2e6ed56ba96d911ccc36dc50485d8cb6ec764b))
+
+
+
+##### Build System / Dependencies
+
+* **next:**
+  *  Add build step ([#110](https://github.com/remoteoss/json-schema-form/pull/110)) ([6c00ce32](https://github.com/remoteoss/json-schema-form/commit/6c00ce32f6e5edba328d5cdede38a82c330f5f14))
+  *  Set up lint ([#108](https://github.com/remoteoss/json-schema-form/pull/108)) ([038efcfc](https://github.com/remoteoss/json-schema-form/commit/038efcfcda6cb7b31852e7bc80c9524bffdb94f5))
+
+
 #### 0.11.9-beta.0 (2024-12-17)
 
 ##### Bug Fixes
