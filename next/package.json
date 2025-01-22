@@ -21,11 +21,13 @@
     "node": "22.13.1"
   },
   "scripts": {
+    "build": "tsup",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "test:file": "jest --runTestsByPath",
     "lint": "eslint --max-warnings 0 .",
-    "build": "tsup"
+    "release:patch": "cd .. && npm run release:next:patch",
+    "release:minor": "cd .. && npm run release:next:minor"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.14.0",
