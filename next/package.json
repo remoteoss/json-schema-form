@@ -17,6 +17,9 @@
     "form"
   ],
   "main": "index.js",
+  "engines": {
+    "node": "22.13.1"
+  },
   "scripts": {
     "test": "jest",
     "test:watch": "jest --watchAll",
