@@ -37,8 +37,7 @@
     "release:dev:minor": "node scripts/release_dev minor",
     "release:main:patch": "node scripts/release_main patch",
     "release:main:minor": "node scripts/release_main minor",
-    "release:next:patch": "node scripts/release_next patch",
-    "release:next:minor": "node scripts/release_next minor",
+    "release:next": "node scripts/release_next",
     "version_as_main": "node scripts/version_as_main.js",
     "psrepublishOnly": "if [[ ! $PWD =~ scripts$ ]]; then npm run publish:nopublish; fi",
     "psublish:nopublish": "echo 'Use `npm release:*` script instead && exit 1"
