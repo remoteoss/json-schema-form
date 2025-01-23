@@ -39,7 +39,7 @@ async function getNewVersion() {
 
   // Keep alpha tag for next versions
   const versionBase = semver.coerce(currentVersion);
-  return semver.inc(versionBase, versionType) + '-alpha.0';
+  return semver.inc(versionBase, versionType, 'alpha');
 }
 
 async function bumpVersion({ newVersion }) {
