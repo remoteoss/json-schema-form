@@ -30,16 +30,10 @@ async function checkGitBranchAndStatus() {
 
 async function getNewVersion() {
   const currentVersion = packageJson.version;
-  const versionType = process.argv.slice(2)[0];
 
-  if (!versionType) {
-    console.log('🟠 version type is missing. Make sure to run the script from package.json');
-    process.exit(1);
-  }
-
-  // Keep alpha tag for next versions
-  const versionBase = semver.coerce(currentVersion);
-  return semver.inc(versionBase, versionType, 'alpha');
+  // Instead of coercing and losing the prerelease info,
+  // we'll just increment the prerelease number
+  return semver.inc(currentVersion, 'prerelease', 'alpha');
 }
 
 async function bumpVersion({ newVersion }) {
