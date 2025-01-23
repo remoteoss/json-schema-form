@@ -1,4 +1,4 @@
-import { createHeadlessForm } from '../createHeadlessForm';
+import { createHeadlessForm } from '@/createHeadlessForm';
 
 describe('Conditional attributes updated', () => {
   it('Should allow check of a nested property in a conditional', () => {

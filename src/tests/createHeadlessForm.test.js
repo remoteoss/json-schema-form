@@ -2,8 +2,6 @@ import isNil from 'lodash/isNil';
 import omitBy from 'lodash/omitBy';
 import { object } from 'yup';
 
-import { createHeadlessForm } from '../createHeadlessForm';
-
 import {
   JSONSchemaBuilder,
   schemaInputTypeText,
@@ -67,6 +65,7 @@ import {
   schemaInputTypeFile,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
+import { createHeadlessForm } from '@/createHeadlessForm';
 
 function buildJSONSchemaInput({ presentationFields, inputFields = {}, required }) {
   return {

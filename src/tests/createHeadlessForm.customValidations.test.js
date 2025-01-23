@@ -1,9 +1,8 @@
 import merge from 'lodash/fp/merge';
 
-import { createHeadlessForm } from '../createHeadlessForm';
-
 import { JSONSchemaBuilder, mockFieldset, mockRadioInputString } from './helpers';
 import { mockMoneyInput } from './helpers.custom';
+import { createHeadlessForm } from '@/createHeadlessForm';
 
 function friendlyError({ formErrors }) {
   // destruct the formErrors directly

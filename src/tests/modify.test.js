@@ -1,4 +1,4 @@
-import { modify } from '../modify';
+import { modify } from '@/modify';
 
 const schemaPet = {
   type: 'object',

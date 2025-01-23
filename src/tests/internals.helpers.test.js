@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
-import { yupToFormErrors } from '../helpers';
-import { getFieldDescription, pickXKey } from '../internals/helpers';
+import { yupToFormErrors } from '@/helpers';
+import { getFieldDescription, pickXKey } from '@/internals/helpers';
 
 describe('getFieldDescription()', () => {
   it('returns no description', () => {

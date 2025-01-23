@@ -1,5 +1,3 @@
-import { createHeadlessForm } from '../createHeadlessForm';
-
 import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
@@ -38,6 +36,7 @@ import {
   badSchemaThatWillNotSetAForcedValue,
 } from './jsonLogic.fixtures';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
+import { createHeadlessForm } from '@/createHeadlessForm';
 
 beforeEach(mockConsole);
 afterEach(restoreConsoleAndEnsureItWasNotCalled);

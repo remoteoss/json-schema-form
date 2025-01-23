@@ -1,4 +1,4 @@
-import { convertDiskSizeFromTo } from '../utils';
+import { convertDiskSizeFromTo } from '@/utils';
 
 describe('convertDiskSizeFromTo()', () => {
   it('should convert bytes to KB', () => {

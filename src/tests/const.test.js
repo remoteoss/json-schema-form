@@ -1,4 +1,4 @@
-import { createHeadlessForm } from '../createHeadlessForm';
+import { createHeadlessForm } from '@/createHeadlessForm';
 
 describe('validations: const', () => {
   it('Should work for number', () => {
