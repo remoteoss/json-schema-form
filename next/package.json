@@ -16,7 +16,8 @@
     "json-schema",
     "form"
   ],
-  "main": "index.mjs",
+  "main": "dist/index.mjs",
+  "module": "dist/index.mjs",
   "files": [
     "README.md",
     "dist"
