@@ -1,6 +1,6 @@
 {
   "name": "@remoteoss/json-schema-form",
-  "version": "1.0.0-alpha.1",
+  "version": "1.0.0-beta.0",
   "packageManager": "pnpm@9.15.2",
   "description": "WIP V2 – Headless UI form powered by JSON Schemas",
   "author": "Remote.com <engineering@remote.com> (https://remote.com/)",
@@ -18,7 +18,7 @@
   ],
   "main": "index.js",
   "engines": {
-    "node": "22.13.1"
+    "node": ">=18.14.0"
   },
   "scripts": {
     "build": "tsup",
@@ -26,7 +26,8 @@
     "test:watch": "jest --watchAll",
     "test:file": "jest --runTestsByPath",
     "lint": "eslint --max-warnings 0 .",
-    "release": "cd .. && npm run release:next"
+    "release:dev": "cd .. && npm run release:v1:dev",
+    "release:beta": "cd .. && npm run release:v1:beta"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^3.14.0",
