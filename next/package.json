@@ -16,7 +16,11 @@
     "json-schema",
     "form"
   ],
-  "main": "index.js",
+  "main": "index.mjs",
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "engines": {
     "node": ">=18.14.0"
   },
