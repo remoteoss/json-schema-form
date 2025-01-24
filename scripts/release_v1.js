@@ -53,9 +53,14 @@ async function getNewVersion() {
 }
 
 async function bumpVersion({ newVersion, releaseType }) {
-  // Only update package.json for beta releases
+  // For beta, update package.json
   if (releaseType === 'beta') {
     const cmd = `cd next && npm version --no-git-tag-version ${newVersion}`;
+    await runExec(cmd);
+  }
+  // For dev, temporarily update version for publishing only
+  else {
+    const cmd = `cd next && npm --no-git-tag-version version ${newVersion} --no-workspaces-update --workspace-update=false`;
     await runExec(cmd);
   }
 }
@@ -85,10 +90,19 @@ async function gitCommit({ newVersion, releaseType }) {
 async function publish({ newVersion, releaseType, otp }) {
   console.log('Publishing new version...');
   const npmTag = `v1-${releaseType}`;
+  const originalVersion = packageJson.version;
 
-  const cmd = `cd next && npm publish --access=public --tag=${npmTag} --otp=${otp}`;
   try {
+    // Publish with the dev/beta version
+    const cmd = `cd next && npm publish --access=public --tag=${npmTag} --otp=${otp}`;
     await runExec(cmd);
+
+    // For dev releases, revert package.json back to original version
+    if (releaseType === 'dev') {
+      const revertCmd = `cd next && npm version --no-git-tag-version ${originalVersion}`;
+      await runExec(revertCmd);
+    }
+
     console.log(`🎉 ${npmTag} version ${newVersion} published!`);
     console.log(`Install with: npm i @remoteoss/json-schema-form@${npmTag}`);
   } catch {
