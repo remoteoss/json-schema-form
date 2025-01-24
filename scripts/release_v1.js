@@ -69,7 +69,16 @@ async function build() {
 async function gitCommit({ newVersion, releaseType }) {
   console.log('Committing published version...');
   const prefix = `v1-${releaseType}`;
-  const cmd = `git add next/package.json && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
+
+  let cmd;
+  if (releaseType === 'beta') {
+    // For beta, we commit package.json changes
+    cmd = `git add next/package.json && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
+  } else {
+    // For dev, we only create a tag
+    cmd = `git tag ${prefix}-${newVersion} && git push origin --tags`;
+  }
+
   await runExec(cmd);
 }
 
