@@ -74,7 +74,12 @@ async function getNewVersion() {
   if (currentVersion.includes('-beta.')) {
     return semver.inc(currentVersion, 'prerelease', 'beta');
   }
-  return '1.0.0-beta.0';
+
+  console.error(
+    `🟠 Cannot create beta version: Current version "${currentVersion}" is not a beta version.\n` +
+      '   The package.json version should be in the format "1.0.0-beta.X"'
+  );
+  process.exit(1);
 }
 
 async function bumpVersion({ newVersion }) {
