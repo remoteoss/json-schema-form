@@ -16,14 +16,38 @@ const packageJsonPath = path.resolve(__dirname, '../next/package.json');
 const packageJson = require(packageJsonPath);
 
 async function checkGitBranchAndStatus() {
-  console.log('Checking your branch...');
+  const releaseType = process.argv[2];
+  console.log(`Checking your branch for ${releaseType} release...`);
+
   const resultBranch = await runExec('git branch --show-current', {
     silent: true,
   });
   const branchName = resultBranch.stdout.toString().trim();
-  if (branchName === 'main') {
-    console.error(`🟠 You are at "main". Are you sure you wanna release a v1 version here?`);
-    process.exit(1);
+
+  if (releaseType === 'dev') {
+    // For dev releases, cannot be on main branch
+    if (branchName === 'main') {
+      console.error(`🟠 You are at "main". Dev versions cannot be released from main branch.`);
+      process.exit(1);
+    }
+  } else if (releaseType === 'beta') {
+    // For beta releases, must be on main branch and up to date
+    if (branchName !== 'main') {
+      console.error(
+        `🟠 You are at "${branchName}" instead of "main" branch. Beta versions must be released from main.`
+      );
+      process.exit(1);
+    }
+
+    // Check if local main is up to date
+    await runExec('git remote update', { silent: true });
+    const resultStatus = await runExec('git status -uno', { silent: true });
+    const mainStatus = resultStatus.stdout.toString().trim();
+
+    if (!mainStatus.includes("Your branch is up to date with 'origin/main'.")) {
+      console.error(`🟠 Please make sure your branch is up to date with the git repo.`);
+      process.exit(1);
+    }
   }
 
   await checkGitStatus();
