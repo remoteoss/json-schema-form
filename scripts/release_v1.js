@@ -76,17 +76,9 @@ async function getNewVersion() {
   return '1.0.0-beta.0';
 }
 
-async function bumpVersion({ newVersion, releaseType }) {
-  // For beta, update package.json
-  if (releaseType === 'beta') {
-    const cmd = `cd next && npm version --no-git-tag-version ${newVersion}`;
-    await runExec(cmd);
-  }
-  // For dev, temporarily update version for publishing only
-  else {
-    const cmd = `cd next && npm --no-git-tag-version version ${newVersion} --no-workspaces-update --workspace-update=false`;
-    await runExec(cmd);
-  }
+async function bumpVersion({ newVersion }) {
+  const cmd = `cd next && npm version --no-git-tag-version ${newVersion}`;
+  await runExec(cmd);
 }
 
 async function build() {
@@ -152,7 +144,7 @@ async function init() {
   await checkNpmAuth();
   const otp = await askForText('🔐 What is the NPM Auth OTP? (Check 1PW) ');
 
-  await bumpVersion({ newVersion, releaseType });
+  await bumpVersion({ newVersion });
   await build();
   await gitCommit({ newVersion, releaseType });
   await publish({ newVersion, releaseType, otp });
