@@ -9,6 +9,7 @@ const {
   checkNpmAuth,
   runExec,
   revertCommit,
+  revertChanges,
   getDateYYYYMMDDHHMMSS,
 } = require('./release.helpers');
 
@@ -87,14 +88,20 @@ async function build() {
   await runExec(cmd);
 }
 
+async function updateChangelog() {
+  console.log('Updating changelog...');
+  const cmd = 'cd next && npx generate-changelog';
+  await runExec(cmd);
+}
+
 async function gitCommit({ newVersion, releaseType }) {
   console.log('Committing published version...');
   const prefix = `v1-${releaseType}`;
 
   let cmd;
   if (releaseType === 'beta') {
-    // For beta, we commit package.json changes
-    cmd = `git add next/package.json && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
+    // For beta, we commit package.json changes and changelog
+    cmd = `git add next/package.json next/CHANGELOG.md && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
   } else {
     // For dev, we only create a tag
     cmd = `git tag ${prefix}-${newVersion} && git push origin --tags`;
@@ -142,10 +149,23 @@ async function init() {
   }
 
   await checkNpmAuth();
-  const otp = await askForText('🔐 What is the NPM Auth OTP? (Check 1PW) ');
 
   await bumpVersion({ newVersion });
+
+  // Only update changelog for beta releases
+  if (releaseType === 'beta') {
+    await updateChangelog();
+    const answerChangelog = await askForConfirmation(
+      'Changelog is updated. You may tweak it as needed. Once ready, press Y to continue.'
+    );
+    if (answerChangelog === 'no') {
+      await revertChanges();
+    }
+  }
+
   await build();
+  const otp = await askForText('🔐 What is the NPM Auth OTP? (Check 1PW) ');
+
   await gitCommit({ newVersion, releaseType });
   await publish({ newVersion, releaseType, otp });
 }
