@@ -18,7 +18,7 @@ export interface ObjectValue {
 }
 
 /**
- * JSON Schema type with additional JSON Schema Form properties.
+ * JSON Schema Form extending JSON Schema with additional JSON Schema Form properties.
  */
 export type JsfSchema = JSONSchema & {
   'properties'?: Record<string, JsfSchema>
@@ -30,7 +30,7 @@ export type JsfSchema = JSONSchema & {
 }
 
 /**
- * JSON Schema type without booleans.
+ * JSON Schema Form type without booleans.
  * This type is used for convenience in places where a boolean is not allowed.
  * @see `JsfSchema` for the full schema type which allows booleans and is used for sub schemas.
  */
