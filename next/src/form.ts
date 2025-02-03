@@ -86,7 +86,7 @@ interface CreateHeadlessFormOptions {
 export function createHeadlessForm(schema: JsfSchema, options: CreateHeadlessFormOptions = {}): FormResult {
   const errors = validateSchema(options.initialValues, schema)
   const validationResult = validationErrorsToFormErrors(errors)
-  const isError = validationResult !== undefined
+  const isError = validationResult !== null
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema)

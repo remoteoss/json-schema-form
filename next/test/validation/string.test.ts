@@ -31,9 +31,7 @@ describe('string validation', () => {
       },
     })
 
-    expect(result.handleValidation({ name: 'abc' })).toMatchObject({
-      formErrors: undefined,
-    })
+    expect(result.handleValidation({ name: 'abc' })).not.toHaveProperty('formErrors')
   })
 
   it('validates the string length against the maxLength property', () => {
@@ -44,13 +42,8 @@ describe('string validation', () => {
       },
     })
 
-    expect(result.handleValidation({ name: 'abc' })).toMatchObject({
-      formErrors: undefined,
-    })
-
-    expect(result.handleValidation({ name: 'abcde' })).toMatchObject({
-      formErrors: undefined,
-    })
+    expect(result.handleValidation({ name: 'abc' })).not.toHaveProperty('formErrors')
+    expect(result.handleValidation({ name: 'abcde' })).not.toHaveProperty('formErrors')
   })
 
   it('validates the string length against the minLength and maxLength properties', () => {
@@ -67,7 +60,7 @@ describe('string validation', () => {
       },
     })
 
-    expect(result.handleValidation({ name: '0123456789' })).toMatchObject({ formErrors: undefined })
+    expect(result.handleValidation({ name: '0123456789' })).not.toHaveProperty('formErrors')
 
     expect(result.handleValidation({ name: '01234567890' })).toMatchObject({
       formErrors: {
@@ -84,9 +77,7 @@ describe('string validation', () => {
       },
     })
 
-    expect(result.handleValidation({ name: 'abc' })).toMatchObject({
-      formErrors: undefined,
-    })
+    expect(result.handleValidation({ name: 'abc' })).not.toHaveProperty('formErrors')
 
     expect(result.handleValidation({ name: '123' })).toMatchObject({
       formErrors: { '.name': 'must match the pattern \'^[a-z]+$\'' },

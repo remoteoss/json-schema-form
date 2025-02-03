@@ -6,8 +6,8 @@ describe('object schema validation', () => {
     const schema = { properties: { address: { type: 'object', properties: { street: { type: 'string' } } } } }
     const form = createHeadlessForm(schema)
 
-    expect(form.handleValidation({})).toMatchObject({ formErrors: undefined })
-    expect(form.handleValidation({ address: {} })).toMatchObject({ formErrors: undefined })
+    expect(form.handleValidation({})).not.toHaveProperty('formErrors')
+    expect(form.handleValidation({ address: {} })).not.toHaveProperty('formErrors')
     expect(form.handleValidation({ address: 'not an object' })).toMatchObject({
       formErrors: { '.address': 'should be object' },
     })
@@ -17,7 +17,7 @@ describe('object schema validation', () => {
     const schema = { properties: { address: { type: 'object', properties: { street: { type: 'string' } } } } }
     const form = createHeadlessForm(schema)
 
-    expect(form.handleValidation({ address: { street: 'some street' } })).toMatchObject({ formErrors: undefined })
+    expect(form.handleValidation({ address: { street: 'some street' } })).not.toHaveProperty('formErrors')
     expect(form.handleValidation({ address: { street: 10 } })).toMatchObject({
       formErrors: { '.address.street': 'should be string' },
     })
