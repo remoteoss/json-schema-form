@@ -16,6 +16,41 @@ describe('createHeadlessForm', () => {
     expect(result.error).toBeFalsy()
   })
 
+  describe('boolean schema validation', () => {
+    it('returns an error if the value is false', () => {
+      const form = createHeadlessForm({ properties: { name: false } })
+
+      expect(form.handleValidation({ name: 'anything' })).toMatchObject({ formErrors: { '.name': 'always fails' } })
+      expect(form.handleValidation({})).toMatchObject({ formErrors: undefined })
+    })
+
+    it('does not return an error if the value is true', () => {
+      const form = createHeadlessForm({ properties: { name: true } })
+
+      expect(form.handleValidation({ name: 'anything' })).toMatchObject({ formErrors: undefined })
+      expect(form.handleValidation({})).toMatchObject({ formErrors: undefined })
+    })
+  })
+
+  describe('object schema validation', () => {
+    it('returns an error if the value is not an object', () => {
+      const schema = { properties: { address: { type: 'object', properties: { street: { type: 'string' } } } } }
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({})).toMatchObject({ formErrors: undefined })
+      expect(form.handleValidation({ address: {} })).toMatchObject({ formErrors: undefined })
+      expect(form.handleValidation({ address: 'not an object' })).toMatchObject({
+        formErrors: { '.address': 'should be object' },
+      })
+      expect(form.handleValidation({ address: { street: 10 } })).toMatchObject({
+        formErrors: { '.address.street': 'should be string' },
+      })
+      expect(form.handleValidation({ address: { street: 'some street' } })).toMatchObject({
+        formErrors: undefined,
+      })
+    })
+  })
+
   describe('string validation', () => {
     it('validates values against string type schemas', () => {
       const result = createHeadlessForm({
@@ -27,7 +62,7 @@ describe('createHeadlessForm', () => {
 
       expect(result).toMatchObject({
         formErrors: {
-          name: 'must be a string',
+          '.name': 'should be string',
         },
       })
     })
@@ -42,7 +77,7 @@ describe('createHeadlessForm', () => {
 
       expect(result.handleValidation({ name: 'ab' })).toMatchObject({
         formErrors: {
-          name: 'must be at least 3 characters',
+          '.name': 'must be at least 3 characters',
         },
       })
 
@@ -78,7 +113,7 @@ describe('createHeadlessForm', () => {
 
       expect(result.handleValidation({ name: 'ab' })).toMatchObject({
         formErrors: {
-          name: 'must be at least 3 characters',
+          '.name': 'must be at least 3 characters',
         },
       })
 
@@ -86,7 +121,7 @@ describe('createHeadlessForm', () => {
 
       expect(result.handleValidation({ name: '01234567890' })).toMatchObject({
         formErrors: {
-          name: 'must be at most 10 characters',
+          '.name': 'must be at most 10 characters',
         },
       })
     })
@@ -104,7 +139,7 @@ describe('createHeadlessForm', () => {
       })
 
       expect(result.handleValidation({ name: '123' })).toMatchObject({
-        formErrors: { name: 'must match the pattern \'^[a-z]+$\'' },
+        formErrors: { '.name': 'must match the pattern \'^[a-z]+$\'' },
       })
     })
   })

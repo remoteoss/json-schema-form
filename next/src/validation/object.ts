@@ -23,7 +23,7 @@ export function validateObject(value: SchemaValue, schema: NonBooleanJsfSchema):
       const propertyErrors = validateSchema(propertyValue, propertySchema, propertyIsRequired)
       const errorsWithPath = propertyErrors.map(error => ({
         ...error,
-        path: [key, ...error.path],
+        path: [`.${key}`, ...error.path],
       }))
       errors.push(...errorsWithPath)
     }

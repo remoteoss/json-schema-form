@@ -2,8 +2,29 @@ import type { ValidationError } from '../form'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { getSchemaType } from './schema'
 
-export type StringValidationErrorType = 'minLength' | 'maxLength' | 'pattern'
+export type StringValidationErrorType =
+  /**
+   * The value is too short
+   */
+  | 'minLength'
+  /**
+   * The value is too long
+   */
+  | 'maxLength'
+  /**
+   * The value does not match the pattern
+   */
+  | 'pattern'
 
+/**
+ * Validate a string against a schema
+ * @param value - The value to validate
+ * @param schema - The schema to validate against
+ * @returns An array of validation errors
+ * @description
+ * - Validates the string length against the `minLength` and `maxLength` properties.
+ * - Validates the string pattern against a regular expression defined in the `pattern` property.
+ */
 export function validateString(value: SchemaValue, schema: NonBooleanJsfSchema): ValidationError[] {
   const errors: ValidationError[] = []
 

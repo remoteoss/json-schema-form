@@ -1,33 +1,16 @@
-import type { JsfSchema, JsfSchemaType, SchemaValue } from './types'
+import type { JsfSchema, SchemaValue } from './types'
 import type { SchemaValidationErrorType } from './validation/schema'
 import { validateSchema } from './validation/schema'
 
-/**
- * Specifies a field in the form
- */
-interface Field {
-  type: Exclude<JsfSchemaType, undefined>
-  name: string
-  required: boolean
-  inputType?: string
-  jsonType?: string
-  fields?: Field[]
-  const?: any
-  errorMessage?: Record<string, string>
-  computedAttributes: Record<string, string>
-  scopedJsonSchema?: JsfSchema
-  isVisible: boolean
-}
-
 interface FormResult {
-  fields: Field[]
+  fields: never[]
   isError: boolean
   error: string | null
   handleValidation: (value: SchemaValue) => ValidationResult
 }
 
 /**
- * Validation error for a single field
+ * Validation error for schema
  */
 export interface ValidationError {
   /**
@@ -69,69 +52,27 @@ function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
 }
 
 /**
- * Type for nested validation errors
+ * Transform validation errors into an object with the field names as keys and the error messages as values
+ * @param errors - The validation errors to transform
+ * @returns The transformed validation errors
+ * @description
+ * When multiple errors are present for a single field, the last error message is used.
  * @example
- * {
- *   address: {
- *     street: {
- *       type: 'string',
- *       error: 'is required'
- *     }
- *   }
- * }
+ * validationErrorsToFormErrors([
+ *   { path: ['address', 'street'], validation: 'required', message: 'is required' },
+ *   { path: ['address', 'street'], validation: 'type', message: 'must be a string' },
+ * ])
+ * // { '.address.street': 'must be a string' }
  */
-export type RecursiveValidationErrors = {
-  [key: string]: RecursiveValidationErrors | string | undefined
-} & Exclude<ValidationError, 'path'>
-
 function validationErrorsToFormErrors(errors: ValidationError[]): Record<string, string> | undefined {
   if (errors.length === 0) {
     return undefined
   }
 
   return errors.reduce((acc: Record<string, string>, error) => {
-    acc[error.path.join('#')] = error.message
+    acc[error.path.join('')] = error.message
     return acc
   }, {})
-}
-
-/**
- * Transform validation errors into a recursive object structure
- * @param errors - The validation errors to transform
- * @returns The transformed validation errors
- */
-function transformValidationErrors(errors: ValidationError[]): RecursiveValidationErrors {
-  const result = {} as RecursiveValidationErrors
-
-  for (const error of errors) {
-    let current = result
-
-    // Navigate through the path array to build nested objects
-    for (let i = 0; i < error.path.length - 1; i++) {
-      const segment = error.path[i]
-      if (!(segment in current)) {
-        current[segment] = {} as RecursiveValidationErrors
-      }
-      current = current[segment] as RecursiveValidationErrors
-    }
-
-    // Set the error message at the deepest level
-    if (error.path.length > 0) {
-      const lastSegment = error.path[error.path.length - 1]
-      current[lastSegment] = error.message
-    }
-  }
-
-  return result
-}
-
-function buildFields(value: SchemaValue, schema: JsfSchema, errors: ValidationError[]): Field[] {
-  const fields: Field[] = []
-
-  const recursiveErrors = transformValidationErrors(errors)
-  console.warn(recursiveErrors)
-
-  return fields
 }
 
 interface CreateHeadlessFormOptions {
@@ -141,9 +82,7 @@ interface CreateHeadlessFormOptions {
 export function createHeadlessForm(schema: JsfSchema, options: CreateHeadlessFormOptions = {}): FormResult {
   const errors = validateSchema(options.initialValues, schema)
   const validationResult = validationErrorsToFormErrors(errors)
-  console.warn(validationResult)
   const isError = validationResult !== undefined
-  const fields = buildFields(options.initialValues, schema, errors)
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema)
@@ -151,7 +90,7 @@ export function createHeadlessForm(schema: JsfSchema, options: CreateHeadlessFor
   }
 
   return {
-    fields,
+    fields: [],
     isError,
     error: null,
     handleValidation,
