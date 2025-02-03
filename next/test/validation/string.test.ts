@@ -34,6 +34,18 @@ describe('string validation', () => {
     expect(result.handleValidation({ name: 'abc' })).not.toHaveProperty('formErrors')
   })
 
+  it('validates minLength 0 correctly', () => {
+    const form = createHeadlessForm({
+      type: 'object',
+      properties: {
+        name: { type: 'string', minLength: 0 },
+      },
+    })
+
+    expect(form.handleValidation({ name: '' })).not.toHaveProperty('formErrors')
+    expect(form.handleValidation({ name: 'a' })).not.toHaveProperty('formErrors')
+  })
+
   it('validates the string length against the maxLength property', () => {
     const result = createHeadlessForm({
       type: 'object',
@@ -44,6 +56,22 @@ describe('string validation', () => {
 
     expect(result.handleValidation({ name: 'abc' })).not.toHaveProperty('formErrors')
     expect(result.handleValidation({ name: 'abcde' })).not.toHaveProperty('formErrors')
+  })
+
+  it('validates maxLength 0 correctly', () => {
+    const form = createHeadlessForm({
+      type: 'object',
+      properties: {
+        name: { type: 'string', maxLength: 0 },
+      },
+    })
+
+    expect(form.handleValidation({ name: '' })).not.toHaveProperty('formErrors')
+    expect(form.handleValidation({ name: 'a' })).toMatchObject({
+      formErrors: {
+        '.name': 'must be at most 0 characters',
+      },
+    })
   })
 
   it('validates the string length against the minLength and maxLength properties', () => {

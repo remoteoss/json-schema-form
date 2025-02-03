@@ -29,15 +29,15 @@ export function validateString(value: SchemaValue, schema: NonBooleanJsfSchema):
   const errors: ValidationError[] = []
 
   if (getSchemaType(schema) === 'string' && typeof value === 'string') {
-    if (schema.minLength && value.length < schema.minLength) {
+    if (schema.minLength !== undefined && value.length < schema.minLength) {
       errors.push({ path: [], validation: 'minLength', message: 'must be at least 3 characters' })
     }
 
-    if (schema.maxLength && value.length > schema.maxLength) {
-      errors.push({ path: [], validation: 'maxLength', message: 'must be at most 10 characters' })
+    if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+      errors.push({ path: [], validation: 'maxLength', message: `must be at most ${schema.maxLength} characters` })
     }
 
-    if (schema.pattern) {
+    if (schema.pattern !== undefined) {
       const pattern = new RegExp(schema.pattern)
       if (!pattern.test(value)) {
         errors.push({
