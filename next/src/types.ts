@@ -20,14 +20,14 @@ export interface ObjectValue {
 /**
  * JSON Schema type with additional JSON Schema Form properties.
  */
-export type JsfSchema = Exclude<JSONSchema, boolean> & {
+export type JsfSchema = JSONSchema & {
   'properties'?: Record<string, JsfSchema>
   'x-jsf-logic'?: {
     validations: Record<string, object>
     computedValues: Record<string, object>
   }
   'x-jsf-order'?: string[]
-} | boolean
+}
 
 /**
  * JSON Schema type without booleans.
