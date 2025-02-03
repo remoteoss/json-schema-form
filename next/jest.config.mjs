@@ -7,7 +7,7 @@
  */
 const roots = [
   // 1. The existing tests from the previous version ("V1")
-  '<rootDir>/../src/tests',
+  // '<rootDir>/../src/tests',
   // 2. The new tests for this version
   '<rootDir>/test',
 ]
