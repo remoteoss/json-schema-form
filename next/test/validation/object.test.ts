@@ -1,0 +1,25 @@
+import { describe, expect, it } from '@jest/globals'
+import { createHeadlessForm } from '../../src'
+
+describe('object schema validation', () => {
+  it('returns an error if the value is not an object', () => {
+    const schema = { properties: { address: { type: 'object', properties: { street: { type: 'string' } } } } }
+    const form = createHeadlessForm(schema)
+
+    expect(form.handleValidation({})).toMatchObject({ formErrors: undefined })
+    expect(form.handleValidation({ address: {} })).toMatchObject({ formErrors: undefined })
+    expect(form.handleValidation({ address: 'not an object' })).toMatchObject({
+      formErrors: { '.address': 'should be object' },
+    })
+  })
+
+  it('validates the object properties', () => {
+    const schema = { properties: { address: { type: 'object', properties: { street: { type: 'string' } } } } }
+    const form = createHeadlessForm(schema)
+
+    expect(form.handleValidation({ address: { street: 'some street' } })).toMatchObject({ formErrors: undefined })
+    expect(form.handleValidation({ address: { street: 10 } })).toMatchObject({
+      formErrors: { '.address.street': 'should be string' },
+    })
+  })
+})
