@@ -34,7 +34,7 @@ export interface ValidationError {
 }
 
 export interface ValidationResult {
-  formErrors: Record<string, string> | undefined
+  formErrors?: Record<string, string>
 }
 
 /**
@@ -44,11 +44,15 @@ export interface ValidationResult {
  * @returns The validation result
  */
 function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
+  const result: ValidationResult = {}
   const errors = validateSchema(value, schema)
+  const formErrors = validationErrorsToFormErrors(errors)
 
-  return {
-    formErrors: validationErrorsToFormErrors(errors),
+  if (formErrors) {
+    result.formErrors = formErrors
   }
+
+  return result
 }
 
 /**
@@ -64,9 +68,9 @@ function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
  * ])
  * // { '.address.street': 'must be a string' }
  */
-function validationErrorsToFormErrors(errors: ValidationError[]): Record<string, string> | undefined {
+function validationErrorsToFormErrors(errors: ValidationError[]): Record<string, string> | null {
   if (errors.length === 0) {
-    return undefined
+    return null
   }
 
   return errors.reduce((acc: Record<string, string>, error) => {
