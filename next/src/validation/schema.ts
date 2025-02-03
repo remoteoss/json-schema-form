@@ -88,7 +88,7 @@ export function validateSchema(value: SchemaValue, schema: JsfSchema, required: 
     return []
   }
 
-  if (getSchemaType(schema) === 'boolean') {
+  if (typeof schema === 'boolean') {
     return schema ? [] : [{ path: [], validation: 'valid', message: 'always fails' }]
   }
 
