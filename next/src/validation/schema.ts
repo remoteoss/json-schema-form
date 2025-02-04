@@ -58,8 +58,18 @@ function validateType(value: SchemaValue, schema: JsfSchema): ValidationError[] 
   const schemaType = getSchemaType(schema)
   const valueType = value === undefined ? 'undefined' : typeof value
 
-  if (Array.isArray(schemaType) ? !schemaType.includes(valueType) : valueType !== schemaType) {
-    return [{ path: [], validation: 'type', message: `should be ${schemaType}` }]
+  const hasTypeMismatch = Array.isArray(schemaType)
+    ? !schemaType.includes(valueType)
+    : valueType !== schemaType
+
+  if (hasTypeMismatch) {
+    return [{
+      path: [],
+      validation: 'type',
+      message: `should be ${Array.isArray(schemaType)
+        ? schemaType.join(' | ')
+        : schemaType}`,
+    }]
   }
 
   return []
