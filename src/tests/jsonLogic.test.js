@@ -244,7 +244,8 @@ describe('jsonLogic: cross-values validations', () => {
     });
   });
 
-  describe.todo('Reduce', () => {
+  // TODO: Implement this test.
+  describe.skip('Reduce', () => {
     it('reduce: working_hours_per_day * work_days', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaWithReduceAccumulator, {
         strictInputType: false,
