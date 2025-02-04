@@ -26,6 +26,30 @@ your editor will fail to recognise our git repository here.
 This also means you should turn off the editor's suggestion
 to open git repository at root.
 
+## Testing
+
+To run the tests, navigate to the "next" folder and run:
+
+```bash
+npm run test
+```
+
+Or run the tests in watch mode:
+
+```bash
+npm run test:watch
+```
+
+We use Jest for testing and have 2 sets of tests:
+
+1. The existing tests from the previous version
+1. The new tests for this version
+
+The old tests are located in the `../src/tests` folder.
+The new tests are located in the `./test` folder.
+
+The new tests are organized into separate files for each validation type (string, object, number, etc).
+
 ## Node.js Version
 
 This project requires Node.js LTS v22.13.1.
