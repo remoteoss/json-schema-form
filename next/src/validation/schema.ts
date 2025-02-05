@@ -1,6 +1,7 @@
 import type { ValidationError } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import type { ObjectValidationErrorType } from './object'
+import { validateAnyOf } from './anyOf'
 import { validateObject } from './object'
 import { validateString } from './string'
 
@@ -21,28 +22,33 @@ export type SchemaValidationErrorType =
    * The value fails validation due to object schema
    */
   | ObjectValidationErrorType
+  /**
+   * The value fails validation against anyOf subschemas
+   */
+  | 'anyOf'
 
 /**
  * Get the type of a schema
  * @param schema - The schema to get the type of
- * @returns The type of the schema, or an array of types if the schema is an array. Will fallback to 'object' if no type is defined.
- * @example
- * getType(false) // 'boolean'
- * getType(true) // 'boolean'
- * getType({ type: 'string' }) // 'string'
- * getType({ type: ['string', 'number'] }) // ['string', 'number']
- * getType({}) // 'object'
+ * @returns The type of the schema, or an array of types if the schema is an array.
+ * If no type is defined, returns undefined.
+ *
+ * IMPORTANT:
+ * We intentionally return 'undefined' (instead of defaulting to 'object') when no type is defined.
+ * In JSON Schema 2020-12, an absent "type" keyword means there is no type constraint.
+ * This change prevents erroneously enforcing a default type of 'object', which was causing false negatives
+ * (e.g. when validating an "anyOf" schema without a "type").
  */
-export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[] {
+export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[] | undefined {
   if (typeof schema === 'boolean') {
     return 'boolean'
   }
 
-  if (schema.type) {
+  if (schema.type !== undefined) {
     return schema.type
   }
 
-  return 'object'
+  return undefined
 }
 
 /**
@@ -51,11 +57,16 @@ export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[
  * @param schema - The schema to validate against
  * @returns An array of validation errors
  * @description
- * - If the schema type is an array, the value must be an instance of one of the types in the array.
- * - If the schema type is a string, the value must be of the same type.
+ * When getSchemaType returns undefined, this function skips type validation.
+ * This aligns with JSON Schema 2020-12 semantics: if no type is provided, no type check is enforced.
  */
 function validateType(value: SchemaValue, schema: JsfSchema): ValidationError[] {
   const schemaType = getSchemaType(schema)
+  // Skip type-checking if no type is specified.
+  if (schemaType === undefined) {
+    return []
+  }
+
   const valueType = value === undefined ? 'undefined' : typeof value
 
   const hasTypeMismatch = Array.isArray(schemaType)
@@ -111,6 +122,13 @@ export function validateSchema(value: SchemaValue, schema: JsfSchema, required: 
     ...validateObject(value, schema),
     ...validateString(value, schema),
   ]
+
+  if (schema.anyOf && Array.isArray(schema.anyOf)) {
+    const anyOfErrors = validateAnyOf(value, schema)
+    if (anyOfErrors.length > 0) {
+      return anyOfErrors
+    }
+  }
 
   return errors
 }
