@@ -1,6 +1,20 @@
 import type { ValidationError } from '../form'
-import type { JsfSchema, SchemaValue } from '../types'
+import type { JsfSchema, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
+
+/**
+ * Merges the parent's "type" into the subschema if it is not defined.
+ * This ensures that validations (e.g., minLength, maxLength, pattern) are applied
+ * as intended when the subschema omits an explicit type while the parent enforces one.
+ *
+ * @param parent - The parent schema containing the "anyOf" keyword.
+ * @param subSchema - A subschema within the "anyOf" array.
+ * @returns A new subschema with the parent's "type" merged in if absent.
+ */
+function mergeSubSchema(parent: NonBooleanJsfSchema, subSchema: NonBooleanJsfSchema): NonBooleanJsfSchema {
+  // Using spread is safe here since both parent and subSchema are non-boolean schema objects.
+  return { ...subSchema, type: subSchema.type ?? parent.type }
+}
 
 /**
  * Validate a value against the `anyOf` keyword in a schema
@@ -17,8 +31,14 @@ export function validateAnyOf(value: SchemaValue, schema: JsfSchema): Validation
     return []
   }
 
+  // Iterate over all anyOf subschemas
   for (const subSchema of schema.anyOf) {
-    const errors = validateSchema(value, subSchema)
+    let effectiveSubSchema: JsfSchema = subSchema
+    // Only merge parent's "type" if both schemas are objects (non-boolean)
+    if (typeof subSchema !== 'boolean' && typeof schema !== 'boolean') {
+      effectiveSubSchema = mergeSubSchema(schema as NonBooleanJsfSchema, subSchema)
+    }
+    const errors = validateSchema(value, effectiveSubSchema)
     if (errors.length === 0) {
       return []
     }

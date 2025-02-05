@@ -118,6 +118,19 @@ export function validateSchema(value: SchemaValue, schema: JsfSchema, required: 
     return typeValidationErrors
   }
 
+  // If the schema defines "required", run required checks even when type is undefined.
+  if (schema.required && Array.isArray(schema.required) && typeof value === 'object' && value !== null) {
+    const missingKeys = schema.required.filter((key: string) => !(key in value))
+    if (missingKeys.length > 0) {
+      // Return an error for the first missing field.
+      return missingKeys.map(key => ({
+        path: [key], // error path for the missing property
+        validation: 'required',
+        message: 'is required',
+      }))
+    }
+  }
+
   const errors = [
     ...validateObject(value, schema),
     ...validateString(value, schema),
