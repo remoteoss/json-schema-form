@@ -21,8 +21,8 @@ interface TestSchema {
 expect.extend({
   toBeValid(received: JsfSchema, value: SchemaValue, valid: boolean = true) {
     const form = createHeadlessForm(received, { initialValues: value })
-    const formErrors = form.handleValidation(value)
-    const pass = formErrors.formErrors !== undefined !== valid
+    const validationResult = form.handleValidation(value)
+    const pass = validationResult.formErrors !== undefined !== valid
     return {
       pass,
       message: () => `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(received)}`,
