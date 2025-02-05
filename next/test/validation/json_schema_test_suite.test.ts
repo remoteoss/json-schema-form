@@ -1,4 +1,3 @@
-import type { ValidationResult } from '../../src/form'
 import type { JsfSchema, SchemaValue } from '../../src/types'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -22,7 +21,8 @@ expect.extend({
   toBeValid(received: JsfSchema, value: SchemaValue, valid: boolean = true) {
     const form = createHeadlessForm(received, { initialValues: value })
     const validationResult = form.handleValidation(value)
-    const pass = validationResult.formErrors !== undefined !== valid
+    const hasFormErrors = validationResult.formErrors !== undefined
+    const pass = hasFormErrors !== valid
     return {
       pass,
       message: () => `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(received)}`,
