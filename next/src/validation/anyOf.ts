@@ -7,24 +7,28 @@ import { validateSchema } from './schema'
  * This ensures that validations (e.g., minLength, maxLength, pattern) are applied
  * as intended when the subschema omits an explicit type while the parent enforces one.
  *
- * @param parent - The parent schema containing the "anyOf" keyword.
- * @param subSchema - A subschema within the "anyOf" array.
+ * @param params - An object containing the following properties:
+ * @param params.parent - The parent schema containing the "anyOf" keyword.
+ * @param params.subSchema - A subschema within the "anyOf" array.
  * @returns A new subschema with the parent's "type" merged in if absent.
  */
-function mergeSubSchema(parent: NonBooleanJsfSchema, subSchema: NonBooleanJsfSchema): NonBooleanJsfSchema {
+function mergeSubSchema({ parent, subSchema }: { parent: NonBooleanJsfSchema, subSchema: NonBooleanJsfSchema }): NonBooleanJsfSchema {
   // Using spread is safe here since both parent and subSchema are non-boolean schema objects.
   return { ...subSchema, type: subSchema.type ?? parent.type }
 }
 
 /**
- * Validate a value against the `anyOf` keyword in a schema
- * @param value - The value to validate
- * @param schema - The schema containing the `anyOf` keyword
- * @returns An array of validation errors
+ * Validate a value against the `anyOf` keyword in a schema.
+ * @param value - The value to validate.
+ * @param schema - The schema that contains the `anyOf` keyword.
+ * @returns An array of validation errors.
  * @description
- * The function validates the value against each subschema in the `anyOf` array.
- * It returns no errors as soon as one subschema validates successfully.
- * If none of the subschemas validate, an error is returned.
+ * This function checks the provided value against each subschema in the `anyOf` array.
+ * It considers the value valid if at least one subschema produces no validation errors –
+ * meaning the value conforms to that subschema.
+ * If every subschema returns one or more validation errors (i.e. the value fails to match
+ * all conditions), the function returns an error indicating that the value should match at
+ * least one schema.
  */
 export function validateAnyOf(value: SchemaValue, schema: JsfSchema): ValidationError[] {
   if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
@@ -36,7 +40,7 @@ export function validateAnyOf(value: SchemaValue, schema: JsfSchema): Validation
     let effectiveSubSchema: JsfSchema = subSchema
     // Only merge parent's "type" if both schemas are objects (non-boolean)
     if (typeof subSchema !== 'boolean' && typeof schema !== 'boolean') {
-      effectiveSubSchema = mergeSubSchema(schema as NonBooleanJsfSchema, subSchema)
+      effectiveSubSchema = mergeSubSchema({ parent: schema, subSchema })
     }
     const errors = validateSchema(value, effectiveSubSchema)
     if (errors.length === 0) {
