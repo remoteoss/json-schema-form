@@ -48,6 +48,7 @@ export function validateAnyOf(value: SchemaValue, schema: JsfSchema): Validation
     }
   }
 
+  // TODO: decide on a path for the `anyOf` errors and also for the other keyword errors that we'll have
   return [{
     path: [],
     validation: 'anyOf',
