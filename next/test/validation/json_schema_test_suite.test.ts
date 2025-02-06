@@ -41,6 +41,7 @@ describe('JSON Schema Test Suite', () => {
       describe(testSchema.description, () => {
         for (const test of testSchema.tests) {
           it(test.description, () => {
+            // TODO: properly extend the expect interface
             expect(testSchema.schema).toBeValid(test.data, test.valid)
           })
         }
