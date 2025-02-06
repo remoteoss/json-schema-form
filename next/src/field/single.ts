@@ -1,6 +1,6 @@
 import type { JsfSchema } from '../types'
 import type { Field } from './type'
-import { buildFieldObject } from './object'
+import { buildFieldsObject } from './object'
 
 /**
  * Build a single UI field from a single schema property
@@ -23,7 +23,7 @@ export function buildFieldSingle(params: {
 
   // Recursive for objects
   if (schema.type === 'object') {
-    field.fields = buildFieldObject({ schema })
+    field.fields = buildFieldsObject({ schema })
   }
 
   return field

@@ -3,7 +3,7 @@ import type { Field } from './type'
 import { setCustomOrder } from '../custom/order'
 import { buildFieldSingle } from './single'
 
-export function buildFieldObject(params: {
+export function buildFieldsObject(params: {
   schema: JSONSchema
 }): Field[] {
   const { schema } = params
