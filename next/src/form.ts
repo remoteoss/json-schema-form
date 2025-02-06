@@ -1,7 +1,7 @@
 import type { Field } from './field/type'
 import type { JsfSchema, SchemaValue } from './types'
 import type { SchemaValidationErrorType } from './validation/schema'
-import { buildFieldObject } from './field/object'
+import { buildFieldsSchema } from './field/schema'
 import { validateSchema } from './validation/schema'
 
 interface FormResult {
@@ -93,7 +93,7 @@ function buildFields(params: {
   if (typeof schema === 'boolean')
     return []
 
-  const fields: Field[] = buildFieldObject({ schema })
+  const fields: Field[] = buildFieldsSchema({ schema })
 
   return fields
 }
