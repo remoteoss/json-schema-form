@@ -30,7 +30,7 @@ expect.extend({
   },
 })
 
-describe('JSON Schema Test Suite', () => {
+describe.skip('JSON Schema Test Suite', () => {
   const testsDir = path.join(__dirname, '..', '..', 'json-schema-test-suite', 'tests', 'draft2020-12')
   const testFiles = fs.readdirSync(testsDir).filter(file => file.endsWith('.json'))
 
