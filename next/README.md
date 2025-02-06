@@ -12,19 +12,41 @@ This is under active development, more info soon!
 
 ## Development
 
-Ensure that you isolate your workspace to the "next" folder only.
-This means:
+1. Clone the repository including submodules with the `--recursive` option
 
-1. In your editor, open only the "next" folder.
-1. In your terminal, run commands when you are in the "next" folder only.
+   ```bash
+   git clone https://github.com/remoteoss/json-schema-form.git --recursive
+   ```
 
-Otherwise, your editor may fail to set up linting and type checking,
-while your terminal may fail to resolve paths.
+   If you already cloned the repository without the submodules,
+   you can initialize and update them with:
 
-The limitation of this approach is that
-your editor will fail to recognise our git repository here.
-This also means you should turn off the editor's suggestion
-to open git repository at root.
+   ```bash
+   git submodule update --init
+   ```
+
+2. Navigate to the "next" folder
+
+   ```bash
+   cd json-schema-form/next
+   ```
+
+3. Install dependencies
+
+   ```bash
+   npm install
+   ```
+
+4. Work in the "next" folder only
+
+   Open your editor in this folder and run commands from.
+   Otherwise, your editor may fail to set up linting and type checking,
+   while your terminal may fail to resolve paths.
+
+   The limitation of this approach is that
+   your editor will fail to recognise our git repository here.
+   This also means you should turn off the editor's suggestion
+   to open git repository at root.
 
 ## Testing
 
