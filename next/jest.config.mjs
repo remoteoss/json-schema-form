@@ -47,6 +47,7 @@ const config = {
   roots,
   moduleNameMapper,
   testPathIgnorePatterns,
+  reporters: ['default', '<rootDir>/test/validation/json-schema-test-suite-tracker.js'],
 }
 
 export default config
