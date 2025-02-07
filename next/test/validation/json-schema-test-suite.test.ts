@@ -48,8 +48,8 @@ describe('JSON Schema Test Suite', () => {
   for (const file of testFiles) {
     const testFile: TestSchema[] = JSON.parse(fs.readFileSync(path.join(testsDir, file), 'utf8'))
 
-    const runTestIfFeatureImplemented = (testName: string, testFn: () => void) => {
-      const shouldRun = !testsToSkip.includes(testName)
+    const runTestIfFeatureImplemented = (testPath: string, testName: string, testFn: () => void) => {
+      const shouldRun = !testsToSkip.includes(testPath)
 
       if (shouldRun) {
         it(testName, testFn)
@@ -64,8 +64,8 @@ describe('JSON Schema Test Suite', () => {
       describe(testSchema.description, () => {
         for (const test of testSchema.tests) {
           // Tests that will run only if they previously failed
-          runTestIfFeatureImplemented(`JSON Schema Test Suite ${testSchema.description} ${test.description}`, () => {
-            // TODO: properly extend the expect interface
+          runTestIfFeatureImplemented(`JSON Schema Test Suite ${testSchema.description} ${test.description}`, test.description, () => {
+            // @ts-expect-errorTODO: properly extend the expect interface
             expect(testSchema.schema).toBeValid(test.data, test.valid)
           })
         }

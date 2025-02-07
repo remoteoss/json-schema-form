@@ -1,6 +1,10 @@
-name: Build
+name: Build Main Package
 on:
   pull_request:
+    paths-ignore:
+      - 'next/**'  # Skip if ONLY next/ directory files change
+      - '.github/workflows/build-next.yml'
+
 jobs:
   dependencies:
     runs-on: ubuntu-latest
