@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { JSON_SCHEMA_SUITE_FAILED_TESTS_FILE } from './constants.js'
+import { JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME } from './constants.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -13,7 +13,7 @@ const SHOULD_WRITE_FAILED_TESTS_TO_FILE = false
 
 // Save newly failed tests
 function saveFailedTests(failedTests) {
-  fs.writeFileSync(path.join(__dirname, JSON_SCHEMA_SUITE_FAILED_TESTS_FILE), JSON.stringify({ failedTests }, null, 2))
+  fs.writeFileSync(path.join(__dirname, JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME), JSON.stringify({ failedTests }, null, 2))
 }
 
 /**
@@ -21,7 +21,7 @@ function saveFailedTests(failedTests) {
  * (https://github.com/json-schema-org/JSON-Schema-Test-Suite/tree/main/tests/draft2020-12).
  * However, until all features are implemented, some of the
  * tests in this suite would fail. We're using this reporter to keep track of the
- * tests that are failing (on the JSON_SCHEMA_SUITE_FAILED_TESTS_FILE), so we
+ * tests that are failing (on the JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME), so we
  * can re-enable them once the feature is implemented.
  *
  * Note: The failed tests are not being saved to file every time the suite runs,
