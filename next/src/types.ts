@@ -22,6 +22,7 @@ export interface ObjectValue {
  */
 export type JsfSchema = JSONSchema & {
   'properties'?: Record<string, JsfSchema>
+  'anyOf'?: JsfSchema[]
   'x-jsf-logic'?: {
     validations: Record<string, object>
     computedValues: Record<string, object>
