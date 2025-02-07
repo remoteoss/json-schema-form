@@ -42,7 +42,7 @@ export function buildFieldSchema(
     ...schema['x-jsf-presentation'],
     inputType,
     type: inputType,
-    name: schema.title || name,
+    name,
     required,
   }
 
