@@ -17,6 +17,17 @@ export interface ObjectValue {
   [key: string]: SchemaValue
 }
 
+export type JsfPresentation = {
+  inputType?: string
+  description?: string
+  accept?: string
+  maxFileSize?: number
+  minDate?: string
+  maxDate?: string
+} & {
+  [key: string]: unknown
+}
+
 /**
  * JSON Schema Form extending JSON Schema with additional JSON Schema Form properties.
  */
@@ -28,6 +39,7 @@ export type JsfSchema = JSONSchema & {
     computedValues: Record<string, object>
   }
   'x-jsf-order'?: string[]
+  'x-jsf-presentation'?: JsfPresentation
 }
 
 /**
@@ -36,3 +48,11 @@ export type JsfSchema = JSONSchema & {
  * @see `JsfSchema` for the full schema type which allows booleans and is used for sub schemas.
  */
 export type NonBooleanJsfSchema = Exclude<JsfSchema, boolean>
+
+/**
+ * JSON Schema Form type specifically for object schemas.
+ * This type ensures the schema has type 'object'.
+ */
+export type JsfObjectSchema = NonBooleanJsfSchema & {
+  type: 'object'
+}
