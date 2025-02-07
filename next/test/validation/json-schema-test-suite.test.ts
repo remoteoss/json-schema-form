@@ -35,7 +35,7 @@ const testsToSkip = loadJsonSchemaSuiteFailedTests()
 
 /**
  * This test suite is running the JSON-Schema-Test-Suite (https://github.com/json-schema-org/JSON-Schema-Test-Suite/tree/main/tests/draft2020-12).
- * We can run the whole suite immediately as the 'next' json-schema-form version
+ * We can't run the whole suite immediately as the 'next' json-schema-form version
  * is still under development. Until all features are implemented, some of the
  * tests in this suite would fail. Because of that, we're skipping the tests that
  * are failing, and we'll re-enable them once the feature is implemented.
