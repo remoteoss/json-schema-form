@@ -8,6 +8,7 @@ export type Field = {
   type: string
   inputType: string
   required: boolean
+  jsonType: string
   accept?: string
   description?: string
   maxFileSize?: number

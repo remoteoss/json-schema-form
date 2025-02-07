@@ -16,6 +16,23 @@ function getInputType(schema: NonBooleanJsfSchema): string {
 }
 
 /**
+ * Get the JSON type for a field
+ * @param schema - The non boolean schema of the field
+ * @returns The JSON type for the field, based schema type. Default to 'text'
+ */
+function getJsonType(schema: NonBooleanJsfSchema): string {
+  if (Array.isArray(schema.type)) {
+    return 'select'
+  }
+
+  if (schema.type !== undefined) {
+    return schema.type as string
+  }
+
+  return 'text'
+}
+
+/**
  * Build a field from any schema
  * @param schema - The schema of the field
  * @param name - The name of the field, used if the schema has no title
@@ -36,12 +53,17 @@ export function buildFieldSchema(
     return buildFieldObject(objectSchema, name, required)
   }
 
+  if (Array.isArray(schema.type)) {
+    throw new TypeError('Array type is not yet supported')
+  }
+
   const inputType = getInputType(schema)
 
   const field: Field = {
     ...schema['x-jsf-presentation'],
     inputType,
     type: inputType,
+    jsonType: getJsonType(schema),
     name,
     required,
   }

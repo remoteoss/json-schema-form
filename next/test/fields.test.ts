@@ -6,7 +6,7 @@ describe('fields', () => {
     const schema = {
       type: 'object',
       properties: {
-        name: { type: 'string' },
+        name: { type: 'string', title: 'Name' },
       },
     }
 
@@ -16,7 +16,9 @@ describe('fields', () => {
       {
         type: 'text',
         inputType: 'text',
+        jsonType: 'string',
         name: 'name',
+        label: 'Name',
         required: false,
       },
     ])
