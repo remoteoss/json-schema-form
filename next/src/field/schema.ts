@@ -72,9 +72,5 @@ export function buildFieldSchema(
     field.label = schema.title
   }
 
-  if (schema['x-jsf-presentation']?.accept) {
-    field.accept = schema['x-jsf-presentation']?.accept
-  }
-
   return field
 }
