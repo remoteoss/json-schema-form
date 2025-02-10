@@ -1,8 +1,19 @@
 /**
- * WIP interface for UI field output
+ * WIP type for UI field output that allows for all `x-jsf-presentation` properties to be splatted
  */
-export interface Field {
+export type Field = {
   name: string
   label?: string
   fields?: Field[]
+  type: string
+  inputType: string
+  required: boolean
+  jsonType: string
+  accept?: string
+  description?: string
+  maxFileSize?: number
+  minDate?: string
+  maxDate?: string
+} & {
+  [key: string]: unknown
 }

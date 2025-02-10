@@ -1,7 +1,7 @@
 import type { Field } from './field/type'
-import type { JsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { SchemaValidationErrorType } from './validation/schema'
-import { buildFieldsSchema } from './field/schema'
+import { buildFieldObject } from './field/object'
 import { validateSchema } from './validation/schema'
 
 interface FormResult {
@@ -86,20 +86,14 @@ interface CreateHeadlessFormOptions {
 }
 
 function buildFields(params: {
-  schema: JsfSchema
+  schema: JsfObjectSchema
 }): Field[] {
   const { schema } = params
-
-  if (typeof schema === 'boolean')
-    return []
-
-  const fields: Field[] = buildFieldsSchema({ schema })
-
-  return fields
+  return buildFieldObject(schema, 'root', true).fields || []
 }
 
 export function createHeadlessForm(
-  schema: JsfSchema,
+  schema: JsfObjectSchema,
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
   const errors = validateSchema(options.initialValues, schema)

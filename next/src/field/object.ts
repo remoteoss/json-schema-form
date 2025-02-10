@@ -1,31 +1,45 @@
-import type { JSONSchema } from 'json-schema-typed'
+import type { JsfObjectSchema, JsfSchema } from '../types'
 import type { Field } from './type'
 import { setCustomOrder } from '../custom/order'
-import { buildFieldSingle } from './single'
+import { buildFieldSchema } from './schema'
 
-export function buildFieldsObject(params: {
-  schema: JSONSchema
-}): Field[] {
-  const { schema } = params
-
-  if (typeof schema === 'boolean')
-    throw new Error('Schema must be an object')
-
-  if (schema.type !== 'object')
-    throw new Error('Schema must be of type "object"')
-
+/**
+ * Build a field from an object schema
+ * @param schema - The schema of the field
+ * @param name - The name of the field, used if the schema has no title
+ * @param required - Whether the field is required
+ * @returns The field
+ */
+export function buildFieldObject(schema: JsfObjectSchema, name: string, required: boolean) {
   const fields: Field[] = []
 
-  Object
-    .entries(schema.properties ?? {})
-    .forEach((entry) => {
-      const [name, schema] = entry
-      const field = buildFieldSingle({ name, schema })
-      if (field !== null)
-        fields.push(field)
-    })
+  for (const key in schema.properties) {
+    const isRequired = schema.required?.includes(key) || false
+    const field = buildFieldSchema(schema.properties[key], key, isRequired)
+    if (field) {
+      fields.push(field)
+    }
+  }
 
-  const withOrder = setCustomOrder({ fields, schema })
+  const orderedFields = setCustomOrder({ fields, schema })
 
-  return withOrder
+  const field: Field = {
+    ...schema['x-jsf-presentation'],
+    type: schema['x-jsf-presentation']?.inputType || 'fieldset',
+    inputType: schema['x-jsf-presentation']?.inputType || 'fieldset',
+    jsonType: 'object',
+    name: schema.title || name,
+    required,
+    fields: orderedFields,
+  }
+
+  if (schema.title !== undefined) {
+    field.label = schema.title
+  }
+
+  if (schema['x-jsf-presentation']?.accept) {
+    field.accept = schema['x-jsf-presentation']?.accept
+  }
+
+  return field
 }

@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import util from 'node:util'
 import { describe, expect, it } from '@jest/globals'
-import { createHeadlessForm } from '../../src'
+import { validateSchema } from '../../src/validation/schema'
 import { loadJsonSchemaSuiteFailedTests } from './helpers'
 
 interface Test {
@@ -20,10 +20,8 @@ interface TestSchema {
 
 expect.extend({
   toBeValid(received: JsfSchema, value: SchemaValue, valid: boolean = true) {
-    const form = createHeadlessForm(received, { initialValues: value })
-    const validationResult = form.handleValidation(value)
-    const hasFormErrors = validationResult.formErrors !== undefined
-    const pass = hasFormErrors !== valid
+    const errors = validateSchema(value, received)
+    const pass = errors.length === 0
     return {
       pass,
       message: () => `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(received)}`,
