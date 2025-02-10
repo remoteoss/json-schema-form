@@ -59,8 +59,10 @@ export function buildFieldSchema(
 
   const inputType = getInputType(schema)
 
+  const { title: _title, ...spreadSchema } = schema
+
   const field: Field = {
-    ...schema,
+    ...spreadSchema,
     ...schema['x-jsf-presentation'],
     inputType,
     type: inputType,
