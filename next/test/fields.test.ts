@@ -107,14 +107,19 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'text',
-        inputType: 'text',
-        jsonType: 'string',
-        name: 'file',
-        label: 'Some field',
-        required: false,
-        accept: '.pdf,.doc',
-        maxFileSize: 5000000,
+        'type': 'text',
+        'inputType': 'text',
+        'jsonType': 'string',
+        'name': 'file',
+        'label': 'Some field',
+        'required': false,
+        'accept': '.pdf,.doc',
+        'maxFileSize': 5000000,
+        'x-jsf-presentation': {
+          inputType: 'file',
+          accept: '.pdf,.doc',
+          maxFileSize: 5000000,
+        },
       },
     ])
   })
