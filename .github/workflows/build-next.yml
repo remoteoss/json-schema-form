@@ -1,4 +1,4 @@
-name: Build Next Package
+name: Pull Request (v-next)
 on:
   pull_request:
     paths:

@@ -1,4 +1,4 @@
-name: Build Main Package
+name: Pull Request (v0)
 on:
   pull_request:
     paths-ignore:
