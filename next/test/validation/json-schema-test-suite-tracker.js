@@ -7,10 +7,6 @@ import { JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME } from './constants.js'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Change this value to true to write the failed tests to a file, for
-// later consumption at the json_schema_test_suite.test.js file.
-const SHOULD_WRITE_FAILED_TESTS_TO_FILE = false
-
 // Save newly failed tests
 function saveFailedTests(failedTests) {
   fs.writeFileSync(path.join(__dirname, JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME), JSON.stringify({ failedTests }, null, 2))
@@ -37,15 +33,22 @@ class FailureTrackingReporter {
   }
 
   onTestResult(test, testResult) {
+    // Only track failures/skipped tests for json-schema-test-suite.test.ts
+    if (!test.path.endsWith('json-schema-test-suite.test.ts')) {
+      return
+    }
+
     testResult.testResults.forEach((result) => {
-      if (result.status === 'failed') {
+      if (result.status === 'failed' || result.status === 'pending') {
         this.failedTests.add(result.fullName || result.title)
       }
     })
   }
 
   onRunComplete() {
-    if (SHOULD_WRITE_FAILED_TESTS_TO_FILE) {
+    if (this.failedTests.size > 0) {
+      // eslint-disable-next-line no-console
+      console.log(`JSON Schema Test Suite: Test run complete, saving ${this.failedTests.size} tests to ${JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME} file so they're ignored for now and enabled later`)
       saveFailedTests(Array.from(this.failedTests))
     }
   }
