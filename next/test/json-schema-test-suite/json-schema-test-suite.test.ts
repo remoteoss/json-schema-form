@@ -24,8 +24,7 @@ expect.extend({
     const pass = errors.length === 0
     return {
       pass,
-      message: () =>
-        `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(received)}`,
+      message: () => `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(received)}`,
     }
   },
 })
@@ -43,24 +42,13 @@ const testsToSkip = loadJsonSchemaSuiteFailedTests()
  * should be skipped.
  */
 describe('JSON Schema Test Suite', () => {
-  const testsDir = path.join(
-    __dirname,
-    '..',
-    '..',
-    'json-schema-test-suite',
-    'tests',
-    'draft2020-12',
-  )
+  const testsDir = path.join(__dirname, '..', '..', 'json-schema-test-suite', 'tests', 'draft2020-12')
   const testFiles = fs.readdirSync(testsDir).filter(file => file.endsWith('.json'))
 
   for (const file of testFiles) {
     const testFile: TestSchema[] = JSON.parse(fs.readFileSync(path.join(testsDir, file), 'utf8'))
 
-    const runTestIfFeatureImplemented = (
-      testPath: string,
-      testName: string,
-      testFn: () => void,
-    ) => {
+    const runTestIfFeatureImplemented = (testPath: string, testName: string, testFn: () => void) => {
       const shouldRun = !testsToSkip.includes(testPath)
 
       if (shouldRun) {
@@ -76,14 +64,10 @@ describe('JSON Schema Test Suite', () => {
       describe(testSchema.description, () => {
         for (const test of testSchema.tests) {
           // Tests that will run only if they previously failed
-          runTestIfFeatureImplemented(
-            `JSON Schema Test Suite ${testSchema.description} ${test.description}`,
-            test.description,
-            () => {
-              // @ts-expect-errorTODO: properly extend the expect interface
-              expect(testSchema.schema).toBeValid(test.data, test.valid)
-            },
-          )
+          runTestIfFeatureImplemented(`JSON Schema Test Suite ${testSchema.description} ${test.description}`, test.description, () => {
+            // @ts-expect-errorTODO: properly extend the expect interface
+            expect(testSchema.schema).toBeValid(test.data, test.valid)
+          })
         }
       })
     }
