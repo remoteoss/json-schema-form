@@ -48,10 +48,14 @@ const config = {
   roots,
   moduleNameMapper,
   testPathIgnorePatterns,
-  reporters: ['default', '<rootDir>/test/json-schema-test-suite/json-schema-test-suite-tracker.js'],
+  reporters: ['default', '<rootDir>/test/json-schema-test-suite/json-schema-test-suite-tracker.ts'],
   transform: {
-    '^.+\\.tsx?$': ['babel-jest', { presets: ['@babel/preset-typescript'] }],
+    '^.+\\.tsx?$': ['babel-jest', {
+      presets: ['@babel/preset-typescript'],
+      extensionsToTreatAsEsm: ['.ts', '.tsx'],
+    }],
   },
+  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
 }
 
