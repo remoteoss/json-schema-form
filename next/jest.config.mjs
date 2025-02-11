@@ -49,6 +49,10 @@ const config = {
   moduleNameMapper,
   testPathIgnorePatterns,
   reporters: ['default', '<rootDir>/test/json-schema-test-suite/json-schema-test-suite-tracker.js'],
+  transform: {
+    '^.+\\.tsx?$': ['babel-jest', { presets: ['@babel/preset-typescript'] }],
+  },
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
 }
 
 export default config
