@@ -60,31 +60,8 @@ jobs:
           path: next/node_modules
           key: ${{ runner.os }}-pnpm-next-${{ hashFiles('next/pnpm-lock.yaml') }}
 
-      - name: Tests
-        run: cd next && pnpm test
-
-  check:
-    runs-on: ubuntu-latest
-    needs: [dependencies]
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: true
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: pnpm/action-setup@v3
-        with:
-          version: 9
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: 'next/.nvmrc'
-
-      - name: Get cached PNPM dependencies
-        uses: actions/cache@v3
-        with:
-          path: next/node_modules
-          key: ${{ runner.os }}-pnpm-next-${{ hashFiles('next/pnpm-lock.yaml') }}
-
       - name: Run lint and type checks
         run: cd next && pnpm check
+
+      - name: Tests
+        run: cd next && pnpm test
