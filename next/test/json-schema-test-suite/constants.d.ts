@@ -1,0 +1,1 @@
+export declare const JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME: string

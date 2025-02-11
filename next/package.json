@@ -1,5 +1,6 @@
 {
   "name": "@remoteoss/json-schema-form",
+  "type": "module",
   "version": "1.0.0-beta.0",
   "packageManager": "pnpm@9.15.2",
   "description": "WIP V2 – Headless UI form powered by JSON Schemas",
@@ -31,6 +32,8 @@
     "test:watch": "jest --watchAll",
     "test:file": "jest --runTestsByPath",
     "lint": "eslint --max-warnings 0 .",
+    "typecheck": "tsc --noEmit",
+    "check": "pnpm run lint && pnpm run typecheck",
     "release:dev": "cd .. && npm run release:v1:dev",
     "release:beta": "cd .. && npm run release:v1:beta"
   },
@@ -40,6 +43,7 @@
     "@babel/preset-env": "^7.23.7",
     "@babel/preset-typescript": "^7.26.0",
     "@jest/globals": "^29.7.0",
+    "@jest/reporters": "^29.7.0",
     "babel-jest": "^29.7.0",
     "eslint": "^9.18.0",
     "generate-changelog": "^1.8.0",

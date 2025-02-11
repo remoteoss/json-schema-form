@@ -2,8 +2,8 @@ name: Pull Request (v-next)
 on:
   pull_request:
     paths:
-      - 'next/**'  # Only run if files in next/ directory change
-      - '.github/workflows/build-next.yml'  # Also run if this workflow file changes
+      - 'next/**' # Only run if files in next/ directory change
+      - '.github/workflows/build-next.yml' # Also run if this workflow file changes
 
 jobs:
   dependencies:
@@ -45,7 +45,7 @@ jobs:
         with:
           submodules: true
           token: ${{ secrets.GITHUB_TOKEN }}
-          
+
       - uses: pnpm/action-setup@v3
         with:
           version: 9
@@ -60,5 +60,8 @@ jobs:
           path: next/node_modules
           key: ${{ runner.os }}-pnpm-next-${{ hashFiles('next/pnpm-lock.yaml') }}
 
+      - name: Run lint and type checks
+        run: cd next && pnpm check
+
       - name: Tests
-        run: cd next && pnpm test 
+        run: cd next && pnpm test

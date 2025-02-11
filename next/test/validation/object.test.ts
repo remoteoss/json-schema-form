@@ -1,9 +1,20 @@
+import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
 
 describe('object schema validation', () => {
   it('returns an error if the value is not an object', () => {
-    const schema = { properties: { address: { type: 'object', properties: { street: { type: 'string' } } } } }
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'object',
+          properties: {
+            street: { type: 'string' },
+          },
+        },
+      },
+    }
     const form = createHeadlessForm(schema)
 
     expect(form.handleValidation({})).not.toHaveProperty('formErrors')
@@ -14,7 +25,17 @@ describe('object schema validation', () => {
   })
 
   it('validates the object properties', () => {
-    const schema = { properties: { address: { type: 'object', properties: { street: { type: 'string' } } } } }
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'object',
+          properties: {
+            street: { type: 'string' },
+          },
+        },
+      },
+    }
     const form = createHeadlessForm(schema)
 
     expect(form.handleValidation({ address: { street: 'some street' } })).not.toHaveProperty('formErrors')

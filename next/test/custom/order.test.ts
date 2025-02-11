@@ -1,10 +1,10 @@
-import type { JsfSchema } from '../../src/types'
+import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
 
 describe('custom order', () => {
   it('should sort fields by x-jsf-order', () => {
-    const schema: JsfSchema = {
+    const schema: JsfObjectSchema = {
       'type': 'object',
       'properties': {
         name: { type: 'string' },
@@ -19,7 +19,7 @@ describe('custom order', () => {
   })
 
   it('should sort nested objects', () => {
-    const addressSchema: JsfSchema = {
+    const addressSchema: JsfObjectSchema = {
       'type': 'object',
       'properties': {
         state: { type: 'string' },
@@ -29,7 +29,7 @@ describe('custom order', () => {
       'x-jsf-order': ['street', 'city', 'state'],
     }
 
-    const mainSchema: JsfSchema = {
+    const mainSchema: JsfObjectSchema = {
       'type': 'object',
       'properties': {
         address: addressSchema,
@@ -53,7 +53,7 @@ describe('custom order', () => {
   })
 
   it('should respect initial, unspecified order', () => {
-    const schema: JsfSchema = {
+    const schema: JsfObjectSchema = {
       'type': 'object',
       'properties': {
         one: { type: 'string' },

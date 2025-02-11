@@ -11,7 +11,7 @@ const roots = [
   // '<rootDir>/../src/tests',
   // 2. The new tests for this version
   '<rootDir>/test',
-];
+]
 
 /**
  * Module aliases to use the same test with different source versions.
@@ -29,7 +29,7 @@ const moduleNameMapper = {
   // Avoid catch all aliases such as "^@/(.*)$".
   // Aliases should be added as needed.
   // If there are many, we will have a compat barrel file.
-};
+}
 
 /**
  * Some tests are invalid for V2 testing.
@@ -41,14 +41,14 @@ const moduleNameMapper = {
  */
 const testPathIgnorePatterns = [
   // Nothing yet
-];
+]
 
 /** @type {import('jest').Config} */
 const config = {
   roots,
   moduleNameMapper,
   testPathIgnorePatterns,
-  reporters: ['default', '<rootDir>/test/validation/json-schema-test-suite-tracker.js'],
-};
+  reporters: ['default', '<rootDir>/test/json-schema-test-suite/json-schema-test-suite-tracker.js'],
+}
 
-export default config;
+export default config
