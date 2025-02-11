@@ -9,7 +9,10 @@ const __dirname = path.dirname(__filename)
 
 // Save newly failed tests
 function saveFailedTests(failedTests) {
-  fs.writeFileSync(path.join(__dirname, JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME), JSON.stringify({ failedTests }, null, 2))
+  fs.writeFileSync(
+    path.join(__dirname, JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME),
+    `${JSON.stringify({ failedTests }, null, 2)}\n`,
+  )
 }
 
 /**
