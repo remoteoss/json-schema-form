@@ -1,4 +1,4 @@
-import type { JsfObjectSchema, JsfSchema } from '../types'
+import type { JsfObjectSchema } from '../types'
 import type { Field } from './type'
 import { setCustomOrder } from '../custom/order'
 import { buildFieldSchema } from './schema'
