@@ -2,7 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import { JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME } from './constants'
+import { JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME } from './constants.ts'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
