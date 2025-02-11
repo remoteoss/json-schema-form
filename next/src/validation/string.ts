@@ -1,5 +1,6 @@
 import type { ValidationError } from '../form'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
+import { validateFormat } from './format'
 import { getSchemaType } from './schema'
 
 export type StringValidationErrorType =
@@ -15,6 +16,10 @@ export type StringValidationErrorType =
    * The value does not match the pattern
    */
   | 'pattern'
+  /**
+   * The value does not match the format
+   */
+  | 'format'
 
 /**
  * Validate a string against a schema
@@ -24,6 +29,7 @@ export type StringValidationErrorType =
  * @description
  * - Validates the string length against the `minLength` and `maxLength` properties.
  * - Validates the string pattern against a regular expression defined in the `pattern` property.
+ * - Validates the string format against the `format` property.
  */
 export function validateString(value: SchemaValue, schema: NonBooleanJsfSchema): ValidationError[] {
   const errors: ValidationError[] = []
@@ -46,6 +52,10 @@ export function validateString(value: SchemaValue, schema: NonBooleanJsfSchema):
           message: `must match the pattern '${schema.pattern}'`,
         })
       }
+    }
+
+    if (schema.format !== undefined) {
+      errors.push(...validateFormat(value, schema.format))
     }
   }
 

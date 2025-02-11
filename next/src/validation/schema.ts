@@ -1,6 +1,7 @@
 import type { ValidationError } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import type { ObjectValidationErrorType } from './object'
+import type { StringValidationErrorType } from './string'
 import { validateAnyOf } from './anyOf'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -26,6 +27,10 @@ export type SchemaValidationErrorType =
    * The value fails validation against anyOf subschemas
    */
   | 'anyOf'
+  /**
+   * The value fails string validation
+   */
+  | StringValidationErrorType
 
 /**
  * Get the type of a schema
