@@ -8,29 +8,32 @@ import { validateString } from './string'
 
 export type SchemaValidationErrorType =
   /**
-   * The value is not of the correct type
+   * Core validation keywords
    */
   | 'type'
-  /**
-   * The value is required
-   */
   | 'required'
-  /**
-   * The value fails validation due to boolean schema
-   */
   | 'valid'
+
   /**
-   * The value fails validation due to object schema
-   */
-  | ObjectValidationErrorType
-  /**
-   * The value fails validation against anyOf subschemas
+   * Composition keywords
    */
   | 'anyOf'
+  | 'oneOf'
+  | 'allOf'
+  | 'not'
+  | 'if'
+  | 'then'
+  | 'else'
+
   /**
-   * The value fails string validation
+   * String validation keywords
    */
   | StringValidationErrorType
+
+  /**
+   * Format validation (now separated into format-annotation and format-assertion)
+   */
+  | 'format'
 
 /**
  * Get the type of a schema
@@ -60,12 +63,13 @@ export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[
  * Validate the type of a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
+ * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
  * When getSchemaType returns undefined, this function skips type validation.
  * This aligns with JSON Schema 2020-12 semantics: if no type is provided, no type check is enforced.
  */
-function validateType(value: SchemaValue, schema: JsfSchema): ValidationError[] {
+function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
   const schemaType = getSchemaType(schema)
   // Skip type-checking if no type is specified.
   if (schemaType === undefined) {
@@ -80,7 +84,7 @@ function validateType(value: SchemaValue, schema: JsfSchema): ValidationError[] 
 
   if (hasTypeMismatch) {
     return [{
-      path: [],
+      path,
       validation: 'type',
       message: `should be ${Array.isArray(schemaType)
         ? schemaType.join(' | ')
@@ -96,6 +100,7 @@ function validateType(value: SchemaValue, schema: JsfSchema): ValidationError[] 
  * @param value - The value to validate
  * @param schema - The schema to validate against
  * @param required - Whether the value is required
+ * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
  * This function is the main validation function to validate a value against a schema.
@@ -105,9 +110,14 @@ function validateType(value: SchemaValue, schema: JsfSchema): ValidationError[] 
  * - It delegates to type specific validation functions such as `validateObject` and `validateString`
  * @see `validateType` for type validation
  */
-export function validateSchema(value: SchemaValue, schema: JsfSchema, required: boolean = false): ValidationError[] {
+export function validateSchema(
+  value: SchemaValue,
+  schema: JsfSchema,
+  required: boolean = false,
+  path: string[] = [],
+): ValidationError[] {
   if (value === undefined && required) {
-    return [{ path: [], validation: 'required', message: 'is required' }]
+    return [{ path, validation: 'required', message: 'is required' }]
   }
 
   if (value === undefined) {
@@ -115,10 +125,10 @@ export function validateSchema(value: SchemaValue, schema: JsfSchema, required: 
   }
 
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path: [], validation: 'valid', message: 'always fails' }]
+    return schema ? [] : [{ path, validation: 'valid', message: 'always fails' }]
   }
 
-  const typeValidationErrors = validateType(value, schema)
+  const typeValidationErrors = validateType(value, schema, path)
   if (typeValidationErrors.length > 0) {
     return typeValidationErrors
   }
@@ -127,9 +137,9 @@ export function validateSchema(value: SchemaValue, schema: JsfSchema, required: 
   if (schema.required && Array.isArray(schema.required) && typeof value === 'object' && value !== null) {
     const missingKeys = schema.required.filter((key: string) => !(key in value))
     if (missingKeys.length > 0) {
-      // Return an error for the first missing field.
+      // Return an error for each missing field.
       return missingKeys.map(key => ({
-        path: [key], // error path for the missing property
+        path: [...path, key],
         validation: 'required',
         message: 'is required',
       }))
@@ -137,12 +147,12 @@ export function validateSchema(value: SchemaValue, schema: JsfSchema, required: 
   }
 
   const errors = [
-    ...validateObject(value, schema),
-    ...validateString(value, schema),
+    ...validateObject(value, schema, path),
+    ...validateString(value, schema, path),
   ]
 
   if (schema.anyOf && Array.isArray(schema.anyOf)) {
-    const anyOfErrors = validateAnyOf(value, schema)
+    const anyOfErrors = validateAnyOf(value, schema, path)
     if (anyOfErrors.length > 0) {
       return anyOfErrors
     }

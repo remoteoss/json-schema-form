@@ -6,11 +6,13 @@ describe('boolean schema validation', () => {
   it('returns an error if the value is false', () => {
     const schema: JsfObjectSchema = {
       type: 'object',
-      properties: { name: false },
+      properties: {
+        name: false,
+      },
     }
     const form = createHeadlessForm(schema)
 
-    expect(form.handleValidation({ name: 'anything' })).toMatchObject({ formErrors: { '.name': 'always fails' } })
+    expect(form.handleValidation({ name: 'anything' })).toMatchObject({ formErrors: { name: 'always fails' } })
     expect(form.handleValidation({})).not.toHaveProperty('formErrors')
   })
 
