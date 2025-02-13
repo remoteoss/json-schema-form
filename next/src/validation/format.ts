@@ -1,6 +1,7 @@
 import type { ValidationError } from '../form'
 import type { SchemaValidationErrorType } from './schema'
 import { Format } from 'json-schema-typed/draft-2020-12'
+import validator from 'validator'
 
 /**
  * Format validation error type
@@ -14,77 +15,70 @@ import { Format } from 'json-schema-typed/draft-2020-12'
  */
 export type FormatValidationErrorType = 'format'
 
-// Cache compiled RegExp objects for performance
-const REGEX = {
-  // Date and Time (RFC 3339)
-  dateTime: /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/,
-  date: /^\d{4}-\d{2}-\d{2}$/,
-  time: /^\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/,
-  duration: /^P(?:\d+Y)?(?:\d+M)?(?:\d+D)?(?:T(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/,
-  // Email (RFC 5322)
-  email: /^[\w.!#$%&'*+/=?^`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i,
-  // Hostname (RFC 1123)
-  hostname: /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i,
-  // IP Address
-  ipv4: /^(?:(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})\.){3}(?:25[0-5]|2[0-4]\d|[01]?\d{1,2})$/,
-  ipv6: /^(?:(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?::[0-9a-fA-F]{1,4}){1,6}|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(?:ffff(?::0{1,4})?:)?(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d)|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d)\.){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d))$/,
-  // UUID
-  uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
-  // Regular Expressions
-  regex: (value: string) => {
-    try {
-      const pattern = new RegExp(value)
-      return pattern instanceof RegExp
-    }
-    catch {
-      return false
-    }
-  },
-}
-
 /**
  * Built-in format validators according to JSON Schema 2020-12
- * @description
- * According to JSON Schema 2020-12:
- * - Format validation is an annotation by default
- * - Format validation only applies to strings
- * - Unknown formats should be ignored
- * - Implementations SHOULD implement validation for standard formats
- * - Implementations MAY treat format as a no-op
+ *
+ * Note on IRI vs URI:
+ * - IRI allows Unicode characters in both the domain and path
+ * - Since validator.js doesn't directly support IRI validation,
+ *   we use isURL with relaxed character constraints
  */
 const formatValidators: Record<Format, (value: string) => boolean> = {
-  [Format.DateTime]: value => REGEX.dateTime.test(value),
-  [Format.Date]: value => REGEX.date.test(value),
-  [Format.Time]: value => REGEX.time.test(value),
-  [Format.Duration]: value => REGEX.duration.test(value),
-  [Format.Email]: value => REGEX.email.test(value),
-  [Format.IDNEmail]: value => REGEX.email.test(value), // TODO: Add proper IDN support
-  [Format.Hostname]: value => REGEX.hostname.test(value),
-  [Format.IDNHostname]: value => REGEX.hostname.test(value), // TODO: Add proper IDN support
-  [Format.IPv4]: value => REGEX.ipv4.test(value),
-  [Format.IPv6]: value => REGEX.ipv6.test(value),
-  [Format.URI]: (value) => {
-    try {
-      void new URL(value)
-      return true
-    }
-    catch {
-      return false
-    }
-  },
-  [Format.URIReference]: (value) => {
-    try {
-      void new URL(value, 'http://example.com')
-      return true
-    }
-    catch {
-      return false
-    }
-  },
+  [Format.DateTime]: value => validator.isISO8601(value, {
+    strict: true,
+    strictSeparator: true,
+  }),
+  [Format.Date]: value => validator.isISO8601(value, {
+    strict: true,
+    strictSeparator: true,
+  }),
+  // RFC 3339 time format: 23:20:50.52Z, 17:39:57-08:00
+  [Format.Time]: value => validator.matches(value, /^([01]\d|2[0-3]):([0-5]\d):([0-5]\d)(\.\d+)?(Z|[+-]([01]\d|2[0-3]):[0-5]\d)$/),
+  // ISO 8601 duration
+  [Format.Duration]: value => validator.matches(value, /^P(?!$)(\d+Y)?(\d+M)?(\d+D)?(T(?=\d)(\d+H)?(\d+M)?(\d+S)?)?$/),
+  [Format.Email]: value => validator.isEmail(value, {
+    allow_utf8_local_part: false,
+    require_tld: true,
+    allow_ip_domain: false,
+  }),
+  [Format.IDNEmail]: value => validator.isEmail(value, {
+    allow_utf8_local_part: true,
+    require_tld: true,
+    allow_ip_domain: false,
+  }),
+  [Format.Hostname]: value => validator.isFQDN(value, {
+    require_tld: false,
+    allow_underscores: false,
+    allow_wildcard: false,
+  }),
+  [Format.IDNHostname]: value => validator.isFQDN(value, {
+    require_tld: false,
+    allow_underscores: true,
+    allow_wildcard: false,
+  }),
+  [Format.IPv4]: value => validator.isIP(value, 4),
+  [Format.IPv6]: value => validator.isIP(value, 6),
+  [Format.URI]: value => validator.isURL(value, {
+    require_protocol: true,
+    require_valid_protocol: true,
+    protocols: ['http', 'https', 'ftp', 'sftp', 'mailto', 'file', 'data', 'irc'],
+    allow_fragments: true,
+    allow_query_components: true,
+    validate_length: true,
+  }),
+  [Format.URIReference]: value => validator.isURL(value, {
+    require_protocol: false,
+    allow_protocol_relative_urls: true,
+    protocols: ['http', 'https', 'ftp', 'sftp', 'mailto', 'file', 'data', 'irc'],
+    allow_fragments: true,
+    allow_query_components: true,
+    validate_length: true,
+  }),
+  // For IRI validation, we use isURL but allow Unicode characters
   [Format.IRI]: (value) => {
     try {
-      void new URL(value)
-      return true
+      const url = new URL(value)
+      return url.protocol !== '' && /^[a-z]+:/.test(url.protocol)
     }
     catch {
       return false
@@ -92,6 +86,9 @@ const formatValidators: Record<Format, (value: string) => boolean> = {
   },
   [Format.IRIReference]: (value) => {
     try {
+      if (value.startsWith('//')) {
+        return validator.matches(value.slice(2), /^\S*$/)
+      }
       void new URL(value, 'http://example.com')
       return true
     }
@@ -99,13 +96,24 @@ const formatValidators: Record<Format, (value: string) => boolean> = {
       return false
     }
   },
-  [Format.RegEx]: value => REGEX.regex(value),
-  [Format.UUID]: value => REGEX.uuid.test(value),
-  // Additional formats from JSON Schema that we don't currently validate
-  [Format.JSONPointer]: () => true,
-  [Format.JSONPointerURIFragment]: () => true,
-  [Format.RelativeJSONPointer]: () => true,
-  [Format.URITemplate]: () => true,
+  [Format.RegEx]: (value) => {
+    try {
+      // Use 'u' flag for Unicode support as per JSON Schema 2020-12
+      void new RegExp(value, 'u')
+      return true
+    }
+    catch {
+      return false
+    }
+  },
+  [Format.UUID]: value => validator.isUUID(value),
+  // TODO: Implement these (current matcher is probably not correct)
+  // JSON Schema 2020-12 specifies these formats should be supported
+  [Format.JSONPointer]: value => validator.matches(value, /^(?:\/(?:[^~/]|~0|~1)*)*$/),
+  [Format.JSONPointerURIFragment]: value => validator.matches(value, /^#(?:\/(?:[\w\-.!$&'()*+,;:=@]|%[0-9a-f]{2}|~0|~1)*)*$/i),
+  [Format.RelativeJSONPointer]: value => validator.matches(value, /^(?:0|[1-9]\d*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$/),
+  // URI Template (RFC 6570)
+  [Format.URITemplate]: value => validator.matches(value, /^(?:[!#$&'()*+,/:;=?@\w\-.~]|%[0-9a-f]{2}|\{[+#./;?&=,!@|]?(?:\w|%[0-9a-f]{2})+(?::[1-9]\d{0,3}|\*)?(?:,(?:\w|%[0-9a-f]{2})+(?::[1-9]\d{0,3}|\*)?)*\})*$/i),
 }
 
 /**
