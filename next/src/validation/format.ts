@@ -1,5 +1,6 @@
 import type { ValidationError } from '../form'
 import type { SchemaValidationErrorType } from './schema'
+import { Format } from 'json-schema-typed/draft-2020-12'
 
 /**
  * Format validation error type
@@ -12,35 +13,6 @@ import type { SchemaValidationErrorType } from './schema'
  * - Implementations MAY treat format as a no-op
  */
 export type FormatValidationErrorType = 'format'
-
-/**
- * Supported format names as defined in JSON Schema 2020-12
- * @see https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7
- */
-export type SupportedFormat =
-  // Date and Time (RFC 3339)
-  | 'date-time'
-  | 'date'
-  | 'time'
-  | 'duration'
-  // Email
-  | 'email'
-  | 'idn-email'
-  // Hostname
-  | 'hostname'
-  | 'idn-hostname'
-  // IP Address
-  | 'ipv4'
-  | 'ipv6'
-  // Resource Identifiers
-  | 'uri'
-  | 'uri-reference'
-  | 'iri'
-  | 'iri-reference'
-  // UUID
-  | 'uuid'
-  // Regular Expressions
-  | 'regex'
 
 // Cache compiled RegExp objects for performance
 const REGEX = {
@@ -80,18 +52,18 @@ const REGEX = {
  * - Implementations SHOULD implement validation for standard formats
  * - Implementations MAY treat format as a no-op
  */
-const formatValidators: Record<SupportedFormat, (value: string) => boolean> = {
-  'date-time': value => REGEX.dateTime.test(value),
-  'date': value => REGEX.date.test(value),
-  'time': value => REGEX.time.test(value),
-  'duration': value => REGEX.duration.test(value),
-  'email': value => REGEX.email.test(value),
-  'idn-email': value => REGEX.email.test(value), // TODO: Add proper IDN support
-  'hostname': value => REGEX.hostname.test(value),
-  'idn-hostname': value => REGEX.hostname.test(value), // TODO: Add proper IDN support
-  'ipv4': value => REGEX.ipv4.test(value),
-  'ipv6': value => REGEX.ipv6.test(value),
-  'uri': (value) => {
+const formatValidators: Record<Format, (value: string) => boolean> = {
+  [Format.DateTime]: value => REGEX.dateTime.test(value),
+  [Format.Date]: value => REGEX.date.test(value),
+  [Format.Time]: value => REGEX.time.test(value),
+  [Format.Duration]: value => REGEX.duration.test(value),
+  [Format.Email]: value => REGEX.email.test(value),
+  [Format.IDNEmail]: value => REGEX.email.test(value), // TODO: Add proper IDN support
+  [Format.Hostname]: value => REGEX.hostname.test(value),
+  [Format.IDNHostname]: value => REGEX.hostname.test(value), // TODO: Add proper IDN support
+  [Format.IPv4]: value => REGEX.ipv4.test(value),
+  [Format.IPv6]: value => REGEX.ipv6.test(value),
+  [Format.URI]: (value) => {
     try {
       void new URL(value)
       return true
@@ -100,7 +72,7 @@ const formatValidators: Record<SupportedFormat, (value: string) => boolean> = {
       return false
     }
   },
-  'uri-reference': (value) => {
+  [Format.URIReference]: (value) => {
     try {
       void new URL(value, 'http://example.com')
       return true
@@ -109,7 +81,7 @@ const formatValidators: Record<SupportedFormat, (value: string) => boolean> = {
       return false
     }
   },
-  'iri': (value) => {
+  [Format.IRI]: (value) => {
     try {
       void new URL(value)
       return true
@@ -118,7 +90,7 @@ const formatValidators: Record<SupportedFormat, (value: string) => boolean> = {
       return false
     }
   },
-  'iri-reference': (value) => {
+  [Format.IRIReference]: (value) => {
     try {
       void new URL(value, 'http://example.com')
       return true
@@ -127,8 +99,13 @@ const formatValidators: Record<SupportedFormat, (value: string) => boolean> = {
       return false
     }
   },
-  'regex': value => REGEX.regex(value),
-  'uuid': value => REGEX.uuid.test(value),
+  [Format.RegEx]: value => REGEX.regex(value),
+  [Format.UUID]: value => REGEX.uuid.test(value),
+  // Additional formats from JSON Schema that we don't currently validate
+  [Format.JSONPointer]: () => true,
+  [Format.JSONPointerURIFragment]: () => true,
+  [Format.RelativeJSONPointer]: () => true,
+  [Format.URITemplate]: () => true,
 }
 
 /**
@@ -153,7 +130,7 @@ export function validateFormat(value: string, format: string, path: string[] = [
     return errors
   }
 
-  const validator = formatValidators[format as SupportedFormat]
+  const validator = formatValidators[format as Format]
   if (validator && !validator(value)) {
     errors.push({
       path,

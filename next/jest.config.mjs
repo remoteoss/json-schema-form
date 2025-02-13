@@ -49,6 +49,7 @@ const config = {
   moduleNameMapper,
   testPathIgnorePatterns,
   reporters: ['default', '<rootDir>/test/json-schema-test-suite/json-schema-test-suite-tracker.js'],
+  transformIgnorePatterns: ['<rootDir>/node_modules/json-schema-typed/'],
 }
 
 export default config
