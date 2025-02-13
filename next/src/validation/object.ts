@@ -1,9 +1,6 @@
 import type { ValidationError } from '../form'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
-import type { StringValidationErrorType } from './string'
 import { validateSchema } from './schema'
-
-export type ObjectValidationErrorType = StringValidationErrorType
 
 /**
  * Validate an object against a schema
