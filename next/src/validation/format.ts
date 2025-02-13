@@ -23,7 +23,7 @@ export type FormatValidationErrorType = 'format'
  * - Since validator.js doesn't directly support IRI validation,
  *   we use isURL with relaxed character constraints
  */
-const formatValidators: Record<Format, (value: string) => boolean> = {
+const formatValidationFunctions: Record<Format, (value: string) => boolean> = {
   [Format.DateTime]: value => validator.isISO8601(value, {
     strict: true,
     strictSeparator: true,
@@ -107,7 +107,7 @@ const formatValidators: Record<Format, (value: string) => boolean> = {
     }
   },
   [Format.UUID]: value => validator.isUUID(value),
-  // TODO: Implement these (current matcher is probably not correct)
+  // TODO: Implement these properly once we get there (current matcher is probably not correct)
   // JSON Schema 2020-12 specifies these formats should be supported
   [Format.JSONPointer]: value => validator.matches(value, /^(?:\/(?:[^~/]|~0|~1)*)*$/),
   [Format.JSONPointerURIFragment]: value => validator.matches(value, /^#(?:\/(?:[\w\-.!$&'()*+,;:=@]|%[0-9a-f]{2}|~0|~1)*)*$/i),
@@ -138,8 +138,8 @@ export function validateFormat(value: string, format: string, path: string[] = [
     return errors
   }
 
-  const validator = formatValidators[format as Format]
-  if (validator && !validator(value)) {
+  const validateFn = formatValidationFunctions[format as Format]
+  if (validateFn && !validateFn(value)) {
     errors.push({
       path,
       validation: 'format' as SchemaValidationErrorType,
