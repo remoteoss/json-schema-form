@@ -5,19 +5,16 @@ import { getSchemaType } from './schema'
 
 export type StringValidationErrorType =
   /**
-   * The value is too short
+   * String length validation
    */
   | 'minLength'
-  /**
-   * The value is too long
-   */
   | 'maxLength'
   /**
-   * The value does not match the pattern
+   * String pattern validation
    */
   | 'pattern'
   /**
-   * The value does not match the format
+   * String format validation
    */
   | 'format'
 
@@ -25,37 +22,47 @@ export type StringValidationErrorType =
  * Validate a string against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
+ * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
- * - Validates the string length against the `minLength` and `maxLength` properties.
- * - Validates the string pattern against a regular expression defined in the `pattern` property.
- * - Validates the string format against the `format` property.
+ * Implements string validation according to JSON Schema 2020-12:
+ * - Length validation (minLength, maxLength)
+ * - Pattern validation (pattern)
+ * - Format validation (as annotation by default)
  */
-export function validateString(value: SchemaValue, schema: NonBooleanJsfSchema): ValidationError[] {
+export function validateString(
+  value: SchemaValue,
+  schema: NonBooleanJsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   const errors: ValidationError[] = []
 
   if (getSchemaType(schema) === 'string' && typeof value === 'string') {
+    // Length validation
     if (schema.minLength !== undefined && value.length < schema.minLength) {
-      errors.push({ path: [], validation: 'minLength', message: 'must be at least 3 characters' })
+      errors.push({ path, validation: 'minLength', message: `must be at least ${schema.minLength} characters` })
     }
 
     if (schema.maxLength !== undefined && value.length > schema.maxLength) {
-      errors.push({ path: [], validation: 'maxLength', message: `must be at most ${schema.maxLength} characters` })
+      errors.push({ path, validation: 'maxLength', message: `must be at most ${schema.maxLength} characters` })
     }
 
+    // Pattern validation
     if (schema.pattern !== undefined) {
       const pattern = new RegExp(schema.pattern)
       if (!pattern.test(value)) {
         errors.push({
-          path: [],
+          path,
           validation: 'pattern',
           message: `must match the pattern '${schema.pattern}'`,
         })
       }
     }
 
+    // Format validation (annotation by default in 2020-12)
     if (schema.format !== undefined) {
-      errors.push(...validateFormat(value, schema.format))
+      const formatErrors = validateFormat(value, schema.format, path)
+      errors.push(...formatErrors)
     }
   }
 

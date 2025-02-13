@@ -21,6 +21,7 @@ function mergeSubSchema({ parent, subSchema }: { parent: NonBooleanJsfSchema, su
  * Validate a value against the `anyOf` keyword in a schema.
  * @param value - The value to validate.
  * @param schema - The schema that contains the `anyOf` keyword.
+ * @param path - The path to the current field being validated.
  * @returns An array of validation errors.
  * @description
  * This function checks the provided value against each subschema in the `anyOf` array.
@@ -30,7 +31,7 @@ function mergeSubSchema({ parent, subSchema }: { parent: NonBooleanJsfSchema, su
  * all conditions), the function returns an error indicating that the value should match at
  * least one schema.
  */
-export function validateAnyOf(value: SchemaValue, schema: JsfSchema): ValidationError[] {
+export function validateAnyOf(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
   if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
     return []
   }
@@ -42,15 +43,14 @@ export function validateAnyOf(value: SchemaValue, schema: JsfSchema): Validation
     if (typeof subSchema !== 'boolean' && typeof schema !== 'boolean') {
       effectiveSubSchema = mergeSubSchema({ parent: schema, subSchema })
     }
-    const errors = validateSchema(value, effectiveSubSchema)
+    const errors = validateSchema(value, effectiveSubSchema, false, path)
     if (errors.length === 0) {
       return []
     }
   }
 
-  // TODO: decide on a path for the `anyOf` errors and also for the other keyword errors that we'll have
   return [{
-    path: [],
+    path,
     validation: 'anyOf',
     message: 'should match at least one schema',
   }]

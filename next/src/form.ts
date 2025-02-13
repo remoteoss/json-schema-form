@@ -17,8 +17,13 @@ interface FormResult {
 export interface ValidationError {
   /**
    * The path to the field that has the error
+   * - For field-level errors: array of field names (e.g., ['address', 'street'])
+   * - For schema-level errors: empty array []
+   * - For nested validations: full path to the field (e.g., ['address', 'street', 'number'])
    * @example
-   * ['address', 'street']
+   * [] // schema-level error
+   * ['username'] // field-level error
+   * ['address', 'street'] // nested field error
    */
   path: string[]
   /**
@@ -40,6 +45,76 @@ export interface ValidationResult {
 }
 
 /**
+ * JSON Schema keywords that require special path handling.
+ * These keywords always use dot notation for their error paths.
+ * For example: { ".fieldName": "should match at least one schema" }
+ */
+const SCHEMA_KEYWORDS = ['anyOf', 'oneOf', 'allOf', 'not'] as const
+
+/**
+ * Transform a validation error path array into a form error path string.
+ * Follows these rules:
+ * 1. Schema-level errors (empty path) -> empty string ('')
+ * 2. Keyword validations (anyOf, etc.) -> always use dot notation ('.fieldName')
+ * 3. Single field errors -> field name only ('fieldName')
+ * 4. Nested field errors -> dot notation ('.parent.field')
+ *
+ * @example
+ * Schema-level error
+ * pathToFormErrorPath([], 'required') // ''
+ *
+ * Keyword validation - always dot notation
+ * pathToFormErrorPath(['value'], 'anyOf') // '.value'
+ *
+ * Single field error - no dot
+ * pathToFormErrorPath(['username'], 'type') // 'username'
+ *
+ * Nested field error - dot notation
+ * pathToFormErrorPath(['address', 'street'], 'type') // '.address.street'
+ */
+function pathToFormErrorPath(path: string[], validation: SchemaValidationErrorType): string {
+  // Schema-level errors have no path
+  if (path.length === 0)
+    return ''
+
+  // Special handling for JSON Schema keywords
+  if (SCHEMA_KEYWORDS.includes(validation as any)) {
+    return `.${path.join('.')}`
+  }
+
+  // Regular fields: dot notation only for nested paths
+  return path.length === 1 ? path[0] : `.${path.join('.')}`
+}
+
+/**
+ * Transform validation errors into an object with the field names as keys and the error messages as values.
+ * The path format follows the rules defined in pathToFormErrorPath.
+ * When multiple errors exist for the same field, the last error message is used.
+ *
+ * @example
+ * Single field error
+ * { username: 'Required field' }
+ *
+ * Nested field error
+ * { '.address.street': 'should be string' }
+ *
+ * Keyword validation error
+ * { '.fieldName': 'should match at least one schema' }
+ *
+ * Schema-level error
+ * { '': 'should match at least one schema' }
+ */
+function validationErrorsToFormErrors(errors: ValidationError[]): Record<string, string> | null {
+  if (errors.length === 0)
+    return null
+
+  return errors.reduce((acc: Record<string, string>, error) => {
+    acc[pathToFormErrorPath(error.path, error.validation)] = error.message
+    return acc
+  }, {})
+}
+
+/**
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
@@ -55,30 +130,6 @@ function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
   }
 
   return result
-}
-
-/**
- * Transform validation errors into an object with the field names as keys and the error messages as values
- * @param errors - The validation errors to transform
- * @returns The transformed validation errors
- * @description
- * When multiple errors are present for a single field, the last error message is used.
- * @example
- * validationErrorsToFormErrors([
- *   { path: ['address', 'street'], validation: 'required', message: 'is required' },
- *   { path: ['address', 'street'], validation: 'type', message: 'must be a string' },
- * ])
- * // { '.address.street': 'must be a string' }
- */
-function validationErrorsToFormErrors(errors: ValidationError[]): Record<string, string> | null {
-  if (errors.length === 0) {
-    return null
-  }
-
-  return errors.reduce((acc: Record<string, string>, error) => {
-    acc[error.path.join('')] = error.message
-    return acc
-  }, {})
 }
 
 interface CreateHeadlessFormOptions {

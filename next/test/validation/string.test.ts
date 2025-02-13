@@ -12,7 +12,7 @@ describe('string validation', () => {
 
     expect(result).toMatchObject({
       formErrors: {
-        '.name': 'should be string',
+        name: 'should be string',
       },
     })
   })
@@ -27,7 +27,7 @@ describe('string validation', () => {
 
     expect(result.handleValidation({ name: 'ab' })).toMatchObject({
       formErrors: {
-        '.name': 'must be at least 3 characters',
+        name: 'must be at least 3 characters',
       },
     })
 
@@ -69,7 +69,7 @@ describe('string validation', () => {
     expect(form.handleValidation({ name: '' })).not.toHaveProperty('formErrors')
     expect(form.handleValidation({ name: 'a' })).toMatchObject({
       formErrors: {
-        '.name': 'must be at most 0 characters',
+        name: 'must be at most 0 characters',
       },
     })
   })
@@ -84,7 +84,7 @@ describe('string validation', () => {
 
     expect(result.handleValidation({ name: 'ab' })).toMatchObject({
       formErrors: {
-        '.name': 'must be at least 3 characters',
+        name: 'must be at least 3 characters',
       },
     })
 
@@ -92,7 +92,7 @@ describe('string validation', () => {
 
     expect(result.handleValidation({ name: '01234567890' })).toMatchObject({
       formErrors: {
-        '.name': 'must be at most 10 characters',
+        name: 'must be at most 10 characters',
       },
     })
   })
@@ -108,7 +108,7 @@ describe('string validation', () => {
     expect(result.handleValidation({ name: 'abc' })).not.toHaveProperty('formErrors')
 
     expect(result.handleValidation({ name: '123' })).toMatchObject({
-      formErrors: { '.name': 'must match the pattern \'^[a-z]+$\'' },
+      formErrors: { name: 'must match the pattern \'^[a-z]+$\'' },
     })
   })
 })
