@@ -63,6 +63,7 @@ import {
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
   schemaInputTypeFile,
+  nestedGroupArrayForm,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 import { createHeadlessForm } from '@/createHeadlessForm';
@@ -1606,13 +1607,11 @@ describe('createHeadlessForm', () => {
             maxLength: 255,
             label: 'Child Full Name',
             name: 'full_name',
-            nameKey: 'full_name',
             required: true,
           },
           {
             type: 'date',
             name: 'birthdate',
-            nameKey: 'birthday',
             label: 'Child Birthdate',
             required: true,
             description: 'Enter your child’s date of birth',
@@ -1621,7 +1620,6 @@ describe('createHeadlessForm', () => {
           {
             type: 'radio',
             name: 'sex',
-            nameKey: 'sex',
             label: 'Child Sex',
             options: [
               {
@@ -1735,6 +1733,63 @@ describe('createHeadlessForm', () => {
             },
           ],
         });
+      });
+
+      it('nested "group-array" fields', () => {
+        const result = createHeadlessForm({
+          properties: {
+            nestedGroupArray: nestedGroupArrayForm,
+          },
+        });
+
+        expect(result.fields[0]).toMatchObject({
+          label: 'Parent object',
+          name: 'nestedGroupArray',
+          required: false,
+          type: 'group-array',
+          inputType: 'group-array',
+          jsonType: 'array',
+          fields: expect.any(Function),
+        });
+
+        expect(result.fields[0].fields()).toMatchObject([
+          {
+            type: 'text',
+            description: 'Simple text field',
+            maxLength: 255,
+            label: 'Outer Field',
+            name: 'notNested',
+            required: true,
+          },
+          {
+            label: 'Nested group-array',
+            name: 'nested',
+            required: true,
+            type: 'group-array',
+            inputType: 'group-array',
+            jsonType: 'array',
+            fields: expect.any(Function),
+          },
+        ]);
+
+        expect(result.fields[0].fields()[1].fields()).toMatchObject([
+          {
+            type: 'text',
+            description: 'First nested text field',
+            maxLength: 255,
+            label: 'Inner Field 1',
+            name: 'nestedField1',
+            required: true,
+          },
+          {
+            type: 'text',
+            description: 'Second nested text field',
+            maxLength: 255,
+            label: 'Inner Field 2',
+            name: 'nestedField2',
+            required: true,
+          },
+        ]);
       });
 
       it('can pass custom field attributes', () => {

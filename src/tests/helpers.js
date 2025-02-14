@@ -2327,3 +2327,59 @@ export const schemaWithCustomValidationsAndConditionals = {
     },
   ],
 };
+
+export const nestedGroupArrayForm = {
+  items: {
+    properties: {
+      notNested: {
+        description: 'Simple text field',
+        'x-jsf-presentation': {
+          inputType: 'text',
+        },
+        title: 'Outer Field',
+        type: 'string',
+        maxLength: 255,
+      },
+      nested: {
+        items: {
+          properties: {
+            nestedField1: {
+              description: 'First nested text field',
+              'x-jsf-presentation': {
+                inputType: 'text',
+              },
+              title: 'Inner Field 1',
+              type: 'string',
+              maxLength: 255,
+            },
+            nestedField2: {
+              description: 'Second nested text field',
+              'x-jsf-presentation': {
+                inputType: 'text',
+              },
+              title: 'Inner Field 2',
+              type: 'string',
+              maxLength: 255,
+            },
+          },
+          'x-jsf-order': ['nestedField1', 'nestedField2'],
+          required: ['nestedField1', 'nestedField2'],
+          type: 'object',
+        },
+        'x-jsf-presentation': {
+          inputType: 'group-array',
+        },
+        title: 'Nested group-array',
+        type: 'array',
+      },
+    },
+    'x-jsf-order': ['notNested', 'nested'],
+    required: ['notNested', 'nested'],
+    type: 'object',
+  },
+  'x-jsf-presentation': {
+    inputType: 'group-array',
+  },
+  title: 'Parent object',
+  type: 'array',
+};

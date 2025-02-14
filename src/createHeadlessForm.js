@@ -313,13 +313,10 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
     if (fieldParams.inputType === 'group-array') {
       const groupArrayItems = convertJSONSchemaPropertiesToFieldParameters(fieldParams.items);
       const groupArrayFields = groupArrayItems.map((groupArrayItem) => {
-        groupArrayItem.nameKey = groupArrayItem.name;
         const customProperties = null; // getCustomPropertiesForField(fieldParams, config); // TODO later support in group-array
         const composeFn = getComposeFunctionForField(groupArrayItem, !!customProperties);
         return composeFn(groupArrayItem);
       });
-
-      fieldParams.nameKey = fieldParams.name;
 
       fieldParams.nthFieldGroup = {
         name: fieldParams.name,
