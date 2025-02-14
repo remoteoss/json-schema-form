@@ -107,7 +107,9 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
   return [{
     path,
     validation: 'type',
-    message: `should be ${schemaType}`,
+    message: `should be ${Array.isArray(schemaType)
+      ? schemaType.join(' | ')
+      : schemaType}`,
   }]
 }
 
