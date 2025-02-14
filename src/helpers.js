@@ -72,7 +72,11 @@ function hasType(type, typeName) {
  * @returns
  */
 export function getField(fieldName, fields) {
-  return fields.find(({ name }) => name === fieldName);
+  if (Array.isArray(fields)) {
+    return fields.find(({ name }) => name === fieldName);
+  } else {
+    return fields[fieldName];
+  }
 }
 
 /**
@@ -99,6 +103,10 @@ export function compareFormValueWithSchemaValue(formValue, schemaValue) {
   //  fallback to undefined since JSON-schemas empty values come represented as null
   const currentPropertyValue =
     typeof schemaValue === 'number' ? schemaValue : schemaValue || undefined;
+  if (Array.isArray(formValue)) {
+    return formValue.some((x) => String(x) === String(currentPropertyValue));
+  }
+
   // We're using the stringified version of both values since numeric values from forms come represented as Strings.
   // By doing this, we're sure that we're comparing the same type.
   return String(formValue) === String(currentPropertyValue);
@@ -190,7 +198,7 @@ export function getPrefillValues(fields, initialValues = {}) {
     switch (field.type) {
       case supportedTypes.GROUP_ARRAY: {
         initialValues[fieldName] = initialValues[fieldName]?.map((subFieldValues) =>
-          getPrefillValues(field.fields(), subFieldValues)
+          field.fields().map((subField) => getPrefillValues(subField, subFieldValues))
         );
         break;
       }
@@ -333,7 +341,6 @@ export function processNode({
 }) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
-
   // Go through the node properties definition and update each field accordingly
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
@@ -419,6 +426,26 @@ export function processNode({
           parentID: name,
           logic,
         });
+      }
+      if (inputType === supportedTypes.GROUP_ARRAY) {
+        // It's a group array, which might contain scoped conditions
+        const values = formValues[name];
+        if (Array.isArray(values)) {
+          const newFields = [];
+          const field = getField(name, formFields);
+          values.forEach((value) => {
+            const fields = field.fields();
+            processNode({
+              node: nestedNode.items,
+              formValues: value,
+              formFields: fields,
+              parentID: name,
+              logic,
+            });
+            newFields.push(fields);
+          });
+          field.fields = () => newFields;
+        }
       }
     });
   }

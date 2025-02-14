@@ -118,6 +118,22 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {},
     );
   }
 
+  if (inputType === supportedTypes.GROUP_ARRAY) {
+    // eslint-disable-next-line no-use-before-define
+    fields = () =>
+      getFieldsFromJSONSchema(
+        fieldProperties.items,
+        {
+          customProperties: get(config, `customProperties.${name}.customProperties`, {}),
+          parentID: name,
+        },
+        logic
+      ).reduce((acc, obj) => {
+        acc[obj.name] = obj;
+        return acc;
+      }, {});
+  }
+
   const result = {
     name,
     inputType,
@@ -242,7 +258,6 @@ function buildField(fieldParams, config, scopedJsonSchema, logic) {
   const calculateConditionalFieldsClosure =
     fieldParams.isDynamic &&
     calculateConditionalProperties({ fieldParams, customProperties, logic, config });
-
   const calculateCustomValidationPropertiesClosure = calculateCustomValidationProperties(
     fieldParams,
     customProperties
@@ -300,14 +315,12 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
   fieldParamsList.forEach((fieldParams) => {
     if (fieldParams.inputType === 'group-array') {
       const groupArrayItems = convertJSONSchemaPropertiesToFieldParameters(fieldParams.items);
-      const groupArrayFields = groupArrayItems.map((groupArrayItem) => {
-        groupArrayItem.nameKey = groupArrayItem.name;
-        const customProperties = null; // getCustomPropertiesForField(fieldParams, config); // TODO later support in group-array
-        const composeFn = getComposeFunctionForField(groupArrayItem, !!customProperties);
-        return composeFn(groupArrayItem);
-      });
-
-      fieldParams.nameKey = fieldParams.name;
+      const groupArrayFields = groupArrayItems.reduce((acc, groupArrayItem) => {
+        return {
+          ...acc,
+          [groupArrayItem.name]: buildField(groupArrayItem, config, scopedJsonSchema, logic),
+        };
+      }, {});
 
       fieldParams.nthFieldGroup = {
         name: fieldParams.name,

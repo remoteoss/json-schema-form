@@ -1604,7 +1604,6 @@ describe('createHeadlessForm', () => {
             type: 'text',
             description: 'Enter your child’s full name',
             maxLength: 255,
-            nameKey: 'full_name',
             label: 'Child Full Name',
             name: 'full_name',
             required: true,
@@ -1616,7 +1615,6 @@ describe('createHeadlessForm', () => {
             required: true,
             description: 'Enter your child’s date of birth',
             maxLength: 255,
-            nameKey: 'birthdate',
           },
           {
             type: 'radio',
@@ -1635,7 +1633,6 @@ describe('createHeadlessForm', () => {
             required: true,
             description:
               'We know sex is non-binary but for insurance and payroll purposes, we need to collect this information.',
-            nameKey: 'sex',
           },
         ]);
       });

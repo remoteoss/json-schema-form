@@ -14,7 +14,10 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
 
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
-    const value = formValues[name];
+    // const value = formValues[name];
+    const value = Array.isArray(formValues)
+      ? formValues.filter((item) => item?.[name] !== undefined).map((x) => x?.[name])
+      : formValues[name];
     const hasEmptyValue =
       typeof value === 'undefined' ||
       // NOTE: This is a "Remote API" dependency, as empty fields are sent as "null".
@@ -30,7 +33,6 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
       // https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else
       return true;
     }
-
     if (hasProperty(currentProperty, 'const')) {
       return compareFormValueWithSchemaValue(value, currentProperty.const);
     }
