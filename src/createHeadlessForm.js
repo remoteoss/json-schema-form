@@ -128,10 +128,7 @@ function buildFieldParameters(name, fieldProperties, required = [], config = {},
           parentID: name,
         },
         logic
-      ).reduce((acc, obj) => {
-        acc[obj.name] = obj;
-        return acc;
-      }, {});
+      );
   }
 
   const result = {
@@ -315,12 +312,14 @@ function getFieldsFromJSONSchema(scopedJsonSchema, config, logic) {
   fieldParamsList.forEach((fieldParams) => {
     if (fieldParams.inputType === 'group-array') {
       const groupArrayItems = convertJSONSchemaPropertiesToFieldParameters(fieldParams.items);
-      const groupArrayFields = groupArrayItems.reduce((acc, groupArrayItem) => {
-        return {
-          ...acc,
-          [groupArrayItem.name]: buildField(groupArrayItem, config, scopedJsonSchema, logic),
-        };
-      }, {});
+      const groupArrayFields = groupArrayItems.map((groupArrayItem) => {
+        groupArrayItem.nameKey = groupArrayItem.name;
+        const customProperties = null; // getCustomPropertiesForField(fieldParams, config); // TODO later support in group-array
+        const composeFn = getComposeFunctionForField(groupArrayItem, !!customProperties);
+        return composeFn(groupArrayItem);
+      });
+
+      fieldParams.nameKey = fieldParams.name;
 
       fieldParams.nthFieldGroup = {
         name: fieldParams.name,

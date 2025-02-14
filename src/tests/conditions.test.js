@@ -422,6 +422,233 @@ describe('Conditional attributes updated', () => {
     handleValidation({ is_full_time: 'no' });
     expect(fields[1].visibilityCondition).toEqual(expect.any(Function));
   });
+
+  it('Group array nested condition', () => {
+    const { fields, handleValidation } = createHeadlessForm({
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        companies: {
+          type: 'array',
+          'x-jsf-presentation': {
+            inputType: 'group-array',
+          },
+          items: {
+            type: 'object',
+            properties: {
+              company: {
+                type: 'string',
+                oneOf: [
+                  {
+                    title: 'A',
+                    const: 'A',
+                  },
+                  {
+                    title: 'B',
+                    const: 'B',
+                  },
+                ],
+                'x-jsf-presentation': {
+                  inputType: 'select',
+                },
+              },
+              role: {
+                title: 'Role',
+                oneOf: [],
+                'x-jsf-presentation': {
+                  inputType: 'select',
+                },
+              },
+            },
+            allOf: [
+              {
+                if: {
+                  properties: {
+                    company: {
+                      const: 'A',
+                    },
+                  },
+                  required: ['company'],
+                },
+                then: {
+                  properties: {
+                    role: {
+                      oneOf: [
+                        {
+                          title: 'adminA',
+                          const: 'adminA',
+                        },
+                        {
+                          title: 'userA',
+                          const: 'userA',
+                        },
+                      ],
+                      'x-jsf-presentation': {
+                        inputType: 'select',
+                      },
+                    },
+                  },
+                  required: ['role'],
+                },
+              },
+              {
+                if: {
+                  properties: {
+                    company: {
+                      const: 'B',
+                    },
+                  },
+                  required: ['company'],
+                },
+                then: {
+                  properties: {
+                    role: {
+                      oneOf: [
+                        {
+                          title: 'adminB',
+                          const: 'adminB',
+                        },
+                        {
+                          title: 'userB',
+                          const: 'userB',
+                        },
+                      ],
+                      'x-jsf-presentation': {
+                        inputType: 'select',
+                      },
+                    },
+                  },
+                  required: ['role'],
+                },
+              },
+            ],
+            required: ['company', 'role'],
+          },
+        },
+      },
+      required: ['companies'],
+    });
+
+    handleValidation({ companies: [{ company: 'A' }, { company: 'B' }] });
+    expect(fields[0].dynamicFields[0][1].options).toEqual([
+      { label: 'adminA', value: 'adminA' },
+      { label: 'userA', value: 'userA' },
+    ]);
+    expect(fields[0].dynamicFields[1][1].options).toEqual([
+      { label: 'adminB', value: 'adminB' },
+      { label: 'userB', value: 'userB' },
+    ]);
+    handleValidation({ companies: [] });
+    expect(fields[0].dynamicFields).toEqual([]);
+  });
+
+  it('select multiple conditions', () => {
+    const { fields, handleValidation } = createHeadlessForm({
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        company: {
+          title: 'Select Company',
+          type: 'string',
+          description: 'Choose a company',
+          oneOf: [
+            {
+              title: 'A',
+              const: 'A',
+            },
+            {
+              title: 'B',
+              const: 'B',
+            },
+          ],
+          'x-jsf-presentation': {
+            inputType: 'select',
+          },
+        },
+        role: {
+          title: 'Role',
+          oneOf: [],
+          'x-jsf-presentation': {
+            inputType: 'select',
+          },
+        },
+      },
+      allOf: [
+        {
+          if: {
+            properties: {
+              company: {
+                const: 'A',
+              },
+            },
+            required: ['company'],
+          },
+          then: {
+            properties: {
+              role: {
+                oneOf: [
+                  {
+                    title: 'adminA',
+                    const: 'adminA',
+                  },
+                  {
+                    title: 'userA',
+                    const: 'userA',
+                  },
+                ],
+                'x-jsf-presentation': {
+                  inputType: 'select',
+                },
+              },
+            },
+            required: ['role'],
+          },
+        },
+        {
+          if: {
+            properties: {
+              company: {
+                const: 'B',
+              },
+            },
+            required: ['company'],
+          },
+          then: {
+            properties: {
+              role: {
+                oneOf: [
+                  {
+                    title: 'adminB',
+                    const: 'adminB',
+                  },
+                  {
+                    title: 'userB',
+                    const: 'userB',
+                  },
+                ],
+                'x-jsf-presentation': {
+                  inputType: 'select',
+                },
+              },
+            },
+            required: ['role'],
+          },
+        },
+      ],
+      required: ['company', 'role'],
+    });
+
+    handleValidation({ company: 'A' });
+    expect(fields[1].options).toEqual([
+      { label: 'adminA', value: 'adminA' },
+      { label: 'userA', value: 'userA' },
+    ]);
+    handleValidation({ company: 'B' });
+    expect(fields[1].options).toEqual([
+      { label: 'adminB', value: 'adminB' },
+      { label: 'userB', value: 'userB' },
+    ]);
+  });
 });
 
 describe('Conditional with a minimum value check', () => {
@@ -707,199 +934,5 @@ describe('Conditionals - bugs and code-smells', () => {
     // expect(validation1.formErrors).toEqual({
     //   field_c: 'Must be greater or equal to 5',
     // });
-  });
-
-  it('Group array nested condition', () => {
-    const { fields, handleValidation } = createHeadlessForm({
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        companies: {
-          title: 'Comapnies',
-          type: 'array',
-          default: [],
-          'x-jsf-presentation': {
-            inputType: 'group-array',
-          },
-          items: {
-            type: 'object',
-            properties: {
-              company: {
-                title: 'Select Company',
-                type: 'string',
-                description: 'Choose a company',
-                oneOf: [
-                  {
-                    title: 'A',
-                    const: 'A',
-                  },
-                  {
-                    title: 'B',
-                    const: 'B',
-                  },
-                ],
-                'x-jsf-presentation': {
-                  inputType: 'select',
-                },
-              },
-              role: {
-                title: 'Role',
-                oneOf: [],
-                'x-jsf-presentation': {
-                  inputType: 'select',
-                },
-              },
-            },
-            allOf: [
-              {
-                if: {
-                  properties: {
-                    company: {
-                      const: 'A',
-                    },
-                  },
-                  required: ['company'],
-                },
-                then: {
-                  properties: {
-                    role: {
-                      oneOf: [
-                        {
-                          title: 'admin',
-                          const: 'admin',
-                        },
-                        {
-                          title: 'user',
-                          const: 'user',
-                        },
-                      ],
-                      'x-jsf-presentation': {
-                        inputType: 'select',
-                      },
-                    },
-                  },
-                  required: ['role'],
-                },
-              },
-              {
-                if: {
-                  properties: {
-                    company: {
-                      const: 'B',
-                    },
-                  },
-                  required: ['company'],
-                },
-                then: {
-                  properties: {
-                    role: {
-                      oneOf: [
-                        {
-                          title: 'adminB',
-                          const: 'adminB',
-                        },
-                        {
-                          title: 'userB',
-                          const: 'userB',
-                        },
-                      ],
-                      'x-jsf-presentation': {
-                        inputType: 'select',
-                      },
-                    },
-                  },
-                  required: ['role'],
-                },
-              },
-            ],
-            required: ['company', 'role'],
-          },
-        },
-      },
-      required: ['companies'],
-    });
-
-    handleValidation({ companies: [{ company: 'A' }, { company: 'B' }] });
-    expect(fields[0].fields()[0].role.options).toEqual([
-      { label: 'admin', value: 'admin' },
-      { label: 'user', value: 'user' },
-    ]);
-    expect(fields[0].fields()[1].role.options).toEqual([
-      { label: 'adminB', value: 'adminB' },
-      { label: 'userB', value: 'userB' },
-    ]);
-  });
-
-  it('select multiple conditions', () => {
-    const { fields, handleValidation } = createHeadlessForm({
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        company: {
-          title: 'Select Company',
-          type: 'string',
-          description: 'Choose a company',
-          oneOf: [
-            {
-              title: 'A',
-              const: 'A',
-            },
-            {
-              title: 'B',
-              const: 'B',
-            },
-          ],
-          'x-jsf-presentation': {
-            inputType: 'select',
-          },
-        },
-        role: {
-          title: 'Role',
-          oneOf: [],
-          'x-jsf-presentation': {
-            inputType: 'select',
-          },
-        },
-      },
-      allOf: [
-        {
-          if: {
-            properties: {
-              company: {
-                const: 'A',
-              },
-            },
-            required: ['company'],
-          },
-          then: {
-            properties: {
-              role: {
-                oneOf: [
-                  {
-                    title: 'admin',
-                    const: 'admin',
-                  },
-                  {
-                    title: 'user',
-                    const: 'user',
-                  },
-                ],
-                'x-jsf-presentation': {
-                  inputType: 'select',
-                },
-              },
-            },
-            required: ['role'],
-          },
-        },
-      ],
-      required: ['company', 'role'],
-    });
-
-    handleValidation({ company: 'A' });
-    expect(fields[1].options).toEqual([
-      { label: 'admin', value: 'admin' },
-      { label: 'user', value: 'user' },
-    ]);
   });
 });

@@ -1606,11 +1606,13 @@ describe('createHeadlessForm', () => {
             maxLength: 255,
             label: 'Child Full Name',
             name: 'full_name',
+            nameKey: 'full_name',
             required: true,
           },
           {
             type: 'date',
             name: 'birthdate',
+            nameKey: 'birthday',
             label: 'Child Birthdate',
             required: true,
             description: 'Enter your child’s date of birth',
@@ -1619,6 +1621,7 @@ describe('createHeadlessForm', () => {
           {
             type: 'radio',
             name: 'sex',
+            nameKey: 'sex',
             label: 'Child Sex',
             options: [
               {

@@ -485,10 +485,13 @@ export function buildYupSchema(field, config, logic) {
 
   function buildGroupArraySchema() {
     return object().shape(
-      Object.keys(propertyFields.nthFieldGroup.fields()).reduce((acc, key) => {
-        acc[key] = buildYupSchema(propertyFields.nthFieldGroup.fields()[key], config);
-        return acc;
-      }, {})
+      propertyFields.nthFieldGroup.fields().reduce(
+        (schema, groupArrayField) => ({
+          ...schema,
+          [groupArrayField.name]: buildYupSchema(groupArrayField, config)(),
+        }),
+        {}
+      )
     );
   }
 

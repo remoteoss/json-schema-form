@@ -103,9 +103,6 @@ export function compareFormValueWithSchemaValue(formValue, schemaValue) {
   //  fallback to undefined since JSON-schemas empty values come represented as null
   const currentPropertyValue =
     typeof schemaValue === 'number' ? schemaValue : schemaValue || undefined;
-  if (Array.isArray(formValue)) {
-    return formValue.some((x) => String(x) === String(currentPropertyValue));
-  }
 
   // We're using the stringified version of both values since numeric values from forms come represented as Strings.
   // By doing this, we're sure that we're comparing the same type.
@@ -198,7 +195,7 @@ export function getPrefillValues(fields, initialValues = {}) {
     switch (field.type) {
       case supportedTypes.GROUP_ARRAY: {
         initialValues[fieldName] = initialValues[fieldName]?.map((subFieldValues) =>
-          field.fields().map((subField) => getPrefillValues(subField, subFieldValues))
+          getPrefillValues(field.fields(), subFieldValues)
         );
         break;
       }
@@ -444,7 +441,7 @@ export function processNode({
             });
             newFields.push(fields);
           });
-          field.fields = () => newFields;
+          field.dynamicFields = newFields;
         }
       }
     });
