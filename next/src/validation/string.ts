@@ -36,34 +36,41 @@ export function validateString(
   path: string[] = [],
 ): ValidationError[] {
   const errors: ValidationError[] = []
+  const schemaType = getSchemaType(schema)
 
-  if (getSchemaType(schema) === 'string' && typeof value === 'string') {
-    // Length validation
-    if (schema.minLength !== undefined && value.length < schema.minLength) {
-      errors.push({ path, validation: 'minLength', message: `must be at least ${schema.minLength} characters` })
-    }
+  if (typeof value !== 'string') {
+    return []
+  }
 
-    if (schema.maxLength !== undefined && value.length > schema.maxLength) {
-      errors.push({ path, validation: 'maxLength', message: `must be at most ${schema.maxLength} characters` })
-    }
+  if (schemaType !== undefined && schemaType !== 'string') {
+    return []
+  }
 
-    // Pattern validation
-    if (schema.pattern !== undefined) {
-      const pattern = new RegExp(schema.pattern)
-      if (!pattern.test(value)) {
-        errors.push({
-          path,
-          validation: 'pattern',
-          message: `must match the pattern '${schema.pattern}'`,
-        })
-      }
-    }
+  // Length validation
+  if (schema.minLength !== undefined && value.length < schema.minLength) {
+    errors.push({ path, validation: 'minLength', message: `must be at least ${schema.minLength} characters` })
+  }
 
-    // Format validation (annotation by default in 2020-12)
-    if (schema.format !== undefined) {
-      const formatErrors = validateFormat(value, schema.format, path)
-      errors.push(...formatErrors)
+  if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+    errors.push({ path, validation: 'maxLength', message: `must be at most ${schema.maxLength} characters` })
+  }
+
+  // Pattern validation
+  if (schema.pattern !== undefined) {
+    const pattern = new RegExp(schema.pattern)
+    if (!pattern.test(value)) {
+      errors.push({
+        path,
+        validation: 'pattern',
+        message: `must match the pattern '${schema.pattern}'`,
+      })
     }
+  }
+
+  // Format validation (annotation by default in 2020-12)
+  if (schema.format !== undefined) {
+    const formatErrors = validateFormat(value, schema.format, path)
+    errors.push(...formatErrors)
   }
 
   return errors

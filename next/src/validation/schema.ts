@@ -2,6 +2,7 @@ import type { ValidationError } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import type { StringValidationErrorType } from './string'
 import { validateAnyOf } from './anyOf'
+import { type NumberValidationErrorType, validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
 
@@ -33,6 +34,11 @@ export type SchemaValidationErrorType =
    * Format validation (now separated into format-annotation and format-assertion)
    */
   | 'format'
+
+  /**
+   * Number validation keywords
+   */
+  | NumberValidationErrorType
 
 /**
  * Get the type of a schema
@@ -70,6 +76,7 @@ export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[
  */
 function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
   const schemaType = getSchemaType(schema)
+
   // Skip type-checking if no type is specified.
   if (schemaType === undefined) {
     return []
@@ -77,21 +84,31 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
 
   const valueType = value === undefined ? 'undefined' : typeof value
 
-  const hasTypeMismatch = Array.isArray(schemaType)
-    ? !schemaType.includes(valueType)
-    : valueType !== schemaType
+  if (Array.isArray(schemaType)) {
+    for (const type of schemaType) {
+      if (valueType === 'number' && type === 'integer' && Number.isInteger(value)) {
+        return []
+      }
 
-  if (hasTypeMismatch) {
-    return [{
-      path,
-      validation: 'type',
-      message: `should be ${Array.isArray(schemaType)
-        ? schemaType.join(' | ')
-        : schemaType}`,
-    }]
+      if (valueType === type) {
+        return []
+      }
+    }
   }
 
-  return []
+  if (valueType === 'number' && schemaType === 'integer' && Number.isInteger(value)) {
+    return []
+  }
+
+  if (valueType === schemaType) {
+    return []
+  }
+
+  return [{
+    path,
+    validation: 'type',
+    message: `should be ${schemaType}`,
+  }]
 }
 
 /**
@@ -148,6 +165,7 @@ export function validateSchema(
   const errors = [
     ...validateObject(value, schema, path),
     ...validateString(value, schema, path),
+    ...validateNumber(value, schema, path),
   ]
 
   if (schema.anyOf && Array.isArray(schema.anyOf)) {

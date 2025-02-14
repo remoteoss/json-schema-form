@@ -21,7 +21,8 @@ interface TestSchema {
 expect.extend({
   toBeValid(received: JsfSchema, value: SchemaValue, valid: boolean = true) {
     const errors = validateSchema(value, received)
-    const pass = errors.length === 0
+    const hasErrors = errors.length > 0
+    const pass = valid ? !hasErrors : hasErrors
     return {
       pass,
       message: () => `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(received)}`,
