@@ -1,7 +1,7 @@
 import type { ValidationError } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import type { StringValidationErrorType } from './string'
-import { validateAnyOf } from './anyOf'
+import { getBaseSchema, validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { type NumberValidationErrorType, validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -15,7 +15,8 @@ export type SchemaValidationErrorType =
   | 'valid'
 
   /**
-   * Composition keywords
+   * Schema composition keywords (allOf, anyOf, oneOf, not)
+   * These keywords apply subschemas in a logical manner according to JSON Schema spec
    */
   | 'anyOf'
   | 'oneOf'
@@ -82,7 +83,27 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
     return []
   }
 
-  const valueType = value === undefined ? 'undefined' : typeof value
+  // Handle null values specially
+  if (value === null) {
+    if (Array.isArray(schemaType)) {
+      return schemaType.includes('null')
+        ? []
+        : [{
+            path,
+            validation: 'type',
+            message: `should be ${schemaType.join(' | ')}`,
+          }]
+    }
+    return schemaType === 'null'
+      ? []
+      : [{
+          path,
+          validation: 'type',
+          message: `should be ${schemaType}`,
+        }]
+  }
+
+  const valueType = typeof value
 
   if (Array.isArray(schemaType)) {
     for (const type of schemaType) {
@@ -90,7 +111,7 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
         return []
       }
 
-      if (valueType === type) {
+      if (valueType === type || (type === 'null' && value === null)) {
         return []
       }
     }
@@ -114,21 +135,10 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
 }
 
 /**
- * Validate a value against a schema
- * @param value - The value to validate
- * @param schema - The schema to validate against
- * @param required - Whether the value is required
- * @param path - The path to the current field being validated
- * @returns An array of validation errors
- * @description
- * This function is the main validation function to validate a value against a schema.
- * - It validates boolean schemas
- * - It validates the `required` constraint
- * - It validates the type of the value
- * - It delegates to type specific validation functions such as `validateObject` and `validateString`
- * @see `validateType` for type validation
+ * Validate a value against a schema, excluding composition keywords
+ * This is used internally to validate against base schema constraints
  */
-export function validateSchema(
+function validateSchemaWithoutComposition(
   value: SchemaValue,
   schema: JsfSchema,
   required: boolean = false,
@@ -145,6 +155,9 @@ export function validateSchema(
   if (typeof schema === 'boolean') {
     return schema ? [] : [{ path, validation: 'valid', message: 'always fails' }]
   }
+
+  // Collect all validation errors
+  const errors: ValidationError[] = []
 
   const typeValidationErrors = validateType(value, schema, path)
   if (typeValidationErrors.length > 0) {
@@ -164,17 +177,97 @@ export function validateSchema(
     }
   }
 
-  const errors = [
+  // Validate base schema constraints
+  errors.push(
     ...validateObject(value, schema, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
-  ]
+  )
 
+  return errors
+}
+
+/**
+ * Validate a value against a schema
+ * @param value - The value to validate
+ * @param schema - The schema to validate against
+ * @param required - Whether the value is required
+ * @param path - The path to the current field being validated
+ * @returns An array of validation errors
+ * @description
+ * This function is the main validation function that implements JSON Schema validation.
+ * The validation process follows this order:
+ * 1. Handle undefined values and the required constraint
+ * 2. Handle boolean schemas (true allows everything, false allows nothing)
+ * 3. Validate against base schema constraints:
+ *    - Type validation (if type is specified)
+ *    - Required properties (for objects)
+ *    - Type-specific validations (string, number, object)
+ * 4. Validate against composition keywords in this order:
+ *    - not (negates the validation of a subschema)
+ *    - allOf (all subschemas must be valid)
+ *    - anyOf (at least one subschema must be valid)
+ *    - oneOf (exactly one subschema must be valid)
+ *
+ * @see validateType - For type validation behavior
+ * @see validateSchemaWithoutComposition - For base schema validation
+ * @see https://json-schema.org/understanding-json-schema/reference/combining.html
+ */
+export function validateSchema(
+  value: SchemaValue,
+  schema: JsfSchema,
+  required: boolean = false,
+  path: string[] = [],
+): ValidationError[] {
+  // Handle undefined values and boolean schemas first
+  if (value === undefined && required) {
+    return [{ path, validation: 'required', message: 'is required' }]
+  }
+
+  if (value === undefined) {
+    return []
+  }
+
+  if (typeof schema === 'boolean') {
+    return schema ? [] : [{ path, validation: 'valid', message: 'always fails' }]
+  }
+
+  // First validate against base schema
+  const baseSchema = getBaseSchema(schema)
+  const baseErrors = validateSchemaWithoutComposition(value, baseSchema, required, path)
+  if (baseErrors.length > 0) {
+    return baseErrors
+  }
+
+  // Then validate against all logical composition keywords
+  let errors: ValidationError[] = []
+
+  // Handle not - we don't want to validate against base schema twice
+  if (schema.not !== undefined) {
+    errors = validateNot(value, { not: schema.not }, path)
+    if (errors.length > 0)
+      return errors
+  }
+
+  // Handle allOf
+  if (schema.allOf && Array.isArray(schema.allOf)) {
+    errors = validateAllOf(value, { allOf: schema.allOf }, path)
+    if (errors.length > 0)
+      return errors
+  }
+
+  // Handle anyOf
   if (schema.anyOf && Array.isArray(schema.anyOf)) {
-    const anyOfErrors = validateAnyOf(value, schema, path)
-    if (anyOfErrors.length > 0) {
-      return anyOfErrors
-    }
+    errors = validateAnyOf(value, { anyOf: schema.anyOf }, path)
+    if (errors.length > 0)
+      return errors
+  }
+
+  // Handle oneOf
+  if (schema.oneOf && Array.isArray(schema.oneOf)) {
+    errors = validateOneOf(value, { oneOf: schema.oneOf }, path)
+    if (errors.length > 0)
+      return errors
   }
 
   return errors
