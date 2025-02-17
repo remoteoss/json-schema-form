@@ -482,6 +482,7 @@
       "empty array is invalid"
     ],
     "collect annotations inside a 'not', even if collection is disabled": [
+      "unevaluated property",
       "annotations are still collected inside a 'not'"
     ],
     "oneOf": [
@@ -757,6 +758,7 @@
       "when two schemas match and has unevaluated items"
     ],
     "unevaluatedItems with oneOf": [
+      "with no unevaluated items",
       "with unevaluated items"
     ],
     "unevaluatedItems with not": [
@@ -897,10 +899,13 @@
       "Empty is invalid (no x or y)",
       "a and b are invalid (no x or y)",
       "x and y are invalid",
+      "a and y are valid",
+      "a and b and y are valid",
       "a and b and x and y are invalid"
     ],
     "dynamic evalation inside nested refs": [
       "Empty is invalid",
+      "a is valid",
       "a + b is invalid",
       "a + c is invalid",
       "a + d is invalid",
