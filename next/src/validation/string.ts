@@ -46,12 +46,14 @@ export function validateString(
     return []
   }
 
+  const valueLength = [...new Intl.Segmenter().segment(value)].length
+
   // Length validation
-  if (schema.minLength !== undefined && value.length < schema.minLength) {
+  if (schema.minLength !== undefined && valueLength < schema.minLength) {
     errors.push({ path, validation: 'minLength', message: `must be at least ${schema.minLength} characters` })
   }
 
-  if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+  if (schema.maxLength !== undefined && valueLength > schema.maxLength) {
     errors.push({ path, validation: 'maxLength', message: `must be at most ${schema.maxLength} characters` })
   }
 
