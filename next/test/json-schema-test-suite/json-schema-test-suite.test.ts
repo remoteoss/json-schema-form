@@ -1,5 +1,5 @@
 import type { JsfSchema, SchemaValue } from '../../src/types'
-import type { TestSkipNode, TestSkipTree } from './helpers'
+import type { TestSkipNode } from './helpers'
 import fs from 'node:fs'
 import path from 'node:path'
 import util from 'node:util'
