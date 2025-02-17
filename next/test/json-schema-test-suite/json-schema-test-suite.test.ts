@@ -58,23 +58,28 @@ describe('JSON Schema Test Suite', () => {
   const testFiles = fs.readdirSync(testsDir).filter(file => file.endsWith('.json'))
 
   for (const file of testFiles) {
-    const testFile: TestSchema[] = JSON.parse(fs.readFileSync(path.join(testsDir, file), 'utf8'))
+    const jsonSchemaTestSuites: TestSchema[] = JSON.parse(fs.readFileSync(path.join(testsDir, file), 'utf8'))
 
-    const runTestIfFeatureImplemented = (
+    const runTestIfFeatureIsImplemented = (
       testPath: string[],
       testName: string,
       testFn: () => void,
     ) => {
+      // By default, we run the test
       let shouldRun = true
-      // Getting first level of the test skip tree so it's easier to traverse
-      let currentAncestor: TestSkipNode = testsToSkip[testPath[0]]
+      let ancestor: TestSkipNode = testsToSkip
 
-      for (let i = 1; i < testPath.length; i++) {
-        currentAncestor = (currentAncestor as TestSkipTree)[testPath[i]]
-      }
-
-      if (currentAncestor && Array.isArray(currentAncestor)) {
-        shouldRun = !currentAncestor.includes(testName)
+      // Traverse the tree to understand if we should skip the test
+      for (let i = 0; i < testPath.length; i++) {
+        // If the current node is not an array, continue traversing the tree
+        if (!Array.isArray(ancestor)) {
+          ancestor = ancestor?.[testPath[i]]
+        }
+        else {
+          // If the current node is an array, check if the test name is in the array
+          shouldRun = !ancestor.includes(testName)
+          break
+        }
       }
 
       if (shouldRun) {
@@ -86,16 +91,16 @@ describe('JSON Schema Test Suite', () => {
       }
     }
 
-    for (const testSchema of testFile) {
-      describe(testSchema.description, () => {
-        for (const test of testSchema.tests) {
+    for (const testSuite of jsonSchemaTestSuites) {
+      describe(testSuite.description, () => {
+        for (const test of testSuite.tests) {
           // Tests that will run only if they previously failed
-          runTestIfFeatureImplemented(
-            ['JSON Schema Test Suite', testSchema.description],
+          runTestIfFeatureIsImplemented(
+            ['JSON Schema Test Suite', testSuite.description, test.description],
             test.description,
             () => {
               // @ts-expect-error TODO: properly extend the expect interface
-              expect(testSchema.schema).toBeValid(test.data, test.valid)
+              expect(testSuite.schema).toBeValid(test.data, test.valid)
             },
           )
         }
