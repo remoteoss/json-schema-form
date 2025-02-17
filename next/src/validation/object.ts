@@ -17,7 +17,7 @@ export function validateObject(
   schema: NonBooleanJsfSchema,
   path: string[] = [],
 ): ValidationError[] {
-  if (typeof schema === 'object' && schema.properties && typeof value === 'object') {
+  if (typeof schema === 'object' && schema.properties && typeof value === 'object' && value !== null) {
     const errors = []
     for (const [key, propertySchema] of Object.entries(schema.properties)) {
       const propertyValue = value[key]
