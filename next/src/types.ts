@@ -37,6 +37,9 @@ export type JsfSchema = JSONSchema & {
   'allOf'?: JsfSchema[]
   'oneOf'?: JsfSchema[]
   'not'?: JsfSchema
+  'if'?: JsfSchema
+  'then'?: JsfSchema
+  'else'?: JsfSchema
   'x-jsf-logic'?: {
     validations: Record<string, object>
     computedValues: Record<string, object>

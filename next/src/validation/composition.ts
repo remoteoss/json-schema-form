@@ -6,36 +6,8 @@
  */
 
 import type { ValidationError } from '../form'
-import type { JsfSchema, NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { JsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
-
-/**
- * Extract base schema by removing all composition keywords.
- * This is used to validate the base constraints before applying composition logic.
- * For example, in { type: "object", required: ["foo"], allOf: [...] },
- * we first validate type and required constraints before checking allOf.
- */
-export function getBaseSchema(schema: JsfSchema): NonBooleanJsfSchema {
-  if (typeof schema === 'boolean') {
-    return {}
-  }
-
-  const baseSchema = { ...schema }
-  delete baseSchema.allOf
-  delete baseSchema.anyOf
-  delete baseSchema.oneOf
-  delete baseSchema.not
-  return baseSchema
-}
-
-/**
- * Helper function to validate against base schema.
- * All composition validators first check the base schema before applying their specific logic.
- */
-function validateBaseSchema(value: SchemaValue, schema: JsfSchema, path: string[]): ValidationError[] {
-  const baseSchema = getBaseSchema(schema)
-  return validateSchema(value, baseSchema, false, path)
-}
 
 /**
  * Validate a value against the `allOf` keyword in a schema.
@@ -56,11 +28,6 @@ function validateBaseSchema(value: SchemaValue, schema: JsfSchema, path: string[
 export function validateAllOf(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
   if (!schema.allOf || !Array.isArray(schema.allOf)) {
     return []
-  }
-
-  const baseErrors = validateBaseSchema(value, schema, path)
-  if (baseErrors.length > 0) {
-    return baseErrors
   }
 
   for (const subSchema of schema.allOf) {
@@ -92,11 +59,6 @@ export function validateAllOf(value: SchemaValue, schema: JsfSchema, path: strin
 export function validateAnyOf(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
   if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
     return []
-  }
-
-  const baseErrors = validateBaseSchema(value, schema, path)
-  if (baseErrors.length > 0) {
-    return baseErrors
   }
 
   for (const subSchema of schema.anyOf) {
@@ -132,11 +94,6 @@ export function validateAnyOf(value: SchemaValue, schema: JsfSchema, path: strin
 export function validateOneOf(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
   if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
     return []
-  }
-
-  const baseErrors = validateBaseSchema(value, schema, path)
-  if (baseErrors.length > 0) {
-    return baseErrors
   }
 
   let validCount = 0
@@ -190,11 +147,6 @@ export function validateOneOf(value: SchemaValue, schema: JsfSchema, path: strin
 export function validateNot(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
   if (schema.not === undefined) {
     return []
-  }
-
-  const baseErrors = validateBaseSchema(value, schema, path)
-  if (baseErrors.length > 0) {
-    return baseErrors
   }
 
   if (typeof schema.not === 'boolean') {
