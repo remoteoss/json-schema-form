@@ -8,11 +8,7 @@ export function validateCondition(
   required: boolean,
   path: string[],
 ): ValidationError[] {
-  if (!schema.if) {
-    return []
-  }
-
-  if (!schema.then && !schema.else) {
+  if (schema.if === undefined) {
     return []
   }
 

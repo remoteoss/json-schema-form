@@ -3,6 +3,7 @@ import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import type { StringValidationErrorType } from './string'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
+import { validateConst } from './const'
 import { type NumberValidationErrorType, validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -14,6 +15,7 @@ export type SchemaValidationErrorType =
   | 'type'
   | 'required'
   | 'valid'
+  | 'const'
 
   /**
    * Schema composition keywords (allOf, anyOf, oneOf, not)
@@ -199,6 +201,7 @@ export function validateSchema(
   }
 
   return [
+    ...validateConst(value, schema, path),
     ...validateObject(value, schema, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),

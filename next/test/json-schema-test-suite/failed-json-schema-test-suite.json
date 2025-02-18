@@ -35,63 +35,6 @@
     "same $anchor with different base uri": [
       "$ref does not resolve to /$defs/A/allOf/0"
     ],
-    "const validation": [
-      "another value is invalid",
-      "another type is invalid"
-    ],
-    "const with object": [
-      "another object is invalid",
-      "another type is invalid"
-    ],
-    "const with array": [
-      "another array item is invalid",
-      "array with additional items is invalid"
-    ],
-    "const with null": [
-      "not null is invalid"
-    ],
-    "const with false does not match 0": [
-      "integer zero is invalid",
-      "float zero is invalid"
-    ],
-    "const with true does not match 1": [
-      "integer one is invalid",
-      "float one is invalid"
-    ],
-    "const with [false] does not match [0]": [
-      "[0] is invalid",
-      "[0.0] is invalid"
-    ],
-    "const with [true] does not match [1]": [
-      "[1] is invalid",
-      "[1.0] is invalid"
-    ],
-    "const with {\"a\": false} does not match {\"a\": 0}": [
-      "{\"a\": 0} is invalid",
-      "{\"a\": 0.0} is invalid"
-    ],
-    "const with {\"a\": true} does not match {\"a\": 1}": [
-      "{\"a\": 1} is invalid",
-      "{\"a\": 1.0} is invalid"
-    ],
-    "const with 0 does not match other zero-like types": [
-      "false is invalid",
-      "empty object is invalid",
-      "empty array is invalid",
-      "empty string is invalid"
-    ],
-    "const with 1 does not match true": [
-      "true is invalid"
-    ],
-    "const with -2.0 matches integer and float types": [
-      "integer 2 is invalid",
-      "float 2.0 is invalid",
-      "float -2.00001 is invalid"
-    ],
-    "float and integers are equal up to 64-bit representation limits": [
-      "integer minus one is invalid",
-      "float minus one is invalid"
-    ],
     "nul characters in strings": [
       "do not match string lacking nul",
       "do not match string lacking nul"
@@ -290,16 +233,6 @@
     ],
     "duration format": [
       "invalid duration string is only an annotation by default"
-    ],
-    "if with boolean schema true": [
-      "boolean schema true in if always chooses the then path (invalid)"
-    ],
-    "if with boolean schema false": [
-      "boolean schema false in if always chooses the else path (invalid)"
-    ],
-    "if appears at the end when serialized (keyword processing sequence)": [
-      "no redirects to then and fails",
-      "invalid redirects to else and fails"
     ],
     "evaluating the same schema location against the same data location twice is not a sign of an infinite loop": [
       "failing case"
@@ -704,7 +637,8 @@
       "with unevaluated properties"
     ],
     "unevaluatedProperties with if/then/else": [
-      "when if is true and has unevaluated properties"
+      "when if is true and has unevaluated properties",
+      "when if is false and has unevaluated properties"
     ],
     "unevaluatedProperties with if/then/else, then not defined": [
       "when if is true and has no unevaluated properties",
@@ -713,7 +647,8 @@
     ],
     "unevaluatedProperties with if/then/else, else not defined": [
       "when if is true and has unevaluated properties",
-      "when if is false and has no unevaluated properties"
+      "when if is false and has no unevaluated properties",
+      "when if is false and has unevaluated properties"
     ],
     "unevaluatedProperties with dependentSchemas": [
       "with unevaluated properties"
