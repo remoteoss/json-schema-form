@@ -1,364 +1,963 @@
 {
-  "failedTests": [
-    "JSON Schema Test Suite additionalProperties being false does not allow other properties an additional property is invalid",
-    "JSON Schema Test Suite non-ASCII pattern with additionalProperties not matching the pattern is invalid",
-    "JSON Schema Test Suite additionalProperties with schema an additional invalid property is invalid",
-    "JSON Schema Test Suite additionalProperties can exist by itself an additional invalid property is invalid",
-    "JSON Schema Test Suite additionalProperties does not look in applicators properties defined in allOf are not examined",
-    "JSON Schema Test Suite additionalProperties with propertyNames Valid against propertyNames, but not additionalProperties",
-    "JSON Schema Test Suite dependentSchemas with additionalProperties additionalProperties doesn't consider dependentSchemas",
-    "JSON Schema Test Suite dependentSchemas with additionalProperties additionalProperties can't see bar",
-    "JSON Schema Test Suite dependentSchemas with additionalProperties additionalProperties can't see bar even when foo2 is present",
-    "JSON Schema Test Suite Location-independent identifier mismatch",
-    "JSON Schema Test Suite Location-independent identifier with absolute URI mismatch",
-    "JSON Schema Test Suite Location-independent identifier with base URI change in subschema mismatch",
-    "JSON Schema Test Suite same $anchor with different base uri $ref does not resolve to /$defs/A/allOf/0",
-    "JSON Schema Test Suite const validation another value is invalid",
-    "JSON Schema Test Suite const validation another type is invalid",
-    "JSON Schema Test Suite const with object another object is invalid",
-    "JSON Schema Test Suite const with object another type is invalid",
-    "JSON Schema Test Suite const with array another array item is invalid",
-    "JSON Schema Test Suite const with array array with additional items is invalid",
-    "JSON Schema Test Suite const with null not null is invalid",
-    "JSON Schema Test Suite const with false does not match 0 integer zero is invalid",
-    "JSON Schema Test Suite const with false does not match 0 float zero is invalid",
-    "JSON Schema Test Suite const with true does not match 1 integer one is invalid",
-    "JSON Schema Test Suite const with true does not match 1 float one is invalid",
-    "JSON Schema Test Suite const with [false] does not match [0] [0] is invalid",
-    "JSON Schema Test Suite const with [false] does not match [0] [0.0] is invalid",
-    "JSON Schema Test Suite const with [true] does not match [1] [1] is invalid",
-    "JSON Schema Test Suite const with [true] does not match [1] [1.0] is invalid",
-    "JSON Schema Test Suite const with {\"a\": false} does not match {\"a\": 0} {\"a\": 0} is invalid",
-    "JSON Schema Test Suite const with {\"a\": false} does not match {\"a\": 0} {\"a\": 0.0} is invalid",
-    "JSON Schema Test Suite const with {\"a\": true} does not match {\"a\": 1} {\"a\": 1} is invalid",
-    "JSON Schema Test Suite const with {\"a\": true} does not match {\"a\": 1} {\"a\": 1.0} is invalid",
-    "JSON Schema Test Suite const with 0 does not match other zero-like types false is invalid",
-    "JSON Schema Test Suite const with 0 does not match other zero-like types empty object is invalid",
-    "JSON Schema Test Suite const with 0 does not match other zero-like types empty array is invalid",
-    "JSON Schema Test Suite const with 0 does not match other zero-like types empty string is invalid",
-    "JSON Schema Test Suite const with 1 does not match true true is invalid",
-    "JSON Schema Test Suite const with -2.0 matches integer and float types integer 2 is invalid",
-    "JSON Schema Test Suite const with -2.0 matches integer and float types float 2.0 is invalid",
-    "JSON Schema Test Suite const with -2.0 matches integer and float types float -2.00001 is invalid",
-    "JSON Schema Test Suite float and integers are equal up to 64-bit representation limits integer minus one is invalid",
-    "JSON Schema Test Suite float and integers are equal up to 64-bit representation limits float minus one is invalid",
-    "JSON Schema Test Suite nul characters in strings do not match string lacking nul",
-    "JSON Schema Test Suite contains keyword validation array without items matching schema is invalid",
-    "JSON Schema Test Suite contains keyword validation empty array is invalid",
-    "JSON Schema Test Suite contains keyword with const keyword array without item 5 is invalid",
-    "JSON Schema Test Suite contains keyword with boolean schema true empty array is invalid",
-    "JSON Schema Test Suite contains keyword with boolean schema false any non-empty array is invalid",
-    "JSON Schema Test Suite contains keyword with boolean schema false empty array is invalid",
-    "JSON Schema Test Suite items + contains matches items, does not match contains",
-    "JSON Schema Test Suite items + contains does not match items, matches contains",
-    "JSON Schema Test Suite items + contains matches neither items nor contains",
-    "JSON Schema Test Suite contains with false if subschema empty array is invalid",
-    "JSON Schema Test Suite validate definition against metaschema invalid definition schema",
-    "JSON Schema Test Suite single dependency missing dependency",
-    "JSON Schema Test Suite multiple dependents required missing dependency",
-    "JSON Schema Test Suite multiple dependents required missing other dependency",
-    "JSON Schema Test Suite multiple dependents required missing both dependencies",
-    "JSON Schema Test Suite dependencies with escaped characters CRLF missing dependent",
-    "JSON Schema Test Suite dependencies with escaped characters quoted quotes missing dependent",
-    "JSON Schema Test Suite single dependency wrong type",
-    "JSON Schema Test Suite single dependency wrong type other",
-    "JSON Schema Test Suite single dependency wrong type both",
-    "JSON Schema Test Suite boolean subschemas object with property having schema false is invalid",
-    "JSON Schema Test Suite boolean subschemas object with both properties is invalid",
-    "JSON Schema Test Suite dependencies with escaped characters quoted quote",
-    "JSON Schema Test Suite dependencies with escaped characters quoted tab invalid under dependent schema",
-    "JSON Schema Test Suite dependencies with escaped characters quoted quote invalid under dependent schema",
-    "JSON Schema Test Suite dependent subschema incompatible with root matches root",
-    "JSON Schema Test Suite dependent subschema incompatible with root matches both",
-    "JSON Schema Test Suite A $dynamicRef to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor An array of strings is valid",
-    "JSON Schema Test Suite A $dynamicRef to an $anchor in the same schema resource behaves like a normal $ref to an $anchor An array of strings is valid",
-    "JSON Schema Test Suite A $ref to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor An array of strings is valid",
-    "JSON Schema Test Suite A $dynamicRef resolves to the first $dynamicAnchor still in scope that is encountered when the schema is evaluated An array containing non-strings is invalid",
-    "JSON Schema Test Suite A $dynamicRef without anchor in fragment behaves identical to $ref An array of strings is invalid",
-    "JSON Schema Test Suite A $dynamicRef with intermediate scopes that don't include a matching $dynamicAnchor does not affect dynamic scope resolution An array containing non-strings is invalid",
-    "JSON Schema Test Suite A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope The recursive part is not valid against the root",
-    "JSON Schema Test Suite multiple dynamic paths to the $dynamicRef keyword number list with string values",
-    "JSON Schema Test Suite multiple dynamic paths to the $dynamicRef keyword string list with number values",
-    "JSON Schema Test Suite after leaving a dynamic scope, it is not used by a $dynamicRef string matches /$defs/thingy, but the $dynamicRef does not stop here",
-    "JSON Schema Test Suite after leaving a dynamic scope, it is not used by a $dynamicRef first_scope is not in dynamic scope for the $dynamicRef",
-    "JSON Schema Test Suite strict-tree schema, guards against misspelled properties instance with misspelled field",
-    "JSON Schema Test Suite tests for implementation dynamic anchor and reference link incorrect parent schema",
-    "JSON Schema Test Suite tests for implementation dynamic anchor and reference link incorrect extended schema",
-    "JSON Schema Test Suite $ref and $dynamicAnchor are independent of order - $defs first incorrect parent schema",
-    "JSON Schema Test Suite $ref and $dynamicAnchor are independent of order - $defs first incorrect extended schema",
-    "JSON Schema Test Suite $ref and $dynamicAnchor are independent of order - $ref first incorrect parent schema",
-    "JSON Schema Test Suite $ref and $dynamicAnchor are independent of order - $ref first incorrect extended schema",
-    "JSON Schema Test Suite $ref to $dynamicRef finds detached $dynamicAnchor non-number is invalid",
-    "JSON Schema Test Suite $dynamicRef points to a boolean schema follow $dynamicRef to a false schema",
-    "JSON Schema Test Suite $dynamicRef skips over intermediate resources - direct reference string property fails",
-    "JSON Schema Test Suite simple enum validation something else is invalid",
-    "JSON Schema Test Suite heterogeneous enum validation something else is invalid",
-    "JSON Schema Test Suite heterogeneous enum validation objects are deep compared",
-    "JSON Schema Test Suite heterogeneous enum validation extra properties in object is invalid",
-    "JSON Schema Test Suite heterogeneous enum-with-null validation something else is invalid",
-    "JSON Schema Test Suite enums in properties wrong foo value",
-    "JSON Schema Test Suite enums in properties wrong bar value",
-    "JSON Schema Test Suite enum with escaped characters another string is invalid",
-    "JSON Schema Test Suite enum with false does not match 0 integer zero is invalid",
-    "JSON Schema Test Suite enum with false does not match 0 float zero is invalid",
-    "JSON Schema Test Suite enum with [false] does not match [0] [0] is invalid",
-    "JSON Schema Test Suite enum with [false] does not match [0] [0.0] is invalid",
-    "JSON Schema Test Suite enum with true does not match 1 integer one is invalid",
-    "JSON Schema Test Suite enum with true does not match 1 float one is invalid",
-    "JSON Schema Test Suite enum with [true] does not match [1] [1] is invalid",
-    "JSON Schema Test Suite enum with [true] does not match [1] [1.0] is invalid",
-    "JSON Schema Test Suite enum with 0 does not match false false is invalid",
-    "JSON Schema Test Suite enum with [0] does not match [false] [false] is invalid",
-    "JSON Schema Test Suite enum with 1 does not match true true is invalid",
-    "JSON Schema Test Suite enum with [1] does not match [true] [true] is invalid",
-    "JSON Schema Test Suite email format invalid email string is only an annotation by default",
-    "JSON Schema Test Suite idn-email format invalid idn-email string is only an annotation by default",
-    "JSON Schema Test Suite regex format invalid regex string is only an annotation by default",
-    "JSON Schema Test Suite ipv4 format invalid ipv4 string is only an annotation by default",
-    "JSON Schema Test Suite ipv6 format invalid ipv6 string is only an annotation by default",
-    "JSON Schema Test Suite hostname format invalid hostname string is only an annotation by default",
-    "JSON Schema Test Suite date format invalid date string is only an annotation by default",
-    "JSON Schema Test Suite time format invalid time string is only an annotation by default",
-    "JSON Schema Test Suite json-pointer format invalid json-pointer string is only an annotation by default",
-    "JSON Schema Test Suite relative-json-pointer format invalid relative-json-pointer string is only an annotation by default",
-    "JSON Schema Test Suite iri format invalid iri string is only an annotation by default",
-    "JSON Schema Test Suite uri format invalid uri string is only an annotation by default",
-    "JSON Schema Test Suite uri-template format invalid uri-template string is only an annotation by default",
-    "JSON Schema Test Suite uuid format invalid uuid string is only an annotation by default",
-    "JSON Schema Test Suite duration format invalid duration string is only an annotation by default",
-    "JSON Schema Test Suite if and then without else invalid through then",
-    "JSON Schema Test Suite if and else without then invalid through else",
-    "JSON Schema Test Suite validate against correct branch, then vs else invalid through then",
-    "JSON Schema Test Suite validate against correct branch, then vs else invalid through else",
-    "JSON Schema Test Suite if with boolean schema true boolean schema true in if always chooses the then path (invalid)",
-    "JSON Schema Test Suite if with boolean schema false boolean schema false in if always chooses the else path (invalid)",
-    "JSON Schema Test Suite if appears at the end when serialized (keyword processing sequence) no redirects to then and fails",
-    "JSON Schema Test Suite if appears at the end when serialized (keyword processing sequence) invalid redirects to else and fails",
-    "JSON Schema Test Suite evaluating the same schema location against the same data location twice is not a sign of an infinite loop failing case",
-    "JSON Schema Test Suite a schema given for items wrong type of items",
-    "JSON Schema Test Suite items with boolean schema (false) any non-empty array is invalid",
-    "JSON Schema Test Suite items and subitems valid items",
-    "JSON Schema Test Suite items and subitems fewer items is valid",
-    "JSON Schema Test Suite nested items valid nested array",
-    "JSON Schema Test Suite prefixItems with no additional items allowed additional items are not permitted",
-    "JSON Schema Test Suite items does not look in applicators, valid case prefixItems in allOf does not constrain items, invalid case",
-    "JSON Schema Test Suite prefixItems validation adjusts the starting index for items wrong type of second item",
-    "JSON Schema Test Suite items with heterogeneous array heterogeneous invalid instance",
-    "JSON Schema Test Suite maxContains with contains empty data",
-    "JSON Schema Test Suite maxContains with contains all elements match, invalid maxContains",
-    "JSON Schema Test Suite maxContains with contains some elements match, invalid maxContains",
-    "JSON Schema Test Suite maxContains with contains, value with a decimal too many elements match, invalid maxContains",
-    "JSON Schema Test Suite minContains < maxContains actual < minContains < maxContains",
-    "JSON Schema Test Suite minContains < maxContains minContains < maxContains < actual",
-    "JSON Schema Test Suite maxItems validation too long is invalid",
-    "JSON Schema Test Suite maxItems validation with a decimal too long is invalid",
-    "JSON Schema Test Suite maxProperties validation too long is invalid",
-    "JSON Schema Test Suite maxProperties validation with a decimal too long is invalid",
-    "JSON Schema Test Suite maxProperties = 0 means the object is empty one property is invalid",
-    "JSON Schema Test Suite minContains=1 with contains empty data",
-    "JSON Schema Test Suite minContains=1 with contains no elements match",
-    "JSON Schema Test Suite minContains=2 with contains empty data",
-    "JSON Schema Test Suite minContains=2 with contains all elements match, invalid minContains",
-    "JSON Schema Test Suite minContains=2 with contains some elements match, invalid minContains",
-    "JSON Schema Test Suite minContains=2 with contains with a decimal value one element matches, invalid minContains",
-    "JSON Schema Test Suite maxContains = minContains empty data",
-    "JSON Schema Test Suite maxContains = minContains all elements match, invalid minContains",
-    "JSON Schema Test Suite maxContains = minContains all elements match, invalid maxContains",
-    "JSON Schema Test Suite maxContains < minContains empty data",
-    "JSON Schema Test Suite maxContains < minContains invalid minContains",
-    "JSON Schema Test Suite maxContains < minContains invalid maxContains",
-    "JSON Schema Test Suite maxContains < minContains invalid maxContains and minContains",
-    "JSON Schema Test Suite minContains = 0 with maxContains too many",
-    "JSON Schema Test Suite minItems validation too short is invalid",
-    "JSON Schema Test Suite minItems validation with a decimal too short is invalid",
-    "JSON Schema Test Suite minProperties validation too short is invalid",
-    "JSON Schema Test Suite minProperties validation with a decimal too short is invalid",
-    "JSON Schema Test Suite by small number 0.0075 is multiple of 0.0001",
-    "JSON Schema Test Suite small multiple of large integer any integer is a multiple of 1e-8",
-    "JSON Schema Test Suite collect annotations inside a 'not', even if collection is disabled unevaluated property",
-    "JSON Schema Test Suite patternProperties validates properties matching a regex a single invalid match is invalid",
-    "JSON Schema Test Suite patternProperties validates properties matching a regex multiple invalid matches is invalid",
-    "JSON Schema Test Suite multiple simultaneous patternProperties are validated an invalid due to one is invalid",
-    "JSON Schema Test Suite multiple simultaneous patternProperties are validated an invalid due to the other is invalid",
-    "JSON Schema Test Suite multiple simultaneous patternProperties are validated an invalid due to both is invalid",
-    "JSON Schema Test Suite regexes are not anchored by default and are case sensitive recognized members are accounted for",
-    "JSON Schema Test Suite regexes are not anchored by default and are case sensitive regexes are case sensitive, 2",
-    "JSON Schema Test Suite patternProperties with boolean schemas object with property matching schema false is invalid",
-    "JSON Schema Test Suite patternProperties with boolean schemas object with both properties is invalid",
-    "JSON Schema Test Suite patternProperties with boolean schemas object with a property matching both true and false is invalid",
-    "JSON Schema Test Suite a schema given for prefixItems wrong types",
-    "JSON Schema Test Suite prefixItems with boolean schemas array with two items is invalid",
-    "JSON Schema Test Suite properties, patternProperties, additionalProperties interaction property validates property",
-    "JSON Schema Test Suite properties, patternProperties, additionalProperties interaction patternProperty invalidates nonproperty",
-    "JSON Schema Test Suite properties, patternProperties, additionalProperties interaction additionalProperty ignores property",
-    "JSON Schema Test Suite properties, patternProperties, additionalProperties interaction additionalProperty invalidates others",
-    "JSON Schema Test Suite properties whose names are Javascript object property names ignores arrays",
-    "JSON Schema Test Suite properties whose names are Javascript object property names none of the properties mentioned",
-    "JSON Schema Test Suite propertyNames validation some property names invalid",
-    "JSON Schema Test Suite propertyNames with boolean schema false object with any properties is invalid",
-    "JSON Schema Test Suite root pointer ref mismatch",
-    "JSON Schema Test Suite root pointer ref recursive mismatch",
-    "JSON Schema Test Suite relative pointer ref to object mismatch",
-    "JSON Schema Test Suite relative pointer ref to array mismatch array",
-    "JSON Schema Test Suite escaped pointer ref slash invalid",
-    "JSON Schema Test Suite escaped pointer ref tilde invalid",
-    "JSON Schema Test Suite escaped pointer ref percent invalid",
-    "JSON Schema Test Suite nested refs nested ref invalid",
-    "JSON Schema Test Suite ref applies alongside sibling keywords ref valid, maxItems invalid",
-    "JSON Schema Test Suite ref applies alongside sibling keywords ref invalid",
-    "JSON Schema Test Suite remote ref, containing refs itself remote ref invalid",
-    "JSON Schema Test Suite property named $ref, containing an actual $ref property named $ref invalid",
-    "JSON Schema Test Suite $ref to boolean schema false any value is invalid",
-    "JSON Schema Test Suite Recursive references between schemas valid tree",
-    "JSON Schema Test Suite refs with quote object with strings is invalid",
-    "JSON Schema Test Suite ref creates new scope when adjacent to keywords referenced subschema doesn't see annotations from properties",
-    "JSON Schema Test Suite naive replacement of $ref with its destination is not correct do not evaluate the $ref inside the enum, matching any string",
-    "JSON Schema Test Suite naive replacement of $ref with its destination is not correct do not evaluate the $ref inside the enum, definition exact match",
-    "JSON Schema Test Suite refs with relative uris and defs invalid on inner field",
-    "JSON Schema Test Suite refs with relative uris and defs invalid on outer field",
-    "JSON Schema Test Suite relative refs with absolute uris and defs invalid on inner field",
-    "JSON Schema Test Suite relative refs with absolute uris and defs invalid on outer field",
-    "JSON Schema Test Suite $id must be resolved against nearest parent, not just immediate parent non-number is invalid",
-    "JSON Schema Test Suite order of evaluation: $id and $ref data is invalid against first definition",
-    "JSON Schema Test Suite order of evaluation: $id and $anchor and $ref data is invalid against first definition",
-    "JSON Schema Test Suite simple URN base URI with $ref via the URN invalid under the URN IDed schema",
-    "JSON Schema Test Suite simple URN base URI with JSON pointer a non-string is invalid",
-    "JSON Schema Test Suite URN base URI with NSS a non-string is invalid",
-    "JSON Schema Test Suite URN base URI with r-component a non-string is invalid",
-    "JSON Schema Test Suite URN base URI with q-component a non-string is invalid",
-    "JSON Schema Test Suite URN base URI with URN and JSON pointer ref a non-string is invalid",
-    "JSON Schema Test Suite URN base URI with URN and anchor ref a non-string is invalid",
-    "JSON Schema Test Suite URN ref with nested pointer ref a non-string is invalid",
-    "JSON Schema Test Suite ref to if a non-integer is invalid due to the $ref",
-    "JSON Schema Test Suite ref to then a non-integer is invalid due to the $ref",
-    "JSON Schema Test Suite ref to else a non-integer is invalid due to the $ref",
-    "JSON Schema Test Suite ref with absolute-path-reference an integer is invalid",
-    "JSON Schema Test Suite $id with file URI still resolves pointers - *nix non-number is invalid",
-    "JSON Schema Test Suite $id with file URI still resolves pointers - windows non-number is invalid",
-    "JSON Schema Test Suite empty tokens in $ref json-pointer non-number is invalid",
-    "JSON Schema Test Suite remote ref remote ref invalid",
-    "JSON Schema Test Suite fragment within remote ref remote fragment invalid",
-    "JSON Schema Test Suite anchor within remote ref remote anchor invalid",
-    "JSON Schema Test Suite ref within remote ref ref within ref invalid",
-    "JSON Schema Test Suite base URI change base URI change ref invalid",
-    "JSON Schema Test Suite base URI change - change folder string is invalid",
-    "JSON Schema Test Suite base URI change - change folder in subschema string is invalid",
-    "JSON Schema Test Suite root ref in remote ref object is invalid",
-    "JSON Schema Test Suite remote ref with ref to defs invalid",
-    "JSON Schema Test Suite Location-independent identifier in remote ref string is invalid",
-    "JSON Schema Test Suite retrieved nested refs resolve relative to their URI not $id number is invalid",
-    "JSON Schema Test Suite remote HTTP ref with different $id number is invalid",
-    "JSON Schema Test Suite remote HTTP ref with different URN $id number is invalid",
-    "JSON Schema Test Suite remote HTTP ref with nested absolute ref number is invalid",
-    "JSON Schema Test Suite $ref to $ref finds detached $anchor non-number is invalid",
-    "JSON Schema Test Suite required validation ignores arrays",
-    "JSON Schema Test Suite required properties whose names are Javascript object property names none of the properties mentioned",
-    "JSON Schema Test Suite required properties whose names are Javascript object property names __proto__ present",
-    "JSON Schema Test Suite required properties whose names are Javascript object property names toString present",
-    "JSON Schema Test Suite required properties whose names are Javascript object property names constructor present",
-    "JSON Schema Test Suite object type matches objects an array is not an object",
-    "JSON Schema Test Suite array type matches arrays an array is an array",
-    "JSON Schema Test Suite unevaluatedItems false with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems as schema with invalid unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with tuple with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with items invalid under items",
-    "JSON Schema Test Suite unevaluatedItems with nested tuple with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with nested items with invalid additional item",
-    "JSON Schema Test Suite unevaluatedItems with anyOf when one schema matches and has unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with anyOf when two schemas match and has unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with oneOf with no unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with not with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with if/then/else when if matches and it has unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with if/then/else when if doesn't match and it has unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with boolean schemas with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with $ref with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems before $ref with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems with $dynamicRef with unevaluated items",
-    "JSON Schema Test Suite unevaluatedItems can't see inside cousins always fails",
-    "JSON Schema Test Suite item is evaluated in an uncle schema to unevaluatedItems uncle keyword evaluation is not significant",
-    "JSON Schema Test Suite unevaluatedItems depends on adjacent contains contains fails, second item is not evaluated",
-    "JSON Schema Test Suite unevaluatedItems depends on adjacent contains contains passes, second item is not evaluated",
-    "JSON Schema Test Suite unevaluatedItems depends on multiple nested contains 7 not evaluated, fails unevaluatedItems",
-    "JSON Schema Test Suite unevaluatedItems and contains interact to control item dependency relationship only b's are invalid",
-    "JSON Schema Test Suite unevaluatedItems and contains interact to control item dependency relationship only c's are invalid",
-    "JSON Schema Test Suite unevaluatedItems and contains interact to control item dependency relationship only b's and c's are invalid",
-    "JSON Schema Test Suite unevaluatedItems and contains interact to control item dependency relationship only a's and c's are invalid",
-    "JSON Schema Test Suite unevaluatedItems can see annotations from if without then and else invalid in case if is evaluated",
-    "JSON Schema Test Suite unevaluatedProperties schema with invalid unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties false with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with adjacent properties with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with adjacent patternProperties with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with nested properties with additional properties",
-    "JSON Schema Test Suite unevaluatedProperties with nested patternProperties with additional properties",
-    "JSON Schema Test Suite unevaluatedProperties with anyOf when one matches and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with anyOf when two match and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with oneOf with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with not with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else when if is true and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else when if is false and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else, then not defined when if is true and has no unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else, then not defined when if is true and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else, then not defined when if is false and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else, else not defined when if is true and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else, else not defined when if is false and has no unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with if/then/else, else not defined when if is false and has unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with dependentSchemas with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with boolean schemas with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with $ref with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties before $ref with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties with $dynamicRef with unevaluated properties",
-    "JSON Schema Test Suite unevaluatedProperties can't see inside cousins always fails",
-    "JSON Schema Test Suite unevaluatedProperties can't see inside cousins (reverse order) always fails",
-    "JSON Schema Test Suite nested unevaluatedProperties, outer true, inner false, properties outside with no nested unevaluated properties",
-    "JSON Schema Test Suite nested unevaluatedProperties, outer true, inner false, properties outside with nested unevaluated properties",
-    "JSON Schema Test Suite nested unevaluatedProperties, outer true, inner false, properties inside with nested unevaluated properties",
-    "JSON Schema Test Suite cousin unevaluatedProperties, true and false, true with properties with no nested unevaluated properties",
-    "JSON Schema Test Suite cousin unevaluatedProperties, true and false, true with properties with nested unevaluated properties",
-    "JSON Schema Test Suite cousin unevaluatedProperties, true and false, false with properties with nested unevaluated properties",
-    "JSON Schema Test Suite property is evaluated in an uncle schema to unevaluatedProperties uncle keyword evaluation is not significant",
-    "JSON Schema Test Suite in-place applicator siblings, allOf has unevaluated base case: both properties present",
-    "JSON Schema Test Suite in-place applicator siblings, allOf has unevaluated in place applicator siblings, foo is missing",
-    "JSON Schema Test Suite in-place applicator siblings, anyOf has unevaluated base case: both properties present",
-    "JSON Schema Test Suite in-place applicator siblings, anyOf has unevaluated in place applicator siblings, bar is missing",
-    "JSON Schema Test Suite unevaluatedProperties + single cyclic ref Unevaluated on 1st level is invalid",
-    "JSON Schema Test Suite unevaluatedProperties + single cyclic ref Unevaluated on 2nd level is invalid",
-    "JSON Schema Test Suite unevaluatedProperties + single cyclic ref Unevaluated on 3rd level is invalid",
-    "JSON Schema Test Suite unevaluatedProperties + ref inside allOf / oneOf Empty is invalid (no x or y)",
-    "JSON Schema Test Suite unevaluatedProperties + ref inside allOf / oneOf a and b are invalid (no x or y)",
-    "JSON Schema Test Suite unevaluatedProperties + ref inside allOf / oneOf a and y are valid",
-    "JSON Schema Test Suite unevaluatedProperties + ref inside allOf / oneOf a and b and y are valid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs Empty is invalid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs a is valid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs b + c is invalid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs b + d is invalid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs c + d is invalid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs xx + foo is invalid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs xx + b is invalid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs xx + c is invalid",
-    "JSON Schema Test Suite dynamic evalation inside nested refs xx + d is invalid",
-    "JSON Schema Test Suite unevaluatedProperties not affected by propertyNames string property is invalid",
-    "JSON Schema Test Suite unevaluatedProperties can see annotations from if without then and else invalid in case if is evaluated",
-    "JSON Schema Test Suite dependentSchemas with unevaluatedProperties unevaluatedProperties doesn't consider dependentSchemas",
-    "JSON Schema Test Suite dependentSchemas with unevaluatedProperties unevaluatedProperties doesn't see bar when foo2 is absent",
-    "JSON Schema Test Suite uniqueItems validation non-unique array of integers is invalid",
-    "JSON Schema Test Suite uniqueItems validation non-unique array of more than two integers is invalid",
-    "JSON Schema Test Suite uniqueItems validation numbers are unique if mathematically unequal",
-    "JSON Schema Test Suite uniqueItems validation non-unique array of strings is invalid",
-    "JSON Schema Test Suite uniqueItems validation non-unique array of objects is invalid",
-    "JSON Schema Test Suite uniqueItems validation property order of array of objects is ignored",
-    "JSON Schema Test Suite uniqueItems validation non-unique array of nested objects is invalid",
-    "JSON Schema Test Suite uniqueItems validation non-unique array of arrays is invalid",
-    "JSON Schema Test Suite uniqueItems validation non-unique array of more than two arrays is invalid",
-    "JSON Schema Test Suite uniqueItems validation non-unique heterogeneous types are invalid",
-    "JSON Schema Test Suite uniqueItems validation objects are non-unique despite key order",
-    "JSON Schema Test Suite uniqueItems with an array of items [false, false] from items array is not valid",
-    "JSON Schema Test Suite uniqueItems with an array of items [true, true] from items array is not valid",
-    "JSON Schema Test Suite uniqueItems with an array of items non-unique array extended from [false, true] is not valid",
-    "JSON Schema Test Suite uniqueItems with an array of items non-unique array extended from [true, false] is not valid",
-    "JSON Schema Test Suite uniqueItems with an array of items and additionalItems=false [false, false] from items array is not valid",
-    "JSON Schema Test Suite uniqueItems with an array of items and additionalItems=false [true, true] from items array is not valid",
-    "JSON Schema Test Suite uniqueItems with an array of items and additionalItems=false extra items are invalid even if unique",
-    "JSON Schema Test Suite uniqueItems=false with an array of items and additionalItems=false extra items are invalid even if unique",
-    "JSON Schema Test Suite schema that uses custom metaschema with with no validation vocabulary no validation: invalid number, but it still validates"
-  ]
+  "JSON Schema Test Suite": {
+    "additionalProperties being false does not allow other properties": [
+      "an additional property is invalid"
+    ],
+    "non-ASCII pattern with additionalProperties": [
+      "not matching the pattern is invalid"
+    ],
+    "additionalProperties with schema": [
+      "an additional invalid property is invalid"
+    ],
+    "additionalProperties can exist by itself": [
+      "an additional invalid property is invalid"
+    ],
+    "additionalProperties does not look in applicators": [
+      "properties defined in allOf are not examined"
+    ],
+    "additionalProperties with propertyNames": [
+      "Valid against propertyNames, but not additionalProperties"
+    ],
+    "dependentSchemas with additionalProperties": [
+      "additionalProperties doesn't consider dependentSchemas",
+      "additionalProperties can't see bar",
+      "additionalProperties can't see bar even when foo2 is present"
+    ],
+    "allOf": [
+      "mismatch second",
+      "mismatch first",
+      "wrong type"
+    ],
+    "allOf with base schema": [
+      "mismatch first allOf",
+      "mismatch second allOf",
+      "mismatch both"
+    ],
+    "allOf simple types": [
+      "mismatch one"
+    ],
+    "allOf with boolean schemas, some false": [
+      "any value is invalid"
+    ],
+    "allOf with boolean schemas, all false": [
+      "any value is invalid"
+    ],
+    "allOf with the first empty schema": [
+      "string is invalid"
+    ],
+    "allOf with the last empty schema": [
+      "string is invalid"
+    ],
+    "nested allOf, to check validation semantics": [
+      "anything non-null is invalid"
+    ],
+    "allOf combined with anyOf, oneOf": [
+      "allOf: false, anyOf: true, oneOf: false",
+      "allOf: false, anyOf: true, oneOf: true",
+      "allOf: true, anyOf: true, oneOf: false"
+    ],
+    "Location-independent identifier": [
+      "mismatch"
+    ],
+    "Location-independent identifier with absolute URI": [
+      "mismatch"
+    ],
+    "Location-independent identifier with base URI change in subschema": [
+      "mismatch"
+    ],
+    "same $anchor with different base uri": [
+      "$ref does not resolve to /$defs/A/allOf/0"
+    ],
+    "nested anyOf, to check validation semantics": [
+      "null is valid"
+    ],
+    "const validation": [
+      "another value is invalid",
+      "another type is invalid"
+    ],
+    "const with object": [
+      "another object is invalid",
+      "another type is invalid"
+    ],
+    "const with array": [
+      "another array item is invalid",
+      "array with additional items is invalid"
+    ],
+    "const with null": [
+      "not null is invalid"
+    ],
+    "const with false does not match 0": [
+      "integer zero is invalid",
+      "float zero is invalid"
+    ],
+    "const with true does not match 1": [
+      "integer one is invalid",
+      "float one is invalid"
+    ],
+    "const with [false] does not match [0]": [
+      "[0] is invalid",
+      "[0.0] is invalid"
+    ],
+    "const with [true] does not match [1]": [
+      "[1] is invalid",
+      "[1.0] is invalid"
+    ],
+    "const with {\"a\": false} does not match {\"a\": 0}": [
+      "{\"a\": 0} is invalid",
+      "{\"a\": 0.0} is invalid"
+    ],
+    "const with {\"a\": true} does not match {\"a\": 1}": [
+      "{\"a\": 1} is invalid",
+      "{\"a\": 1.0} is invalid"
+    ],
+    "const with 0 does not match other zero-like types": [
+      "false is invalid",
+      "empty object is invalid",
+      "empty array is invalid",
+      "empty string is invalid"
+    ],
+    "const with 1 does not match true": [
+      "true is invalid"
+    ],
+    "const with -2.0 matches integer and float types": [
+      "integer 2 is invalid",
+      "float 2.0 is invalid",
+      "float -2.00001 is invalid"
+    ],
+    "float and integers are equal up to 64-bit representation limits": [
+      "integer minus one is invalid",
+      "float minus one is invalid"
+    ],
+    "nul characters in strings": [
+      "do not match string lacking nul",
+      "do not match string lacking nul"
+    ],
+    "contains keyword validation": [
+      "array without items matching schema is invalid",
+      "empty array is invalid"
+    ],
+    "contains keyword with const keyword": [
+      "array without item 5 is invalid"
+    ],
+    "contains keyword with boolean schema true": [
+      "empty array is invalid"
+    ],
+    "contains keyword with boolean schema false": [
+      "any non-empty array is invalid",
+      "empty array is invalid"
+    ],
+    "items + contains": [
+      "matches items, does not match contains",
+      "does not match items, matches contains",
+      "matches neither items nor contains"
+    ],
+    "contains with false if subschema": [
+      "empty array is invalid"
+    ],
+    "validate definition against metaschema": [
+      "invalid definition schema"
+    ],
+    "single dependency": [
+      "missing dependency",
+      "wrong type",
+      "wrong type other",
+      "wrong type both"
+    ],
+    "multiple dependents required": [
+      "missing dependency",
+      "missing other dependency",
+      "missing both dependencies"
+    ],
+    "dependencies with escaped characters": [
+      "CRLF missing dependent",
+      "quoted quotes missing dependent",
+      "quoted quote",
+      "quoted tab invalid under dependent schema",
+      "quoted quote invalid under dependent schema"
+    ],
+    "boolean subschemas": [
+      "object with property having schema false is invalid",
+      "object with both properties is invalid"
+    ],
+    "dependent subschema incompatible with root": [
+      "matches root",
+      "matches both"
+    ],
+    "A $dynamicRef to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor": [
+      "An array of strings is valid"
+    ],
+    "A $dynamicRef to an $anchor in the same schema resource behaves like a normal $ref to an $anchor": [
+      "An array of strings is valid"
+    ],
+    "A $ref to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor": [
+      "An array of strings is valid"
+    ],
+    "A $dynamicRef resolves to the first $dynamicAnchor still in scope that is encountered when the schema is evaluated": [
+      "An array containing non-strings is invalid"
+    ],
+    "A $dynamicRef without anchor in fragment behaves identical to $ref": [
+      "An array of strings is invalid"
+    ],
+    "A $dynamicRef with intermediate scopes that don't include a matching $dynamicAnchor does not affect dynamic scope resolution": [
+      "An array containing non-strings is invalid"
+    ],
+    "A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope": [
+      "The recursive part is not valid against the root"
+    ],
+    "multiple dynamic paths to the $dynamicRef keyword": [
+      "number list with string values",
+      "string list with number values"
+    ],
+    "after leaving a dynamic scope, it is not used by a $dynamicRef": [
+      "string matches /$defs/thingy, but the $dynamicRef does not stop here",
+      "first_scope is not in dynamic scope for the $dynamicRef"
+    ],
+    "strict-tree schema, guards against misspelled properties": [
+      "instance with misspelled field"
+    ],
+    "tests for implementation dynamic anchor and reference link": [
+      "incorrect parent schema",
+      "incorrect extended schema"
+    ],
+    "$ref and $dynamicAnchor are independent of order - $defs first": [
+      "incorrect parent schema",
+      "incorrect extended schema"
+    ],
+    "$ref and $dynamicAnchor are independent of order - $ref first": [
+      "incorrect parent schema",
+      "incorrect extended schema"
+    ],
+    "$ref to $dynamicRef finds detached $dynamicAnchor": [
+      "non-number is invalid"
+    ],
+    "$dynamicRef points to a boolean schema": [
+      "follow $dynamicRef to a false schema"
+    ],
+    "$dynamicRef skips over intermediate resources - direct reference": [
+      "string property fails"
+    ],
+    "simple enum validation": [
+      "something else is invalid"
+    ],
+    "heterogeneous enum validation": [
+      "something else is invalid",
+      "objects are deep compared",
+      "extra properties in object is invalid"
+    ],
+    "heterogeneous enum-with-null validation": [
+      "something else is invalid"
+    ],
+    "enums in properties": [
+      "wrong foo value",
+      "wrong bar value"
+    ],
+    "enum with escaped characters": [
+      "another string is invalid"
+    ],
+    "enum with false does not match 0": [
+      "integer zero is invalid",
+      "float zero is invalid"
+    ],
+    "enum with [false] does not match [0]": [
+      "[0] is invalid",
+      "[0.0] is invalid"
+    ],
+    "enum with true does not match 1": [
+      "integer one is invalid",
+      "float one is invalid"
+    ],
+    "enum with [true] does not match [1]": [
+      "[1] is invalid",
+      "[1.0] is invalid"
+    ],
+    "enum with 0 does not match false": [
+      "false is invalid"
+    ],
+    "enum with [0] does not match [false]": [
+      "[false] is invalid"
+    ],
+    "enum with 1 does not match true": [
+      "true is invalid"
+    ],
+    "enum with [1] does not match [true]": [
+      "[true] is invalid"
+    ],
+    "email format": [
+      "invalid email string is only an annotation by default"
+    ],
+    "idn-email format": [
+      "invalid idn-email string is only an annotation by default"
+    ],
+    "regex format": [
+      "invalid regex string is only an annotation by default"
+    ],
+    "ipv4 format": [
+      "invalid ipv4 string is only an annotation by default"
+    ],
+    "ipv6 format": [
+      "invalid ipv6 string is only an annotation by default"
+    ],
+    "hostname format": [
+      "invalid hostname string is only an annotation by default"
+    ],
+    "date format": [
+      "invalid date string is only an annotation by default"
+    ],
+    "time format": [
+      "invalid time string is only an annotation by default"
+    ],
+    "json-pointer format": [
+      "invalid json-pointer string is only an annotation by default"
+    ],
+    "relative-json-pointer format": [
+      "invalid relative-json-pointer string is only an annotation by default"
+    ],
+    "iri format": [
+      "invalid iri string is only an annotation by default"
+    ],
+    "uri format": [
+      "invalid uri string is only an annotation by default"
+    ],
+    "uri-template format": [
+      "invalid uri-template string is only an annotation by default"
+    ],
+    "uuid format": [
+      "invalid uuid string is only an annotation by default"
+    ],
+    "duration format": [
+      "invalid duration string is only an annotation by default"
+    ],
+    "if and then without else": [
+      "invalid through then"
+    ],
+    "if and else without then": [
+      "invalid through else"
+    ],
+    "validate against correct branch, then vs else": [
+      "invalid through then",
+      "invalid through else"
+    ],
+    "if with boolean schema true": [
+      "boolean schema true in if always chooses the then path (invalid)"
+    ],
+    "if with boolean schema false": [
+      "boolean schema false in if always chooses the else path (invalid)"
+    ],
+    "if appears at the end when serialized (keyword processing sequence)": [
+      "no redirects to then and fails",
+      "invalid redirects to else and fails"
+    ],
+    "evaluating the same schema location against the same data location twice is not a sign of an infinite loop": [
+      "failing case"
+    ],
+    "a schema given for items": [
+      "wrong type of items"
+    ],
+    "items with boolean schema (false)": [
+      "any non-empty array is invalid"
+    ],
+    "items and subitems": [
+      "valid items",
+      "fewer items is valid"
+    ],
+    "nested items": [
+      "valid nested array"
+    ],
+    "prefixItems with no additional items allowed": [
+      "additional items are not permitted"
+    ],
+    "items does not look in applicators, valid case": [
+      "prefixItems in allOf does not constrain items, invalid case"
+    ],
+    "prefixItems validation adjusts the starting index for items": [
+      "wrong type of second item"
+    ],
+    "items with heterogeneous array": [
+      "heterogeneous invalid instance"
+    ],
+    "maxContains with contains": [
+      "empty data",
+      "all elements match, invalid maxContains",
+      "some elements match, invalid maxContains"
+    ],
+    "maxContains with contains, value with a decimal": [
+      "too many elements match, invalid maxContains"
+    ],
+    "minContains < maxContains": [
+      "actual < minContains < maxContains",
+      "minContains < maxContains < actual"
+    ],
+    "maxItems validation": [
+      "too long is invalid"
+    ],
+    "maxItems validation with a decimal": [
+      "too long is invalid"
+    ],
+    "maxProperties validation": [
+      "too long is invalid"
+    ],
+    "maxProperties validation with a decimal": [
+      "too long is invalid"
+    ],
+    "maxProperties = 0 means the object is empty": [
+      "one property is invalid"
+    ],
+    "minContains=1 with contains": [
+      "empty data",
+      "no elements match"
+    ],
+    "minContains=2 with contains": [
+      "empty data",
+      "all elements match, invalid minContains",
+      "some elements match, invalid minContains"
+    ],
+    "minContains=2 with contains with a decimal value": [
+      "one element matches, invalid minContains"
+    ],
+    "maxContains = minContains": [
+      "empty data",
+      "all elements match, invalid minContains",
+      "all elements match, invalid maxContains"
+    ],
+    "maxContains < minContains": [
+      "empty data",
+      "invalid minContains",
+      "invalid maxContains",
+      "invalid maxContains and minContains"
+    ],
+    "minContains = 0 with maxContains": [
+      "too many"
+    ],
+    "minItems validation": [
+      "too short is invalid"
+    ],
+    "minItems validation with a decimal": [
+      "too short is invalid"
+    ],
+    "minProperties validation": [
+      "too short is invalid"
+    ],
+    "minProperties validation with a decimal": [
+      "too short is invalid"
+    ],
+    "by small number": [
+      "0.0075 is multiple of 0.0001"
+    ],
+    "small multiple of large integer": [
+      "any integer is a multiple of 1e-8"
+    ],
+    "not": [
+      "disallowed"
+    ],
+    "not multiple types": [
+      "mismatch",
+      "other mismatch"
+    ],
+    "not more complex schema": [
+      "mismatch"
+    ],
+    "forbidden property": [
+      "property present"
+    ],
+    "forbid everything with empty schema": [
+      "number is invalid",
+      "string is invalid",
+      "boolean true is invalid",
+      "boolean false is invalid",
+      "null is invalid",
+      "object is invalid",
+      "empty object is invalid",
+      "array is invalid",
+      "empty array is invalid"
+    ],
+    "forbid everything with boolean schema true": [
+      "number is invalid",
+      "string is invalid",
+      "boolean true is invalid",
+      "boolean false is invalid",
+      "null is invalid",
+      "object is invalid",
+      "empty object is invalid",
+      "array is invalid",
+      "empty array is invalid"
+    ],
+    "collect annotations inside a 'not', even if collection is disabled": [
+      "unevaluated property",
+      "annotations are still collected inside a 'not'"
+    ],
+    "oneOf": [
+      "both oneOf valid",
+      "neither oneOf valid"
+    ],
+    "oneOf with base schema": [
+      "both oneOf valid"
+    ],
+    "oneOf with boolean schemas, all true": [
+      "any value is invalid"
+    ],
+    "oneOf with boolean schemas, more than one true": [
+      "any value is invalid"
+    ],
+    "oneOf with boolean schemas, all false": [
+      "any value is invalid"
+    ],
+    "oneOf complex types": [
+      "both oneOf valid (complex)",
+      "neither oneOf valid (complex)"
+    ],
+    "oneOf with empty schema": [
+      "both valid - invalid"
+    ],
+    "oneOf with required": [
+      "both invalid - invalid",
+      "both valid - invalid"
+    ],
+    "oneOf with missing optional property": [
+      "both oneOf valid",
+      "neither oneOf valid"
+    ],
+    "nested oneOf, to check validation semantics": [
+      "anything non-null is invalid"
+    ],
+    "patternProperties validates properties matching a regex": [
+      "a single invalid match is invalid",
+      "multiple invalid matches is invalid"
+    ],
+    "multiple simultaneous patternProperties are validated": [
+      "an invalid due to one is invalid",
+      "an invalid due to the other is invalid",
+      "an invalid due to both is invalid"
+    ],
+    "regexes are not anchored by default and are case sensitive": [
+      "recognized members are accounted for",
+      "regexes are case sensitive, 2"
+    ],
+    "patternProperties with boolean schemas": [
+      "object with property matching schema false is invalid",
+      "object with both properties is invalid",
+      "object with a property matching both true and false is invalid"
+    ],
+    "a schema given for prefixItems": [
+      "wrong types"
+    ],
+    "prefixItems with boolean schemas": [
+      "array with two items is invalid"
+    ],
+    "properties, patternProperties, additionalProperties interaction": [
+      "property validates property",
+      "patternProperty invalidates nonproperty",
+      "additionalProperty ignores property",
+      "additionalProperty invalidates others"
+    ],
+    "properties with null valued instance properties": [
+      "allows null values"
+    ],
+    "properties whose names are Javascript object property names": [
+      "ignores arrays",
+      "none of the properties mentioned"
+    ],
+    "propertyNames validation": [
+      "some property names invalid"
+    ],
+    "propertyNames with boolean schema false": [
+      "object with any properties is invalid"
+    ],
+    "root pointer ref": [
+      "mismatch",
+      "recursive mismatch"
+    ],
+    "relative pointer ref to object": [
+      "mismatch"
+    ],
+    "relative pointer ref to array": [
+      "mismatch array"
+    ],
+    "escaped pointer ref": [
+      "slash invalid",
+      "tilde invalid",
+      "percent invalid"
+    ],
+    "nested refs": [
+      "nested ref invalid"
+    ],
+    "ref applies alongside sibling keywords": [
+      "ref valid, maxItems invalid",
+      "ref invalid"
+    ],
+    "remote ref, containing refs itself": [
+      "remote ref invalid"
+    ],
+    "property named $ref, containing an actual $ref": [
+      "property named $ref invalid"
+    ],
+    "$ref to boolean schema false": [
+      "any value is invalid"
+    ],
+    "Recursive references between schemas": [
+      "valid tree"
+    ],
+    "refs with quote": [
+      "object with strings is invalid"
+    ],
+    "ref creates new scope when adjacent to keywords": [
+      "referenced subschema doesn't see annotations from properties"
+    ],
+    "naive replacement of $ref with its destination is not correct": [
+      "do not evaluate the $ref inside the enum, matching any string",
+      "do not evaluate the $ref inside the enum, definition exact match"
+    ],
+    "refs with relative uris and defs": [
+      "invalid on inner field",
+      "invalid on outer field"
+    ],
+    "relative refs with absolute uris and defs": [
+      "invalid on inner field",
+      "invalid on outer field"
+    ],
+    "$id must be resolved against nearest parent, not just immediate parent": [
+      "non-number is invalid"
+    ],
+    "order of evaluation: $id and $ref": [
+      "data is invalid against first definition"
+    ],
+    "order of evaluation: $id and $anchor and $ref": [
+      "data is invalid against first definition"
+    ],
+    "simple URN base URI with $ref via the URN": [
+      "invalid under the URN IDed schema"
+    ],
+    "simple URN base URI with JSON pointer": [
+      "a non-string is invalid"
+    ],
+    "URN base URI with NSS": [
+      "a non-string is invalid"
+    ],
+    "URN base URI with r-component": [
+      "a non-string is invalid"
+    ],
+    "URN base URI with q-component": [
+      "a non-string is invalid"
+    ],
+    "URN base URI with URN and JSON pointer ref": [
+      "a non-string is invalid"
+    ],
+    "URN base URI with URN and anchor ref": [
+      "a non-string is invalid"
+    ],
+    "URN ref with nested pointer ref": [
+      "a non-string is invalid"
+    ],
+    "ref to if": [
+      "a non-integer is invalid due to the $ref"
+    ],
+    "ref to then": [
+      "a non-integer is invalid due to the $ref"
+    ],
+    "ref to else": [
+      "a non-integer is invalid due to the $ref"
+    ],
+    "ref with absolute-path-reference": [
+      "an integer is invalid"
+    ],
+    "$id with file URI still resolves pointers - *nix": [
+      "non-number is invalid"
+    ],
+    "$id with file URI still resolves pointers - windows": [
+      "non-number is invalid"
+    ],
+    "empty tokens in $ref json-pointer": [
+      "non-number is invalid"
+    ],
+    "remote ref": [
+      "remote ref invalid"
+    ],
+    "fragment within remote ref": [
+      "remote fragment invalid"
+    ],
+    "anchor within remote ref": [
+      "remote anchor invalid"
+    ],
+    "ref within remote ref": [
+      "ref within ref invalid"
+    ],
+    "base URI change": [
+      "base URI change ref invalid"
+    ],
+    "base URI change - change folder": [
+      "string is invalid"
+    ],
+    "base URI change - change folder in subschema": [
+      "string is invalid"
+    ],
+    "root ref in remote ref": [
+      "object is invalid"
+    ],
+    "remote ref with ref to defs": [
+      "invalid"
+    ],
+    "Location-independent identifier in remote ref": [
+      "string is invalid"
+    ],
+    "retrieved nested refs resolve relative to their URI not $id": [
+      "number is invalid"
+    ],
+    "remote HTTP ref with different $id": [
+      "number is invalid"
+    ],
+    "remote HTTP ref with different URN $id": [
+      "number is invalid"
+    ],
+    "remote HTTP ref with nested absolute ref": [
+      "number is invalid"
+    ],
+    "$ref to $ref finds detached $anchor": [
+      "non-number is invalid"
+    ],
+    "required validation": [
+      "ignores arrays"
+    ],
+    "required properties whose names are Javascript object property names": [
+      "none of the properties mentioned",
+      "__proto__ present",
+      "toString present",
+      "constructor present"
+    ],
+    "object type matches objects": [
+      "an array is not an object",
+      "null is not an object"
+    ],
+    "array type matches arrays": [
+      "an array is an array"
+    ],
+    "null type matches only the null object": [
+      "null is null"
+    ],
+    "type: array or object": [
+      "null is invalid"
+    ],
+    "unevaluatedItems false": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems as schema": [
+      "with invalid unevaluated items"
+    ],
+    "unevaluatedItems with tuple": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems with items": [
+      "invalid under items"
+    ],
+    "unevaluatedItems with nested tuple": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems with nested items": [
+      "with invalid additional item"
+    ],
+    "unevaluatedItems with anyOf": [
+      "when one schema matches and has unevaluated items",
+      "when two schemas match and has unevaluated items"
+    ],
+    "unevaluatedItems with oneOf": [
+      "with no unevaluated items",
+      "with unevaluated items"
+    ],
+    "unevaluatedItems with not": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems with if/then/else": [
+      "when if matches and it has unevaluated items",
+      "when if doesn't match and it has unevaluated items"
+    ],
+    "unevaluatedItems with boolean schemas": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems with $ref": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems before $ref": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems with $dynamicRef": [
+      "with unevaluated items"
+    ],
+    "unevaluatedItems can't see inside cousins": [
+      "always fails"
+    ],
+    "item is evaluated in an uncle schema to unevaluatedItems": [
+      "uncle keyword evaluation is not significant"
+    ],
+    "unevaluatedItems depends on adjacent contains": [
+      "contains fails, second item is not evaluated",
+      "contains passes, second item is not evaluated"
+    ],
+    "unevaluatedItems depends on multiple nested contains": [
+      "7 not evaluated, fails unevaluatedItems"
+    ],
+    "unevaluatedItems and contains interact to control item dependency relationship": [
+      "only b's are invalid",
+      "only c's are invalid",
+      "only b's and c's are invalid",
+      "only a's and c's are invalid"
+    ],
+    "unevaluatedItems can see annotations from if without then and else": [
+      "invalid in case if is evaluated"
+    ],
+    "unevaluatedProperties schema": [
+      "with invalid unevaluated properties"
+    ],
+    "unevaluatedProperties false": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with adjacent properties": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with adjacent patternProperties": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with nested properties": [
+      "with additional properties"
+    ],
+    "unevaluatedProperties with nested patternProperties": [
+      "with additional properties"
+    ],
+    "unevaluatedProperties with anyOf": [
+      "when one matches and has unevaluated properties",
+      "when two match and has unevaluated properties"
+    ],
+    "unevaluatedProperties with oneOf": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with not": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with if/then/else": [
+      "when if is true and has unevaluated properties",
+      "when if is false and has unevaluated properties"
+    ],
+    "unevaluatedProperties with if/then/else, then not defined": [
+      "when if is true and has no unevaluated properties",
+      "when if is true and has unevaluated properties",
+      "when if is false and has unevaluated properties"
+    ],
+    "unevaluatedProperties with if/then/else, else not defined": [
+      "when if is true and has unevaluated properties",
+      "when if is false and has no unevaluated properties",
+      "when if is false and has unevaluated properties"
+    ],
+    "unevaluatedProperties with dependentSchemas": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with boolean schemas": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with $ref": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties before $ref": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties with $dynamicRef": [
+      "with unevaluated properties"
+    ],
+    "unevaluatedProperties can't see inside cousins": [
+      "always fails"
+    ],
+    "unevaluatedProperties can't see inside cousins (reverse order)": [
+      "always fails"
+    ],
+    "nested unevaluatedProperties, outer true, inner false, properties outside": [
+      "with no nested unevaluated properties",
+      "with nested unevaluated properties"
+    ],
+    "nested unevaluatedProperties, outer true, inner false, properties inside": [
+      "with nested unevaluated properties"
+    ],
+    "cousin unevaluatedProperties, true and false, true with properties": [
+      "with no nested unevaluated properties",
+      "with nested unevaluated properties"
+    ],
+    "cousin unevaluatedProperties, true and false, false with properties": [
+      "with nested unevaluated properties"
+    ],
+    "property is evaluated in an uncle schema to unevaluatedProperties": [
+      "uncle keyword evaluation is not significant"
+    ],
+    "in-place applicator siblings, allOf has unevaluated": [
+      "base case: both properties present",
+      "in place applicator siblings, foo is missing"
+    ],
+    "in-place applicator siblings, anyOf has unevaluated": [
+      "base case: both properties present",
+      "in place applicator siblings, bar is missing"
+    ],
+    "unevaluatedProperties + single cyclic ref": [
+      "Unevaluated on 1st level is invalid",
+      "Unevaluated on 2nd level is invalid",
+      "Unevaluated on 3rd level is invalid"
+    ],
+    "unevaluatedProperties + ref inside allOf / oneOf": [
+      "Empty is invalid (no x or y)",
+      "a and b are invalid (no x or y)",
+      "x and y are invalid",
+      "a and y are valid",
+      "a and b and y are valid",
+      "a and b and x and y are invalid"
+    ],
+    "dynamic evalation inside nested refs": [
+      "Empty is invalid",
+      "a is valid",
+      "a + b is invalid",
+      "a + c is invalid",
+      "a + d is invalid",
+      "b + c is invalid",
+      "b + d is invalid",
+      "c + d is invalid",
+      "xx + foo is invalid",
+      "xx + a is invalid",
+      "xx + b is invalid",
+      "xx + c is invalid",
+      "xx + d is invalid",
+      "all + a is invalid"
+    ],
+    "unevaluatedProperties not affected by propertyNames": [
+      "string property is invalid"
+    ],
+    "unevaluatedProperties can see annotations from if without then and else": [
+      "invalid in case if is evaluated"
+    ],
+    "dependentSchemas with unevaluatedProperties": [
+      "unevaluatedProperties doesn't consider dependentSchemas",
+      "unevaluatedProperties doesn't see bar when foo2 is absent"
+    ],
+    "uniqueItems validation": [
+      "non-unique array of integers is invalid",
+      "non-unique array of more than two integers is invalid",
+      "numbers are unique if mathematically unequal",
+      "non-unique array of strings is invalid",
+      "non-unique array of objects is invalid",
+      "property order of array of objects is ignored",
+      "non-unique array of nested objects is invalid",
+      "non-unique array of arrays is invalid",
+      "non-unique array of more than two arrays is invalid",
+      "non-unique heterogeneous types are invalid",
+      "objects are non-unique despite key order"
+    ],
+    "uniqueItems with an array of items": [
+      "[false, false] from items array is not valid",
+      "[true, true] from items array is not valid",
+      "non-unique array extended from [false, true] is not valid",
+      "non-unique array extended from [true, false] is not valid"
+    ],
+    "uniqueItems with an array of items and additionalItems=false": [
+      "[false, false] from items array is not valid",
+      "[true, true] from items array is not valid",
+      "extra items are invalid even if unique"
+    ],
+    "uniqueItems=false with an array of items and additionalItems=false": [
+      "extra items are invalid even if unique"
+    ],
+    "schema that uses custom metaschema with with no validation vocabulary": [
+      "no validation: invalid number, but it still validates"
+    ]
+  }
 }

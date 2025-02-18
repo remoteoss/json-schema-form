@@ -11,7 +11,7 @@ const __dirname = path.dirname(__filename)
 function saveFailedTests(failedTests) {
   fs.writeFileSync(
     path.join(__dirname, JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME),
-    `${JSON.stringify({ failedTests }, null, 2)}\n`,
+    `${JSON.stringify(failedTests, null, 2)}\n`,
   )
 }
 
@@ -32,7 +32,29 @@ function saveFailedTests(failedTests) {
  */
 class FailureTrackingReporter {
   constructor() {
-    this.failedTests = new Set()
+    this.unimplementedFeatures = {}
+    this.size = 0
+  }
+
+  addFailedTest(testResult) {
+    const ancestors = testResult.ancestorTitles
+    const testName = testResult.title
+
+    let current = this.unimplementedFeatures
+
+    // Navigate through ancestors to build nested structure
+    for (let i = 0; i < ancestors.length - 1; i++) {
+      const ancestor = ancestors[i]
+      current[ancestor] = current[ancestor] || {}
+      current = current[ancestor]
+    }
+
+    // Add test to the final level using last ancestor
+    const lastAncestor = ancestors[ancestors.length - 1]
+    current[lastAncestor] = current[lastAncestor] || []
+    current[lastAncestor].push(testName)
+
+    this.size++
   }
 
   onTestResult(test, testResult) {
@@ -43,16 +65,16 @@ class FailureTrackingReporter {
 
     testResult.testResults.forEach((result) => {
       if (result.status === 'failed' || result.status === 'pending') {
-        this.failedTests.add(result.fullName || result.title)
+        this.addFailedTest(result)
       }
     })
   }
 
   onRunComplete() {
-    if (this.failedTests.size > 0) {
+    if (this.size > 0) {
       // eslint-disable-next-line no-console
-      console.log(`JSON Schema Test Suite: Test run complete, saving ${this.failedTests.size} tests to ${JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME} file so they're ignored for now and enabled later`)
-      saveFailedTests(Array.from(this.failedTests))
+      console.log(`JSON Schema Test Suite: Test run complete, saving ${this.size} tests to ${JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME} file so they're ignored for now and enabled later`)
+      saveFailedTests(this.unimplementedFeatures)
     }
   }
 }

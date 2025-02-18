@@ -1,4 +1,5 @@
 import type { JsfSchema, SchemaValue } from '../../src/types'
+import type { TestSkipNode } from './helpers'
 import fs from 'node:fs'
 import path from 'node:path'
 import util from 'node:util'
@@ -25,7 +26,10 @@ expect.extend({
     const pass = valid ? !hasErrors : hasErrors
     return {
       pass,
-      message: () => `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(received)}`,
+      message: () =>
+        `expected ${util.inspect(value)} ${valid ? 'to' : 'not to'} be valid for ${util.inspect(
+          received,
+        )}`,
     }
   },
 })
@@ -43,14 +47,40 @@ const testsToSkip = loadJsonSchemaSuiteFailedTests()
  * should be skipped.
  */
 describe('JSON Schema Test Suite', () => {
-  const testsDir = path.join(__dirname, '..', '..', 'json-schema-test-suite', 'tests', 'draft2020-12')
+  const testsDir = path.join(
+    __dirname,
+    '..',
+    '..',
+    'json-schema-test-suite',
+    'tests',
+    'draft2020-12',
+  )
   const testFiles = fs.readdirSync(testsDir).filter(file => file.endsWith('.json'))
 
   for (const file of testFiles) {
-    const testFile: TestSchema[] = JSON.parse(fs.readFileSync(path.join(testsDir, file), 'utf8'))
+    const jsonSchemaTestSuites: TestSchema[] = JSON.parse(fs.readFileSync(path.join(testsDir, file), 'utf8'))
 
-    const runTestIfFeatureImplemented = (testPath: string, testName: string, testFn: () => void) => {
-      const shouldRun = !testsToSkip.includes(testPath)
+    const runTestIfFeatureIsImplemented = (
+      testPath: string[],
+      testName: string,
+      testFn: () => void,
+    ) => {
+      // By default, we run the test
+      let shouldRun = true
+      let ancestor: TestSkipNode = testsToSkip
+
+      // Traverse the tree to understand if we should skip the test
+      for (let i = 0; i < testPath.length; i++) {
+        // If the current node is not an array, continue traversing the tree
+        if (!Array.isArray(ancestor)) {
+          ancestor = ancestor?.[testPath[i]]
+        }
+        else {
+          // If the current node is an array, check if the test name is in the array
+          shouldRun = !ancestor.includes(testName)
+          break
+        }
+      }
 
       if (shouldRun) {
         it(testName, testFn)
@@ -61,14 +91,18 @@ describe('JSON Schema Test Suite', () => {
       }
     }
 
-    for (const testSchema of testFile) {
-      describe(testSchema.description, () => {
-        for (const test of testSchema.tests) {
+    for (const testSuite of jsonSchemaTestSuites) {
+      describe(testSuite.description, () => {
+        for (const test of testSuite.tests) {
           // Tests that will run only if they previously failed
-          runTestIfFeatureImplemented(`JSON Schema Test Suite ${testSchema.description} ${test.description}`, test.description, () => {
-            // @ts-expect-errorTODO: properly extend the expect interface
-            expect(testSchema.schema).toBeValid(test.data, test.valid)
-          })
+          runTestIfFeatureIsImplemented(
+            ['JSON Schema Test Suite', testSuite.description, test.description],
+            test.description,
+            () => {
+              // @ts-expect-error TODO: properly extend the expect interface
+              expect(testSuite.schema).toBeValid(test.data, test.valid)
+            },
+          )
         }
       })
     }
