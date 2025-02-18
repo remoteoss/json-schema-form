@@ -548,6 +548,82 @@ describe('Conditional with literal booleans', () => {
   });
 });
 
+describe('Conditional with anyOf', () => {
+  it('handles true case', () => {
+    const { fields, handleValidation } = createHeadlessForm(
+      {
+        additionalProperties: false,
+        type: 'object',
+        properties: {
+          field_a: { type: 'string' },
+          field_b: { type: 'string' },
+          field_c: { type: 'string' },
+        },
+        allOf: [
+          {
+            if: {
+              anyOf: [
+                { properties: { field_a: { const: '1' } }, required: ['a'] },
+                { properties: { field_b: { const: '2' } }, required: ['b'] },
+              ],
+            },
+            then: {
+              required: ['field_c'],
+            },
+            else: {
+              properties: {
+                field_c: false,
+              },
+            },
+          },
+        ],
+      },
+      { strictInputType: false }
+    );
+
+    expect(handleValidation({ field_a: '4', field_b: '2' }).formErrors).toEqual({
+      field_c: 'Required field',
+    });
+    expect(fields[2].isVisible).toBe(true);
+  });
+
+  it('handles false case', () => {
+    const { fields, handleValidation } = createHeadlessForm(
+      {
+        additionalProperties: false,
+        type: 'object',
+        properties: {
+          field_a: { type: 'string' },
+          field_b: { type: 'string' },
+          field_c: { type: 'string' },
+        },
+        allOf: [
+          {
+            if: {
+              anyOf: [
+                { properties: { field_a: { const: '1' } }, required: ['a'] },
+                { properties: { field_b: { const: '2' } }, required: ['b'] },
+              ],
+            },
+            then: {
+              required: ['field_c'],
+            },
+            else: {
+              properties: {
+                field_c: false,
+              },
+            },
+          },
+        ],
+      },
+      { strictInputType: false }
+    );
+
+    expect(handleValidation({ field_a: '4', field_b: '4' }).formErrors).toBeUndefined();
+    expect(fields[2].isVisible).toBe(false);
+  });
+});
+
 describe('Conditionals - bugs and code-smells', () => {
   // Why do we have these bugs?
   // To be honest we never realized it much later later.
