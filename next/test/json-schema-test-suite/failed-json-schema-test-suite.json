@@ -35,10 +35,6 @@
     "same $anchor with different base uri": [
       "$ref does not resolve to /$defs/A/allOf/0"
     ],
-    "nul characters in strings": [
-      "do not match string lacking nul",
-      "do not match string lacking nul"
-    ],
     "contains keyword validation": [
       "array without items matching schema is invalid",
       "empty array is invalid"
@@ -142,52 +138,6 @@
     ],
     "$dynamicRef skips over intermediate resources - direct reference": [
       "string property fails"
-    ],
-    "simple enum validation": [
-      "something else is invalid"
-    ],
-    "heterogeneous enum validation": [
-      "something else is invalid",
-      "objects are deep compared",
-      "extra properties in object is invalid"
-    ],
-    "heterogeneous enum-with-null validation": [
-      "something else is invalid"
-    ],
-    "enums in properties": [
-      "wrong foo value",
-      "wrong bar value"
-    ],
-    "enum with escaped characters": [
-      "another string is invalid"
-    ],
-    "enum with false does not match 0": [
-      "integer zero is invalid",
-      "float zero is invalid"
-    ],
-    "enum with [false] does not match [0]": [
-      "[0] is invalid",
-      "[0.0] is invalid"
-    ],
-    "enum with true does not match 1": [
-      "integer one is invalid",
-      "float one is invalid"
-    ],
-    "enum with [true] does not match [1]": [
-      "[1] is invalid",
-      "[1.0] is invalid"
-    ],
-    "enum with 0 does not match false": [
-      "false is invalid"
-    ],
-    "enum with [0] does not match [false]": [
-      "[false] is invalid"
-    ],
-    "enum with 1 does not match true": [
-      "true is invalid"
-    ],
-    "enum with [1] does not match [true]": [
-      "[true] is invalid"
     ],
     "email format": [
       "invalid email string is only an annotation by default"
@@ -415,10 +365,6 @@
     ],
     "ref creates new scope when adjacent to keywords": [
       "referenced subschema doesn't see annotations from properties"
-    ],
-    "naive replacement of $ref with its destination is not correct": [
-      "do not evaluate the $ref inside the enum, matching any string",
-      "do not evaluate the $ref inside the enum, definition exact match"
     ],
     "refs with relative uris and defs": [
       "invalid on inner field",
