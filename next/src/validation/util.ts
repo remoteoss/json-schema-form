@@ -1,3 +1,13 @@
+/**
+ * Compare two values for deep equality
+ * @param a - The first value to compare
+ * @param b - The second value to compare
+ * @returns `true` if the values are equal, `false` otherwise
+ * @description This function is compares two values for deep equality.
+ * Primitives are compared using strict equality.
+ * Arrays are compared element by element using recursion.
+ * Objects are compared key by key using recursion.
+ */
 export function deepEqual(a: any, b: any): boolean {
   if (typeof a !== typeof b) {
     return false
