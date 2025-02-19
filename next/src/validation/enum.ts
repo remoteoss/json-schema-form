@@ -14,6 +14,8 @@ import { deepEqual } from './util'
  * validateEnum('foo', { enum: ['foo', 'bar'] }) // []
  * validateEnum('baz', { enum: ['foo', 'bar'] }) // [{ path: [], validation: 'enum', message: 'must be one of ["foo", "bar"]' }]
  * ```
+ * @see https://json-schema.org/understanding-json-schema/reference/enum
+ * @see https://json-schema.org/draft/2020-12/json-schema-validation#name-enum
  */
 export function validateEnum(value: SchemaValue, schema: NonBooleanJsfSchema, path: string[] = []): ValidationError[] {
   if (schema.enum === undefined) {
