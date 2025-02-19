@@ -31,10 +31,10 @@ This is under active development, more info soon!
    cd json-schema-form/next
    ```
 
-3. Install dependencies
+3. Install dependencies. You **must use [`pnpm`](https://pnpm.io/)**
 
    ```bash
-   npm install
+   pnpm install
    ```
 
 4. Work in the "next" folder only
@@ -53,13 +53,13 @@ This is under active development, more info soon!
 To run the tests, navigate to the "next" folder and run:
 
 ```bash
-npm run test
+pnpm test
 ```
 
 Or run the tests in watch mode:
 
 ```bash
-npm run test:watch
+pnpm test:watch
 ```
 
 We use Jest for testing and have 2 sets of tests:
