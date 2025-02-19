@@ -12,7 +12,7 @@ import { deepEqual } from './util'
  * The constant is defined in the `const` property of the schema.
  * The value is validated against the constant using deep equality.
  * @see https://json-schema.org/understanding-json-schema/reference/const
- * @see https://json-schema.org/draft/2020-12/json-schema-validation#name-enum
+ * @see https://json-schema.org/draft/2020-12/json-schema-validation#name-const
  */
 export function validateConst(value: SchemaValue, schema: NonBooleanJsfSchema, path: string[] = []): ValidationError[] {
   if (schema.const === undefined) {
