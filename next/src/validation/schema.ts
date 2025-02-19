@@ -1,7 +1,9 @@
 import type { ValidationError } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import type { StringValidationErrorType } from './string'
-import { getBaseSchema, validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
+import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
+import { validateCondition } from './conditions'
+import { validateConst } from './const'
 import { type NumberValidationErrorType, validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -13,6 +15,7 @@ export type SchemaValidationErrorType =
   | 'type'
   | 'required'
   | 'valid'
+  | 'const'
 
   /**
    * Schema composition keywords (allOf, anyOf, oneOf, not)
@@ -135,59 +138,6 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
 }
 
 /**
- * Validate a value against a schema, excluding composition keywords
- * This is used internally to validate against base schema constraints
- */
-function validateSchemaWithoutComposition(
-  value: SchemaValue,
-  schema: JsfSchema,
-  required: boolean = false,
-  path: string[] = [],
-): ValidationError[] {
-  if (value === undefined && required) {
-    return [{ path, validation: 'required', message: 'is required' }]
-  }
-
-  if (value === undefined) {
-    return []
-  }
-
-  if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid', message: 'always fails' }]
-  }
-
-  // Collect all validation errors
-  const errors: ValidationError[] = []
-
-  const typeValidationErrors = validateType(value, schema, path)
-  if (typeValidationErrors.length > 0) {
-    return typeValidationErrors
-  }
-
-  // If the schema defines "required", run required checks even when type is undefined.
-  if (schema.required && Array.isArray(schema.required) && typeof value === 'object' && value !== null) {
-    const missingKeys = schema.required.filter((key: string) => !(key in value))
-    if (missingKeys.length > 0) {
-      // Return an error for each missing field.
-      return missingKeys.map(key => ({
-        path: [...path, key],
-        validation: 'required',
-        message: 'is required',
-      }))
-    }
-  }
-
-  // Validate base schema constraints
-  errors.push(
-    ...validateObject(value, schema, path),
-    ...validateString(value, schema, path),
-    ...validateNumber(value, schema, path),
-  )
-
-  return errors
-}
-
-/**
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
@@ -232,43 +182,34 @@ export function validateSchema(
     return schema ? [] : [{ path, validation: 'valid', message: 'always fails' }]
   }
 
-  // First validate against base schema
-  const baseSchema = getBaseSchema(schema)
-  const baseErrors = validateSchemaWithoutComposition(value, baseSchema, required, path)
-  if (baseErrors.length > 0) {
-    return baseErrors
+  const typeValidationErrors = validateType(value, schema, path)
+  if (typeValidationErrors.length > 0) {
+    return typeValidationErrors
   }
 
-  // Then validate against all logical composition keywords
-  let errors: ValidationError[] = []
-
-  // Handle not - we don't want to validate against base schema twice
-  if (schema.not !== undefined) {
-    errors = validateNot(value, { not: schema.not }, path)
-    if (errors.length > 0)
-      return errors
+  // If the schema defines "required", run required checks even when type is undefined.
+  if (schema.required && Array.isArray(schema.required) && typeof value === 'object' && value !== null) {
+    const missingKeys = schema.required.filter((key: string) => !(key in value))
+    if (missingKeys.length > 0) {
+      // Return an error for each missing field.
+      return missingKeys.map(key => ({
+        path: [...path, key],
+        validation: 'required',
+        message: 'is required',
+      }))
+    }
   }
 
-  // Handle allOf
-  if (schema.allOf && Array.isArray(schema.allOf)) {
-    errors = validateAllOf(value, { allOf: schema.allOf }, path)
-    if (errors.length > 0)
-      return errors
-  }
-
-  // Handle anyOf
-  if (schema.anyOf && Array.isArray(schema.anyOf)) {
-    errors = validateAnyOf(value, { anyOf: schema.anyOf }, path)
-    if (errors.length > 0)
-      return errors
-  }
-
-  // Handle oneOf
-  if (schema.oneOf && Array.isArray(schema.oneOf)) {
-    errors = validateOneOf(value, { oneOf: schema.oneOf }, path)
-    if (errors.length > 0)
-      return errors
-  }
-
-  return errors
+  return [
+    ...validateConst(value, schema, path),
+    ...validateObject(value, schema, path),
+    ...validateString(value, schema, path),
+    ...validateNumber(value, schema, path),
+    ...validateCondition(value, schema, required, path),
+    ...validateNot(value, schema, path),
+    ...validateAllOf(value, schema, path),
+    ...validateAnyOf(value, schema, path),
+    ...validateOneOf(value, schema, path),
+    ...validateCondition(value, schema, required, path),
+  ]
 }

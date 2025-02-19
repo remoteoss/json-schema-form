@@ -1,6 +1,6 @@
 import type { JsfSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
-import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from '../../src/validation/composition'
+import { validateSchema } from '../../src/validation/schema'
 
 describe('schema composition validators', () => {
   describe('validateAllOf', () => {
@@ -24,13 +24,13 @@ describe('schema composition validators', () => {
 
       it('should validate when all subschemas are satisfied', () => {
         const value = { foo: 'baz', bar: 2 }
-        const errors = validateAllOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when missing required property from first schema', () => {
         const value = { foo: 'baz' }
-        const errors = validateAllOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
         expect(errors[0].path).toEqual(['bar'])
@@ -38,7 +38,7 @@ describe('schema composition validators', () => {
 
       it('should fail when missing required property from second schema', () => {
         const value = { bar: 2 }
-        const errors = validateAllOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
         expect(errors[0].path).toEqual(['foo'])
@@ -46,7 +46,7 @@ describe('schema composition validators', () => {
 
       it('should fail when property has wrong type', () => {
         const value = { foo: 'baz', bar: 'quux' }
-        const errors = validateAllOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('type')
         expect(errors[0].path).toEqual(['bar'])
@@ -75,13 +75,13 @@ describe('schema composition validators', () => {
 
       it('should validate when all conditions are met', () => {
         const value = { foo: 'quux', bar: 2, baz: null }
-        const errors = validateAllOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when base schema is not satisfied', () => {
         const value = { foo: 'quux', baz: null }
-        const errors = validateAllOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
         expect(errors[0].path).toEqual(['bar'])
@@ -93,7 +93,7 @@ describe('schema composition validators', () => {
         const schema: JsfSchema = {
           allOf: [true, true],
         }
-        const errors = validateAllOf('foo', schema)
+        const errors = validateSchema('foo', schema)
         expect(errors).toHaveLength(0)
       })
 
@@ -101,7 +101,7 @@ describe('schema composition validators', () => {
         const schema: JsfSchema = {
           allOf: [true, false],
         }
-        const errors = validateAllOf('foo', schema)
+        const errors = validateSchema('foo', schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('valid')
       })
@@ -110,7 +110,7 @@ describe('schema composition validators', () => {
         const schema: JsfSchema = {
           allOf: [false, false],
         }
-        const errors = validateAllOf('foo', schema)
+        const errors = validateSchema('foo', schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('valid')
       })
@@ -134,19 +134,19 @@ describe('schema composition validators', () => {
 
       it('should validate when value matches first schema', () => {
         const value = 'short'
-        const errors = validateAnyOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should validate when value matches second schema', () => {
         const value = 12
-        const errors = validateAnyOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when value matches no schema', () => {
         const value = 'too long'
-        const errors = validateAnyOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('anyOf')
         expect(errors[0].message).toBe('should match at least one schema')
@@ -177,13 +177,13 @@ describe('schema composition validators', () => {
 
       it('should validate when base schema and one subschema match', () => {
         const value = { type: 'string', value: 'test' }
-        const errors = validateAnyOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when base schema fails', () => {
         const value = { value: 'test' }
-        const errors = validateAnyOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
         expect(errors[0].path).toEqual(['type'])
@@ -200,13 +200,13 @@ describe('schema composition validators', () => {
 
       it('should validate string against empty schema', () => {
         const value = 'foo'
-        const errors = validateAnyOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should validate number against both schemas', () => {
         const value = 123
-        const errors = validateAnyOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
     })
@@ -223,12 +223,12 @@ describe('schema composition validators', () => {
       }
 
       it('should validate null', () => {
-        const errors = validateAnyOf(null, schema)
+        const errors = validateSchema(null, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail for non-null values', () => {
-        const errors = validateAnyOf(123, schema)
+        const errors = validateSchema(123, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('anyOf')
       })
@@ -252,13 +252,13 @@ describe('schema composition validators', () => {
 
       it('should validate when value matches exactly one schema', () => {
         const value = 10 // multiple of 5 only
-        const errors = validateOneOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when value matches no schema', () => {
         const value = 7
-        const errors = validateOneOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
         expect(errors[0].message).toBe('should match exactly one schema')
@@ -266,7 +266,7 @@ describe('schema composition validators', () => {
 
       it('should fail when value matches multiple schemas', () => {
         const value = 15 // multiple of both 3 and 5
-        const errors = validateOneOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
         expect(errors[0].message).toBe('should match exactly one schema but matches multiple')
@@ -298,13 +298,13 @@ describe('schema composition validators', () => {
 
       it('should validate when base schema and exactly one subschema match', () => {
         const value = { type: 'circle', radius: 5 }
-        const errors = validateOneOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when base schema fails', () => {
         const value = { radius: 5 }
-        const errors = validateOneOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
         expect(errors[0].path).toEqual(['type'])
@@ -321,13 +321,13 @@ describe('schema composition validators', () => {
 
       it('should validate when only empty schema matches', () => {
         const value = 'foo'
-        const errors = validateOneOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when both schemas match', () => {
         const value = 123
-        const errors = validateOneOf(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
         expect(errors[0].message).toBe('should match exactly one schema but matches multiple')
@@ -344,18 +344,18 @@ describe('schema composition validators', () => {
       }
 
       it('should validate when exactly one set of required properties is present', () => {
-        const errors = validateOneOf({ foo: 1, bar: 2 }, schema)
+        const errors = validateSchema({ foo: 1, bar: 2 }, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when both sets of required properties are present', () => {
-        const errors = validateOneOf({ foo: 1, bar: 2, baz: 3 }, schema)
+        const errors = validateSchema({ foo: 1, bar: 2, baz: 3 }, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
       })
 
       it('should fail when no set of required properties is complete', () => {
-        const errors = validateOneOf({ bar: 2 }, schema)
+        const errors = validateSchema({ bar: 2 }, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
       })
@@ -372,13 +372,13 @@ describe('schema composition validators', () => {
 
       it('should validate when value does not match the schema', () => {
         const value = 42
-        const errors = validateNot(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail when value matches the schema', () => {
         const value = 'test'
-        const errors = validateNot(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('not')
         expect(errors[0].message).toBe('should NOT be valid against schema')
@@ -398,7 +398,7 @@ describe('schema composition validators', () => {
 
       it('should fail when base schema fails', () => {
         const value = { other: 'field' }
-        const errors = validateNot(value, schema)
+        const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
         expect(errors[0].path).toEqual(['type'])
@@ -411,18 +411,18 @@ describe('schema composition validators', () => {
       }
 
       it('should validate non-matching type', () => {
-        const errors = validateNot(null, schema)
+        const errors = validateSchema(null, schema)
         expect(errors).toHaveLength(0)
       })
 
       it('should fail for integer', () => {
-        const errors = validateNot(1, schema)
+        const errors = validateSchema(1, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('not')
       })
 
       it('should fail for string', () => {
-        const errors = validateNot('test', schema)
+        const errors = validateSchema('test', schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('not')
       })
@@ -431,14 +431,14 @@ describe('schema composition validators', () => {
     describe('with boolean schemas', () => {
       it('should always fail with true schema', () => {
         const schema: JsfSchema = { not: {} }
-        const errors = validateNot('test', schema)
+        const errors = validateSchema('test', schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('not')
       })
 
       it('should always pass with false schema', () => {
         const schema: JsfSchema = { not: { not: {} } }
-        const errors = validateNot('test', schema)
+        const errors = validateSchema('test', schema)
         expect(errors).toHaveLength(0)
       })
     })
@@ -449,7 +449,7 @@ describe('schema composition validators', () => {
       }
 
       it('should validate any value', () => {
-        const errors = validateNot('foo', schema)
+        const errors = validateSchema('foo', schema)
         expect(errors).toHaveLength(0)
       })
     })

@@ -23,39 +23,6 @@
       "additionalProperties can't see bar",
       "additionalProperties can't see bar even when foo2 is present"
     ],
-    "allOf": [
-      "mismatch second",
-      "mismatch first",
-      "wrong type"
-    ],
-    "allOf with base schema": [
-      "mismatch first allOf",
-      "mismatch second allOf",
-      "mismatch both"
-    ],
-    "allOf simple types": [
-      "mismatch one"
-    ],
-    "allOf with boolean schemas, some false": [
-      "any value is invalid"
-    ],
-    "allOf with boolean schemas, all false": [
-      "any value is invalid"
-    ],
-    "allOf with the first empty schema": [
-      "string is invalid"
-    ],
-    "allOf with the last empty schema": [
-      "string is invalid"
-    ],
-    "nested allOf, to check validation semantics": [
-      "anything non-null is invalid"
-    ],
-    "allOf combined with anyOf, oneOf": [
-      "allOf: false, anyOf: true, oneOf: false",
-      "allOf: false, anyOf: true, oneOf: true",
-      "allOf: true, anyOf: true, oneOf: false"
-    ],
     "Location-independent identifier": [
       "mismatch"
     ],
@@ -67,66 +34,6 @@
     ],
     "same $anchor with different base uri": [
       "$ref does not resolve to /$defs/A/allOf/0"
-    ],
-    "nested anyOf, to check validation semantics": [
-      "null is valid"
-    ],
-    "const validation": [
-      "another value is invalid",
-      "another type is invalid"
-    ],
-    "const with object": [
-      "another object is invalid",
-      "another type is invalid"
-    ],
-    "const with array": [
-      "another array item is invalid",
-      "array with additional items is invalid"
-    ],
-    "const with null": [
-      "not null is invalid"
-    ],
-    "const with false does not match 0": [
-      "integer zero is invalid",
-      "float zero is invalid"
-    ],
-    "const with true does not match 1": [
-      "integer one is invalid",
-      "float one is invalid"
-    ],
-    "const with [false] does not match [0]": [
-      "[0] is invalid",
-      "[0.0] is invalid"
-    ],
-    "const with [true] does not match [1]": [
-      "[1] is invalid",
-      "[1.0] is invalid"
-    ],
-    "const with {\"a\": false} does not match {\"a\": 0}": [
-      "{\"a\": 0} is invalid",
-      "{\"a\": 0.0} is invalid"
-    ],
-    "const with {\"a\": true} does not match {\"a\": 1}": [
-      "{\"a\": 1} is invalid",
-      "{\"a\": 1.0} is invalid"
-    ],
-    "const with 0 does not match other zero-like types": [
-      "false is invalid",
-      "empty object is invalid",
-      "empty array is invalid",
-      "empty string is invalid"
-    ],
-    "const with 1 does not match true": [
-      "true is invalid"
-    ],
-    "const with -2.0 matches integer and float types": [
-      "integer 2 is invalid",
-      "float 2.0 is invalid",
-      "float -2.00001 is invalid"
-    ],
-    "float and integers are equal up to 64-bit representation limits": [
-      "integer minus one is invalid",
-      "float minus one is invalid"
     ],
     "nul characters in strings": [
       "do not match string lacking nul",
@@ -327,26 +234,6 @@
     "duration format": [
       "invalid duration string is only an annotation by default"
     ],
-    "if and then without else": [
-      "invalid through then"
-    ],
-    "if and else without then": [
-      "invalid through else"
-    ],
-    "validate against correct branch, then vs else": [
-      "invalid through then",
-      "invalid through else"
-    ],
-    "if with boolean schema true": [
-      "boolean schema true in if always chooses the then path (invalid)"
-    ],
-    "if with boolean schema false": [
-      "boolean schema false in if always chooses the else path (invalid)"
-    ],
-    "if appears at the end when serialized (keyword processing sequence)": [
-      "no redirects to then and fails",
-      "invalid redirects to else and fails"
-    ],
     "evaluating the same schema location against the same data location twice is not a sign of an infinite loop": [
       "failing case"
     ],
@@ -446,78 +333,8 @@
     "small multiple of large integer": [
       "any integer is a multiple of 1e-8"
     ],
-    "not": [
-      "disallowed"
-    ],
-    "not multiple types": [
-      "mismatch",
-      "other mismatch"
-    ],
-    "not more complex schema": [
-      "mismatch"
-    ],
-    "forbidden property": [
-      "property present"
-    ],
-    "forbid everything with empty schema": [
-      "number is invalid",
-      "string is invalid",
-      "boolean true is invalid",
-      "boolean false is invalid",
-      "null is invalid",
-      "object is invalid",
-      "empty object is invalid",
-      "array is invalid",
-      "empty array is invalid"
-    ],
-    "forbid everything with boolean schema true": [
-      "number is invalid",
-      "string is invalid",
-      "boolean true is invalid",
-      "boolean false is invalid",
-      "null is invalid",
-      "object is invalid",
-      "empty object is invalid",
-      "array is invalid",
-      "empty array is invalid"
-    ],
     "collect annotations inside a 'not', even if collection is disabled": [
-      "unevaluated property",
-      "annotations are still collected inside a 'not'"
-    ],
-    "oneOf": [
-      "both oneOf valid",
-      "neither oneOf valid"
-    ],
-    "oneOf with base schema": [
-      "both oneOf valid"
-    ],
-    "oneOf with boolean schemas, all true": [
-      "any value is invalid"
-    ],
-    "oneOf with boolean schemas, more than one true": [
-      "any value is invalid"
-    ],
-    "oneOf with boolean schemas, all false": [
-      "any value is invalid"
-    ],
-    "oneOf complex types": [
-      "both oneOf valid (complex)",
-      "neither oneOf valid (complex)"
-    ],
-    "oneOf with empty schema": [
-      "both valid - invalid"
-    ],
-    "oneOf with required": [
-      "both invalid - invalid",
-      "both valid - invalid"
-    ],
-    "oneOf with missing optional property": [
-      "both oneOf valid",
-      "neither oneOf valid"
-    ],
-    "nested oneOf, to check validation semantics": [
-      "anything non-null is invalid"
+      "unevaluated property"
     ],
     "patternProperties validates properties matching a regex": [
       "a single invalid match is invalid",
@@ -548,9 +365,6 @@
       "patternProperty invalidates nonproperty",
       "additionalProperty ignores property",
       "additionalProperty invalidates others"
-    ],
-    "properties with null valued instance properties": [
-      "allows null values"
     ],
     "properties whose names are Javascript object property names": [
       "ignores arrays",
@@ -723,17 +537,10 @@
       "constructor present"
     ],
     "object type matches objects": [
-      "an array is not an object",
-      "null is not an object"
+      "an array is not an object"
     ],
     "array type matches arrays": [
       "an array is an array"
-    ],
-    "null type matches only the null object": [
-      "null is null"
-    ],
-    "type: array or object": [
-      "null is invalid"
     ],
     "unevaluatedItems false": [
       "with unevaluated items"
@@ -758,8 +565,7 @@
       "when two schemas match and has unevaluated items"
     ],
     "unevaluatedItems with oneOf": [
-      "with no unevaluated items",
-      "with unevaluated items"
+      "with no unevaluated items"
     ],
     "unevaluatedItems with not": [
       "with unevaluated items"
@@ -898,26 +704,19 @@
     "unevaluatedProperties + ref inside allOf / oneOf": [
       "Empty is invalid (no x or y)",
       "a and b are invalid (no x or y)",
-      "x and y are invalid",
       "a and y are valid",
-      "a and b and y are valid",
-      "a and b and x and y are invalid"
+      "a and b and y are valid"
     ],
     "dynamic evalation inside nested refs": [
       "Empty is invalid",
       "a is valid",
-      "a + b is invalid",
-      "a + c is invalid",
-      "a + d is invalid",
       "b + c is invalid",
       "b + d is invalid",
       "c + d is invalid",
       "xx + foo is invalid",
-      "xx + a is invalid",
       "xx + b is invalid",
       "xx + c is invalid",
-      "xx + d is invalid",
-      "all + a is invalid"
+      "xx + d is invalid"
     ],
     "unevaluatedProperties not affected by propertyNames": [
       "string property is invalid"

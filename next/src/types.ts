@@ -8,7 +8,7 @@ export type JsfSchemaType = Exclude<JSONSchema, boolean>['type']
 /**
  * Defines the type of a value in the form that will be validated against the schema.
  */
-export type SchemaValue = string | number | ObjectValue | null | undefined
+export type SchemaValue = string | number | ObjectValue | null | undefined | Array<SchemaValue>
 
 /**
  * A nested object value.
@@ -37,6 +37,9 @@ export type JsfSchema = JSONSchema & {
   'allOf'?: JsfSchema[]
   'oneOf'?: JsfSchema[]
   'not'?: JsfSchema
+  'if'?: JsfSchema
+  'then'?: JsfSchema
+  'else'?: JsfSchema
   'x-jsf-logic'?: {
     validations: Record<string, object>
     computedValues: Record<string, object>
