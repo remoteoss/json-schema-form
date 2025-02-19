@@ -28,6 +28,10 @@ export function deepEqual(a: SchemaValue, b: SchemaValue): boolean {
     return true
   }
 
+  // If both are null, the check above has returned true.
+  // If one is null, we return false because we know they are not equal
+  // and since `typeof null === 'object'`, we must not let the null value
+  // pass through as an object.
   if (a === null || b === null) {
     return false
   }

@@ -4,6 +4,7 @@ import type { StringValidationErrorType } from './string'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
 import { validateConst } from './const'
+import { validateEnum } from './enum'
 import { type NumberValidationErrorType, validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -16,6 +17,7 @@ export type SchemaValidationErrorType =
   | 'required'
   | 'valid'
   | 'const'
+  | 'enum'
 
   /**
    * Schema composition keywords (allOf, anyOf, oneOf, not)
@@ -152,6 +154,9 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
  * 3. Validate against base schema constraints:
  *    - Type validation (if type is specified)
  *    - Required properties (for objects)
+ *    - Boolean validation
+ *    - Enum validation
+ *    - Const validation
  *    - Type-specific validations (string, number, object)
  * 4. Validate against composition keywords in this order:
  *    - not (negates the validation of a subschema)
@@ -202,6 +207,7 @@ export function validateSchema(
 
   return [
     ...validateConst(value, schema, path),
+    ...validateEnum(value, schema, path),
     ...validateObject(value, schema, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
