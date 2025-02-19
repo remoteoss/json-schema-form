@@ -1,3 +1,14 @@
+import type { ObjectValue, SchemaValue } from '../types'
+
+/**
+ * Type guard to check if a given SchemaValue is an ObjectValue
+ * @param v - The value to check
+ * @returns `true` if the value is an object, `false` otherwise
+ */
+export function isObjectValue(v: SchemaValue): v is ObjectValue {
+  return typeof v === 'object' && v !== null && !Array.isArray(v)
+}
+
 /**
  * Compare two values for deep equality
  * @param a - The first value to compare
@@ -8,7 +19,7 @@
  * Arrays are compared element by element using recursion.
  * Objects are compared key by key using recursion.
  */
-export function deepEqual(a: any, b: any): boolean {
+export function deepEqual(a: SchemaValue, b: SchemaValue): boolean {
   if (typeof a !== typeof b) {
     return false
   }
@@ -37,7 +48,7 @@ export function deepEqual(a: any, b: any): boolean {
   }
 
   // Handle objects
-  if (typeof a === 'object') {
+  if (isObjectValue(a) && isObjectValue(b)) {
     const aKeys = Object.keys(a).sort()
     const bKeys = Object.keys(b).sort()
 
