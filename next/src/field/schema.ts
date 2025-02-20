@@ -53,7 +53,7 @@ export function buildFieldSchema(
     return buildFieldObject(objectSchema, name, required)
   }
 
-  if (Array.isArray(schema.type)) {
+  if (schema.type === 'array') {
     throw new TypeError('Array type is not yet supported')
   }
 

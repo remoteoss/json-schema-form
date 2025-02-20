@@ -24,11 +24,11 @@ describe('fields', () => {
     ])
   })
 
-  it('should throw an error if the type is an array', () => {
+  it('should throw an error if the type equals "array"', () => {
     const schema = {
       type: 'object',
       properties: {
-        name: { type: ['string', 'number'] },
+        name: { type: 'array' },
       },
     }
 
