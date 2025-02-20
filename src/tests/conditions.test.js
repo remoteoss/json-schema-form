@@ -548,6 +548,54 @@ describe('Conditional with literal booleans', () => {
   });
 });
 
+describe('Conditional with anyOf', () => {
+  const schema = {
+    additionalProperties: false,
+    type: 'object',
+    properties: {
+      field_a: { type: 'string' },
+      field_b: { type: 'string' },
+      field_c: { type: 'string' },
+    },
+    allOf: [
+      {
+        if: {
+          anyOf: [
+            { properties: { field_a: { const: '1' } }, required: ['field_a'] },
+            { properties: { field_b: { const: '2' } }, required: ['field_b'] },
+          ],
+        },
+        then: {
+          required: ['field_c'],
+        },
+        else: {
+          properties: {
+            field_c: false,
+          },
+        },
+      },
+    ],
+  };
+
+  it('handles true case', () => {
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    expect(fields[2].isVisible).toBe(false);
+    expect(handleValidation({ field_a: 'x', field_b: '2' }).formErrors).toEqual({
+      field_c: 'Required field',
+    });
+    expect(fields[2].isVisible).toBe(true);
+  });
+
+  it('handles false case', () => {
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    expect(fields[2].isVisible).toBe(false);
+    expect(handleValidation({ field_a: 'x', field_b: 'x' }).formErrors).toBeUndefined();
+    expect(fields[2].isVisible).toBe(false);
+  });
+});
+
 describe('Conditionals - bugs and code-smells', () => {
   // Why do we have these bugs?
   // To be honest we never realized it much later later.

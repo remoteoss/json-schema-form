@@ -12,6 +12,12 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
     return node.if;
   }
 
+  if (node.if.anyOf) {
+    return node.if.anyOf.some((property) =>
+      checkIfConditionMatchesProperties({ if: property }, formValues, formFields, logic)
+    );
+  }
+
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
     const value = formValues[name];
