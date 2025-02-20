@@ -33,11 +33,59 @@ function getJsonType(schema: NonBooleanJsfSchema): string {
 }
 
 /**
+ * Convert options to the required format
+ */
+function convertToOptions(nodeOptions: any[]): { label: string, value: any }[] {
+  return nodeOptions
+    .filter(option => option !== null)
+    .map(({ title, const: value, 'x-jsf-presentation': presentation, ...item }) => {
+      // Extract meta from x-jsf-presentation if it exists
+      const meta = presentation?.meta
+
+      return {
+        label: title,
+        value,
+        // Include meta at the root level if it exists
+        ...(meta && { meta }),
+        ...item,
+      }
+    })
+}
+
+/**
+ * TODO: go over the added code here and make sure it's correct and includes all the necessary fields
+ * this is a rough draft and needs to be cleaned up
+ */
+
+/**
+ * Get field options from schema
+ */
+function getFieldOptions(schema: NonBooleanJsfSchema, presentation: any) {
+  // Handle deprecated presentation.options first
+  if (presentation.options) {
+    return presentation.options
+  }
+
+  // Handle oneOf or radio input type
+  if (schema.oneOf || presentation.inputType === 'radio') {
+    return convertToOptions(schema.oneOf || [])
+  }
+
+  // Handle items.anyOf (for multiple select)
+  if (schema.items?.anyOf) {
+    return convertToOptions(schema.items.anyOf)
+  }
+
+  // Handle anyOf
+  if (schema.anyOf) {
+    return convertToOptions(schema.anyOf)
+  }
+
+  return null
+}
+
+/**
  * Build a field from any schema
- * @param schema - The schema of the field
- * @param name - The name of the field, used if the schema has no title
- * @param required - Whether the field is required
- * @returns The field
  */
 export function buildFieldSchema(
   schema: JsfSchema,
@@ -57,22 +105,45 @@ export function buildFieldSchema(
     throw new TypeError('Array type is not yet supported')
   }
 
-  const inputType = getInputType(schema)
+  const presentation = schema['x-jsf-presentation'] || {}
+  const errorMessage = schema['x-jsf-errorMessage'] || {}
 
-  const { title: _title, ...spreadSchema } = schema
+  // Get input type from presentation or fallback to schema type
+  const inputType = presentation.inputType || 'text'
 
+  // Build field without x-jsf prefixed properties
   const field: Field = {
-    ...spreadSchema,
-    ...schema['x-jsf-presentation'],
-    inputType,
-    type: inputType,
-    jsonType: getJsonType(schema),
+    type: inputType, // Use presentation inputType for type
     name,
+    inputType,
+    jsonType: getJsonType(schema),
     required,
+    isVisible: true, // Match main version default
+    computedAttributes: {}, // Match main version default
+    errorMessage,
   }
 
-  if (schema.title !== undefined) {
+  // Add optional fields if present
+  if (schema.title) {
     field.label = schema.title
+  }
+
+  if (schema.description) {
+    field.description = schema.description
+  }
+
+  if (schema.maxLength) {
+    field.maxLength = schema.maxLength
+  }
+
+  if (schema.format) {
+    field.format = schema.format
+  }
+
+  // Handle options for select/radio/multiple fields
+  const options = getFieldOptions(schema, presentation)
+  if (options) {
+    field.options = options
   }
 
   return field

@@ -23,6 +23,8 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
 
   const orderedFields = setCustomOrder({ fields, schema })
 
+  // TODO: fix missing fields here
+  // QUESTION: why are we defaulting to a fieldset?
   const field: Field = {
     ...schema['x-jsf-presentation'],
     type: schema['x-jsf-presentation']?.inputType || 'fieldset',
