@@ -1,3 +1,9 @@
+#### 0.11.11-beta.0 (2025-02-20)
+
+##### Bug Fixes
+
+* **conditionals:**  Add support to `oneOf` ([#136](https://github.com/remoteoss/json-schema-form/pull/136)) ([966cec59](https://github.com/remoteoss/json-schema-form/commit/966cec595ed2a1ff35f9d15e22acaea16cdd5113))
+
 #### 0.11.10-beta.0 (2025-01-22)
 
 ##### Bug Fixes
