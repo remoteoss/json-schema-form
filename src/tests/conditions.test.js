@@ -581,7 +581,7 @@ describe('Conditional with anyOf', () => {
     const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
 
     expect(fields[2].isVisible).toBe(false);
-    expect(handleValidation({ field_a: '4', field_b: '2' }).formErrors).toEqual({
+    expect(handleValidation({ field_a: 'x', field_b: '2' }).formErrors).toEqual({
       field_c: 'Required field',
     });
     expect(fields[2].isVisible).toBe(true);
@@ -591,7 +591,7 @@ describe('Conditional with anyOf', () => {
     const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
 
     expect(fields[2].isVisible).toBe(false);
-    expect(handleValidation({ field_a: '4', field_b: '4' }).formErrors).toBeUndefined();
+    expect(handleValidation({ field_a: 'x', field_b: 'x' }).formErrors).toBeUndefined();
     expect(fields[2].isVisible).toBe(false);
   });
 });
