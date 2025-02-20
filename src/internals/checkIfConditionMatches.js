@@ -30,7 +30,6 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
       // https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else
       return true;
     }
-
     if (hasProperty(currentProperty, 'const')) {
       return compareFormValueWithSchemaValue(value, currentProperty.const);
     }
