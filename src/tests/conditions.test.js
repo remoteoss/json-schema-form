@@ -580,6 +580,7 @@ describe('Conditional with anyOf', () => {
   it('handles true case', () => {
     const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
 
+    expect(fields[2].isVisible).toBe(false);
     expect(handleValidation({ field_a: '4', field_b: '2' }).formErrors).toEqual({
       field_c: 'Required field',
     });
