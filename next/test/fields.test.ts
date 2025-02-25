@@ -20,11 +20,14 @@ describe('fields', () => {
         name: 'name',
         label: 'Name',
         required: false,
+        isVisible: true,
+        errorMessage: {},
+        computedAttributes: {},
       },
     ])
   })
 
-  it('should throw an error if the type equals "array"', () => {
+  it('should throw an error if the type equals "array" (group-array)', () => {
     const schema = {
       type: 'object',
       properties: {
@@ -54,6 +57,8 @@ describe('fields', () => {
     expect(field).toEqual({
       type: 'fieldset',
       inputType: 'fieldset',
+      isVisible: true,
+      errorMessage: {},
       name: 'User',
       label: 'User',
       required: false,
@@ -62,6 +67,9 @@ describe('fields', () => {
         {
           type: 'text',
           inputType: 'text',
+          isVisible: true,
+          errorMessage: {},
+          computedAttributes: {},
           jsonType: 'string',
           name: 'name',
           label: 'Name',
@@ -70,6 +78,9 @@ describe('fields', () => {
         {
           type: 'text',
           inputType: 'text',
+          isVisible: true,
+          errorMessage: {},
+          computedAttributes: {},
           jsonType: 'number',
           name: 'age',
           label: 'Age',
@@ -78,6 +89,9 @@ describe('fields', () => {
         {
           type: 'text',
           inputType: 'text',
+          isVisible: true,
+          errorMessage: {},
+          computedAttributes: {},
           jsonType: 'string',
           name: 'email',
           label: 'Email',
@@ -107,9 +121,12 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        'type': 'text',
-        'inputType': 'text',
+        'type': 'file',
+        'inputType': 'file',
         'jsonType': 'string',
+        'isVisible': true,
+        'errorMessage': {},
+        'computedAttributes': {},
         'name': 'file',
         'label': 'Some field',
         'required': false,
@@ -158,6 +175,8 @@ describe('fields', () => {
       {
         type: 'fieldset',
         inputType: 'fieldset',
+        isVisible: true,
+        errorMessage: {},
         jsonType: 'object',
         name: 'Address',
         label: 'Address',
@@ -166,6 +185,9 @@ describe('fields', () => {
           {
             type: 'text',
             inputType: 'text',
+            isVisible: true,
+            errorMessage: {},
+            computedAttributes: {},
             jsonType: 'string',
             name: 'street',
             label: 'Street',
@@ -174,6 +196,9 @@ describe('fields', () => {
           {
             type: 'text',
             inputType: 'text',
+            isVisible: true,
+            errorMessage: {},
+            computedAttributes: {},
             jsonType: 'string',
             name: 'city',
             label: 'City',
@@ -201,6 +226,9 @@ describe('fields', () => {
         jsonType: 'string',
         name: 'user_email',
         required: false,
+        isVisible: true,
+        errorMessage: {},
+        computedAttributes: {},
       },
     ])
   })

@@ -33,6 +33,7 @@ export type JsfPresentation = {
  */
 export type JsfSchema = JSONSchema & {
   'properties'?: Record<string, JsfSchema>
+  'items'?: JsfSchema
   'anyOf'?: JsfSchema[]
   'allOf'?: JsfSchema[]
   'oneOf'?: JsfSchema[]
@@ -46,6 +47,7 @@ export type JsfSchema = JSONSchema & {
   }
   'x-jsf-order'?: string[]
   'x-jsf-presentation'?: JsfPresentation
+  'x-jsf-errorMessage'?: Record<string, string>
 }
 
 /**

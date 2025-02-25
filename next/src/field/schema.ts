@@ -3,19 +3,6 @@ import type { Field } from './type'
 import { buildFieldObject } from './object'
 
 /**
- * Get the input type for a field
- * @param schema - The schema of the field
- * @returns The input type for the field, based schema type. Default to 'text'
- */
-function getInputType(schema: NonBooleanJsfSchema): string {
-  if (schema.type === 'string') {
-    return 'text'
-  }
-
-  return 'text'
-}
-
-/**
  * Get the JSON type for a field
  * @param schema - The non boolean schema of the field
  * @returns The JSON type for the field, based schema type. Default to 'text'
@@ -34,6 +21,7 @@ function getJsonType(schema: NonBooleanJsfSchema): string {
 
 /**
  * Convert options to the required format
+ * TODO: type this
  */
 function convertToOptions(nodeOptions: any[]): { label: string, value: any }[] {
   return nodeOptions
@@ -53,21 +41,11 @@ function convertToOptions(nodeOptions: any[]): { label: string, value: any }[] {
 }
 
 /**
- * TODO: go over the added code here and make sure it's correct and includes all the necessary fields
- * this is a rough draft and needs to be cleaned up
- */
-
-/**
  * Get field options from schema
  */
-function getFieldOptions(schema: NonBooleanJsfSchema, presentation: any) {
-  // Handle deprecated presentation.options first
-  if (presentation.options) {
-    return presentation.options
-  }
-
+function getFieldOptions(schema: NonBooleanJsfSchema) {
   // Handle oneOf or radio input type
-  if (schema.oneOf || presentation.inputType === 'radio') {
+  if (schema.oneOf) {
     return convertToOptions(schema.oneOf || [])
   }
 
@@ -118,12 +96,11 @@ export function buildFieldSchema(
     inputType,
     jsonType: getJsonType(schema),
     required,
-    isVisible: true, // Match main version default
-    computedAttributes: {}, // Match main version default
+    isVisible: true,
+    computedAttributes: {}, // TODO upcoming, related to json-logic fields.
     errorMessage,
   }
 
-  // Add optional fields if present
   if (schema.title) {
     field.label = schema.title
   }
@@ -140,8 +117,8 @@ export function buildFieldSchema(
     field.format = schema.format
   }
 
-  // Handle options for select/radio/multiple fields
-  const options = getFieldOptions(schema, presentation)
+  // Handle options
+  const options = getFieldOptions(schema)
   if (options) {
     field.options = options
   }
