@@ -13,8 +13,8 @@ export interface Field {
   jsonType: string
   isVisible: boolean
   accept?: string
-  errorMessage: Record<string, string>
-  computedAttributes: Record<string, unknown>
+  errorMessage?: Record<string, string>
+  computedAttributes?: Record<string, unknown>
   minDate?: string
   maxDate?: string
   maxLength?: number

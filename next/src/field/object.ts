@@ -32,8 +32,6 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
     required,
     fields: orderedFields,
     isVisible: true,
-    errorMessage: {},
-    computedAttributes: {},
   }
 
   if (schema.title !== undefined) {

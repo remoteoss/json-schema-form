@@ -97,7 +97,7 @@ export function buildFieldSchema(
   }
 
   const presentation = schema['x-jsf-presentation'] || {}
-  const errorMessage = schema['x-jsf-errorMessage'] || {}
+  const errorMessage = schema['x-jsf-errorMessage']
 
   // Get input type from presentation or fallback to schema type
   const inputType = presentation.inputType || 'text'
@@ -116,8 +116,7 @@ export function buildFieldSchema(
     jsonType: getJsonType(schema),
     required,
     isVisible: true,
-    computedAttributes: {},
-    errorMessage,
+    ...(errorMessage && { errorMessage }),
   }
 
   if (schema.title) {
