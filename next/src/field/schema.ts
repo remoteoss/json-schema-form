@@ -63,6 +63,19 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
 }
 
 /**
+ * List of schema properties that should be excluded from the final field or handled specially
+ */
+const excludedSchemaProps = [
+  'title', // Transformed to 'label'
+  'type', // Handled separately
+  'x-jsf-errorMessage', // Handled separately
+  'x-jsf-presentation', // Handled separately
+  'oneOf', // Transformed to 'options'
+  'anyOf', // Transformed to 'options'
+  'items', // Handled specially for arrays
+]
+
+/**
  * Build a field from any schema
  */
 export function buildFieldSchema(
@@ -89,15 +102,21 @@ export function buildFieldSchema(
   // Get input type from presentation or fallback to schema type
   const inputType = presentation.inputType || 'text'
 
-  // Build field without x-jsf prefixed properties
+  // Build field with all schema properties by default, excluding ones that need special handling
   const field: Field = {
-    type: inputType, // Use presentation inputType for type
+    // Spread all schema properties except excluded ones
+    ...Object.entries(schema)
+      .filter(([key]) => !excludedSchemaProps.includes(key))
+      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
+
+    // Add required field properties
+    type: inputType,
     name,
     inputType,
     jsonType: getJsonType(schema),
     required,
     isVisible: true,
-    computedAttributes: {}, // TODO upcoming, related to json-logic fields.
+    computedAttributes: {},
     errorMessage,
   }
 
@@ -105,16 +124,15 @@ export function buildFieldSchema(
     field.label = schema.title
   }
 
-  if (schema.description) {
-    field.description = schema.description
-  }
-
-  if (schema.maxLength) {
-    field.maxLength = schema.maxLength
-  }
-
-  if (schema.format) {
-    field.format = schema.format
+  // Spread presentation properties to the root level
+  if (Object.keys(presentation).length > 0) {
+    Object.entries(presentation).forEach(([key, value]) => {
+      // inputType is already handled above
+      // TODO: fix type
+      if (key !== 'inputType') {
+        field[key] = value
+      }
+    })
   }
 
   // Handle options
