@@ -21,22 +21,40 @@ function getJsonType(schema: NonBooleanJsfSchema): string {
 
 /**
  * Convert options to the required format
- * TODO: type this
+ * This is used when we have a oneOf or anyOf schema property
  */
-function convertToOptions(nodeOptions: any[]): { label: string, value: any }[] {
+function convertToOptions(nodeOptions: JsfSchema[]): Array<{
+  label: string
+  value: unknown
+  [key: string]: unknown
+}> {
   return nodeOptions
-    .filter(option => option !== null)
-    .map(({ title, const: value, 'x-jsf-presentation': presentation, ...item }) => {
-      // Extract meta from x-jsf-presentation if it exists
+    .filter((option): option is NonBooleanJsfSchema =>
+      option !== null && typeof option === 'object')
+    .map((schemaOption) => {
+      const title = schemaOption.title
+      const value = schemaOption.const
+      const presentation = schemaOption['x-jsf-presentation']
       const meta = presentation?.meta
 
-      return {
-        label: title,
+      const result: {
+        label: string
+        value: unknown
+        [key: string]: unknown
+      } = {
+        label: title || '',
         value,
-        // Include meta at the root level if it exists
-        ...(meta && { meta }),
-        ...item,
       }
+
+      // Add meta if it exists
+      if (meta) {
+        result.meta = meta
+      }
+
+      // Add other properties, without known ones we already handled above
+      const { title: _, const: __, 'x-jsf-presentation': ___, ...rest } = schemaOption
+
+      return { ...result, ...rest }
     })
 }
 
@@ -127,7 +145,6 @@ export function buildFieldSchema(
   if (Object.keys(presentation).length > 0) {
     Object.entries(presentation).forEach(([key, value]) => {
       // inputType is already handled above
-      // TODO: fix type
       if (key !== 'inputType') {
         field[key] = value
       }
