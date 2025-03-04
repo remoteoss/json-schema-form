@@ -1,5 +1,5 @@
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
 import type { SchemaValidationErrorType } from './validation/schema'
 import { buildFieldObject } from './field/object'
 import { validateSchema } from './validation/schema'
@@ -50,6 +50,14 @@ export interface ValidationResult {
  * For example: { ".fieldName": "should match at least one schema" }
  */
 const SCHEMA_KEYWORDS = ['anyOf', 'oneOf', 'allOf', 'not'] as const
+type SchemaKeyword = (typeof SCHEMA_KEYWORDS)[number]
+
+/**
+ * Type guard to check if a validation type is a schema keyword
+ */
+function isSchemaKeyword(validation: string): validation is SchemaKeyword {
+  return SCHEMA_KEYWORDS.includes(validation as SchemaKeyword)
+}
 
 /**
  * Transform a validation error path array into a form error path string.
@@ -78,7 +86,7 @@ function pathToFormErrorPath(path: string[], validation: SchemaValidationErrorTy
     return ''
 
   // Special handling for JSON Schema keywords
-  if (SCHEMA_KEYWORDS.includes(validation as any)) {
+  if (isSchemaKeyword(validation)) {
     return `.${path.join('.')}`
   }
 
@@ -115,6 +123,70 @@ function validationErrorsToFormErrors(errors: ValidationError[]): Record<string,
 }
 
 /**
+ * Apply custom error messages from the schema to validation errors
+ * @param errors - The validation errors
+ * @param schema - The schema that contains custom error messages
+ * @returns The validation errors with custom error messages applied
+ */
+function applyCustomErrorMessages(errors: ValidationError[], schema: JsfSchema): ValidationError[] {
+  if (typeof schema !== 'object' || !schema || !errors.length) {
+    return errors
+  }
+
+  return errors.map((error) => {
+    // Skip if no path or empty path
+    if (!error.path.length) {
+      return error
+    }
+
+    // Find the schema for this error path
+    let currentSchema: NonBooleanJsfSchema | null = typeof schema === 'object' ? schema : null
+    let fieldSchema: NonBooleanJsfSchema | null = null
+
+    // Navigate through the schema to find the field schema
+    for (const segment of error.path) {
+      if (!currentSchema || typeof currentSchema !== 'object') {
+        break
+      }
+
+      if (currentSchema.properties && currentSchema.properties[segment]) {
+        const nextSchema = currentSchema.properties[segment]
+        // Skip if the schema is a boolean
+        if (typeof nextSchema !== 'boolean') {
+          currentSchema = nextSchema
+          fieldSchema = currentSchema
+        }
+        else {
+          break
+        }
+      }
+      else if (currentSchema.items && typeof currentSchema.items !== 'boolean') {
+        // Handle array items
+        currentSchema = currentSchema.items
+        fieldSchema = currentSchema
+      }
+      else {
+        break
+      }
+    }
+
+    // If we found a schema with custom error messages, apply them
+    if (
+      fieldSchema
+      && fieldSchema['x-jsf-errorMessage']
+      && fieldSchema['x-jsf-errorMessage'][error.validation]
+    ) {
+      return {
+        ...error,
+        message: fieldSchema['x-jsf-errorMessage'][error.validation],
+      }
+    }
+
+    return error
+  })
+}
+
+/**
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
@@ -123,7 +195,11 @@ function validationErrorsToFormErrors(errors: ValidationError[]): Record<string,
 function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema)
-  const formErrors = validationErrorsToFormErrors(errors)
+
+  // Apply custom error messages before converting to form errors
+  const processedErrors = applyCustomErrorMessages(errors, schema)
+
+  const formErrors = validationErrorsToFormErrors(processedErrors)
 
   if (formErrors) {
     result.formErrors = formErrors
@@ -136,9 +212,7 @@ interface CreateHeadlessFormOptions {
   initialValues?: SchemaValue
 }
 
-function buildFields(params: {
-  schema: JsfObjectSchema
-}): Field[] {
+function buildFields(params: { schema: JsfObjectSchema }): Field[] {
   const { schema } = params
   return buildFieldObject(schema, 'root', true).fields || []
 }
