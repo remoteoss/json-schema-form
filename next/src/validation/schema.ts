@@ -80,7 +80,11 @@ export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[
  * When getSchemaType returns undefined, this function skips type validation.
  * This aligns with JSON Schema 2020-12 semantics: if no type is provided, no type check is enforced.
  */
-function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
+function validateType(
+  value: SchemaValue,
+  schema: JsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   const schemaType = getSchemaType(schema)
 
   // Skip type-checking if no type is specified.
@@ -93,19 +97,24 @@ function validateType(value: SchemaValue, schema: JsfSchema, path: string[] = []
     if (Array.isArray(schemaType)) {
       return schemaType.includes('null')
         ? []
-        : [{
-            path,
-            validation: 'type',
-            message: `should be ${schemaType.join(' | ')}`,
-          }]
+        : [
+            {
+              path,
+              validation: 'type',
+              message: `should be ${schemaType.join(' or ')}`,
+            },
+          ]
     }
+
     return schemaType === 'null'
       ? []
-      : [{
-          path,
-          validation: 'type',
-          message: `should be ${schemaType}`,
-        }]
+      : [
+          {
+            path,
+            validation: 'required',
+            message: 'is required',
+          },
+        ]
   }
 
   const valueType = typeof value

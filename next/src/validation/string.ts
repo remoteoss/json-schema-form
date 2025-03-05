@@ -50,11 +50,19 @@ export function validateString(
 
   // Length validation
   if (schema.minLength !== undefined && valueLength < schema.minLength) {
-    errors.push({ path, validation: 'minLength', message: `must be at least ${schema.minLength} characters` })
+    errors.push({
+      path,
+      validation: 'minLength',
+      message: `must be at least ${schema.minLength} characters`,
+    })
   }
 
   if (schema.maxLength !== undefined && valueLength > schema.maxLength) {
-    errors.push({ path, validation: 'maxLength', message: `must be at most ${schema.maxLength} characters` })
+    errors.push({
+      path,
+      validation: 'maxLength',
+      message: `must be at most ${schema.maxLength} characters`,
+    })
   }
 
   // Pattern validation

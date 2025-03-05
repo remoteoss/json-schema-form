@@ -40,7 +40,7 @@ describe('object schema validation', () => {
 
     expect(form.handleValidation({ address: { street: 'some street' } })).not.toHaveProperty('formErrors')
     expect(form.handleValidation({ address: { street: 10 } })).toMatchObject({
-      formErrors: { '.address.street': 'should be string' },
+      formErrors: { address: { street: 'should be string' } },
     })
   })
 })

@@ -20,15 +20,16 @@ describe('fields', () => {
         name: 'name',
         label: 'Name',
         required: false,
+        isVisible: true,
       },
     ])
   })
 
-  it('should throw an error if the type is an array', () => {
+  it('should throw an error if the type equals "array" (group-array)', () => {
     const schema = {
       type: 'object',
       properties: {
-        name: { type: ['string', 'number'] },
+        name: { type: 'array' },
       },
     }
 
@@ -54,6 +55,7 @@ describe('fields', () => {
     expect(field).toEqual({
       type: 'fieldset',
       inputType: 'fieldset',
+      isVisible: true,
       name: 'User',
       label: 'User',
       required: false,
@@ -62,6 +64,7 @@ describe('fields', () => {
         {
           type: 'text',
           inputType: 'text',
+          isVisible: true,
           jsonType: 'string',
           name: 'name',
           label: 'Name',
@@ -70,6 +73,7 @@ describe('fields', () => {
         {
           type: 'text',
           inputType: 'text',
+          isVisible: true,
           jsonType: 'number',
           name: 'age',
           label: 'Age',
@@ -78,6 +82,7 @@ describe('fields', () => {
         {
           type: 'text',
           inputType: 'text',
+          isVisible: true,
           jsonType: 'string',
           name: 'email',
           label: 'Email',
@@ -107,19 +112,15 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        'type': 'text',
-        'inputType': 'text',
-        'jsonType': 'string',
-        'name': 'file',
-        'label': 'Some field',
-        'required': false,
-        'accept': '.pdf,.doc',
-        'maxFileSize': 5000000,
-        'x-jsf-presentation': {
-          inputType: 'file',
-          accept: '.pdf,.doc',
-          maxFileSize: 5000000,
-        },
+        type: 'file',
+        inputType: 'file',
+        jsonType: 'string',
+        isVisible: true,
+        name: 'file',
+        label: 'Some field',
+        required: false,
+        accept: '.pdf,.doc',
+        maxFileSize: 5000000,
       },
     ])
   })
@@ -158,6 +159,7 @@ describe('fields', () => {
       {
         type: 'fieldset',
         inputType: 'fieldset',
+        isVisible: true,
         jsonType: 'object',
         name: 'Address',
         label: 'Address',
@@ -166,6 +168,7 @@ describe('fields', () => {
           {
             type: 'text',
             inputType: 'text',
+            isVisible: true,
             jsonType: 'string',
             name: 'street',
             label: 'Street',
@@ -174,6 +177,7 @@ describe('fields', () => {
           {
             type: 'text',
             inputType: 'text',
+            isVisible: true,
             jsonType: 'string',
             name: 'city',
             label: 'City',
@@ -201,6 +205,7 @@ describe('fields', () => {
         jsonType: 'string',
         name: 'user_email',
         required: false,
+        isVisible: true,
       },
     ])
   })
