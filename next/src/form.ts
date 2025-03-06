@@ -1,5 +1,5 @@
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
 import type { SchemaValidationErrorType } from './validation/schema'
 import { buildFieldObject } from './field/object'
 import { validateSchema } from './validation/schema'
@@ -40,78 +40,134 @@ export interface ValidationError {
   message: string
 }
 
-export interface ValidationResult {
-  formErrors?: Record<string, string>
+/**
+ * Recursive type for form error messages
+ * - String for leaf error messages
+ * - Nested object for nested fields
+ */
+export interface FormErrors {
+  [key: string]: string | FormErrors
 }
 
-/**
- * JSON Schema keywords that require special path handling.
- * These keywords always use dot notation for their error paths.
- * For example: { ".fieldName": "should match at least one schema" }
- */
-const SCHEMA_KEYWORDS = ['anyOf', 'oneOf', 'allOf', 'not'] as const
-
-/**
- * Transform a validation error path array into a form error path string.
- * Follows these rules:
- * 1. Schema-level errors (empty path) -> empty string ('')
- * 2. Keyword validations (anyOf, etc.) -> always use dot notation ('.fieldName')
- * 3. Single field errors -> field name only ('fieldName')
- * 4. Nested field errors -> dot notation ('.parent.field')
- *
- * @example
- * Schema-level error
- * pathToFormErrorPath([], 'required') // ''
- *
- * Keyword validation - always dot notation
- * pathToFormErrorPath(['value'], 'anyOf') // '.value'
- *
- * Single field error - no dot
- * pathToFormErrorPath(['username'], 'type') // 'username'
- *
- * Nested field error - dot notation
- * pathToFormErrorPath(['address', 'street'], 'type') // '.address.street'
- */
-function pathToFormErrorPath(path: string[], validation: SchemaValidationErrorType): string {
-  // Schema-level errors have no path
-  if (path.length === 0)
-    return ''
-
-  // Special handling for JSON Schema keywords
-  if (SCHEMA_KEYWORDS.includes(validation as any)) {
-    return `.${path.join('.')}`
-  }
-
-  // Regular fields: dot notation only for nested paths
-  return path.length === 1 ? path[0] : `.${path.join('.')}`
+export interface ValidationResult {
+  formErrors?: FormErrors
 }
 
 /**
  * Transform validation errors into an object with the field names as keys and the error messages as values.
- * The path format follows the rules defined in pathToFormErrorPath.
+ * For nested fields, creates a nested object structure rather than using dot notation.
  * When multiple errors exist for the same field, the last error message is used.
  *
  * @example
  * Single field error
  * { username: 'Required field' }
  *
- * Nested field error
- * { '.address.street': 'should be string' }
- *
- * Keyword validation error
- * { '.fieldName': 'should match at least one schema' }
+ * Nested field error (using nested objects)
+ * { address: { street: 'should be string' } }
  *
  * Schema-level error
  * { '': 'should match at least one schema' }
  */
-function validationErrorsToFormErrors(errors: ValidationError[]): Record<string, string> | null {
-  if (errors.length === 0)
+function validationErrorsToFormErrors(errors: ValidationError[]): FormErrors | null {
+  if (errors.length === 0) {
     return null
+  }
 
-  return errors.reduce((acc: Record<string, string>, error) => {
-    acc[pathToFormErrorPath(error.path, error.validation)] = error.message
-    return acc
+  // Use a more functional approach with reduce
+  return errors.reduce<FormErrors>((result, error) => {
+    const { path, message } = error
+
+    // Handle schema-level errors (empty path)
+    if (path.length === 0) {
+      result[''] = message
+      return result
+    }
+
+    // For all other paths, recursively build the nested structure
+    let current = result
+
+    // Process all segments except the last one (which will hold the message)
+    path.slice(0, -1).forEach((segment) => {
+      // If this segment doesn't exist yet or is currently a string (from a previous error),
+      // initialize it as an object
+      if (!(segment in current) || typeof current[segment] === 'string') {
+        current[segment] = {}
+      }
+
+      // Cast is safe because we just ensured it's an object
+      current = current[segment] as FormErrors
+    })
+
+    // Set the message at the final level
+    const lastSegment = path[path.length - 1]
+    current[lastSegment] = message
+
+    return result
   }, {})
+}
+
+/**
+ * Apply custom error messages from the schema to validation errors
+ * @param errors - The validation errors
+ * @param schema - The schema that contains custom error messages
+ * @returns The validation errors with custom error messages applied
+ */
+function applyCustomErrorMessages(errors: ValidationError[], schema: JsfSchema): ValidationError[] {
+  if (typeof schema !== 'object' || !schema || !errors.length) {
+    return errors
+  }
+
+  return errors.map((error) => {
+    // Skip if no path or empty path
+    if (!error.path.length) {
+      return error
+    }
+
+    // Find the schema for this error path
+    let currentSchema: NonBooleanJsfSchema | null = typeof schema === 'object' ? schema : null
+    let fieldSchema: NonBooleanJsfSchema | null = null
+
+    // Navigate through the schema to find the field schema
+    for (const segment of error.path) {
+      if (!currentSchema || typeof currentSchema !== 'object') {
+        break
+      }
+
+      if (currentSchema.properties && currentSchema.properties[segment]) {
+        const nextSchema = currentSchema.properties[segment]
+        // Skip if the schema is a boolean
+        if (typeof nextSchema !== 'boolean') {
+          currentSchema = nextSchema
+          fieldSchema = currentSchema
+        }
+        else {
+          break
+        }
+      }
+      else if (currentSchema.items && typeof currentSchema.items !== 'boolean') {
+        // Handle array items
+        currentSchema = currentSchema.items
+        fieldSchema = currentSchema
+      }
+      else {
+        break
+      }
+    }
+
+    // If we found a schema with custom error messages, apply them
+    if (
+      fieldSchema
+      && fieldSchema['x-jsf-errorMessage']
+      && fieldSchema['x-jsf-errorMessage'][error.validation]
+    ) {
+      return {
+        ...error,
+        message: fieldSchema['x-jsf-errorMessage'][error.validation],
+      }
+    }
+
+    return error
+  })
 }
 
 /**
@@ -123,7 +179,11 @@ function validationErrorsToFormErrors(errors: ValidationError[]): Record<string,
 function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema)
-  const formErrors = validationErrorsToFormErrors(errors)
+
+  // Apply custom error messages before converting to form errors
+  const processedErrors = applyCustomErrorMessages(errors, schema)
+
+  const formErrors = validationErrorsToFormErrors(processedErrors)
 
   if (formErrors) {
     result.formErrors = formErrors
@@ -136,9 +196,7 @@ interface CreateHeadlessFormOptions {
   initialValues?: SchemaValue
 }
 
-function buildFields(params: {
-  schema: JsfObjectSchema
-}): Field[] {
+function buildFields(params: { schema: JsfObjectSchema }): Field[] {
   const { schema } = params
   return buildFieldObject(schema, 'root', true).fields || []
 }
