@@ -22,9 +22,12 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
 
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
-    const currentField = getField(name, formFields);
-    const isFieldsetField = currentField.inputType === supportedTypes.FIELDSET;
+    const currentField = getField(name, formFields || []);
+    const isFieldsetField = currentField
+      ? currentField.inputType === supportedTypes.FIELDSET
+      : false;
     const value = formValues ? formValues[name] : isFieldsetField ? {} : undefined;
+
     const hasEmptyValue =
       typeof value === 'undefined' ||
       // NOTE: This is a "Remote API" dependency, as empty fields are sent as "null".
