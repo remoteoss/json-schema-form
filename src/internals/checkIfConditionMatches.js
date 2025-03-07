@@ -22,10 +22,8 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
 
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
-    const currentField = getField(name, formFields || []);
-    const isFieldsetField = currentField
-      ? currentField.inputType === supportedTypes.FIELDSET
-      : false;
+    const field = getField(name, formFields || []);
+    const isFieldsetField = field?.inputType === supportedTypes.FIELDSET;
     const value = formValues ? formValues[name] : isFieldsetField ? {} : undefined;
 
     const hasEmptyValue =
@@ -71,8 +69,6 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
         logic
       );
     }
-
-    const field = getField(name, formFields);
 
     return validateFieldSchema(
       {
