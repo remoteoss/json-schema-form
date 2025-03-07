@@ -596,6 +596,74 @@ describe('Conditional with anyOf', () => {
   });
 });
 
+describe('Conditional with fieldsets', () => {
+  const schema = {
+    additionalProperties: false,
+    type: 'object',
+    properties: {
+      field_a: {
+        type: 'object',
+        properties: {
+          min: { type: 'number' },
+          max: { type: 'number' },
+        },
+      },
+      field_b: { type: 'string' },
+    },
+    allOf: [
+      {
+        if: {
+          properties: {
+            field_a: {
+              properties: {
+                min: {
+                  minimum: 10,
+                },
+              },
+              required: ['min'],
+            },
+          },
+          required: ['field_a'],
+        },
+        then: {
+          required: ['field_b'],
+        },
+        else: {
+          properties: {
+            field_b: false,
+          },
+        },
+      },
+    ],
+  };
+
+  it('handles true case', () => {
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    expect(fields[1].isVisible).toBe(false);
+    expect(handleValidation({ field_a: { min: 100 } }).formErrors).toEqual({
+      field_b: 'Required field',
+    });
+    expect(fields[1].isVisible).toBe(true);
+  });
+
+  it('handles false case', () => {
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    expect(fields[1].isVisible).toBe(false);
+    expect(handleValidation({ field_a: { min: 1 } }).formErrors).toBeUndefined();
+    expect(fields[1].isVisible).toBe(false);
+  });
+
+  it('handles undefined fieldset case', () => {
+    const { fields, handleValidation } = createHeadlessForm(schema, { strictInputType: false });
+
+    expect(fields[1].isVisible).toBe(false);
+    expect(handleValidation({}).formErrors).toBeUndefined();
+    expect(fields[1].isVisible).toBe(false);
+  });
+});
+
 describe('Conditionals - bugs and code-smells', () => {
   // Why do we have these bugs?
   // To be honest we never realized it much later later.

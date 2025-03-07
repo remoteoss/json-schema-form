@@ -20,7 +20,7 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
 
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
-    const value = formValues[name];
+    const value = formValues ? formValues[name] : {};
     const hasEmptyValue =
       typeof value === 'undefined' ||
       // NOTE: This is a "Remote API" dependency, as empty fields are sent as "null".
