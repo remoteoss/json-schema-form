@@ -596,7 +596,7 @@ describe('Conditional with anyOf', () => {
   });
 });
 
-describe('Conditional with fieldsets', () => {
+describe('Conditional with fieldset', () => {
   const schema = {
     additionalProperties: false,
     type: 'object',
