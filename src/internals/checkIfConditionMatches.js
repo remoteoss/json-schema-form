@@ -1,6 +1,8 @@
 import { compareFormValueWithSchemaValue, getField, validateFieldSchema } from '../helpers';
 import { hasProperty } from '../utils';
 
+import { supportedTypes } from './fields';
+
 /**
  * Checks if a "IF" condition matches given the current form state
  * @param {Object} node - JSON schema node
@@ -20,7 +22,9 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
 
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
-    const value = formValues ? formValues[name] : {};
+    const currentField = getField(name, formFields);
+    const isFieldsetField = currentField.inputType === supportedTypes.FIELDSET;
+    const value = formValues ? formValues[name] : isFieldsetField ? {} : undefined;
     const hasEmptyValue =
       typeof value === 'undefined' ||
       // NOTE: This is a "Remote API" dependency, as empty fields are sent as "null".
