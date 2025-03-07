@@ -22,7 +22,7 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
 
   return Object.keys(node.if.properties ?? {}).every((name) => {
     const currentProperty = node.if.properties[name];
-    const field = getField(name, formFields || []);
+    const field = getField(name, formFields ?? []);
     const isFieldsetField = field?.inputType === supportedTypes.FIELDSET;
     const value = formValues?.[name] ?? (isFieldsetField ? {} : undefined);
 
