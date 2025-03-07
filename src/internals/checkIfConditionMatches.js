@@ -24,7 +24,7 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
     const currentProperty = node.if.properties[name];
     const field = getField(name, formFields || []);
     const isFieldsetField = field?.inputType === supportedTypes.FIELDSET;
-    const value = formValues ? formValues[name] : isFieldsetField ? {} : undefined;
+    const value = formValues?.[name] ?? (isFieldsetField ? {} : undefined);
 
     const hasEmptyValue =
       typeof value === 'undefined' ||
