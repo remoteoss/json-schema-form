@@ -63,10 +63,10 @@ export interface ValidationResult {
  * { username: 'Required field' }
  *
  * Nested field error (using nested objects)
- * { address: { street: 'should be string' } }
+ * { address: { street: 'The value must be a string' } }
  *
  * Schema-level error
- * { '': 'should match at least one schema' }
+ * { '': 'The value must match at least one schema' }
  */
 function validationErrorsToFormErrors(errors: ValidationError[]): FormErrors | null {
   if (errors.length === 0) {

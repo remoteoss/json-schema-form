@@ -12,18 +12,24 @@ import { deepEqual } from './util'
  * @example
  * ```ts
  * validateEnum('foo', { enum: ['foo', 'bar'] }) // []
- * validateEnum('baz', { enum: ['foo', 'bar'] }) // [{ path: [], validation: 'enum', message: 'must be one of ["foo", "bar"]' }]
+ * validateEnum('baz', { enum: ['foo', 'bar'] }) // [{ path: [], validation: 'enum', message: 'The option "baz" is not valid.' }]
  * ```
  * @see https://json-schema.org/understanding-json-schema/reference/enum
  * @see https://json-schema.org/draft/2020-12/json-schema-validation#name-enum
  */
-export function validateEnum(value: SchemaValue, schema: NonBooleanJsfSchema, path: string[] = []): ValidationError[] {
+export function validateEnum(
+  value: SchemaValue,
+  schema: NonBooleanJsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   if (schema.enum === undefined) {
     return []
   }
 
   if (!schema.enum.some(enumValue => deepEqual(enumValue, value))) {
-    return [{ path, validation: 'enum', message: `must be one of ${JSON.stringify(schema.enum)}` }]
+    return [
+      { path, validation: 'enum', message: `The option ${JSON.stringify(value)} is not valid.` },
+    ]
   }
 
   return []

@@ -1,5 +1,6 @@
 import type { ValidationError } from '../form'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
+import { randexp } from 'randexp'
 import { validateFormat } from './format'
 import { getSchemaType } from './schema'
 
@@ -53,7 +54,7 @@ export function validateString(
     errors.push({
       path,
       validation: 'minLength',
-      message: `must be at least ${schema.minLength} characters`,
+      message: `Please insert at least ${schema.minLength} characters`,
     })
   }
 
@@ -61,7 +62,7 @@ export function validateString(
     errors.push({
       path,
       validation: 'maxLength',
-      message: `must be at most ${schema.maxLength} characters`,
+      message: `Please insert up to ${schema.maxLength} characters`,
     })
   }
 
@@ -69,10 +70,12 @@ export function validateString(
   if (schema.pattern !== undefined) {
     const pattern = new RegExp(schema.pattern)
     if (!pattern.test(value)) {
+      // Generate an example that matches the pattern
+      const randomPlaceholder = randexp(schema.pattern)
       errors.push({
         path,
         validation: 'pattern',
-        message: `must match the pattern '${schema.pattern}'`,
+        message: `Must have a valid format. E.g. ${randomPlaceholder}`,
       })
     }
   }

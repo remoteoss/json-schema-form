@@ -101,7 +101,7 @@ function validateType(
             {
               path,
               validation: 'type',
-              message: `should be ${schemaType.join(' or ')}`,
+              message: `The value must be ${schemaType.join(' or ')}`,
             },
           ]
     }
@@ -112,7 +112,7 @@ function validateType(
           {
             path,
             validation: 'required',
-            message: 'is required',
+            message: 'Required field',
           },
         ]
   }
@@ -139,13 +139,47 @@ function validateType(
     return []
   }
 
-  return [{
-    path,
-    validation: 'type',
-    message: `should be ${Array.isArray(schemaType)
-      ? schemaType.join(' | ')
-      : schemaType}`,
-  }]
+  return [
+    {
+      path,
+      validation: 'type',
+      message: getTypeErrorMessage(schemaType),
+    },
+  ]
+}
+
+/**
+ * Get the appropriate type error message based on the schema type
+ */
+function getTypeErrorMessage(schemaType: JsfSchemaType | JsfSchemaType[] | undefined): string {
+  if (Array.isArray(schemaType)) {
+    // Map 'integer' to 'number' in error messages
+    const formattedTypes = schemaType.map((type) => {
+      if (type === 'integer')
+        return 'number'
+      return type
+    })
+
+    return `The value must be a ${formattedTypes.join(' or ')}`
+  }
+
+  switch (schemaType) {
+    case 'number':
+    case 'integer':
+      return 'The value must be a number'
+    case 'boolean':
+      return 'The value must be a boolean'
+    case 'null':
+      return 'The value must be null'
+    case 'string':
+      return 'The value must be a string'
+    case 'object':
+      return 'The value must be an object'
+    case 'array':
+      return 'The value must be an array'
+    default:
+      return schemaType ? `The value must be ${schemaType}` : 'Invalid value'
+  }
 }
 
 /**
@@ -185,7 +219,7 @@ export function validateSchema(
 ): ValidationError[] {
   // Handle undefined values and boolean schemas first
   if (value === undefined && required) {
-    return [{ path, validation: 'required', message: 'is required' }]
+    return [{ path, validation: 'required', message: 'Required field' }]
   }
 
   if (value === undefined) {
@@ -193,7 +227,7 @@ export function validateSchema(
   }
 
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid', message: 'always fails' }]
+    return schema ? [] : [{ path, validation: 'valid', message: 'Always fails' }]
   }
 
   const typeValidationErrors = validateType(value, schema, path)
@@ -202,14 +236,19 @@ export function validateSchema(
   }
 
   // If the schema defines "required", run required checks even when type is undefined.
-  if (schema.required && Array.isArray(schema.required) && typeof value === 'object' && value !== null) {
+  if (
+    schema.required
+    && Array.isArray(schema.required)
+    && typeof value === 'object'
+    && value !== null
+  ) {
     const missingKeys = schema.required.filter((key: string) => !(key in value))
     if (missingKeys.length > 0) {
       // Return an error for each missing field.
       return missingKeys.map(key => ({
         path: [...path, key],
         validation: 'required',
-        message: 'is required',
+        message: 'Required field',
       }))
     }
   }

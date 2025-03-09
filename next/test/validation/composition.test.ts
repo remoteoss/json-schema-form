@@ -149,7 +149,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('anyOf')
-        expect(errors[0].message).toBe('should match at least one schema')
+        expect(errors[0].message).toBe('Must match at least one of the provided schemas')
       })
     })
 
@@ -192,10 +192,7 @@ describe('schema composition validators', () => {
 
     describe('with empty schema', () => {
       const schema: JsfSchema = {
-        anyOf: [
-          { type: 'number' },
-          {},
-        ],
+        anyOf: [{ type: 'number' }, {}],
       }
 
       it('should validate string against empty schema', () => {
@@ -215,9 +212,7 @@ describe('schema composition validators', () => {
       const schema: JsfSchema = {
         anyOf: [
           {
-            anyOf: [
-              { type: 'null' },
-            ],
+            anyOf: [{ type: 'null' }],
           },
         ],
       }
@@ -261,7 +256,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('should match exactly one schema')
+        expect(errors[0].message).toBe('Must match exactly one of the provided schemas')
       })
 
       it('should fail when value matches multiple schemas', () => {
@@ -269,7 +264,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('should match exactly one schema but matches multiple')
+        expect(errors[0].message).toBe('Must match exactly one schema but matches multiple')
       })
     })
 
@@ -313,10 +308,7 @@ describe('schema composition validators', () => {
 
     describe('with empty schema', () => {
       const schema: JsfSchema = {
-        oneOf: [
-          { type: 'number' },
-          {},
-        ],
+        oneOf: [{ type: 'number' }, {}],
       }
 
       it('should validate when only empty schema matches', () => {
@@ -330,17 +322,14 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('should match exactly one schema but matches multiple')
+        expect(errors[0].message).toBe('Must match exactly one schema but matches multiple')
       })
     })
 
     describe('with required properties', () => {
       const schema: JsfSchema = {
         type: 'object',
-        oneOf: [
-          { required: ['foo', 'bar'] },
-          { required: ['foo', 'baz'] },
-        ],
+        oneOf: [{ required: ['foo', 'bar'] }, { required: ['foo', 'baz'] }],
       }
 
       it('should validate when exactly one set of required properties is present', () => {
@@ -381,7 +370,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('not')
-        expect(errors[0].message).toBe('should NOT be valid against schema')
+        expect(errors[0].message).toBe('The value must not satisfy the provided schema')
       })
     })
 

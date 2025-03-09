@@ -12,7 +12,9 @@ describe('boolean schema validation', () => {
     }
     const form = createHeadlessForm(schema)
 
-    expect(form.handleValidation({ name: 'anything' })).toMatchObject({ formErrors: { name: 'always fails' } })
+    expect(form.handleValidation({ name: 'anything' })).toMatchObject({
+      formErrors: { name: 'Always fails' },
+    })
     expect(form.handleValidation({})).not.toHaveProperty('formErrors')
   })
 

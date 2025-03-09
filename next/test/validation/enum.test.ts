@@ -11,11 +11,13 @@ describe('enum validation', () => {
 
   it('returns an error for values that are not in the enum', () => {
     const schema = { enum: [1, 2, 3] }
-    expect(validateSchema(4, schema)).toEqual([{
-      path: [],
-      validation: 'enum',
-      message: 'must be one of [1,2,3]',
-    }])
+    expect(validateSchema(4, schema)).toEqual([
+      {
+        path: [],
+        validation: 'enum',
+        message: 'The option 4 is not valid.',
+      },
+    ])
   })
 
   it('handles null in enums', () => {
@@ -26,44 +28,41 @@ describe('enum validation', () => {
 
   it('handles objects in enums', () => {
     const schema = {
-      enum: [
-        { foo: 'bar' },
-        { baz: 123 },
-        1,
-      ],
+      enum: [{ foo: 'bar' }, { baz: 123 }, 1],
     }
     expect(validateSchema({ foo: 'bar' }, schema)).toEqual([])
-    expect(validateSchema({ foo: 'baz' }, schema)).toEqual([{
-      path: [],
-      validation: 'enum',
-      message: 'must be one of [{"foo":"bar"},{"baz":123},1]',
-    }])
+    expect(validateSchema({ foo: 'baz' }, schema)).toEqual([
+      {
+        path: [],
+        validation: 'enum',
+        message: 'The option {"foo":"baz"} is not valid.',
+      },
+    ])
     expect(validateSchema(1, schema)).toEqual([])
   })
 
   it('handles mixed type enums', () => {
     const schema = {
-      enum: [
-        1,
-        'test',
-        null,
-        { foo: 'bar' },
-      ],
+      enum: [1, 'test', null, { foo: 'bar' }],
     }
     expect(validateSchema(1, schema)).toEqual([])
     expect(validateSchema('test', schema)).toEqual([])
     expect(validateSchema(null, schema)).toEqual([])
     expect(validateSchema({ foo: 'bar' }, schema)).toEqual([])
 
-    expect(validateSchema('other', schema)).toEqual([{
-      path: [],
-      validation: 'enum',
-      message: 'must be one of [1,"test",null,{"foo":"bar"}]',
-    }])
-    expect(validateSchema({ foo: 'baz' }, schema)).toEqual([{
-      path: [],
-      validation: 'enum',
-      message: 'must be one of [1,"test",null,{"foo":"bar"}]',
-    }])
+    expect(validateSchema('other', schema)).toEqual([
+      {
+        path: [],
+        validation: 'enum',
+        message: 'The option "other" is not valid.',
+      },
+    ])
+    expect(validateSchema({ foo: 'baz' }, schema)).toEqual([
+      {
+        path: [],
+        validation: 'enum',
+        message: 'The option {"foo":"baz"} is not valid.',
+      },
+    ])
   })
 })
