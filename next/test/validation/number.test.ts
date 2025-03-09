@@ -21,7 +21,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'should be number',
+        message: 'The value must be a number',
       },
     ])
 
@@ -29,7 +29,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'should be number',
+        message: 'The value must be a number',
       },
     ])
 
@@ -37,7 +37,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'should be number',
+        message: 'The value must be a number',
       },
     ])
   })
@@ -52,7 +52,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'should be integer',
+        message: 'The value must be a number',
       },
     ])
 
@@ -60,7 +60,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'should be integer',
+        message: 'The value must be a number',
       },
     ])
   })
@@ -71,7 +71,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'minimum',
-        message: 'must be greater than or equal to 10',
+        message: 'Must be greater or equal to 10',
       },
     ])
 
@@ -80,7 +80,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'maximum',
-        message: 'must be less than or equal to 10',
+        message: 'Must be smaller or equal to 10',
       },
     ])
 
@@ -89,7 +89,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'maximum',
-        message: 'must be less than or equal to 10',
+        message: 'Must be smaller or equal to 10',
       },
     ])
 
@@ -97,7 +97,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'minimum',
-        message: 'must be greater than or equal to 10',
+        message: 'Must be greater or equal to 10',
       },
     ])
   })
@@ -108,7 +108,7 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMinimum',
-        message: 'must be greater than 10',
+        message: 'Must be greater than 10',
       },
     ])
 
@@ -117,36 +117,44 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'must be less than 10',
+        message: 'Must be smaller than 10',
       },
     ])
 
-    expect(validateSchema(10, { type: 'number', exclusiveMinimum: 9, exclusiveMaximum: 11 })).toEqual([])
-    expect(validateSchema(11, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 })).toEqual([
+    expect(
+      validateSchema(10, { type: 'number', exclusiveMinimum: 9, exclusiveMaximum: 11 }),
+    ).toEqual([])
+    expect(
+      validateSchema(11, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 }),
+    ).toEqual([
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'must be less than 10',
+        message: 'Must be smaller than 10',
       },
     ])
-    expect(validateSchema(9, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 })).toEqual([
+    expect(
+      validateSchema(9, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 }),
+    ).toEqual([
       {
         path: [],
         validation: 'exclusiveMinimum',
-        message: 'must be greater than 10',
+        message: 'Must be greater than 10',
       },
     ])
 
-    expect(validateSchema(10, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 })).toEqual([
+    expect(
+      validateSchema(10, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 }),
+    ).toEqual([
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'must be less than 10',
+        message: 'Must be smaller than 10',
       },
       {
         path: [],
         validation: 'exclusiveMinimum',
-        message: 'must be greater than 10',
+        message: 'Must be greater than 10',
       },
     ])
 
@@ -154,7 +162,20 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'must be less than 3',
+        message: 'Must be smaller than 3',
+      },
+    ])
+  })
+
+  // Add a test for multipleOf validation
+  it('validates the number against the multipleOf property', () => {
+    expect(validateSchema(10, { type: 'number', multipleOf: 5 })).toEqual([])
+    expect(validateSchema(15, { type: 'number', multipleOf: 5 })).toEqual([])
+    expect(validateSchema(12, { type: 'number', multipleOf: 5 })).toEqual([
+      {
+        path: [],
+        validation: 'multipleOf',
+        message: 'Must be a multiple of 5',
       },
     ])
   })
