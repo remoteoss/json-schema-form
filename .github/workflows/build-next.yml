@@ -29,6 +29,7 @@ jobs:
 
       - name: Cache v0 dependencies
         uses: actions/cache@v3
+        id: cache-v0
         with:
           path: node_modules
           key: ${{ runner.os }}-npm-next-v0-${{ hashFiles('package-lock.json') }}
