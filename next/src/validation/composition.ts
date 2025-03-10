@@ -80,7 +80,7 @@ export function validateAnyOf(
     {
       path,
       validation: 'anyOf',
-      message: `The option "${value}" is not valid`,
+      message: `The option "${value}" is not valid.`,
     },
   ]
 }
@@ -127,7 +127,7 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: 'Must match exactly one of the provided schemas',
+        message: `The option "${value}" is not valid.`,
       },
     ]
   }
@@ -137,7 +137,7 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: 'Must match exactly one schema but matches multiple',
+        message: `The option "${value}" is not valid.`,
       },
     ]
   }

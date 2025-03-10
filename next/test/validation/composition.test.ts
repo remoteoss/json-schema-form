@@ -149,7 +149,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('anyOf')
-        expect(errors[0].message).toBe(`The option "${value}" is not valid`)
+        expect(errors[0].message).toBe(`The option "${value}" is not valid.`)
       })
     })
 
@@ -256,7 +256,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('Must match exactly one of the provided schemas')
+        expect(errors[0].message).toBe(`The option "${value}" is not valid.`)
       })
 
       it('should fail when value matches multiple schemas', () => {
@@ -264,7 +264,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('Must match exactly one schema but matches multiple')
+        expect(errors[0].message).toBe(`The option "${value}" is not valid.`)
       })
     })
 
@@ -322,7 +322,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('Must match exactly one schema but matches multiple')
+        expect(errors[0].message).toBe(`The option "${value}" is not valid.`)
       })
     })
 
