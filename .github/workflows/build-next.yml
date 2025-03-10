@@ -66,6 +66,12 @@ jobs:
         with:
           node-version-file: 'next/.nvmrc'
 
+      - name: Get cached v0 dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-next-v0-${{ hashFiles('package-lock.json') }}
+
       - name: Get cached PNPM dependencies
         uses: actions/cache@v3
         with:
