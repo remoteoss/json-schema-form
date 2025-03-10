@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // const fs = require('node:fs')
 // const process = require('node:process')
 
@@ -15,6 +16,9 @@ if (!fs.existsSync(BASELINE_FILE)) {
 // Load test results
 const baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'))
 const current = JSON.parse(fs.readFileSync(CURRENT_FILE, 'utf8'))
+
+console.log(baseline)
+console.log(current)
 
 // Extract test statuses
 function getTestStatus(results) {
@@ -51,6 +55,5 @@ if (failed) {
   process.exit(1)
 }
 else {
-  // eslint-disable-next-line no-console
   console.log('✅ V0 test results match the expected state.')
 }
