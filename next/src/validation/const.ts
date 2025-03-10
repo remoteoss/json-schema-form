@@ -14,13 +14,19 @@ import { deepEqual } from './util'
  * @see https://json-schema.org/understanding-json-schema/reference/const
  * @see https://json-schema.org/draft/2020-12/json-schema-validation#name-enum
  */
-export function validateConst(value: SchemaValue, schema: NonBooleanJsfSchema, path: string[] = []): ValidationError[] {
+export function validateConst(
+  value: SchemaValue,
+  schema: NonBooleanJsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   if (schema.const === undefined) {
     return []
   }
 
   if (!deepEqual(schema.const, value)) {
-    return [{ path, validation: 'const', message: `must be equal to ${JSON.stringify(schema.const)}` }]
+    return [
+      { path, validation: 'const', message: `The only accepted value is ${JSON.stringify(schema.const)}` },
+    ]
   }
 
   return []

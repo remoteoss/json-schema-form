@@ -17,17 +17,17 @@ describe('required field validation', () => {
 
     // When the field is null, it should show "is required" message
     expect(form.handleValidation({ name: null })).toMatchObject({
-      formErrors: { name: 'is required' },
+      formErrors: { name: 'Required field' },
     })
 
     // When the field is a non-null invalid type, it should show the default type error
     expect(form.handleValidation({ name: 123 })).toMatchObject({
-      formErrors: { name: 'should be string' },
+      formErrors: { name: 'The value must be a string' },
     })
 
     // When the field is completely undefined (missing), it should show 'is required'
     expect(form.handleValidation({})).toMatchObject({
-      formErrors: { name: 'is required' },
+      formErrors: { name: 'Required field' },
     })
 
     // Valid value should not have errors
@@ -54,7 +54,7 @@ describe('required field validation', () => {
 
     // Field is still required though
     expect(form.handleValidation({})).toMatchObject({
-      formErrors: { name: 'is required' },
+      formErrors: { name: 'Required field' },
     })
   })
 

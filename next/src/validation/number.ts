@@ -2,7 +2,12 @@ import type { ValidationError } from '../form'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { getSchemaType } from './schema'
 
-export type NumberValidationErrorType = 'multipleOf' | 'maximum' | 'exclusiveMaximum' | 'minimum' | 'exclusiveMinimum'
+export type NumberValidationErrorType =
+  | 'multipleOf'
+  | 'maximum'
+  | 'exclusiveMaximum'
+  | 'minimum'
+  | 'exclusiveMinimum'
 
 /**
  * Validate a number against a schema
@@ -18,7 +23,11 @@ export type NumberValidationErrorType = 'multipleOf' | 'maximum' | 'exclusiveMax
  * - Minimum validation
  * - ExclusiveMinimum validation
  */
-export function validateNumber(value: SchemaValue, schema: NonBooleanJsfSchema, path: string[] = []): ValidationError[] {
+export function validateNumber(
+  value: SchemaValue,
+  schema: NonBooleanJsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   const errors: ValidationError[] = []
   const schemaType = getSchemaType(schema)
 
@@ -32,27 +41,47 @@ export function validateNumber(value: SchemaValue, schema: NonBooleanJsfSchema, 
 
   // MultipleOf validation - dividing value by multipleOf must have no remainder
   if (schema.multipleOf !== undefined && value % schema.multipleOf !== 0) {
-    errors.push({ path, validation: 'multipleOf', message: `must be a multiple of ${schema.multipleOf}` })
+    errors.push({
+      path,
+      validation: 'multipleOf',
+      message: `Must be a multiple of ${schema.multipleOf}`,
+    })
   }
 
   // Maximum validation - value must be less than or equal to maximum
   if (schema.maximum !== undefined && value > schema.maximum) {
-    errors.push({ path, validation: 'maximum', message: `must be less than or equal to ${schema.maximum}` })
+    errors.push({
+      path,
+      validation: 'maximum',
+      message: `Must be smaller or equal to ${schema.maximum}`,
+    })
   }
 
   // ExclusiveMaximum validation - value must be less than exclusiveMaximum
   if (schema.exclusiveMaximum !== undefined && value >= schema.exclusiveMaximum) {
-    errors.push({ path, validation: 'exclusiveMaximum', message: `must be less than ${schema.exclusiveMaximum}` })
+    errors.push({
+      path,
+      validation: 'exclusiveMaximum',
+      message: `Must be smaller than ${schema.exclusiveMaximum}`,
+    })
   }
 
   // Minimum validation - value must be greater than or equal to minimum
   if (schema.minimum !== undefined && value < schema.minimum) {
-    errors.push({ path, validation: 'minimum', message: `must be greater than or equal to ${schema.minimum}` })
+    errors.push({
+      path,
+      validation: 'minimum',
+      message: `Must be greater or equal to ${schema.minimum}`,
+    })
   }
 
   // ExclusiveMinimum validation - value must be greater than exclusiveMinimum
   if (schema.exclusiveMinimum !== undefined && value <= schema.exclusiveMinimum) {
-    errors.push({ path, validation: 'exclusiveMinimum', message: `must be greater than ${schema.exclusiveMinimum}` })
+    errors.push({
+      path,
+      validation: 'exclusiveMinimum',
+      message: `Must be greater than ${schema.exclusiveMinimum}`,
+    })
   }
 
   return errors

@@ -28,7 +28,8 @@ const PATTERNS = {
   DURATION: /^P(?!$)(?:\d+Y)?(?:\d+M)?(?:\d+D)?(?:T(?=\d)(?:\d+H)?(?:\d+M)?(?:\d+S)?)?$/,
 
   // Email patterns
-  EMAIL: /^[\w.!#$%&'*+/=?^`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i,
+  EMAIL:
+    /^[\w.!#$%&'*+/=?^`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$/i,
   IDN_EMAIL: /^[^\s@]+@[^\s@][^\s.@]*\.[^\s@]+$/,
 
   // Host patterns
@@ -51,7 +52,8 @@ const PATTERNS = {
   RELATIVE_JSON_POINTER: /^(?:0|[1-9]\d*)(?:#|(?:\/(?:[^~/]|~0|~1)*)*)$/,
 
   // URI Template (RFC 6570)
-  URI_TEMPLATE: /^(?:[!#$&'()*+,/:;=?@\w\-.~]|%[0-9a-f]{2}|\{[+#./;?&=,!@|]?(?:\w|%[0-9a-f]{2})+(?::[1-9]\d{0,3}|\*)?(?:,(?:\w|%[0-9a-f]{2})+(?::[1-9]\d{0,3}|\*)?)*\})*$/i,
+  URI_TEMPLATE:
+    /^(?:[!#$&'()*+,/:;=?@\w\-.~]|%[0-9a-f]{2}|\{[+#./;?&=,!@|]?(?:\w|%[0-9a-f]{2})+(?::[1-9]\d{0,3}|\*)?(?:,(?:\w|%[0-9a-f]{2})+(?::[1-9]\d{0,3}|\*)?)*\})*$/i,
 } as const
 
 /**
@@ -178,7 +180,11 @@ const formatValidationFunctions: Record<Format, (value: string) => boolean> = {
  * - Implementations SHOULD implement validation for standard formats
  * - Implementations MAY treat format as a no-op
  */
-export function validateFormat(value: string, format: string, path: string[] = []): ValidationError[] {
+export function validateFormat(
+  value: string,
+  format: string,
+  path: string[] = [],
+): ValidationError[] {
   const errors: ValidationError[] = []
 
   // Format validation only applies to strings
@@ -191,7 +197,10 @@ export function validateFormat(value: string, format: string, path: string[] = [
     errors.push({
       path,
       validation: 'format' as SchemaValidationErrorType,
-      message: `must be a valid ${format} format`,
+      message:
+        format === 'email'
+          ? 'Please enter a valid email address'
+          : `Must be a valid ${format} format`,
     })
   }
 
