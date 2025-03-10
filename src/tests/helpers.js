@@ -2327,3 +2327,24 @@ export const schemaWithCustomValidationsAndConditionals = {
     },
   ],
 };
+
+export const schemaWithSelectInteger = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    account_type: {
+      title: 'Select an account type',
+      description: '',
+      'x-jsf-presentation': {
+        inputType: 'select',
+      },
+      oneOf: [
+        { title: 'Normal User', const: 0 },
+        { title: 'Business', const: 1 },
+        { title: 'Services Provider', const: 2 },
+      ],
+      type: 'integer',
+    },
+  },
+  required: [],
+};
