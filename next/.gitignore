@@ -1,3 +1,4 @@
 /node_modules
 /dist
 /json-schema-test-suite
+/test/v0-test-results.json
