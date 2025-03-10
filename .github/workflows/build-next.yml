@@ -75,4 +75,4 @@ jobs:
         run: cd next && pnpm check
 
       - name: Tests
-        run: cd next && pnpm run test:v0-update-baseline || true && pnpm test
+        run: cd next && pnpm test
