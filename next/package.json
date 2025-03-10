@@ -33,7 +33,7 @@
     "test:file": "jest --runTestsByPath",
     "test:v0-update-baseline": "jest --roots '<rootDir>/../src/tests' --json --outputFile=test/v0-baseline-test-results.json",
     "test:v0-compare-results": "node test/v0_compare_test_results.js",
-    "test:v0": "jest --roots '<rootDir>/../src/tests' --json --outputFile=test/v0-test-results.json 2> /dev/null; pnpm run test:v0-compare-results",
+    "test:v0": "jest --roots '<rootDir>/../src/tests' --json --outputFile=test/v0-test-results.json; pnpm run test:v0-compare-results",
     "lint": "eslint --max-warnings 0 .",
     "typecheck": "tsc --noEmit",
     "check": "pnpm run lint && pnpm run typecheck",
