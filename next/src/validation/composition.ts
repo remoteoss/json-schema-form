@@ -80,7 +80,7 @@ export function validateAnyOf(
     {
       path,
       validation: 'anyOf',
-      message: 'Must match at least one of the provided schemas',
+      message: `The option "${value}" is not valid`,
     },
   ]
 }

@@ -149,7 +149,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('anyOf')
-        expect(errors[0].message).toBe('Must match at least one of the provided schemas')
+        expect(errors[0].message).toBe(`The option "${value}" is not valid`)
       })
     })
 
