@@ -31,12 +31,14 @@ export interface ValidationError {
    * - For field-level errors: array of field names (e.g., ['address', 'street'])
    * - For schema-level errors: empty array []
    * - For nested validations: full path to the field (e.g., ['address', 'street', 'number'])
+   * - For schema composition: includes array indices (e.g., ['value', 'allOf', 0])
    * @example
    * [] // schema-level error
    * ['username'] // field-level error
    * ['address', 'street'] // nested field error
+   * ['value', 'allOf', 0] // schema composition error
    */
-  path: string[]
+  path: (string | number)[]
   /**
    * The type of validation error
    * @example

@@ -33,7 +33,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
-        expect(errors[0].path).toEqual(['bar'])
+        expect(errors[0].path).toEqual(['allOf', 0, 'bar'])
       })
 
       it('should fail when missing required property from second schema', () => {
@@ -41,7 +41,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
-        expect(errors[0].path).toEqual(['foo'])
+        expect(errors[0].path).toEqual(['allOf', 1, 'foo'])
       })
 
       it('should fail when property has wrong type', () => {
@@ -49,7 +49,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('type')
-        expect(errors[0].path).toEqual(['bar'])
+        expect(errors[0].path).toEqual(['allOf', 0, 'bar'])
       })
     })
 

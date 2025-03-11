@@ -34,8 +34,9 @@ export function validateAllOf(
     return []
   }
 
-  for (const subSchema of schema.allOf) {
-    const errors = validateSchema(value, subSchema, false, path)
+  for (let i = 0; i < schema.allOf.length; i++) {
+    const subSchema = schema.allOf[i]
+    const errors = validateSchema(value, subSchema, false, [...path, 'allOf', i])
     if (errors.length > 0) {
       return errors
     }

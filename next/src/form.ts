@@ -56,6 +56,34 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[], _sch
       return result
     }
 
+    // For allOf validation errors, show the error at the field level
+    const allOfIndex = path.indexOf('allOf')
+    if (allOfIndex !== -1) {
+      // Get the field path (everything before 'allOf')
+      const fieldPath = path.slice(0, allOfIndex)
+      let current = result
+
+      // Process all segments except the last one (which will hold the message)
+      fieldPath.slice(0, -1).forEach((segment) => {
+        // If this segment doesn't exist yet or is currently a string (from a previous error),
+        // initialize it as an object
+        if (!(segment in current) || typeof current[segment] === 'string') {
+          current[segment] = {}
+        }
+
+        // Cast is safe because we just ensured it's an object
+        current = current[segment] as FormErrors
+      })
+
+      // Set the message at the field level
+      if (fieldPath.length > 0) {
+        const lastSegment = fieldPath[fieldPath.length - 1]
+        current[lastSegment] = error.message
+      }
+
+      return result
+    }
+
     // For all other paths, recursively build the nested structure
     let current = result
 
@@ -83,7 +111,7 @@ interface ValidationErrorWithMessage extends ValidationError {
   message: string
 }
 
-function getSchemaAndValueAtPath(rootSchema: JsfSchema, rootValue: SchemaValue, path: string[]): { schema: JsfSchema, value: SchemaValue } {
+function getSchemaAndValueAtPath(rootSchema: JsfSchema, rootValue: SchemaValue, path: (string | number)[]): { schema: JsfSchema, value: SchemaValue } {
   let currentSchema = rootSchema
   let currentValue = rootValue
 
@@ -98,7 +126,18 @@ function getSchemaAndValueAtPath(rootSchema: JsfSchema, rootValue: SchemaValue, 
       else if (currentSchema.items && typeof currentSchema.items !== 'boolean') {
         currentSchema = currentSchema.items
         if (Array.isArray(currentValue)) {
-          currentValue = currentValue[Number.parseInt(segment, 10)]
+          currentValue = currentValue[Number(segment)]
+        }
+      }
+      else if (segment === 'allOf' && currentSchema.allOf) {
+        // Skip the 'allOf' segment, the next segment will be the index
+        continue
+      }
+      else if (currentSchema.allOf && !Number.isNaN(Number(segment))) {
+        // If we have a numeric segment and we're in an allOf context, get the subschema
+        const index = Number(segment)
+        if (index >= 0 && index < currentSchema.allOf.length) {
+          currentSchema = currentSchema.allOf[index]
         }
       }
     }
