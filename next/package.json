@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "test": "jest && pnpm run test:v0",
+    "test": "jest",
     "test:watch": "jest --watchAll",
     "test:file": "jest --runTestsByPath",
     "test:v0-update-baseline": "jest --roots '<rootDir>/../src/tests' --json --outputFile=test/v0-baseline-test-results.json",

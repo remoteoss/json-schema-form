@@ -1,6 +1,4 @@
 /* eslint-disable no-console */
-// const fs = require('node:fs')
-// const process = require('node:process')
 
 import fs from 'node:fs'
 import process from 'node:process'
@@ -16,9 +14,6 @@ if (!fs.existsSync(BASELINE_FILE)) {
 // Load test results
 const baseline = JSON.parse(fs.readFileSync(BASELINE_FILE, 'utf8'))
 const current = JSON.parse(fs.readFileSync(CURRENT_FILE, 'utf8'))
-
-// console.log(JSON.stringify(baseline, null, 2))
-// console.log(JSON.stringify(current, null, 2))
 
 // Extract test statuses
 function getTestStatus(results) {

@@ -83,3 +83,6 @@ jobs:
 
       - name: Tests
         run: cd next && pnpm test
+
+      - name: v0 Tests
+        run: cd next && pnpm run test:v0
