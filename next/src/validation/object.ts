@@ -1,4 +1,4 @@
-import type { ValidationError } from '../form'
+import type { ValidationError } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 import { isObjectValue } from './util'

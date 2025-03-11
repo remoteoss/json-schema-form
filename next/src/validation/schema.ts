@@ -1,50 +1,12 @@
-import type { ValidationError } from '../form'
+import type { ValidationError } from '../errors'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
-import type { StringValidationErrorType } from './string'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
 import { validateConst } from './const'
 import { validateEnum } from './enum'
-import { type NumberValidationErrorType, validateNumber } from './number'
+import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
-
-export type SchemaValidationErrorType =
-  /**
-   * Core validation keywords
-   */
-  | 'type'
-  | 'required'
-  | 'valid'
-  | 'const'
-  | 'enum'
-
-  /**
-   * Schema composition keywords (allOf, anyOf, oneOf, not)
-   * These keywords apply subschemas in a logical manner according to JSON Schema spec
-   */
-  | 'anyOf'
-  | 'oneOf'
-  | 'allOf'
-  | 'not'
-  | 'if'
-  | 'then'
-  | 'else'
-
-  /**
-   * String validation keywords
-   */
-  | StringValidationErrorType
-
-  /**
-   * Format validation (now separated into format-annotation and format-assertion)
-   */
-  | 'format'
-
-  /**
-   * Number validation keywords
-   */
-  | NumberValidationErrorType
 
 /**
  * Get the type of a schema
@@ -97,24 +59,12 @@ function validateType(
     if (Array.isArray(schemaType)) {
       return schemaType.includes('null')
         ? []
-        : [
-            {
-              path,
-              validation: 'type',
-              message: `The value must be ${schemaType.join(' or ')}`,
-            },
-          ]
+        : [{ path, validation: 'type' }]
     }
 
     return schemaType === 'null'
       ? []
-      : [
-          {
-            path,
-            validation: 'required',
-            message: 'Required field',
-          },
-        ]
+      : [{ path, validation: 'required' }]
   }
 
   const valueType = typeof value
@@ -139,47 +89,8 @@ function validateType(
     return []
   }
 
-  return [
-    {
-      path,
-      validation: 'type',
-      message: getTypeErrorMessage(schemaType),
-    },
+  return [{ path, validation: 'type' },
   ]
-}
-
-/**
- * Get the appropriate type error message based on the schema type
- */
-function getTypeErrorMessage(schemaType: JsfSchemaType | JsfSchemaType[] | undefined): string {
-  if (Array.isArray(schemaType)) {
-    // Map 'integer' to 'number' in error messages
-    const formattedTypes = schemaType.map((type) => {
-      if (type === 'integer')
-        return 'number'
-      return type
-    })
-
-    return `The value must be a ${formattedTypes.join(' or ')}`
-  }
-
-  switch (schemaType) {
-    case 'number':
-    case 'integer':
-      return 'The value must be a number'
-    case 'boolean':
-      return 'The value must be a boolean'
-    case 'null':
-      return 'The value must be null'
-    case 'string':
-      return 'The value must be a string'
-    case 'object':
-      return 'The value must be an object'
-    case 'array':
-      return 'The value must be an array'
-    default:
-      return schemaType ? `The value must be ${schemaType}` : 'Invalid value'
-  }
 }
 
 /**
@@ -219,7 +130,7 @@ export function validateSchema(
 ): ValidationError[] {
   // Handle undefined values and boolean schemas first
   if (value === undefined && required) {
-    return [{ path, validation: 'required', message: 'Required field' }]
+    return [{ path, validation: 'required' }]
   }
 
   if (value === undefined) {
@@ -227,7 +138,7 @@ export function validateSchema(
   }
 
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid', message: 'Always fails' }]
+    return schema ? [] : [{ path, validation: 'valid' }]
   }
 
   const typeValidationErrors = validateType(value, schema, path)
@@ -248,7 +159,6 @@ export function validateSchema(
       return missingKeys.map(key => ({
         path: [...path, key],
         validation: 'required',
-        message: 'Required field',
       }))
     }
   }

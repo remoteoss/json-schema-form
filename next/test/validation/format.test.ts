@@ -21,10 +21,7 @@ describe('format validation', () => {
     it('should fail for invalid date-time', () => {
       const errors = validateString('not-a-date-time', schema)
       expect(errors).toHaveLength(1)
-      expect(errors[0]).toMatchObject({
-        validation: 'format',
-        message: 'Must be a valid date-time format',
-      })
+      expect(errors[0]).toMatchObject({ validation: 'format' })
     })
 
     it('should pass for non-string values', () => {
@@ -61,10 +58,7 @@ describe('format validation', () => {
       invalidTimes.forEach((time) => {
         const errors = validateString(time, schema)
         expect(errors).toHaveLength(1)
-        expect(errors[0]).toMatchObject({
-          validation: 'format',
-          message: 'Must be a valid time format',
-        })
+        expect(errors[0]).toMatchObject({ validation: 'format' })
       })
     })
 
@@ -116,10 +110,7 @@ describe('format validation', () => {
       invalidDurations.forEach((duration) => {
         const errors = validateString(duration, schema)
         expect(errors).toHaveLength(1)
-        expect(errors[0]).toMatchObject({
-          validation: 'format',
-          message: 'Must be a valid duration format',
-        })
+        expect(errors[0]).toMatchObject({ validation: 'format' })
       })
     })
 
@@ -148,10 +139,7 @@ describe('format validation', () => {
     it('should fail for invalid email', () => {
       const errors = validateString('not-an-email', schema)
       expect(errors).toHaveLength(1)
-      expect(errors[0]).toMatchObject({
-        validation: 'format',
-        message: 'Please enter a valid email address',
-      })
+      expect(errors[0]).toMatchObject({ validation: 'format' })
     })
 
     it('should fail for invalid email formats', () => {
@@ -185,10 +173,7 @@ describe('format validation', () => {
     it('should fail for invalid hostname', () => {
       const errors = validateString('not_a_hostname!', schema)
       expect(errors).toHaveLength(1)
-      expect(errors[0]).toMatchObject({
-        validation: 'format',
-        message: 'Must be a valid hostname format',
-      })
+      expect(errors[0]).toMatchObject({ validation: 'format' })
     })
   })
 
@@ -206,10 +191,7 @@ describe('format validation', () => {
     it('should fail for invalid IPv4', () => {
       const errors = validateString('256.1.2.3', schema)
       expect(errors).toHaveLength(1)
-      expect(errors[0]).toMatchObject({
-        validation: 'format',
-        message: 'Must be a valid ipv4 format',
-      })
+      expect(errors[0]).toMatchObject({ validation: 'format' })
     })
   })
 
@@ -226,10 +208,7 @@ describe('format validation', () => {
     it('should fail for invalid UUID', () => {
       const errors = validateString('not-a-uuid', schema)
       expect(errors).toHaveLength(1)
-      expect(errors[0]).toMatchObject({
-        validation: 'format',
-        message: 'Must be a valid uuid format',
-      })
+      expect(errors[0]).toMatchObject({ validation: 'format' })
     })
   })
 
@@ -247,10 +226,7 @@ describe('format validation', () => {
     it('should fail for invalid URI', () => {
       const errors = validateString('not-a-uri', schema)
       expect(errors).toHaveLength(1)
-      expect(errors[0]).toMatchObject({
-        validation: 'format',
-        message: 'Must be a valid uri format',
-      })
+      expect(errors[0]).toMatchObject({ validation: 'format' })
     })
   })
 

@@ -1,23 +1,7 @@
-import type { ValidationError } from '../form'
+import type { ValidationError } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
-import { randexp } from 'randexp'
 import { validateFormat } from './format'
 import { getSchemaType } from './schema'
-
-export type StringValidationErrorType =
-  /**
-   * String length validation
-   */
-  | 'minLength'
-  | 'maxLength'
-  /**
-   * String pattern validation
-   */
-  | 'pattern'
-  /**
-   * String format validation
-   */
-  | 'format'
 
 /**
  * Validate a string against a schema
@@ -51,32 +35,18 @@ export function validateString(
 
   // Length validation
   if (schema.minLength !== undefined && valueLength < schema.minLength) {
-    errors.push({
-      path,
-      validation: 'minLength',
-      message: `Please insert at least ${schema.minLength} characters`,
-    })
+    errors.push({ path, validation: 'minLength' })
   }
 
   if (schema.maxLength !== undefined && valueLength > schema.maxLength) {
-    errors.push({
-      path,
-      validation: 'maxLength',
-      message: `Please insert up to ${schema.maxLength} characters`,
-    })
+    errors.push({ path, validation: 'maxLength' })
   }
 
   // Pattern validation
   if (schema.pattern !== undefined) {
     const pattern = new RegExp(schema.pattern)
     if (!pattern.test(value)) {
-      // Generate an example that matches the pattern
-      const randomPlaceholder = randexp(schema.pattern)
-      errors.push({
-        path,
-        validation: 'pattern',
-        message: `Must have a valid format. E.g. ${randomPlaceholder}`,
-      })
+      errors.push({ path, validation: 'pattern' })
     }
   }
 

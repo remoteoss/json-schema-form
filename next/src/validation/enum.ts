@@ -1,4 +1,4 @@
-import type { ValidationError } from '../form'
+import type { ValidationError } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { deepEqual } from './util'
 
@@ -28,7 +28,7 @@ export function validateEnum(
 
   if (!schema.enum.some(enumValue => deepEqual(enumValue, value))) {
     return [
-      { path, validation: 'enum', message: `The option ${JSON.stringify(value)} is not valid.` },
+      { path, validation: 'enum' },
     ]
   }
 

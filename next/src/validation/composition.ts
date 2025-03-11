@@ -5,7 +5,7 @@
  * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html Schema Composition}
  */
 
-import type { ValidationError } from '../form'
+import type { ValidationError } from '../errors'
 import type { JsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
@@ -80,7 +80,6 @@ export function validateAnyOf(
     {
       path,
       validation: 'anyOf',
-      message: `The option "${value}" is not valid.`,
     },
   ]
 }
@@ -127,7 +126,6 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: `The option "${value}" is not valid.`,
       },
     ]
   }
@@ -137,7 +135,6 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: `The option "${value}" is not valid.`,
       },
     ]
   }
@@ -173,12 +170,12 @@ export function validateNot(
 
   if (typeof schema.not === 'boolean') {
     return schema.not
-      ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
+      ? [{ path, validation: 'not' }]
       : []
   }
 
   const notErrors = validateSchema(value, schema.not, false, path)
   return notErrors.length === 0
-    ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
+    ? [{ path, validation: 'not' }]
     : []
 }
