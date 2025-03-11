@@ -25,7 +25,11 @@ import { validateSchema } from './schema'
  * ```
  * This schema validates strings with maximum length of 5.
  */
-export function validateAllOf(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
+export function validateAllOf(
+  value: SchemaValue,
+  schema: JsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   if (!schema.allOf || !Array.isArray(schema.allOf)) {
     return []
   }
@@ -56,7 +60,11 @@ export function validateAllOf(value: SchemaValue, schema: JsfSchema, path: strin
  * ```
  * This schema validates either short strings or positive numbers.
  */
-export function validateAnyOf(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
+export function validateAnyOf(
+  value: SchemaValue,
+  schema: JsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
     return []
   }
@@ -68,11 +76,13 @@ export function validateAnyOf(value: SchemaValue, schema: JsfSchema, path: strin
     }
   }
 
-  return [{
-    path,
-    validation: 'anyOf',
-    message: 'should match at least one schema',
-  }]
+  return [
+    {
+      path,
+      validation: 'anyOf',
+      message: 'Must match at least one of the provided schemas',
+    },
+  ]
 }
 
 /**
@@ -91,7 +101,11 @@ export function validateAnyOf(value: SchemaValue, schema: JsfSchema, path: strin
  * ```
  * This schema validates numbers that are multiples of either 5 or 3, but not both.
  */
-export function validateOneOf(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
+export function validateOneOf(
+  value: SchemaValue,
+  schema: JsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
     return []
   }
@@ -109,19 +123,23 @@ export function validateOneOf(value: SchemaValue, schema: JsfSchema, path: strin
   }
 
   if (validCount === 0) {
-    return [{
-      path,
-      validation: 'oneOf',
-      message: 'should match exactly one schema',
-    }]
+    return [
+      {
+        path,
+        validation: 'oneOf',
+        message: 'Must match exactly one of the provided schemas',
+      },
+    ]
   }
 
   if (validCount > 1) {
-    return [{
-      path,
-      validation: 'oneOf',
-      message: 'should match exactly one schema but matches multiple',
-    }]
+    return [
+      {
+        path,
+        validation: 'oneOf',
+        message: 'Must match exactly one schema but matches multiple',
+      },
+    ]
   }
 
   return []
@@ -144,19 +162,23 @@ export function validateOneOf(value: SchemaValue, schema: JsfSchema, path: strin
  * - true: Always returns an error (nothing should validate)
  * - false: Always returns no errors (everything validates)
  */
-export function validateNot(value: SchemaValue, schema: JsfSchema, path: string[] = []): ValidationError[] {
+export function validateNot(
+  value: SchemaValue,
+  schema: JsfSchema,
+  path: string[] = [],
+): ValidationError[] {
   if (schema.not === undefined) {
     return []
   }
 
   if (typeof schema.not === 'boolean') {
     return schema.not
-      ? [{ path, validation: 'not', message: 'should NOT be valid against schema' }]
+      ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
       : []
   }
 
   const notErrors = validateSchema(value, schema.not, false, path)
   return notErrors.length === 0
-    ? [{ path, validation: 'not', message: 'should NOT be valid against schema' }]
+    ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
     : []
 }

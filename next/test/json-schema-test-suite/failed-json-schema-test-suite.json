@@ -317,7 +317,6 @@
       "additionalProperty invalidates others"
     ],
     "properties whose names are Javascript object property names": [
-      "ignores arrays",
       "none of the properties mentioned"
     ],
     "propertyNames validation": [

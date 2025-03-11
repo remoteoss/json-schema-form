@@ -23,7 +23,7 @@ describe('format validation', () => {
       expect(errors).toHaveLength(1)
       expect(errors[0]).toMatchObject({
         validation: 'format',
-        message: 'must be a valid date-time format',
+        message: 'Must be a valid date-time format',
       })
     })
 
@@ -63,7 +63,7 @@ describe('format validation', () => {
         expect(errors).toHaveLength(1)
         expect(errors[0]).toMatchObject({
           validation: 'format',
-          message: 'must be a valid time format',
+          message: 'Must be a valid time format',
         })
       })
     })
@@ -118,7 +118,7 @@ describe('format validation', () => {
         expect(errors).toHaveLength(1)
         expect(errors[0]).toMatchObject({
           validation: 'format',
-          message: 'must be a valid duration format',
+          message: 'Must be a valid duration format',
         })
       })
     })
@@ -139,7 +139,9 @@ describe('format validation', () => {
       expect(validateString('user@example.com', schema)).toHaveLength(0)
       expect(validateString('user.name+tag@example.co.uk', schema)).toHaveLength(0)
       expect(validateString('very.common@example.com', schema)).toHaveLength(0)
-      expect(validateString('disposable.style.email.with+symbol@example.com', schema)).toHaveLength(0)
+      expect(validateString('disposable.style.email.with+symbol@example.com', schema)).toHaveLength(
+        0,
+      )
       expect(validateString('other.email-with-hyphen@example.com', schema)).toHaveLength(0)
     })
 
@@ -148,7 +150,7 @@ describe('format validation', () => {
       expect(errors).toHaveLength(1)
       expect(errors[0]).toMatchObject({
         validation: 'format',
-        message: 'must be a valid email format',
+        message: 'Please enter a valid email address',
       })
     })
 
@@ -185,7 +187,7 @@ describe('format validation', () => {
       expect(errors).toHaveLength(1)
       expect(errors[0]).toMatchObject({
         validation: 'format',
-        message: 'must be a valid hostname format',
+        message: 'Must be a valid hostname format',
       })
     })
   })
@@ -206,7 +208,7 @@ describe('format validation', () => {
       expect(errors).toHaveLength(1)
       expect(errors[0]).toMatchObject({
         validation: 'format',
-        message: 'must be a valid ipv4 format',
+        message: 'Must be a valid ipv4 format',
       })
     })
   })
@@ -226,7 +228,7 @@ describe('format validation', () => {
       expect(errors).toHaveLength(1)
       expect(errors[0]).toMatchObject({
         validation: 'format',
-        message: 'must be a valid uuid format',
+        message: 'Must be a valid uuid format',
       })
     })
   })
@@ -247,7 +249,7 @@ describe('format validation', () => {
       expect(errors).toHaveLength(1)
       expect(errors[0]).toMatchObject({
         validation: 'format',
-        message: 'must be a valid uri format',
+        message: 'Must be a valid uri format',
       })
     })
   })
