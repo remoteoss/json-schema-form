@@ -273,6 +273,8 @@ const getYupSchema = ({ inputType, ...field }) => {
     switch (type) {
       case 'number':
         return yupSchemas.radioOrSelectNumber(optionValues);
+      case 'integer':
+        return yupSchemas.radioOrSelectNumber(optionValues);
       case 'boolean':
         return yupSchemas.radioOrSelectBoolean(optionValues);
       default:
@@ -513,7 +515,8 @@ export function buildYupSchema(field, config, logic) {
     validators.push(withFile);
   }
 
-  if (jsonType === 'integer') {
+  const hasOptions = field.options?.length > 0;
+  if (jsonType === 'integer' && !hasOptions) {
     validators.push(withInteger);
   }
 

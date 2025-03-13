@@ -63,6 +63,7 @@ import {
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
   schemaInputTypeFile,
+  schemaWithSelectInteger,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 import { createHeadlessForm } from '@/createHeadlessForm';
@@ -656,6 +657,27 @@ describe('createHeadlessForm', () => {
             },
           ],
         });
+      });
+
+      it('supports "select" field with integer values', async () => {
+        const { handleValidation } = createHeadlessForm(schemaWithSelectInteger);
+        const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+        // Check for invalid option
+        expect(
+          validateForm({
+            account_type: 4,
+          })
+        ).toEqual({
+          account_type: 'The option 4 is not valid.',
+        });
+
+        // Check for valid option
+        expect(
+          validateForm({
+            account_type: 1,
+          })
+        ).toBeUndefined();
       });
     });
     describe('support "radio" field type', () => {
