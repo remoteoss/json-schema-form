@@ -1,1 +1,1 @@
-export { createHeadlessForm } from './form'
+export { createHeadlessForm, CreateHeadlessFormOptions } from './form'

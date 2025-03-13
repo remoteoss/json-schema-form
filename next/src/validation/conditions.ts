@@ -1,10 +1,11 @@
-import type { ValidationError } from '../form'
+import type { ValidationError, ValidationOptions } from '../form'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
 export function validateCondition(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
+  options: ValidationOptions,
   required: boolean,
   path: string[],
 ): ValidationError[] {
@@ -12,14 +13,14 @@ export function validateCondition(
     return []
   }
 
-  const conditionIsTrue = validateSchema(value, schema.if, required, path).length === 0
+  const conditionIsTrue = validateSchema(value, schema.if, options, required, path).length === 0
 
   if (conditionIsTrue && schema.then !== undefined) {
-    return validateSchema(value, schema.then, required, [...path, 'then'])
+    return validateSchema(value, schema.then, options, required, [...path, 'then'])
   }
 
   if (!conditionIsTrue && schema.else !== undefined) {
-    return validateSchema(value, schema.else, required, [...path, 'else'])
+    return validateSchema(value, schema.else, options, required, [...path, 'else'])
   }
 
   return []
