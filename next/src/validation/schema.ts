@@ -92,34 +92,17 @@ function validateType(
     return []
   }
 
-  // Handle null values specially
-  if (value === null) {
-    if (Array.isArray(schemaType)) {
-      return schemaType.includes('null')
-        ? []
-        : [
-            {
-              path,
-              validation: 'type',
-              message: `The value must be ${schemaType.join(' or ')}`,
-            },
-          ]
-    }
-
-    return schemaType === 'null'
-      ? []
-      : [
-          {
-            path,
-            validation: 'required',
-            message: 'Required field',
-          },
-        ]
+  if (schemaType === 'null' && value === null) {
+    return []
   }
 
-  const valueType = typeof value
+  const valueType = value === null ? 'null' : typeof value
 
   if (Array.isArray(schemaType)) {
+    if (value === null && schemaType.includes('null')) {
+      return []
+    }
+
     for (const type of schemaType) {
       if (valueType === 'number' && type === 'integer' && Number.isInteger(value)) {
         return []
