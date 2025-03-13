@@ -5,7 +5,7 @@
  * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html Schema Composition}
  */
 
-import type { ValidationError } from '../errors'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
@@ -28,7 +28,7 @@ import { validateSchema } from './schema'
 export function validateAllOf(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.allOf || !Array.isArray(schema.allOf)) {
     return []
@@ -64,7 +64,7 @@ export function validateAllOf(
 export function validateAnyOf(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
     return []
@@ -104,7 +104,7 @@ export function validateAnyOf(
 export function validateOneOf(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
     return []
@@ -163,7 +163,7 @@ export function validateOneOf(
 export function validateNot(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.not === undefined) {
     return []

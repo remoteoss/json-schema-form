@@ -1,4 +1,4 @@
-import type { ValidationError } from '../errors'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { getSchemaType } from './schema'
 
@@ -19,7 +19,7 @@ import { getSchemaType } from './schema'
 export function validateNumber(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   const errors: ValidationError[] = []
   const schemaType = getSchemaType(schema)

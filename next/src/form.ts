@@ -129,15 +129,27 @@ function getSchemaAndValueAtPath(rootSchema: JsfSchema, rootValue: SchemaValue, 
           currentValue = currentValue[Number(segment)]
         }
       }
+      // Skip the 'allOf', 'anyOf', and 'oneOf' segments, the next segment will be the index
       else if (segment === 'allOf' && currentSchema.allOf) {
-        // Skip the 'allOf' segment, the next segment will be the index
         continue
       }
-      else if (currentSchema.allOf && !Number.isNaN(Number(segment))) {
-        // If we have a numeric segment and we're in an allOf context, get the subschema
+      else if (segment === 'anyOf' && currentSchema.anyOf) {
+        continue
+      }
+      else if (segment === 'oneOf' && currentSchema.oneOf) {
+        continue
+      }
+      // If we have we are in a composition context, get the subschema
+      else if (currentSchema.allOf || currentSchema.anyOf || currentSchema.oneOf) {
         const index = Number(segment)
-        if (index >= 0 && index < currentSchema.allOf.length) {
+        if (currentSchema.allOf && index >= 0 && index < currentSchema.allOf.length) {
           currentSchema = currentSchema.allOf[index]
+        }
+        else if (currentSchema.anyOf && index >= 0 && index < currentSchema.anyOf.length) {
+          currentSchema = currentSchema.anyOf[index]
+        }
+        else if (currentSchema.oneOf && index >= 0 && index < currentSchema.oneOf.length) {
+          currentSchema = currentSchema.oneOf[index]
         }
       }
     }

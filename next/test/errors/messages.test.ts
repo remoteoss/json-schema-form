@@ -330,6 +330,68 @@ describe('validation error messages', () => {
         age: 'You must be 18 or older',
       })
     })
+
+    it('allows overriding anyOf error messages', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          value: {
+            'anyOf': [
+              { type: 'string', maxLength: 5 },
+              { type: 'number', minimum: 0 },
+            ],
+            'x-jsf-errorMessage': {
+              anyOf: 'Please enter either a short text (max 5 chars) or a positive number',
+            },
+          },
+        },
+      }
+      const form = createHeadlessForm(schema)
+
+      const result = form.handleValidation({
+        value: -1, // neither a short string nor a positive number
+      })
+
+      expect(result.formErrors).toMatchObject({
+        value: 'Please enter either a short text (max 5 chars) or a positive number',
+      })
+    })
+
+    it('allows overriding oneOf error messages', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          value: {
+            'oneOf': [
+              { type: 'number', multipleOf: 5 },
+              { type: 'number', multipleOf: 3 },
+            ],
+            'x-jsf-errorMessage': {
+              oneOf: 'Number must be divisible by either 3 or 5, but not both',
+            },
+          },
+        },
+      }
+      const form = createHeadlessForm(schema)
+
+      // Test when no schema matches
+      const result1 = form.handleValidation({
+        value: 7,
+      })
+
+      expect(result1.formErrors).toMatchObject({
+        value: 'Number must be divisible by either 3 or 5, but not both',
+      })
+
+      // Test when multiple schemas match
+      const result2 = form.handleValidation({
+        value: 15,
+      })
+
+      expect(result2.formErrors).toMatchObject({
+        value: 'Number must be divisible by either 3 or 5, but not both',
+      })
+    })
   })
 
   describe('schema composition errors', () => {

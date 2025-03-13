@@ -1,4 +1,4 @@
-import type { ValidationError } from '../errors'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import { Format } from 'json-schema-typed/draft-2020-12'
 
 /**
@@ -182,7 +182,7 @@ const formatValidationFunctions: Record<Format, (value: string) => boolean> = {
 export function validateFormat(
   value: string,
   format: string,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   const errors: ValidationError[] = []
 

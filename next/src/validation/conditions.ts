@@ -1,4 +1,4 @@
-import type { ValidationError } from '../errors'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
@@ -6,7 +6,7 @@ export function validateCondition(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
   required: boolean,
-  path: string[],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.if === undefined) {
     return []

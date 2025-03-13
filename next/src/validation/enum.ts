@@ -1,4 +1,4 @@
-import type { ValidationError } from '../errors'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { deepEqual } from './util'
 
@@ -20,7 +20,7 @@ import { deepEqual } from './util'
 export function validateEnum(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.enum === undefined) {
     return []

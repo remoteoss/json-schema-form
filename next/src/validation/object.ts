@@ -1,4 +1,4 @@
-import type { ValidationError } from '../errors'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 import { isObjectValue } from './util'
@@ -16,7 +16,7 @@ import { isObjectValue } from './util'
 export function validateObject(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (typeof schema === 'object' && schema.properties && isObjectValue(value)) {
     const errors = []

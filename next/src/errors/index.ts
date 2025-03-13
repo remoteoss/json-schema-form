@@ -22,6 +22,8 @@ export type SchemaValidationErrorType =
    */
   | 'multipleOf' | 'maximum' | 'exclusiveMaximum' | 'minimum' | 'exclusiveMinimum'
 
+export type ValidationErrorPath = Array<string | number>
+
 /**
  * Validation error for schema
  */
@@ -38,7 +40,7 @@ export interface ValidationError {
    * ['address', 'street'] // nested field error
    * ['value', 'allOf', 0] // schema composition error
    */
-  path: (string | number)[]
+  path: ValidationErrorPath
   /**
    * The type of validation error
    * @example

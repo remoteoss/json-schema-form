@@ -1,4 +1,4 @@
-import type { ValidationError } from '../errors'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
@@ -45,7 +45,7 @@ export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[
 function validateType(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   const schemaType = getSchemaType(schema)
 
@@ -126,7 +126,7 @@ export function validateSchema(
   value: SchemaValue,
   schema: JsfSchema,
   required: boolean = false,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   // Handle undefined values and boolean schemas first
   if (value === undefined && required) {
