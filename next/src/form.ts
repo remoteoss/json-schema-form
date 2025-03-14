@@ -176,7 +176,7 @@ function applyCustomErrorMessages(errors: ValidationError[], schema: JsfSchema):
  * @param schema - The schema to validate against
  * @returns The validation result
  */
-function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOptions): ValidationResult {
+function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOptions = {}): ValidationResult {
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
@@ -202,8 +202,9 @@ export interface ValidationOptions {
   treatNullAsUndefined?: boolean
 }
 
-export interface CreateHeadlessFormOptions extends ValidationOptions {
+export interface CreateHeadlessFormOptions {
   initialValues?: SchemaValue
+  validationOptions?: ValidationOptions
 }
 
 function buildFields(params: { schema: JsfObjectSchema }): Field[] {
@@ -215,12 +216,12 @@ export function createHeadlessForm(
   schema: JsfObjectSchema,
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
-  const errors = validateSchema(options.initialValues, schema, options)
+  const errors = validateSchema(options.initialValues, schema, options.validationOptions)
   const validationResult = validationErrorsToFormErrors(errors)
   const isError = validationResult !== null
 
   const handleValidation = (value: SchemaValue) => {
-    const result = validate(value, schema, options)
+    const result = validate(value, schema, options.validationOptions)
     return result
   }
 
