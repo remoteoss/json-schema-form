@@ -56,11 +56,16 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
       return result
     }
 
-    // For allOf validation errors, show the error at the field level
-    const allOfIndex = path.indexOf('allOf')
-    if (allOfIndex !== -1) {
-      // Get the field path (everything before 'allOf')
-      const fieldPath = path.slice(0, allOfIndex)
+    // For allOf/anyOf/oneOf validation errors, show the error at the field level
+    const compositionKeywords = ['allOf', 'anyOf', 'oneOf']
+    const compositionIndex = compositionKeywords.reduce((index, keyword) => {
+      const keywordIndex = path.indexOf(keyword)
+      return keywordIndex !== -1 ? keywordIndex : index
+    }, -1)
+
+    if (compositionIndex !== -1) {
+      // Get the field path (everything before the composition keyword)
+      const fieldPath = path.slice(0, compositionIndex)
       let current = result
 
       // Process all segments except the last one (which will hold the message)
