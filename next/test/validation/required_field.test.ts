@@ -17,7 +17,7 @@ describe('required field validation', () => {
 
     // When the field is null, it should show "is required" message
     expect(form.handleValidation({ name: null })).toMatchObject({
-      formErrors: { name: 'Required field' },
+      formErrors: { name: 'The value must be a string' },
     })
 
     // When the field is a non-null invalid type, it should show the default type error
@@ -74,9 +74,9 @@ describe('required field validation', () => {
     }
     const form = createHeadlessForm(schema)
 
-    // When the field is null, it should use the custom required error message
+    // When the field is null, it should use the custom type error message
     expect(form.handleValidation({ name: null })).toMatchObject({
-      formErrors: { name: 'Custom required error message' },
+      formErrors: { name: 'Custom type error message' },
     })
 
     // When the field is undefined, it should show the custom required error message

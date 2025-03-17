@@ -6,6 +6,7 @@
  */
 
 import type { ValidationError, ValidationErrorPath } from '../errors'
+import type { ValidationOptions } from '../form'
 import type { JsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
@@ -28,6 +29,7 @@ import { validateSchema } from './schema'
 export function validateAllOf(
   value: SchemaValue,
   schema: JsfSchema,
+  options: ValidationOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.allOf || !Array.isArray(schema.allOf)) {
@@ -36,7 +38,7 @@ export function validateAllOf(
 
   for (let i = 0; i < schema.allOf.length; i++) {
     const subSchema = schema.allOf[i]
-    const errors = validateSchema(value, subSchema, false, [...path, 'allOf', i])
+    const errors = validateSchema(value, subSchema, options, false, [...path, 'allOf', i])
     if (errors.length > 0) {
       return errors
     }
@@ -64,6 +66,7 @@ export function validateAllOf(
 export function validateAnyOf(
   value: SchemaValue,
   schema: JsfSchema,
+  options: ValidationOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
@@ -71,7 +74,7 @@ export function validateAnyOf(
   }
 
   for (const subSchema of schema.anyOf) {
-    const errors = validateSchema(value, subSchema, false, path)
+    const errors = validateSchema(value, subSchema, options, false, path)
     if (errors.length === 0) {
       return []
     }
@@ -104,6 +107,7 @@ export function validateAnyOf(
 export function validateOneOf(
   value: SchemaValue,
   schema: JsfSchema,
+  options: ValidationOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
@@ -113,7 +117,7 @@ export function validateOneOf(
   let validCount = 0
 
   for (let i = 0; i < schema.oneOf.length; i++) {
-    const errors = validateSchema(value, schema.oneOf[i], false, path)
+    const errors = validateSchema(value, schema.oneOf[i], options, false, path)
     if (errors.length === 0) {
       validCount++
       if (validCount > 1) {
@@ -163,6 +167,7 @@ export function validateOneOf(
 export function validateNot(
   value: SchemaValue,
   schema: JsfSchema,
+  options: ValidationOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.not === undefined) {
@@ -175,7 +180,7 @@ export function validateNot(
       : []
   }
 
-  const notErrors = validateSchema(value, schema.not, false, path)
+  const notErrors = validateSchema(value, schema.not, options, false, path)
   return notErrors.length === 0
     ? [{ path, validation: 'not' }]
     : []

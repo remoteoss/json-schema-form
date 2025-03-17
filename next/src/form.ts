@@ -41,7 +41,7 @@ export interface ValidationResult {
  * Schema-level error
  * { '': 'The value must match at least one schema' }
  */
-function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[], _schema: NonBooleanJsfSchema, _value: SchemaValue): FormErrors | null {
+function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): FormErrors | null {
   if (errors.length === 0) {
     return null
   }
@@ -239,9 +239,9 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
  * @param schema - The schema to validate against
  * @returns The validation result
  */
-function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
+function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOptions = {}): ValidationResult {
   const result: ValidationResult = {}
-  const errors = validateSchema(value, schema)
+  const errors = validateSchema(value, schema, options)
 
   // Apply custom error messages before converting to form errors
   const errorsWithMessages = addErrorMessages(value, schema, errors)
@@ -256,8 +256,19 @@ function validate(value: SchemaValue, schema: JsfSchema): ValidationResult {
   return result
 }
 
-interface CreateHeadlessFormOptions {
+export interface ValidationOptions {
+  /**
+   * A null value will be treated as undefined.
+   * That means that when validating a null value, against a non-required field that is not of type 'null' or ['null']
+   * the validation will succeed instead of returning a type error.
+   * @default false
+   */
+  treatNullAsUndefined?: boolean
+}
+
+export interface CreateHeadlessFormOptions {
   initialValues?: SchemaValue
+  validationOptions?: ValidationOptions
 }
 
 function buildFields(params: { schema: JsfObjectSchema }): Field[] {
@@ -269,13 +280,13 @@ export function createHeadlessForm(
   schema: JsfObjectSchema,
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
-  const errors = validateSchema(options.initialValues, schema)
+  const errors = validateSchema(options.initialValues, schema, options.validationOptions)
   const errorsWithMessages = addErrorMessages(options.initialValues, schema, errors)
-  const validationResult = validationErrorsToFormErrors(errorsWithMessages, schema, options.initialValues)
+  const validationResult = validationErrorsToFormErrors(errorsWithMessages)
   const isError = validationResult !== null
 
   const handleValidation = (value: SchemaValue) => {
-    const result = validate(value, schema)
+    const result = validate(value, schema, options.validationOptions)
     return result
   }
 

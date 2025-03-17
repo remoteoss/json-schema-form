@@ -1,4 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
+import type { ValidationOptions } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
@@ -54,22 +55,17 @@ function validateType(
     return []
   }
 
-  // Handle null values specially
-  if (value === null) {
-    if (Array.isArray(schemaType)) {
-      return schemaType.includes('null')
-        ? []
-        : [{ path, validation: 'type' }]
-    }
-
-    return schemaType === 'null'
-      ? []
-      : [{ path, validation: 'required' }]
+  if (schemaType === 'null' && value === null) {
+    return []
   }
 
-  const valueType = typeof value
+  const valueType = value === null ? 'null' : typeof value
 
   if (Array.isArray(schemaType)) {
+    if (value === null && schemaType.includes('null')) {
+      return []
+    }
+
     for (const type of schemaType) {
       if (valueType === 'number' && type === 'integer' && Number.isInteger(value)) {
         return []
@@ -97,6 +93,7 @@ function validateType(
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
+ * @param options - The validation options
  * @param required - Whether the value is required
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
@@ -125,15 +122,17 @@ function validateType(
 export function validateSchema(
   value: SchemaValue,
   schema: JsfSchema,
+  options: ValidationOptions = {},
   required: boolean = false,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
-  // Handle undefined values and boolean schemas first
-  if (value === undefined && required) {
+  const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
+
+  if (valueIsUndefined && required) {
     return [{ path, validation: 'required' }]
   }
 
-  if (value === undefined) {
+  if (valueIsUndefined) {
     return []
   }
 
@@ -166,14 +165,14 @@ export function validateSchema(
   return [
     ...validateConst(value, schema, path),
     ...validateEnum(value, schema, path),
-    ...validateObject(value, schema, path),
+    ...validateObject(value, schema, options, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
-    ...validateCondition(value, schema, required, path),
-    ...validateNot(value, schema, path),
-    ...validateAllOf(value, schema, path),
-    ...validateAnyOf(value, schema, path),
-    ...validateOneOf(value, schema, path),
-    ...validateCondition(value, schema, required, path),
+    ...validateCondition(value, schema, options, required, path),
+    ...validateNot(value, schema, options, path),
+    ...validateAllOf(value, schema, options, path),
+    ...validateAnyOf(value, schema, options, path),
+    ...validateOneOf(value, schema, options, path),
+    ...validateCondition(value, schema, options, required, path),
   ]
 }
