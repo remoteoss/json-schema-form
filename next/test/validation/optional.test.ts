@@ -30,7 +30,6 @@ describe('treatNullAsUndefined', () => {
         {
           path: ['name'],
           validation: 'type',
-          message: 'The value must be a string',
         },
       ])
     })
@@ -86,7 +85,6 @@ describe('treatNullAsUndefined', () => {
         {
           path: ['name'],
           validation: 'required',
-          message: 'Required field',
         },
       ])
     })
@@ -106,7 +104,6 @@ describe('treatNullAsUndefined', () => {
         {
           path: ['name'],
           validation: 'required',
-          message: 'Required field',
         },
       ])
     })

@@ -1,5 +1,4 @@
-import type { ValidationError } from '../form'
-import type { SchemaValidationErrorType } from './schema'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import { Format } from 'json-schema-typed/draft-2020-12'
 
 /**
@@ -183,7 +182,7 @@ const formatValidationFunctions: Record<Format, (value: string) => boolean> = {
 export function validateFormat(
   value: string,
   format: string,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   const errors: ValidationError[] = []
 
@@ -194,14 +193,7 @@ export function validateFormat(
 
   const validateFn = formatValidationFunctions[format as Format]
   if (validateFn && !validateFn(value)) {
-    errors.push({
-      path,
-      validation: 'format' as SchemaValidationErrorType,
-      message:
-        format === 'email'
-          ? 'Please enter a valid email address'
-          : `Must be a valid ${format} format`,
-    })
+    errors.push({ path, validation: 'format' })
   }
 
   return errors

@@ -1,43 +1,16 @@
+import type { ValidationError } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
-import type { SchemaValidationErrorType } from './validation/schema'
+import { getErrorMessage } from './errors/messages'
 import { buildFieldObject } from './field/object'
 import { validateSchema } from './validation/schema'
+import { isObjectValue } from './validation/util'
 
 interface FormResult {
   fields: Field[]
   isError: boolean
   error: string | null
   handleValidation: (value: SchemaValue) => ValidationResult
-}
-
-/**
- * Validation error for schema
- */
-export interface ValidationError {
-  /**
-   * The path to the field that has the error
-   * - For field-level errors: array of field names (e.g., ['address', 'street'])
-   * - For schema-level errors: empty array []
-   * - For nested validations: full path to the field (e.g., ['address', 'street', 'number'])
-   * @example
-   * [] // schema-level error
-   * ['username'] // field-level error
-   * ['address', 'street'] // nested field error
-   */
-  path: string[]
-  /**
-   * The type of validation error
-   * @example
-   * 'required'
-   */
-  validation: SchemaValidationErrorType
-  /**
-   * The message of the validation error
-   * @example
-   * 'is required'
-   */
-  message: string
 }
 
 /**
@@ -68,18 +41,51 @@ export interface ValidationResult {
  * Schema-level error
  * { '': 'The value must match at least one schema' }
  */
-function validationErrorsToFormErrors(errors: ValidationError[]): FormErrors | null {
+function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): FormErrors | null {
   if (errors.length === 0) {
     return null
   }
 
   // Use a more functional approach with reduce
   return errors.reduce<FormErrors>((result, error) => {
-    const { path, message } = error
+    const { path } = error
 
     // Handle schema-level errors (empty path)
     if (path.length === 0) {
-      result[''] = message
+      result[''] = error.message
+      return result
+    }
+
+    // For allOf/anyOf/oneOf validation errors, show the error at the field level
+    const compositionKeywords = ['allOf', 'anyOf', 'oneOf']
+    const compositionIndex = compositionKeywords.reduce((index, keyword) => {
+      const keywordIndex = path.indexOf(keyword)
+      return keywordIndex !== -1 ? keywordIndex : index
+    }, -1)
+
+    if (compositionIndex !== -1) {
+      // Get the field path (everything before the composition keyword)
+      const fieldPath = path.slice(0, compositionIndex)
+      let current = result
+
+      // Process all segments except the last one (which will hold the message)
+      fieldPath.slice(0, -1).forEach((segment) => {
+        // If this segment doesn't exist yet or is currently a string (from a previous error),
+        // initialize it as an object
+        if (!(segment in current) || typeof current[segment] === 'string') {
+          current[segment] = {}
+        }
+
+        // Cast is safe because we just ensured it's an object
+        current = current[segment] as FormErrors
+      })
+
+      // Set the message at the field level
+      if (fieldPath.length > 0) {
+        const lastSegment = fieldPath[fieldPath.length - 1]
+        current[lastSegment] = error.message
+      }
+
       return result
     }
 
@@ -100,10 +106,72 @@ function validationErrorsToFormErrors(errors: ValidationError[]): FormErrors | n
 
     // Set the message at the final level
     const lastSegment = path[path.length - 1]
-    current[lastSegment] = message
+    current[lastSegment] = error.message
 
     return result
   }, {})
+}
+
+interface ValidationErrorWithMessage extends ValidationError {
+  message: string
+}
+
+function getSchemaAndValueAtPath(rootSchema: JsfSchema, rootValue: SchemaValue, path: (string | number)[]): { schema: JsfSchema, value: SchemaValue } {
+  let currentSchema = rootSchema
+  let currentValue = rootValue
+
+  for (const segment of path) {
+    if (typeof currentSchema === 'object' && currentSchema !== null) {
+      if (currentSchema.properties && currentSchema.properties[segment]) {
+        currentSchema = currentSchema.properties[segment]
+        if (isObjectValue(currentValue)) {
+          currentValue = currentValue[segment]
+        }
+      }
+      else if (currentSchema.items && typeof currentSchema.items !== 'boolean') {
+        currentSchema = currentSchema.items
+        if (Array.isArray(currentValue)) {
+          currentValue = currentValue[Number(segment)]
+        }
+      }
+      // Skip the 'allOf', 'anyOf', and 'oneOf' segments, the next segment will be the index
+      else if (segment === 'allOf' && currentSchema.allOf) {
+        continue
+      }
+      else if (segment === 'anyOf' && currentSchema.anyOf) {
+        continue
+      }
+      else if (segment === 'oneOf' && currentSchema.oneOf) {
+        continue
+      }
+      // If we have we are in a composition context, get the subschema
+      else if (currentSchema.allOf || currentSchema.anyOf || currentSchema.oneOf) {
+        const index = Number(segment)
+        if (currentSchema.allOf && index >= 0 && index < currentSchema.allOf.length) {
+          currentSchema = currentSchema.allOf[index]
+        }
+        else if (currentSchema.anyOf && index >= 0 && index < currentSchema.anyOf.length) {
+          currentSchema = currentSchema.anyOf[index]
+        }
+        else if (currentSchema.oneOf && index >= 0 && index < currentSchema.oneOf.length) {
+          currentSchema = currentSchema.oneOf[index]
+        }
+      }
+    }
+  }
+
+  return { schema: currentSchema, value: currentValue }
+}
+
+function addErrorMessages(rootValue: SchemaValue, rootSchema: JsfSchema, errors: ValidationError[]): ValidationErrorWithMessage[] {
+  return errors.map((error) => {
+    const { schema: errorSchema, value: errorValue } = getSchemaAndValueAtPath(rootSchema, rootValue, error.path)
+
+    return {
+      ...error,
+      message: getErrorMessage(errorSchema, errorValue, error.validation),
+    }
+  })
 }
 
 /**
@@ -112,7 +180,7 @@ function validationErrorsToFormErrors(errors: ValidationError[]): FormErrors | n
  * @param schema - The schema that contains custom error messages
  * @returns The validation errors with custom error messages applied
  */
-function applyCustomErrorMessages(errors: ValidationError[], schema: JsfSchema): ValidationError[] {
+function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: JsfSchema): ValidationErrorWithMessage[] {
   if (typeof schema !== 'object' || !schema || !errors.length) {
     return errors
   }
@@ -181,7 +249,8 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const errors = validateSchema(value, schema, options)
 
   // Apply custom error messages before converting to form errors
-  const processedErrors = applyCustomErrorMessages(errors, schema)
+  const errorsWithMessages = addErrorMessages(value, schema, errors)
+  const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
   const formErrors = validationErrorsToFormErrors(processedErrors)
 
@@ -217,7 +286,8 @@ export function createHeadlessForm(
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
   const errors = validateSchema(options.initialValues, schema, options.validationOptions)
-  const validationResult = validationErrorsToFormErrors(errors)
+  const errorsWithMessages = addErrorMessages(options.initialValues, schema, errors)
+  const validationResult = validationErrorsToFormErrors(errorsWithMessages)
   const isError = validationResult !== null
 
   const handleValidation = (value: SchemaValue) => {

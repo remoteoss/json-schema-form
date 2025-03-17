@@ -5,7 +5,8 @@
  * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html Schema Composition}
  */
 
-import type { ValidationError, ValidationOptions } from '../form'
+import type { ValidationError, ValidationErrorPath } from '../errors'
+import type { ValidationOptions } from '../form'
 import type { JsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
@@ -29,14 +30,15 @@ export function validateAllOf(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.allOf || !Array.isArray(schema.allOf)) {
     return []
   }
 
-  for (const subSchema of schema.allOf) {
-    const errors = validateSchema(value, subSchema, options, false, path)
+  for (let i = 0; i < schema.allOf.length; i++) {
+    const subSchema = schema.allOf[i]
+    const errors = validateSchema(value, subSchema, options, false, [...path, 'allOf', i])
     if (errors.length > 0) {
       return errors
     }
@@ -65,7 +67,7 @@ export function validateAnyOf(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
     return []
@@ -82,7 +84,6 @@ export function validateAnyOf(
     {
       path,
       validation: 'anyOf',
-      message: `The option "${value}" is not valid.`,
     },
   ]
 }
@@ -107,7 +108,7 @@ export function validateOneOf(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
     return []
@@ -130,7 +131,6 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: `The option "${value}" is not valid.`,
       },
     ]
   }
@@ -140,7 +140,6 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: `The option "${value}" is not valid.`,
       },
     ]
   }
@@ -169,7 +168,7 @@ export function validateNot(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.not === undefined) {
     return []
@@ -177,12 +176,12 @@ export function validateNot(
 
   if (typeof schema.not === 'boolean') {
     return schema.not
-      ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
+      ? [{ path, validation: 'not' }]
       : []
   }
 
   const notErrors = validateSchema(value, schema.not, options, false, path)
   return notErrors.length === 0
-    ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
+    ? [{ path, validation: 'not' }]
     : []
 }

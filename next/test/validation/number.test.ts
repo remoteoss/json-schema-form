@@ -21,7 +21,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'The value must be a number',
       },
     ])
 
@@ -29,7 +28,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'The value must be a number',
       },
     ])
 
@@ -37,7 +35,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'The value must be a number',
       },
     ])
   })
@@ -52,7 +49,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'The value must be a number',
       },
     ])
 
@@ -60,7 +56,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'type',
-        message: 'The value must be a number',
       },
     ])
   })
@@ -71,7 +66,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'minimum',
-        message: 'Must be greater or equal to 10',
       },
     ])
 
@@ -80,7 +74,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'maximum',
-        message: 'Must be smaller or equal to 10',
       },
     ])
 
@@ -89,7 +82,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'maximum',
-        message: 'Must be smaller or equal to 10',
       },
     ])
 
@@ -97,7 +89,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'minimum',
-        message: 'Must be greater or equal to 10',
       },
     ])
   })
@@ -108,7 +99,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMinimum',
-        message: 'Must be greater than 10',
       },
     ])
 
@@ -117,7 +107,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'Must be smaller than 10',
       },
     ])
 
@@ -130,7 +119,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'Must be smaller than 10',
       },
     ])
     expect(
@@ -139,7 +127,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMinimum',
-        message: 'Must be greater than 10',
       },
     ])
 
@@ -149,12 +136,10 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'Must be smaller than 10',
       },
       {
         path: [],
         validation: 'exclusiveMinimum',
-        message: 'Must be greater than 10',
       },
     ])
 
@@ -162,7 +147,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'exclusiveMaximum',
-        message: 'Must be smaller than 3',
       },
     ])
   })
@@ -175,7 +159,6 @@ describe('number validation', () => {
       {
         path: [],
         validation: 'multipleOf',
-        message: 'Must be a multiple of 5',
       },
     ])
   })

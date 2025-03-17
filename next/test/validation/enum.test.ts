@@ -15,7 +15,6 @@ describe('enum validation', () => {
       {
         path: [],
         validation: 'enum',
-        message: 'The option 4 is not valid.',
       },
     ])
   })
@@ -35,7 +34,6 @@ describe('enum validation', () => {
       {
         path: [],
         validation: 'enum',
-        message: 'The option {"foo":"baz"} is not valid.',
       },
     ])
     expect(validateSchema(1, schema)).toEqual([])
@@ -54,14 +52,12 @@ describe('enum validation', () => {
       {
         path: [],
         validation: 'enum',
-        message: 'The option "other" is not valid.',
       },
     ])
     expect(validateSchema({ foo: 'baz' }, schema)).toEqual([
       {
         path: [],
         validation: 'enum',
-        message: 'The option {"foo":"baz"} is not valid.',
       },
     ])
   })
