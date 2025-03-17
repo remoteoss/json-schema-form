@@ -18,12 +18,12 @@ export function getErrorMessage(
     case 'const':
       return `The only accepted value is ${JSON.stringify(schema.const)}`
     case 'enum':
-      return `The option "${JSON.stringify(value)}" is not valid.`
+      return `The option "${valueToString(value)}" is not valid.`
     // Schema composition
     case 'anyOf':
-      return `The option "${JSON.stringify(value)}" is not valid.`
+      return `The option "${valueToString(value)}" is not valid.`
     case 'oneOf':
-      return `The option "${JSON.stringify(value)}" is not valid.`
+      return `The option "${valueToString(value)}" is not valid.`
     case 'not':
       return 'The value must not satisfy the provided schema'
     // String validation
@@ -84,4 +84,11 @@ function getTypeErrorMessage(schemaType: JsfSchemaType | JsfSchemaType[] | undef
     default:
       return schemaType ? `The value must be ${schemaType}` : 'Invalid value'
   }
+}
+
+function valueToString(value: SchemaValue): string {
+  if (typeof value === 'string') {
+    return value
+  }
+  return JSON.stringify(value)
 }

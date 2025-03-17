@@ -72,7 +72,7 @@ describe('validation error messages', () => {
       })
 
       expect(result.formErrors).toMatchObject({
-        status: 'The option "\"invalid\"" is not valid.',
+        status: 'The option "invalid" is not valid.',
         priority: 'The option "4" is not valid.',
       })
     })
@@ -570,7 +570,7 @@ describe('validation error messages', () => {
 
       expect(result1.formErrors).toBe(undefined)
       expect(result2.formErrors).toMatchObject({
-        nested: 'The option "\"ab\"" is not valid.',
+        nested: 'The option "ab" is not valid.',
       })
     })
   })
