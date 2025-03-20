@@ -56,6 +56,16 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
       return result
     }
 
+    // For conditional validation branches (then/else), show the error at the field level
+    const thenElseIndex = Math.max(path.indexOf('then'), path.indexOf('else'))
+    if (thenElseIndex !== -1) {
+      const fieldName = path[thenElseIndex + 1]
+      if (fieldName) {
+        result[fieldName] = error.message
+        return result
+      }
+    }
+
     // For allOf/anyOf/oneOf validation errors, show the error at the field level
     const compositionKeywords = ['allOf', 'anyOf', 'oneOf']
     const compositionIndex = compositionKeywords.reduce((index, keyword) => {
@@ -64,29 +74,24 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
     }, -1)
 
     if (compositionIndex !== -1) {
-      // Get the field path (everything before the composition keyword)
+      // Get the field path before the composition keyword
       const fieldPath = path.slice(0, compositionIndex)
-      let current = result
-
-      // Process all segments except the last one (which will hold the message)
-      fieldPath.slice(0, -1).forEach((segment) => {
-        // If this segment doesn't exist yet or is currently a string (from a previous error),
-        // initialize it as an object
-        if (!(segment in current) || typeof current[segment] === 'string') {
-          current[segment] = {}
-        }
-
-        // Cast is safe because we just ensured it's an object
-        current = current[segment] as FormErrors
-      })
-
-      // Set the message at the field level
       if (fieldPath.length > 0) {
+        let current = result
+
+        // Process all segments except the last one
+        fieldPath.slice(0, -1).forEach((segment) => {
+          if (!(segment in current) || typeof current[segment] === 'string') {
+            current[segment] = {}
+          }
+          current = current[segment] as FormErrors
+        })
+
+        // Set the message at the last segment
         const lastSegment = fieldPath[fieldPath.length - 1]
         current[lastSegment] = error.message
+        return result
       }
-
-      return result
     }
 
     // For all other paths, recursively build the nested structure
@@ -100,8 +105,7 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
         current[segment] = {}
       }
 
-      // Cast is safe because we just ensured it's an object
-      current = current[segment] as FormErrors
+      current = current[segment]
     })
 
     // Set the message at the final level
@@ -142,6 +146,11 @@ function getSchemaAndValueAtPath(rootSchema: JsfSchema, rootValue: SchemaValue, 
         continue
       }
       else if (segment === 'oneOf' && currentSchema.oneOf) {
+        continue
+      }
+      // Skip the 'then' and 'else' segments, the next segment will be the field name
+      else if ((segment === 'then' || segment === 'else') && currentSchema[segment]) {
+        currentSchema = currentSchema[segment]
         continue
       }
       // If we have we are in a composition context, get the subschema
@@ -247,6 +256,8 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
 function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOptions = {}): ValidationResult {
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
+
+  // console.log(errors)
 
   // Apply custom error messages before converting to form errors
   const errorsWithMessages = addErrorMessages(value, schema, errors)

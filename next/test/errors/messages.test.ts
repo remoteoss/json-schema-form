@@ -573,5 +573,126 @@ describe('validation error messages', () => {
         nested: 'The option "ab" is not valid.',
       })
     })
+
+    it('shows conditional validation error messages', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          is_full_time: {
+            type: 'string',
+            oneOf: [{ const: 'yes' }, { const: 'no' }],
+          },
+          hours: {
+            type: 'number',
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                is_full_time: { const: 'yes' },
+              },
+              required: ['is_full_time'],
+            },
+            then: {
+              properties: {
+                hours: {
+                  minimum: 40,
+                },
+              },
+            },
+            else: {
+              properties: {
+                hours: {
+                  minimum: 10,
+                },
+              },
+            },
+          },
+        ],
+      }
+      const form = createHeadlessForm(schema)
+
+      // Test full-time validation
+      const result1 = form.handleValidation({
+        is_full_time: 'yes',
+        hours: 5,
+      })
+
+      expect(result1.formErrors).toMatchObject({
+        hours: 'Must be greater or equal to 40',
+      })
+
+      // Test part-time validation
+      const result2 = form.handleValidation({
+        is_full_time: 'no',
+        hours: 5,
+      })
+
+      expect(result2.formErrors).toMatchObject({
+        hours: 'Must be greater or equal to 10',
+      })
+    })
+
+    it('shows conditional validation error messages when only one of the then branch is present', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          num: { type: 'number' },
+          big: { type: 'string', enum: ['yes', 'no'] },
+        },
+        if: {
+          properties: {
+            big: { const: 'yes' },
+          },
+        },
+        then: {
+          properties: {
+            num: { minimum: 10 },
+          },
+        },
+      }
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({
+        num: 5,
+        big: 'yes',
+      }).formErrors).toMatchObject({
+        num: 'Must be greater or equal to 10',
+      })
+
+      expect(form.handleValidation({
+        num: 5,
+        big: 'no',
+      }).formErrors).toBeUndefined()
+    })
+
+    it('shows conditional validation error messages when only one of the else branch is present', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          num: { type: 'number' },
+          big: { type: 'string', enum: ['yes', 'no'] },
+        },
+        if: {
+          properties: {
+            big: { const: 'yes' },
+          },
+        },
+        else: {
+          properties: {
+            num: { minimum: 10 },
+          },
+        },
+      }
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({
+        num: 5,
+        big: 'no',
+      }).formErrors).toMatchObject({
+        num: 'Must be greater or equal to 10',
+      })
+    })
   })
 })
