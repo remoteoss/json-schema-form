@@ -1,37 +1,21 @@
 {
   "JSON Schema Test Suite": {
     "additionalProperties being false does not allow other properties": [
-      "no additional properties is valid",
-      "an additional property is invalid",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects",
-      "patternProperties are not additional properties"
+      "an additional property is invalid"
     ],
     "non-ASCII pattern with additionalProperties": [
-      "matching the pattern is valid",
       "not matching the pattern is invalid"
     ],
     "additionalProperties with schema": [
-      "no additional properties is valid",
-      "an additional valid property is valid",
       "an additional invalid property is invalid"
     ],
     "additionalProperties can exist by itself": [
-      "an additional valid property is valid",
       "an additional invalid property is invalid"
-    ],
-    "additionalProperties are allowed by default": [
-      "additional properties are allowed"
     ],
     "additionalProperties does not look in applicators": [
       "properties defined in allOf are not examined"
     ],
-    "additionalProperties with null valued instance properties": [
-      "allows null values"
-    ],
     "additionalProperties with propertyNames": [
-      "Valid against both keywords",
       "Valid against propertyNames, but not additionalProperties"
     ],
     "dependentSchemas with additionalProperties": [
@@ -39,874 +23,238 @@
       "additionalProperties can't see bar",
       "additionalProperties can't see bar even when foo2 is present"
     ],
-    "allOf": [
-      "allOf",
-      "mismatch second",
-      "mismatch first",
-      "wrong type"
-    ],
-    "allOf with base schema": [
-      "valid",
-      "mismatch base schema",
-      "mismatch first allOf",
-      "mismatch second allOf",
-      "mismatch both"
-    ],
-    "allOf simple types": [
-      "valid",
-      "mismatch one"
-    ],
-    "allOf with boolean schemas, all true": [
-      "any value is valid"
-    ],
-    "allOf with boolean schemas, some false": [
-      "any value is invalid"
-    ],
-    "allOf with boolean schemas, all false": [
-      "any value is invalid"
-    ],
-    "allOf with one empty schema": [
-      "any data is valid"
-    ],
-    "allOf with two empty schemas": [
-      "any data is valid"
-    ],
-    "allOf with the first empty schema": [
-      "number is valid",
-      "string is invalid"
-    ],
-    "allOf with the last empty schema": [
-      "number is valid",
-      "string is invalid"
-    ],
-    "nested allOf, to check validation semantics": [
-      "null is valid",
-      "anything non-null is invalid"
-    ],
-    "allOf combined with anyOf, oneOf": [
-      "allOf: false, anyOf: false, oneOf: false",
-      "allOf: false, anyOf: false, oneOf: true",
-      "allOf: false, anyOf: true, oneOf: false",
-      "allOf: false, anyOf: true, oneOf: true",
-      "allOf: true, anyOf: false, oneOf: false",
-      "allOf: true, anyOf: false, oneOf: true",
-      "allOf: true, anyOf: true, oneOf: false",
-      "allOf: true, anyOf: true, oneOf: true"
-    ],
     "Location-independent identifier": [
-      "match",
       "mismatch"
     ],
     "Location-independent identifier with absolute URI": [
-      "match",
       "mismatch"
     ],
     "Location-independent identifier with base URI change in subschema": [
-      "match",
       "mismatch"
     ],
     "same $anchor with different base uri": [
-      "$ref resolves to /$defs/A/allOf/1",
       "$ref does not resolve to /$defs/A/allOf/0"
     ],
-    "anyOf": [
-      "first anyOf valid",
-      "second anyOf valid",
-      "both anyOf valid",
-      "neither anyOf valid"
-    ],
-    "anyOf with base schema": [
-      "mismatch base schema",
-      "one anyOf valid",
-      "both anyOf invalid"
-    ],
-    "anyOf with boolean schemas, all true": [
-      "any value is valid"
-    ],
-    "anyOf with boolean schemas, some true": [
-      "any value is valid"
-    ],
-    "anyOf with boolean schemas, all false": [
-      "any value is invalid"
-    ],
-    "anyOf complex types": [
-      "first anyOf valid (complex)",
-      "second anyOf valid (complex)",
-      "both anyOf valid (complex)",
-      "neither anyOf valid (complex)"
-    ],
-    "anyOf with one empty schema": [
-      "string is valid",
-      "number is valid"
-    ],
-    "nested anyOf, to check validation semantics": [
-      "null is valid",
-      "anything non-null is invalid"
-    ],
-    "boolean schema 'true'": [
-      "number is valid",
-      "string is valid",
-      "boolean true is valid",
-      "boolean false is valid",
-      "null is valid",
-      "object is valid",
-      "empty object is valid",
-      "array is valid",
-      "empty array is valid"
-    ],
-    "boolean schema 'false'": [
-      "number is invalid",
-      "string is invalid",
-      "boolean true is invalid",
-      "boolean false is invalid",
-      "null is invalid",
-      "object is invalid",
-      "empty object is invalid",
-      "array is invalid",
+    "contains keyword validation": [
+      "array without items matching schema is invalid",
       "empty array is invalid"
     ],
-    "const validation": [
-      "same value is valid",
-      "another value is invalid",
-      "another type is invalid"
-    ],
-    "const with object": [
-      "same object is valid",
-      "same object with different property order is valid",
-      "another object is invalid",
-      "another type is invalid"
-    ],
-    "const with array": [
-      "same array is valid",
-      "another array item is invalid",
-      "array with additional items is invalid"
-    ],
-    "const with null": [
-      "null is valid",
-      "not null is invalid"
-    ],
-    "const with false does not match 0": [
-      "false is valid",
-      "integer zero is invalid",
-      "float zero is invalid"
-    ],
-    "const with true does not match 1": [
-      "true is valid",
-      "integer one is invalid",
-      "float one is invalid"
-    ],
-    "const with [false] does not match [0]": [
-      "[false] is valid",
-      "[0] is invalid",
-      "[0.0] is invalid"
-    ],
-    "const with [true] does not match [1]": [
-      "[true] is valid",
-      "[1] is invalid",
-      "[1.0] is invalid"
-    ],
-    "const with {\"a\": false} does not match {\"a\": 0}": [
-      "{\"a\": false} is valid",
-      "{\"a\": 0} is invalid",
-      "{\"a\": 0.0} is invalid"
-    ],
-    "const with {\"a\": true} does not match {\"a\": 1}": [
-      "{\"a\": true} is valid",
-      "{\"a\": 1} is invalid",
-      "{\"a\": 1.0} is invalid"
-    ],
-    "const with 0 does not match other zero-like types": [
-      "false is invalid",
-      "integer zero is valid",
-      "float zero is valid",
-      "empty object is invalid",
-      "empty array is invalid",
-      "empty string is invalid"
-    ],
-    "const with 1 does not match true": [
-      "true is invalid",
-      "integer one is valid",
-      "float one is valid"
-    ],
-    "const with -2.0 matches integer and float types": [
-      "integer -2 is valid",
-      "integer 2 is invalid",
-      "float -2.0 is valid",
-      "float 2.0 is invalid",
-      "float -2.00001 is invalid"
-    ],
-    "float and integers are equal up to 64-bit representation limits": [
-      "integer is valid",
-      "integer minus one is invalid",
-      "float is valid",
-      "float minus one is invalid"
-    ],
-    "nul characters in strings": [
-      "match string with nul",
-      "do not match string lacking nul",
-      "match string with nul",
-      "do not match string lacking nul"
-    ],
-    "contains keyword validation": [
-      "array with item matching schema (5) is valid",
-      "array with item matching schema (6) is valid",
-      "array with two items matching schema (5, 6) is valid",
-      "array without items matching schema is invalid",
-      "empty array is invalid",
-      "not array is valid"
-    ],
     "contains keyword with const keyword": [
-      "array with item 5 is valid",
-      "array with two items 5 is valid",
       "array without item 5 is invalid"
     ],
     "contains keyword with boolean schema true": [
-      "any non-empty array is valid",
       "empty array is invalid"
     ],
     "contains keyword with boolean schema false": [
       "any non-empty array is invalid",
-      "empty array is invalid",
-      "non-arrays are valid"
+      "empty array is invalid"
     ],
     "items + contains": [
       "matches items, does not match contains",
       "does not match items, matches contains",
-      "matches both items and contains",
       "matches neither items nor contains"
     ],
     "contains with false if subschema": [
-      "any non-empty array is valid",
       "empty array is invalid"
     ],
-    "contains with null instance elements": [
-      "allows null items"
-    ],
-    "validation of string-encoded content based on media type": [
-      "a valid JSON document",
-      "an invalid JSON document; validates true",
-      "ignores non-strings"
-    ],
-    "validation of binary string-encoding": [
-      "a valid base64 string",
-      "an invalid base64 string (% is not a valid character); validates true",
-      "ignores non-strings"
-    ],
-    "validation of binary-encoded media type documents": [
-      "a valid base64-encoded JSON document",
-      "a validly-encoded invalid JSON document; validates true",
-      "an invalid base64 string that is valid JSON; validates true",
-      "ignores non-strings"
-    ],
-    "validation of binary-encoded media type documents with schema": [
-      "a valid base64-encoded JSON document",
-      "another valid base64-encoded JSON document",
-      "an invalid base64-encoded JSON document; validates true",
-      "an empty object as a base64-encoded JSON document; validates true",
-      "an empty array as a base64-encoded JSON document",
-      "a validly-encoded invalid JSON document; validates true",
-      "an invalid base64 string that is valid JSON; validates true",
-      "ignores non-strings"
-    ],
-    "invalid type for default": [
-      "valid when property is specified",
-      "still valid when the invalid default is used"
-    ],
-    "invalid string value for default": [
-      "valid when property is specified",
-      "still valid when the invalid default is used"
-    ],
-    "the default keyword does not do anything if the property is missing": [
-      "an explicit property value is checked against maximum (passing)",
-      "an explicit property value is checked against maximum (failing)",
-      "missing properties are not filled in with the default"
-    ],
     "validate definition against metaschema": [
-      "valid definition schema",
       "invalid definition schema"
     ],
     "single dependency": [
-      "neither",
-      "nondependant",
-      "with dependency",
       "missing dependency",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects",
-      "valid",
-      "no dependency",
       "wrong type",
       "wrong type other",
-      "wrong type both",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects"
-    ],
-    "empty dependents": [
-      "empty object",
-      "object with one property",
-      "non-object is valid"
+      "wrong type both"
     ],
     "multiple dependents required": [
-      "neither",
-      "nondependants",
-      "with dependencies",
       "missing dependency",
       "missing other dependency",
       "missing both dependencies"
     ],
     "dependencies with escaped characters": [
-      "CRLF",
-      "quoted quotes",
       "CRLF missing dependent",
       "quoted quotes missing dependent",
-      "quoted tab",
       "quoted quote",
       "quoted tab invalid under dependent schema",
       "quoted quote invalid under dependent schema"
     ],
     "boolean subschemas": [
-      "object with property having schema true is valid",
       "object with property having schema false is invalid",
-      "object with both properties is invalid",
-      "empty object is valid"
+      "object with both properties is invalid"
     ],
     "dependent subschema incompatible with root": [
       "matches root",
-      "matches dependency",
-      "matches both",
-      "no dependency"
+      "matches both"
     ],
     "A $dynamicRef to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor": [
-      "An array of strings is valid",
-      "An array containing non-strings is invalid"
+      "An array of strings is valid"
     ],
     "A $dynamicRef to an $anchor in the same schema resource behaves like a normal $ref to an $anchor": [
-      "An array of strings is valid",
-      "An array containing non-strings is invalid"
+      "An array of strings is valid"
     ],
     "A $ref to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor": [
-      "An array of strings is valid",
-      "An array containing non-strings is invalid"
+      "An array of strings is valid"
     ],
     "A $dynamicRef resolves to the first $dynamicAnchor still in scope that is encountered when the schema is evaluated": [
-      "An array of strings is valid",
       "An array containing non-strings is invalid"
     ],
     "A $dynamicRef without anchor in fragment behaves identical to $ref": [
-      "An array of strings is invalid",
-      "An array of numbers is valid"
+      "An array of strings is invalid"
     ],
     "A $dynamicRef with intermediate scopes that don't include a matching $dynamicAnchor does not affect dynamic scope resolution": [
-      "An array of strings is valid",
       "An array containing non-strings is invalid"
     ],
-    "An $anchor with the same name as a $dynamicAnchor is not used for dynamic scope resolution": [
-      "Any array is valid"
-    ],
-    "A $dynamicRef without a matching $dynamicAnchor in the same schema resource behaves like a normal $ref to $anchor": [
-      "Any array is valid"
-    ],
-    "A $dynamicRef with a non-matching $dynamicAnchor in the same schema resource behaves like a normal $ref to $anchor": [
-      "Any array is valid"
-    ],
     "A $dynamicRef that initially resolves to a schema with a matching $dynamicAnchor resolves to the first $dynamicAnchor in the dynamic scope": [
-      "The recursive part is valid against the root",
       "The recursive part is not valid against the root"
     ],
-    "A $dynamicRef that initially resolves to a schema without a matching $dynamicAnchor behaves like a normal $ref to $anchor": [
-      "The recursive part doesn't need to validate against the root"
-    ],
     "multiple dynamic paths to the $dynamicRef keyword": [
-      "number list with number values",
       "number list with string values",
-      "string list with number values",
-      "string list with string values"
+      "string list with number values"
     ],
     "after leaving a dynamic scope, it is not used by a $dynamicRef": [
       "string matches /$defs/thingy, but the $dynamicRef does not stop here",
-      "first_scope is not in dynamic scope for the $dynamicRef",
-      "/then/$defs/thingy is the final stop for the $dynamicRef"
+      "first_scope is not in dynamic scope for the $dynamicRef"
     ],
     "strict-tree schema, guards against misspelled properties": [
-      "instance with misspelled field",
-      "instance with correct field"
+      "instance with misspelled field"
     ],
     "tests for implementation dynamic anchor and reference link": [
       "incorrect parent schema",
-      "incorrect extended schema",
-      "correct extended schema"
+      "incorrect extended schema"
     ],
     "$ref and $dynamicAnchor are independent of order - $defs first": [
       "incorrect parent schema",
-      "incorrect extended schema",
-      "correct extended schema"
+      "incorrect extended schema"
     ],
     "$ref and $dynamicAnchor are independent of order - $ref first": [
       "incorrect parent schema",
-      "incorrect extended schema",
-      "correct extended schema"
+      "incorrect extended schema"
     ],
     "$ref to $dynamicRef finds detached $dynamicAnchor": [
-      "number is valid",
       "non-number is invalid"
     ],
     "$dynamicRef points to a boolean schema": [
-      "follow $dynamicRef to a true schema",
       "follow $dynamicRef to a false schema"
     ],
     "$dynamicRef skips over intermediate resources - direct reference": [
-      "integer property passes",
       "string property fails"
     ],
-    "simple enum validation": [
-      "one of the enum is valid",
-      "something else is invalid"
-    ],
-    "heterogeneous enum validation": [
-      "one of the enum is valid",
-      "something else is invalid",
-      "objects are deep compared",
-      "valid object matches",
-      "extra properties in object is invalid"
-    ],
-    "heterogeneous enum-with-null validation": [
-      "null is valid",
-      "number is valid",
-      "something else is invalid"
-    ],
-    "enums in properties": [
-      "both properties are valid",
-      "wrong foo value",
-      "wrong bar value",
-      "missing optional property is valid",
-      "missing required property is invalid",
-      "missing all properties is invalid"
-    ],
-    "enum with escaped characters": [
-      "member 1 is valid",
-      "member 2 is valid",
-      "another string is invalid"
-    ],
-    "enum with false does not match 0": [
-      "false is valid",
-      "integer zero is invalid",
-      "float zero is invalid"
-    ],
-    "enum with [false] does not match [0]": [
-      "[false] is valid",
-      "[0] is invalid",
-      "[0.0] is invalid"
-    ],
-    "enum with true does not match 1": [
-      "true is valid",
-      "integer one is invalid",
-      "float one is invalid"
-    ],
-    "enum with [true] does not match [1]": [
-      "[true] is valid",
-      "[1] is invalid",
-      "[1.0] is invalid"
-    ],
-    "enum with 0 does not match false": [
-      "false is invalid",
-      "integer zero is valid",
-      "float zero is valid"
-    ],
-    "enum with [0] does not match [false]": [
-      "[false] is invalid",
-      "[0] is valid",
-      "[0.0] is valid"
-    ],
-    "enum with 1 does not match true": [
-      "true is invalid",
-      "integer one is valid",
-      "float one is valid"
-    ],
-    "enum with [1] does not match [true]": [
-      "[true] is invalid",
-      "[1] is valid",
-      "[1.0] is valid"
-    ],
-    "exclusiveMaximum validation": [
-      "below the exclusiveMaximum is valid",
-      "boundary point is invalid",
-      "above the exclusiveMaximum is invalid",
-      "ignores non-numbers"
-    ],
-    "exclusiveMinimum validation": [
-      "above the exclusiveMinimum is valid",
-      "boundary point is invalid",
-      "below the exclusiveMinimum is invalid",
-      "ignores non-numbers"
-    ],
     "email format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid email string is only an annotation by default"
     ],
     "idn-email format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid idn-email string is only an annotation by default"
     ],
     "regex format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid regex string is only an annotation by default"
     ],
     "ipv4 format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid ipv4 string is only an annotation by default"
     ],
     "ipv6 format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid ipv6 string is only an annotation by default"
     ],
-    "idn-hostname format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
-      "invalid idn-hostname string is only an annotation by default"
-    ],
     "hostname format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid hostname string is only an annotation by default"
     ],
     "date format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid date string is only an annotation by default"
     ],
-    "date-time format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
-      "invalid date-time string is only an annotation by default"
-    ],
     "time format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid time string is only an annotation by default"
     ],
     "json-pointer format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid json-pointer string is only an annotation by default"
     ],
     "relative-json-pointer format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid relative-json-pointer string is only an annotation by default"
     ],
     "iri format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid iri string is only an annotation by default"
     ],
-    "iri-reference format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
-      "invalid iri-reference string is only an annotation by default"
-    ],
     "uri format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid uri string is only an annotation by default"
     ],
-    "uri-reference format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
-      "invalid uri-reference string is only an annotation by default"
-    ],
     "uri-template format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid uri-template string is only an annotation by default"
     ],
     "uuid format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid uuid string is only an annotation by default"
     ],
     "duration format": [
-      "all string formats ignore integers",
-      "all string formats ignore floats",
-      "all string formats ignore objects",
-      "all string formats ignore arrays",
-      "all string formats ignore booleans",
-      "all string formats ignore nulls",
       "invalid duration string is only an annotation by default"
     ],
-    "ignore if without then or else": [
-      "valid when valid against lone if",
-      "valid when invalid against lone if"
-    ],
-    "ignore then without if": [
-      "valid when valid against lone then",
-      "valid when invalid against lone then"
-    ],
-    "ignore else without if": [
-      "valid when valid against lone else",
-      "valid when invalid against lone else"
-    ],
-    "if and then without else": [
-      "valid through then",
-      "invalid through then",
-      "valid when if test fails"
-    ],
-    "if and else without then": [
-      "valid when if test passes",
-      "valid through else",
-      "invalid through else"
-    ],
-    "validate against correct branch, then vs else": [
-      "valid through then",
-      "invalid through then",
-      "valid through else",
-      "invalid through else"
-    ],
-    "non-interference across combined schemas": [
-      "valid, but would have been invalid through then",
-      "valid, but would have been invalid through else"
-    ],
-    "if with boolean schema true": [
-      "boolean schema true in if always chooses the then path (valid)",
-      "boolean schema true in if always chooses the then path (invalid)"
-    ],
-    "if with boolean schema false": [
-      "boolean schema false in if always chooses the else path (invalid)",
-      "boolean schema false in if always chooses the else path (valid)"
-    ],
-    "if appears at the end when serialized (keyword processing sequence)": [
-      "yes redirects to then and passes",
-      "other redirects to else and passes",
-      "no redirects to then and fails",
-      "invalid redirects to else and fails"
-    ],
     "evaluating the same schema location against the same data location twice is not a sign of an infinite loop": [
-      "passing case",
       "failing case"
     ],
     "a schema given for items": [
-      "valid items",
-      "wrong type of items",
-      "ignores non-arrays",
-      "JavaScript pseudo-array is valid"
-    ],
-    "items with boolean schema (true)": [
-      "any array is valid",
-      "empty array is valid"
+      "wrong type of items"
     ],
     "items with boolean schema (false)": [
-      "any non-empty array is invalid",
-      "empty array is valid"
+      "any non-empty array is invalid"
     ],
     "items and subitems": [
       "valid items",
-      "too many items",
-      "too many sub-items",
-      "wrong item",
-      "wrong sub-item",
       "fewer items is valid"
     ],
     "nested items": [
-      "valid nested array",
-      "nested array with invalid type",
-      "not deep enough"
+      "valid nested array"
     ],
     "prefixItems with no additional items allowed": [
-      "empty array",
-      "fewer number of items present (1)",
-      "fewer number of items present (2)",
-      "equal number of items present",
       "additional items are not permitted"
     ],
     "items does not look in applicators, valid case": [
-      "prefixItems in allOf does not constrain items, invalid case",
-      "prefixItems in allOf does not constrain items, valid case"
+      "prefixItems in allOf does not constrain items, invalid case"
     ],
     "prefixItems validation adjusts the starting index for items": [
-      "valid items",
       "wrong type of second item"
     ],
     "items with heterogeneous array": [
-      "heterogeneous invalid instance",
-      "valid instance"
-    ],
-    "items with null instance elements": [
-      "allows null elements"
-    ],
-    "maxContains without contains is ignored": [
-      "one item valid against lone maxContains",
-      "two items still valid against lone maxContains"
+      "heterogeneous invalid instance"
     ],
     "maxContains with contains": [
       "empty data",
-      "all elements match, valid maxContains",
       "all elements match, invalid maxContains",
-      "some elements match, valid maxContains",
       "some elements match, invalid maxContains"
     ],
     "maxContains with contains, value with a decimal": [
-      "one element matches, valid maxContains",
       "too many elements match, invalid maxContains"
     ],
     "minContains < maxContains": [
       "actual < minContains < maxContains",
-      "minContains < actual < maxContains",
       "minContains < maxContains < actual"
     ],
     "maxItems validation": [
-      "shorter is valid",
-      "exact length is valid",
-      "too long is invalid",
-      "ignores non-arrays"
-    ],
-    "maxItems validation with a decimal": [
-      "shorter is valid",
       "too long is invalid"
     ],
-    "maxLength validation": [
-      "shorter is valid",
-      "exact length is valid",
-      "too long is invalid",
-      "ignores non-strings",
-      "two graphemes is long enough"
-    ],
-    "maxLength validation with a decimal": [
-      "shorter is valid",
+    "maxItems validation with a decimal": [
       "too long is invalid"
     ],
     "maxProperties validation": [
-      "shorter is valid",
-      "exact length is valid",
-      "too long is invalid",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects"
+      "too long is invalid"
     ],
     "maxProperties validation with a decimal": [
-      "shorter is valid",
       "too long is invalid"
     ],
     "maxProperties = 0 means the object is empty": [
-      "no properties is valid",
       "one property is invalid"
-    ],
-    "maximum validation": [
-      "below the maximum is valid",
-      "boundary point is valid",
-      "above the maximum is invalid",
-      "ignores non-numbers"
-    ],
-    "maximum validation with unsigned integer": [
-      "below the maximum is invalid",
-      "boundary point integer is valid",
-      "boundary point float is valid",
-      "above the maximum is invalid"
-    ],
-    "minContains without contains is ignored": [
-      "one item valid against lone minContains",
-      "zero items still valid against lone minContains"
     ],
     "minContains=1 with contains": [
       "empty data",
-      "no elements match",
-      "single element matches, valid minContains",
-      "some elements match, valid minContains",
-      "all elements match, valid minContains"
+      "no elements match"
     ],
     "minContains=2 with contains": [
       "empty data",
       "all elements match, invalid minContains",
-      "some elements match, invalid minContains",
-      "all elements match, valid minContains (exactly as needed)",
-      "all elements match, valid minContains (more than needed)",
-      "some elements match, valid minContains"
+      "some elements match, invalid minContains"
     ],
     "minContains=2 with contains with a decimal value": [
-      "one element matches, invalid minContains",
-      "both elements match, valid minContains"
+      "one element matches, invalid minContains"
     ],
     "maxContains = minContains": [
       "empty data",
       "all elements match, invalid minContains",
-      "all elements match, invalid maxContains",
-      "all elements match, valid maxContains and minContains"
+      "all elements match, invalid maxContains"
     ],
     "maxContains < minContains": [
       "empty data",
@@ -914,857 +262,352 @@
       "invalid maxContains",
       "invalid maxContains and minContains"
     ],
-    "minContains = 0": [
-      "empty data",
-      "minContains = 0 makes contains always pass"
-    ],
     "minContains = 0 with maxContains": [
-      "empty data",
-      "not more than maxContains",
       "too many"
     ],
     "minItems validation": [
-      "longer is valid",
-      "exact length is valid",
-      "too short is invalid",
-      "ignores non-arrays"
-    ],
-    "minItems validation with a decimal": [
-      "longer is valid",
       "too short is invalid"
     ],
-    "minLength validation": [
-      "longer is valid",
-      "exact length is valid",
-      "too short is invalid",
-      "ignores non-strings",
-      "one grapheme is not long enough"
-    ],
-    "minLength validation with a decimal": [
-      "longer is valid",
+    "minItems validation with a decimal": [
       "too short is invalid"
     ],
     "minProperties validation": [
-      "longer is valid",
-      "exact length is valid",
-      "too short is invalid",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects"
-    ],
-    "minProperties validation with a decimal": [
-      "longer is valid",
       "too short is invalid"
     ],
-    "minimum validation": [
-      "above the minimum is valid",
-      "boundary point is valid",
-      "below the minimum is invalid",
-      "ignores non-numbers"
-    ],
-    "minimum validation with signed integer": [
-      "negative above the minimum is valid",
-      "positive above the minimum is valid",
-      "boundary point is valid",
-      "boundary point with float is valid",
-      "float below the minimum is invalid",
-      "int below the minimum is invalid",
-      "ignores non-numbers"
-    ],
-    "by int": [
-      "int by int",
-      "int by int fail",
-      "ignores non-numbers"
-    ],
-    "by number": [
-      "zero is multiple of anything",
-      "4.5 is multiple of 1.5",
-      "35 is not multiple of 1.5"
+    "minProperties validation with a decimal": [
+      "too short is invalid"
     ],
     "by small number": [
-      "0.0075 is multiple of 0.0001",
-      "0.00751 is not multiple of 0.0001"
-    ],
-    "float division = inf": [
-      "always invalid, but naive implementations may raise an overflow error"
+      "0.0075 is multiple of 0.0001"
     ],
     "small multiple of large integer": [
       "any integer is a multiple of 1e-8"
     ],
-    "not": [
-      "allowed",
-      "disallowed"
-    ],
-    "not multiple types": [
-      "valid",
-      "mismatch",
-      "other mismatch"
-    ],
-    "not more complex schema": [
-      "match",
-      "other match",
-      "mismatch"
-    ],
-    "forbidden property": [
-      "property present",
-      "property absent"
-    ],
-    "forbid everything with empty schema": [
-      "number is invalid",
-      "string is invalid",
-      "boolean true is invalid",
-      "boolean false is invalid",
-      "null is invalid",
-      "object is invalid",
-      "empty object is invalid",
-      "array is invalid",
-      "empty array is invalid"
-    ],
-    "forbid everything with boolean schema true": [
-      "number is invalid",
-      "string is invalid",
-      "boolean true is invalid",
-      "boolean false is invalid",
-      "null is invalid",
-      "object is invalid",
-      "empty object is invalid",
-      "array is invalid",
-      "empty array is invalid"
-    ],
-    "allow everything with boolean schema false": [
-      "number is valid",
-      "string is valid",
-      "boolean true is valid",
-      "boolean false is valid",
-      "null is valid",
-      "object is valid",
-      "empty object is valid",
-      "array is valid",
-      "empty array is valid"
-    ],
-    "double negation": [
-      "any value is valid"
-    ],
     "collect annotations inside a 'not', even if collection is disabled": [
-      "unevaluated property",
-      "annotations are still collected inside a 'not'"
-    ],
-    "oneOf": [
-      "first oneOf valid",
-      "second oneOf valid",
-      "both oneOf valid",
-      "neither oneOf valid"
-    ],
-    "oneOf with base schema": [
-      "mismatch base schema",
-      "one oneOf valid",
-      "both oneOf valid"
-    ],
-    "oneOf with boolean schemas, all true": [
-      "any value is invalid"
-    ],
-    "oneOf with boolean schemas, one true": [
-      "any value is valid"
-    ],
-    "oneOf with boolean schemas, more than one true": [
-      "any value is invalid"
-    ],
-    "oneOf with boolean schemas, all false": [
-      "any value is invalid"
-    ],
-    "oneOf complex types": [
-      "first oneOf valid (complex)",
-      "second oneOf valid (complex)",
-      "both oneOf valid (complex)",
-      "neither oneOf valid (complex)"
-    ],
-    "oneOf with empty schema": [
-      "one valid - valid",
-      "both valid - invalid"
-    ],
-    "oneOf with required": [
-      "both invalid - invalid",
-      "first valid - valid",
-      "second valid - valid",
-      "both valid - invalid"
-    ],
-    "oneOf with missing optional property": [
-      "first oneOf valid",
-      "second oneOf valid",
-      "both oneOf valid",
-      "neither oneOf valid"
-    ],
-    "nested oneOf, to check validation semantics": [
-      "null is valid",
-      "anything non-null is invalid"
-    ],
-    "pattern validation": [
-      "a matching pattern is valid",
-      "a non-matching pattern is invalid",
-      "ignores booleans",
-      "ignores integers",
-      "ignores floats",
-      "ignores objects",
-      "ignores arrays",
-      "ignores null"
-    ],
-    "pattern is not anchored": [
-      "matches a substring"
+      "unevaluated property"
     ],
     "patternProperties validates properties matching a regex": [
-      "a single valid match is valid",
-      "multiple valid matches is valid",
       "a single invalid match is invalid",
-      "multiple invalid matches is invalid",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects"
+      "multiple invalid matches is invalid"
     ],
     "multiple simultaneous patternProperties are validated": [
-      "a single valid match is valid",
-      "a simultaneous match is valid",
-      "multiple matches is valid",
       "an invalid due to one is invalid",
       "an invalid due to the other is invalid",
       "an invalid due to both is invalid"
     ],
     "regexes are not anchored by default and are case sensitive": [
-      "non recognized members are ignored",
       "recognized members are accounted for",
-      "regexes are case sensitive",
       "regexes are case sensitive, 2"
     ],
     "patternProperties with boolean schemas": [
-      "object with property matching schema true is valid",
       "object with property matching schema false is invalid",
       "object with both properties is invalid",
-      "object with a property matching both true and false is invalid",
-      "empty object is valid"
-    ],
-    "patternProperties with null valued instance properties": [
-      "allows null values"
+      "object with a property matching both true and false is invalid"
     ],
     "a schema given for prefixItems": [
-      "correct types",
-      "wrong types",
-      "incomplete array of items",
-      "array with additional items",
-      "empty array",
-      "JavaScript pseudo-array is valid"
+      "wrong types"
     ],
     "prefixItems with boolean schemas": [
-      "array with one item is valid",
-      "array with two items is invalid",
-      "empty array is valid"
-    ],
-    "additional items are allowed by default": [
-      "only the first item is validated"
-    ],
-    "prefixItems with null instance elements": [
-      "allows null elements"
-    ],
-    "object properties validation": [
-      "both properties present and valid is valid",
-      "one property invalid is invalid",
-      "both properties invalid is invalid",
-      "doesn't invalidate other properties",
-      "ignores arrays",
-      "ignores other non-objects"
+      "array with two items is invalid"
     ],
     "properties, patternProperties, additionalProperties interaction": [
       "property validates property",
-      "property invalidates property",
-      "patternProperty invalidates property",
-      "patternProperty validates nonproperty",
       "patternProperty invalidates nonproperty",
       "additionalProperty ignores property",
-      "additionalProperty validates others",
       "additionalProperty invalidates others"
     ],
-    "properties with boolean schema": [
-      "no property present is valid",
-      "only 'true' property present is valid",
-      "only 'false' property present is invalid",
-      "both properties present is invalid"
-    ],
-    "properties with escaped characters": [
-      "object with all numbers is valid",
-      "object with strings is invalid"
-    ],
-    "properties with null valued instance properties": [
-      "allows null values"
-    ],
     "properties whose names are Javascript object property names": [
-      "ignores arrays",
-      "ignores other non-objects",
-      "none of the properties mentioned",
-      "__proto__ not valid",
-      "toString not valid",
-      "constructor not valid",
-      "all present and valid"
+      "none of the properties mentioned"
     ],
     "propertyNames validation": [
-      "all property names valid",
-      "some property names invalid",
-      "object without properties is valid",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects"
-    ],
-    "propertyNames with boolean schema true": [
-      "object with any properties is valid",
-      "empty object is valid"
+      "some property names invalid"
     ],
     "propertyNames with boolean schema false": [
-      "object with any properties is invalid",
-      "empty object is valid"
+      "object with any properties is invalid"
     ],
     "root pointer ref": [
-      "match",
-      "recursive match",
       "mismatch",
       "recursive mismatch"
     ],
     "relative pointer ref to object": [
-      "match",
       "mismatch"
     ],
     "relative pointer ref to array": [
-      "match array",
       "mismatch array"
     ],
     "escaped pointer ref": [
       "slash invalid",
       "tilde invalid",
-      "percent invalid",
-      "slash valid",
-      "tilde valid",
-      "percent valid"
+      "percent invalid"
     ],
     "nested refs": [
-      "nested ref valid",
       "nested ref invalid"
     ],
     "ref applies alongside sibling keywords": [
-      "ref valid, maxItems valid",
       "ref valid, maxItems invalid",
       "ref invalid"
     ],
     "remote ref, containing refs itself": [
-      "remote ref valid",
       "remote ref invalid"
     ],
-    "property named $ref that is not a reference": [
-      "property named $ref valid",
-      "property named $ref invalid"
-    ],
     "property named $ref, containing an actual $ref": [
-      "property named $ref valid",
       "property named $ref invalid"
-    ],
-    "$ref to boolean schema true": [
-      "any value is valid"
     ],
     "$ref to boolean schema false": [
       "any value is invalid"
     ],
     "Recursive references between schemas": [
-      "valid tree",
-      "invalid tree"
+      "valid tree"
     ],
     "refs with quote": [
-      "object with numbers is valid",
       "object with strings is invalid"
     ],
     "ref creates new scope when adjacent to keywords": [
       "referenced subschema doesn't see annotations from properties"
     ],
-    "naive replacement of $ref with its destination is not correct": [
-      "do not evaluate the $ref inside the enum, matching any string",
-      "do not evaluate the $ref inside the enum, definition exact match",
-      "match the enum exactly"
-    ],
     "refs with relative uris and defs": [
       "invalid on inner field",
-      "invalid on outer field",
-      "valid on both fields"
+      "invalid on outer field"
     ],
     "relative refs with absolute uris and defs": [
       "invalid on inner field",
-      "invalid on outer field",
-      "valid on both fields"
+      "invalid on outer field"
     ],
     "$id must be resolved against nearest parent, not just immediate parent": [
-      "number is valid",
       "non-number is invalid"
     ],
     "order of evaluation: $id and $ref": [
-      "data is valid against first definition",
       "data is invalid against first definition"
     ],
     "order of evaluation: $id and $anchor and $ref": [
-      "data is valid against first definition",
       "data is invalid against first definition"
     ],
     "simple URN base URI with $ref via the URN": [
-      "valid under the URN IDed schema",
       "invalid under the URN IDed schema"
     ],
     "simple URN base URI with JSON pointer": [
-      "a string is valid",
       "a non-string is invalid"
     ],
     "URN base URI with NSS": [
-      "a string is valid",
       "a non-string is invalid"
     ],
     "URN base URI with r-component": [
-      "a string is valid",
       "a non-string is invalid"
     ],
     "URN base URI with q-component": [
-      "a string is valid",
       "a non-string is invalid"
     ],
     "URN base URI with URN and JSON pointer ref": [
-      "a string is valid",
       "a non-string is invalid"
     ],
     "URN base URI with URN and anchor ref": [
-      "a string is valid",
       "a non-string is invalid"
     ],
     "URN ref with nested pointer ref": [
-      "a string is valid",
       "a non-string is invalid"
     ],
     "ref to if": [
-      "a non-integer is invalid due to the $ref",
-      "an integer is valid"
+      "a non-integer is invalid due to the $ref"
     ],
     "ref to then": [
-      "a non-integer is invalid due to the $ref",
-      "an integer is valid"
+      "a non-integer is invalid due to the $ref"
     ],
     "ref to else": [
-      "a non-integer is invalid due to the $ref",
-      "an integer is valid"
+      "a non-integer is invalid due to the $ref"
     ],
     "ref with absolute-path-reference": [
-      "a string is valid",
       "an integer is invalid"
     ],
     "$id with file URI still resolves pointers - *nix": [
-      "number is valid",
       "non-number is invalid"
     ],
     "$id with file URI still resolves pointers - windows": [
-      "number is valid",
       "non-number is invalid"
     ],
     "empty tokens in $ref json-pointer": [
-      "number is valid",
       "non-number is invalid"
     ],
     "remote ref": [
-      "remote ref valid",
       "remote ref invalid"
     ],
     "fragment within remote ref": [
-      "remote fragment valid",
       "remote fragment invalid"
     ],
     "anchor within remote ref": [
-      "remote anchor valid",
       "remote anchor invalid"
     ],
     "ref within remote ref": [
-      "ref within ref valid",
       "ref within ref invalid"
     ],
     "base URI change": [
-      "base URI change ref valid",
       "base URI change ref invalid"
     ],
     "base URI change - change folder": [
-      "number is valid",
       "string is invalid"
     ],
     "base URI change - change folder in subschema": [
-      "number is valid",
       "string is invalid"
     ],
     "root ref in remote ref": [
-      "string is valid",
-      "null is valid",
       "object is invalid"
     ],
     "remote ref with ref to defs": [
-      "invalid",
-      "valid"
+      "invalid"
     ],
     "Location-independent identifier in remote ref": [
-      "integer is valid",
       "string is invalid"
     ],
     "retrieved nested refs resolve relative to their URI not $id": [
-      "number is invalid",
-      "string is valid"
+      "number is invalid"
     ],
     "remote HTTP ref with different $id": [
-      "number is invalid",
-      "string is valid"
+      "number is invalid"
     ],
     "remote HTTP ref with different URN $id": [
-      "number is invalid",
-      "string is valid"
+      "number is invalid"
     ],
     "remote HTTP ref with nested absolute ref": [
-      "number is invalid",
-      "string is valid"
+      "number is invalid"
     ],
     "$ref to $ref finds detached $anchor": [
-      "number is valid",
       "non-number is invalid"
     ],
     "required validation": [
-      "present required property is valid",
-      "non-present required property is invalid",
-      "ignores arrays",
-      "ignores strings",
-      "ignores other non-objects"
-    ],
-    "required default validation": [
-      "not required by default"
-    ],
-    "required with empty array": [
-      "property not required"
-    ],
-    "required with escaped characters": [
-      "object with all properties present is valid",
-      "object with some properties missing is invalid"
+      "ignores arrays"
     ],
     "required properties whose names are Javascript object property names": [
-      "ignores arrays",
-      "ignores other non-objects",
       "none of the properties mentioned",
       "__proto__ present",
       "toString present",
-      "constructor present",
-      "all present"
-    ],
-    "integer type matches integers": [
-      "an integer is an integer",
-      "a float with zero fractional part is an integer",
-      "a float is not an integer",
-      "a string is not an integer",
-      "a string is still not an integer, even if it looks like one",
-      "an object is not an integer",
-      "an array is not an integer",
-      "a boolean is not an integer",
-      "null is not an integer"
-    ],
-    "number type matches numbers": [
-      "an integer is a number",
-      "a float with zero fractional part is a number (and an integer)",
-      "a float is a number",
-      "a string is not a number",
-      "a string is still not a number, even if it looks like one",
-      "an object is not a number",
-      "an array is not a number",
-      "a boolean is not a number",
-      "null is not a number"
-    ],
-    "string type matches strings": [
-      "1 is not a string",
-      "a float is not a string",
-      "a string is a string",
-      "a string is still a string, even if it looks like a number",
-      "an empty string is still a string",
-      "an object is not a string",
-      "an array is not a string",
-      "a boolean is not a string",
-      "null is not a string"
+      "constructor present"
     ],
     "object type matches objects": [
-      "an integer is not an object",
-      "a float is not an object",
-      "a string is not an object",
-      "an object is an object",
-      "an array is not an object",
-      "a boolean is not an object",
-      "null is not an object"
+      "an array is not an object"
     ],
     "array type matches arrays": [
-      "an integer is not an array",
-      "a float is not an array",
-      "a string is not an array",
-      "an object is not an array",
-      "an array is an array",
-      "a boolean is not an array",
-      "null is not an array"
-    ],
-    "boolean type matches booleans": [
-      "an integer is not a boolean",
-      "zero is not a boolean",
-      "a float is not a boolean",
-      "a string is not a boolean",
-      "an empty string is not a boolean",
-      "an object is not a boolean",
-      "an array is not a boolean",
-      "true is a boolean",
-      "false is a boolean",
-      "null is not a boolean"
-    ],
-    "null type matches only the null object": [
-      "an integer is not null",
-      "a float is not null",
-      "zero is not null",
-      "a string is not null",
-      "an empty string is not null",
-      "an object is not null",
-      "an array is not null",
-      "true is not null",
-      "false is not null",
-      "null is null"
-    ],
-    "multiple types can be specified in an array": [
-      "an integer is valid",
-      "a string is valid",
-      "a float is invalid",
-      "an object is invalid",
-      "an array is invalid",
-      "a boolean is invalid",
-      "null is invalid"
-    ],
-    "type as array with one item": [
-      "string is valid",
-      "number is invalid"
-    ],
-    "type: array or object": [
-      "array is valid",
-      "object is valid",
-      "number is invalid",
-      "string is invalid",
-      "null is invalid"
-    ],
-    "type: array, object or null": [
-      "array is valid",
-      "object is valid",
-      "null is valid",
-      "number is invalid",
-      "string is invalid"
-    ],
-    "unevaluatedItems true": [
-      "with no unevaluated items",
-      "with unevaluated items"
+      "an array is an array"
     ],
     "unevaluatedItems false": [
-      "with no unevaluated items",
       "with unevaluated items"
     ],
     "unevaluatedItems as schema": [
-      "with no unevaluated items",
-      "with valid unevaluated items",
       "with invalid unevaluated items"
     ],
-    "unevaluatedItems with uniform items": [
-      "unevaluatedItems doesn't apply"
-    ],
     "unevaluatedItems with tuple": [
-      "with no unevaluated items",
       "with unevaluated items"
     ],
-    "unevaluatedItems with items and prefixItems": [
-      "unevaluatedItems doesn't apply"
-    ],
     "unevaluatedItems with items": [
-      "valid under items",
       "invalid under items"
     ],
     "unevaluatedItems with nested tuple": [
-      "with no unevaluated items",
       "with unevaluated items"
     ],
     "unevaluatedItems with nested items": [
-      "with only (valid) additional items",
-      "with no additional items",
       "with invalid additional item"
     ],
-    "unevaluatedItems with nested prefixItems and items": [
-      "with no additional items",
-      "with additional items"
-    ],
-    "unevaluatedItems with nested unevaluatedItems": [
-      "with no additional items",
-      "with additional items"
-    ],
     "unevaluatedItems with anyOf": [
-      "when one schema matches and has no unevaluated items",
       "when one schema matches and has unevaluated items",
-      "when two schemas match and has no unevaluated items",
       "when two schemas match and has unevaluated items"
     ],
     "unevaluatedItems with oneOf": [
-      "with no unevaluated items",
-      "with unevaluated items"
+      "with no unevaluated items"
     ],
     "unevaluatedItems with not": [
       "with unevaluated items"
     ],
     "unevaluatedItems with if/then/else": [
-      "when if matches and it has no unevaluated items",
       "when if matches and it has unevaluated items",
-      "when if doesn't match and it has no unevaluated items",
       "when if doesn't match and it has unevaluated items"
     ],
     "unevaluatedItems with boolean schemas": [
-      "with no unevaluated items",
       "with unevaluated items"
     ],
     "unevaluatedItems with $ref": [
-      "with no unevaluated items",
       "with unevaluated items"
     ],
     "unevaluatedItems before $ref": [
-      "with no unevaluated items",
       "with unevaluated items"
     ],
     "unevaluatedItems with $dynamicRef": [
-      "with no unevaluated items",
       "with unevaluated items"
     ],
     "unevaluatedItems can't see inside cousins": [
       "always fails"
     ],
     "item is evaluated in an uncle schema to unevaluatedItems": [
-      "no extra items",
       "uncle keyword evaluation is not significant"
     ],
     "unevaluatedItems depends on adjacent contains": [
-      "second item is evaluated by contains",
       "contains fails, second item is not evaluated",
       "contains passes, second item is not evaluated"
     ],
     "unevaluatedItems depends on multiple nested contains": [
-      "5 not evaluated, passes unevaluatedItems",
       "7 not evaluated, fails unevaluatedItems"
     ],
     "unevaluatedItems and contains interact to control item dependency relationship": [
-      "empty array is valid",
-      "only a's are valid",
-      "a's and b's are valid",
-      "a's, b's and c's are valid",
       "only b's are invalid",
       "only c's are invalid",
       "only b's and c's are invalid",
       "only a's and c's are invalid"
     ],
-    "non-array instances are valid": [
-      "ignores booleans",
-      "ignores integers",
-      "ignores floats",
-      "ignores objects",
-      "ignores strings",
-      "ignores null"
-    ],
-    "unevaluatedItems with null instance elements": [
-      "allows null elements"
-    ],
     "unevaluatedItems can see annotations from if without then and else": [
-      "valid in case if is evaluated",
       "invalid in case if is evaluated"
     ],
-    "unevaluatedProperties true": [
-      "with no unevaluated properties",
-      "with unevaluated properties"
-    ],
     "unevaluatedProperties schema": [
-      "with no unevaluated properties",
-      "with valid unevaluated properties",
       "with invalid unevaluated properties"
     ],
     "unevaluatedProperties false": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties with adjacent properties": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties with adjacent patternProperties": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
-    "unevaluatedProperties with adjacent additionalProperties": [
-      "with no additional properties",
-      "with additional properties"
-    ],
     "unevaluatedProperties with nested properties": [
-      "with no additional properties",
       "with additional properties"
     ],
     "unevaluatedProperties with nested patternProperties": [
-      "with no additional properties",
       "with additional properties"
-    ],
-    "unevaluatedProperties with nested additionalProperties": [
-      "with no additional properties",
-      "with additional properties"
-    ],
-    "unevaluatedProperties with nested unevaluatedProperties": [
-      "with no nested unevaluated properties",
-      "with nested unevaluated properties"
     ],
     "unevaluatedProperties with anyOf": [
-      "when one matches and has no unevaluated properties",
       "when one matches and has unevaluated properties",
-      "when two match and has no unevaluated properties",
       "when two match and has unevaluated properties"
     ],
     "unevaluatedProperties with oneOf": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties with not": [
       "with unevaluated properties"
     ],
     "unevaluatedProperties with if/then/else": [
-      "when if is true and has no unevaluated properties",
       "when if is true and has unevaluated properties",
-      "when if is false and has no unevaluated properties",
       "when if is false and has unevaluated properties"
     ],
     "unevaluatedProperties with if/then/else, then not defined": [
       "when if is true and has no unevaluated properties",
       "when if is true and has unevaluated properties",
-      "when if is false and has no unevaluated properties",
       "when if is false and has unevaluated properties"
     ],
     "unevaluatedProperties with if/then/else, else not defined": [
-      "when if is true and has no unevaluated properties",
       "when if is true and has unevaluated properties",
       "when if is false and has no unevaluated properties",
       "when if is false and has unevaluated properties"
     ],
     "unevaluatedProperties with dependentSchemas": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties with boolean schemas": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties with $ref": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties before $ref": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties with $dynamicRef": [
-      "with no unevaluated properties",
       "with unevaluated properties"
     ],
     "unevaluatedProperties can't see inside cousins": [
@@ -1773,20 +616,11 @@
     "unevaluatedProperties can't see inside cousins (reverse order)": [
       "always fails"
     ],
-    "nested unevaluatedProperties, outer false, inner true, properties outside": [
-      "with no nested unevaluated properties",
-      "with nested unevaluated properties"
-    ],
-    "nested unevaluatedProperties, outer false, inner true, properties inside": [
-      "with no nested unevaluated properties",
-      "with nested unevaluated properties"
-    ],
     "nested unevaluatedProperties, outer true, inner false, properties outside": [
       "with no nested unevaluated properties",
       "with nested unevaluated properties"
     ],
     "nested unevaluatedProperties, outer true, inner false, properties inside": [
-      "with no nested unevaluated properties",
       "with nested unevaluated properties"
     ],
     "cousin unevaluatedProperties, true and false, true with properties": [
@@ -1794,178 +628,80 @@
       "with nested unevaluated properties"
     ],
     "cousin unevaluatedProperties, true and false, false with properties": [
-      "with no nested unevaluated properties",
       "with nested unevaluated properties"
     ],
     "property is evaluated in an uncle schema to unevaluatedProperties": [
-      "no extra properties",
       "uncle keyword evaluation is not significant"
     ],
     "in-place applicator siblings, allOf has unevaluated": [
       "base case: both properties present",
-      "in place applicator siblings, bar is missing",
       "in place applicator siblings, foo is missing"
     ],
     "in-place applicator siblings, anyOf has unevaluated": [
       "base case: both properties present",
-      "in place applicator siblings, bar is missing",
-      "in place applicator siblings, foo is missing"
+      "in place applicator siblings, bar is missing"
     ],
     "unevaluatedProperties + single cyclic ref": [
-      "Empty is valid",
-      "Single is valid",
       "Unevaluated on 1st level is invalid",
-      "Nested is valid",
       "Unevaluated on 2nd level is invalid",
-      "Deep nested is valid",
       "Unevaluated on 3rd level is invalid"
     ],
     "unevaluatedProperties + ref inside allOf / oneOf": [
       "Empty is invalid (no x or y)",
       "a and b are invalid (no x or y)",
-      "x and y are invalid",
-      "a and x are valid",
       "a and y are valid",
-      "a and b and x are valid",
-      "a and b and y are valid",
-      "a and b and x and y are invalid"
+      "a and b and y are valid"
     ],
     "dynamic evalation inside nested refs": [
       "Empty is invalid",
       "a is valid",
-      "b is valid",
-      "c is valid",
-      "d is valid",
-      "a + b is invalid",
-      "a + c is invalid",
-      "a + d is invalid",
       "b + c is invalid",
       "b + d is invalid",
       "c + d is invalid",
-      "xx is valid",
-      "xx + foox is valid",
       "xx + foo is invalid",
-      "xx + a is invalid",
       "xx + b is invalid",
       "xx + c is invalid",
-      "xx + d is invalid",
-      "all is valid",
-      "all + foo is valid",
-      "all + a is invalid"
-    ],
-    "non-object instances are valid": [
-      "ignores booleans",
-      "ignores integers",
-      "ignores floats",
-      "ignores arrays",
-      "ignores strings",
-      "ignores null"
-    ],
-    "unevaluatedProperties with null valued instance properties": [
-      "allows null valued properties"
+      "xx + d is invalid"
     ],
     "unevaluatedProperties not affected by propertyNames": [
-      "allows only number properties",
       "string property is invalid"
     ],
     "unevaluatedProperties can see annotations from if without then and else": [
-      "valid in case if is evaluated",
       "invalid in case if is evaluated"
     ],
     "dependentSchemas with unevaluatedProperties": [
       "unevaluatedProperties doesn't consider dependentSchemas",
-      "unevaluatedProperties doesn't see bar when foo2 is absent",
-      "unevaluatedProperties sees bar when foo2 is present"
+      "unevaluatedProperties doesn't see bar when foo2 is absent"
     ],
     "uniqueItems validation": [
-      "unique array of integers is valid",
       "non-unique array of integers is invalid",
       "non-unique array of more than two integers is invalid",
       "numbers are unique if mathematically unequal",
-      "false is not equal to zero",
-      "true is not equal to one",
-      "unique array of strings is valid",
       "non-unique array of strings is invalid",
-      "unique array of objects is valid",
       "non-unique array of objects is invalid",
       "property order of array of objects is ignored",
-      "unique array of nested objects is valid",
       "non-unique array of nested objects is invalid",
-      "unique array of arrays is valid",
       "non-unique array of arrays is invalid",
       "non-unique array of more than two arrays is invalid",
-      "1 and true are unique",
-      "0 and false are unique",
-      "[1] and [true] are unique",
-      "[0] and [false] are unique",
-      "nested [1] and [true] are unique",
-      "nested [0] and [false] are unique",
-      "unique heterogeneous types are valid",
       "non-unique heterogeneous types are invalid",
-      "different objects are unique",
-      "objects are non-unique despite key order",
-      "{\"a\": false} and {\"a\": 0} are unique",
-      "{\"a\": true} and {\"a\": 1} are unique"
+      "objects are non-unique despite key order"
     ],
     "uniqueItems with an array of items": [
-      "[false, true] from items array is valid",
-      "[true, false] from items array is valid",
       "[false, false] from items array is not valid",
       "[true, true] from items array is not valid",
-      "unique array extended from [false, true] is valid",
-      "unique array extended from [true, false] is valid",
       "non-unique array extended from [false, true] is not valid",
       "non-unique array extended from [true, false] is not valid"
     ],
     "uniqueItems with an array of items and additionalItems=false": [
-      "[false, true] from items array is valid",
-      "[true, false] from items array is valid",
       "[false, false] from items array is not valid",
       "[true, true] from items array is not valid",
       "extra items are invalid even if unique"
     ],
-    "uniqueItems=false validation": [
-      "unique array of integers is valid",
-      "non-unique array of integers is valid",
-      "numbers are unique if mathematically unequal",
-      "false is not equal to zero",
-      "true is not equal to one",
-      "unique array of objects is valid",
-      "non-unique array of objects is valid",
-      "unique array of nested objects is valid",
-      "non-unique array of nested objects is valid",
-      "unique array of arrays is valid",
-      "non-unique array of arrays is valid",
-      "1 and true are unique",
-      "0 and false are unique",
-      "unique heterogeneous types are valid",
-      "non-unique heterogeneous types are valid"
-    ],
-    "uniqueItems=false with an array of items": [
-      "[false, true] from items array is valid",
-      "[true, false] from items array is valid",
-      "[false, false] from items array is valid",
-      "[true, true] from items array is valid",
-      "unique array extended from [false, true] is valid",
-      "unique array extended from [true, false] is valid",
-      "non-unique array extended from [false, true] is valid",
-      "non-unique array extended from [true, false] is valid"
-    ],
     "uniqueItems=false with an array of items and additionalItems=false": [
-      "[false, true] from items array is valid",
-      "[true, false] from items array is valid",
-      "[false, false] from items array is valid",
-      "[true, true] from items array is valid",
       "extra items are invalid even if unique"
     ],
     "schema that uses custom metaschema with with no validation vocabulary": [
-      "applicator vocabulary still works",
-      "no validation: valid number",
       "no validation: invalid number, but it still validates"
-    ],
-    "ignore unrecognized optional vocabulary": [
-      "string value",
-      "number value"
     ]
   }
 }

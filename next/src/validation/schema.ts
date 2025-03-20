@@ -168,7 +168,6 @@ export function validateSchema(
     ...validateObject(value, schema, options, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
-    ...validateCondition(value, schema, options, required, path),
     ...validateNot(value, schema, options, path),
     ...validateAllOf(value, schema, options, path),
     ...validateAnyOf(value, schema, options, path),
