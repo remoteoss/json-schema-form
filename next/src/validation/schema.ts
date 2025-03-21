@@ -1,5 +1,4 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { ValidationOptions } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
@@ -8,6 +7,17 @@ import { validateEnum } from './enum'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
+import { isObjectValue } from './util'
+
+export interface ValidationOptions {
+  /**
+   * A null value will be treated as undefined.
+   * That means that when validating a null value, against a non-required field that is not of type 'null' or ['null']
+   * the validation will succeed instead of returning a type error.
+   * @default false
+   */
+  treatNullAsUndefined?: boolean
+}
 
 /**
  * Get the type of a schema
@@ -127,11 +137,15 @@ export function validateSchema(
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
+  const errors: ValidationError[] = []
 
+  // Check if the value is required but not provided
   if (valueIsUndefined && required) {
-    return [{ path, validation: 'required' }]
+    errors.push({ path, validation: 'required' })
+    return errors
   }
 
+  // If value is undefined but not required, no further validation needed
   if (valueIsUndefined) {
     return []
   }
@@ -149,20 +163,23 @@ export function validateSchema(
   if (
     schema.required
     && Array.isArray(schema.required)
-    && typeof value === 'object'
-    && value !== null
+    && isObjectValue(value)
   ) {
-    const missingKeys = schema.required.filter((key: string) => !(key in value))
-    if (missingKeys.length > 0) {
-      // Return an error for each missing field.
-      return missingKeys.map(key => ({
+    const missingKeys = schema.required.filter((key: string) => {
+      const fieldValue = value[key]
+      return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
+    })
+
+    for (const key of missingKeys) {
+      errors.push({
         path: [...path, key],
         validation: 'required',
-      }))
+      })
     }
   }
 
   return [
+    ...errors,
     ...validateConst(value, schema, path),
     ...validateEnum(value, schema, path),
     ...validateObject(value, schema, options, path),
