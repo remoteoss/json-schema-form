@@ -8,6 +8,7 @@ import { validateEnum } from './enum'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
+import { isObjectValue } from './util'
 
 /**
  * Get the type of a schema
@@ -149,10 +150,12 @@ export function validateSchema(
   if (
     schema.required
     && Array.isArray(schema.required)
-    && typeof value === 'object'
-    && value !== null
+    && isObjectValue(value)
   ) {
-    const missingKeys = schema.required.filter((key: string) => !(key in value))
+    const missingKeys = schema.required.filter((key: string) => {
+      const fieldValue = value[key]
+      return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
+    })
     if (missingKeys.length > 0) {
       // Return an error for each missing field.
       return missingKeys.map(key => ({
