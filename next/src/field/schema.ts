@@ -137,6 +137,14 @@ export function buildFieldSchema(
     ...(errorMessage && { errorMessage }),
   }
 
+  if (schema.const) {
+    field.const = schema.const
+
+    if (inputType === 'checkbox') {
+      field.checkboxValue = schema.const
+    }
+  }
+
   if (schema.title) {
     field.label = schema.title
   }
