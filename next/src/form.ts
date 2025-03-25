@@ -298,7 +298,6 @@ export function createHeadlessForm(
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
-    console.warn({ value, result })
     updateFieldVisibility(fields, value, schema, options.validationOptions)
     return result
   }

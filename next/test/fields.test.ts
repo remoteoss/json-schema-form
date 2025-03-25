@@ -56,7 +56,7 @@ describe('fields', () => {
       type: 'fieldset',
       inputType: 'fieldset',
       isVisible: true,
-      name: 'User',
+      name: 'user',
       label: 'User',
       required: false,
       jsonType: 'object',
@@ -161,7 +161,7 @@ describe('fields', () => {
         inputType: 'fieldset',
         isVisible: true,
         jsonType: 'object',
-        name: 'Address',
+        name: 'address',
         label: 'Address',
         required: false,
         fields: [

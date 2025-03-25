@@ -472,9 +472,6 @@
     "$ref to $ref finds detached $anchor": [
       "non-number is invalid"
     ],
-    "required validation": [
-      "ignores arrays"
-    ],
     "required properties whose names are Javascript object property names": [
       "none of the properties mentioned",
       "__proto__ present",

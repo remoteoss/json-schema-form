@@ -7,21 +7,20 @@ export function validateCondition(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
   options: ValidationOptions,
-  required: boolean,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.if === undefined) {
     return []
   }
 
-  const conditionIsTrue = validateSchema(value, schema.if, options, required, path).length === 0
+  const conditionIsTrue = validateSchema(value, schema.if, options, path).length === 0
 
   if (conditionIsTrue && schema.then !== undefined) {
-    return validateSchema(value, schema.then, options, required, [...path, 'then'])
+    return validateSchema(value, schema.then, options, [...path, 'then'])
   }
 
   if (!conditionIsTrue && schema.else !== undefined) {
-    return validateSchema(value, schema.else, options, required, [...path, 'else'])
+    return validateSchema(value, schema.else, options, [...path, 'else'])
   }
 
   return []

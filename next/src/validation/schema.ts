@@ -133,17 +133,10 @@ export function validateSchema(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions = {},
-  required: boolean = false,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
   const errors: ValidationError[] = []
-
-  // Check if the value is required but not provided
-  if (valueIsUndefined && required) {
-    errors.push({ path, validation: 'required' })
-    return errors
-  }
 
   // If value is undefined but not required, no further validation needed
   if (valueIsUndefined) {
@@ -189,6 +182,6 @@ export function validateSchema(
     ...validateAllOf(value, schema, options, path),
     ...validateAnyOf(value, schema, options, path),
     ...validateOneOf(value, schema, options, path),
-    ...validateCondition(value, schema, options, required, path),
+    ...validateCondition(value, schema, options, path),
   ]
 }
