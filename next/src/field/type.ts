@@ -22,6 +22,8 @@ export interface Field {
   format?: string
   anyOf?: unknown[]
   options?: unknown[]
+  const?: unknown
+  checkboxValue?: unknown
 
   // Allow additional properties from x-jsf-presentation (e.g. meta from oneOf/anyOf)
   [key: string]: unknown
