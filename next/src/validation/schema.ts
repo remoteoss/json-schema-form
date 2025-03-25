@@ -104,7 +104,6 @@ function validateType(
  * @param value - The value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
- * @param required - Whether the value is required
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -114,7 +113,7 @@ function validateType(
  * 2. Handle boolean schemas (true allows everything, false allows nothing)
  * 3. Validate against base schema constraints:
  *    - Type validation (if type is specified)
- *    - Required properties (for objects)
+ *    - Required properties
  *    - Boolean validation
  *    - Enum validation
  *    - Const validation
