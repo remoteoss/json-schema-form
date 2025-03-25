@@ -24,10 +24,7 @@ export function validateObject(
   if (typeof schema === 'object' && schema.properties && isObjectValue(value)) {
     const errors = []
     for (const [key, propertySchema] of Object.entries(schema.properties)) {
-      const propertyValue = value[key]
-      const propertyIsRequired = schema.required?.includes(key)
-      const propertyErrors = validateSchema(propertyValue, propertySchema, options, propertyIsRequired, [...path, key])
-      errors.push(...propertyErrors)
+      errors.push(...validateSchema(value[key], propertySchema, options, [...path, key]))
     }
     return errors
   }

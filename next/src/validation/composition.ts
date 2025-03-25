@@ -38,7 +38,7 @@ export function validateAllOf(
 
   for (let i = 0; i < schema.allOf.length; i++) {
     const subSchema = schema.allOf[i]
-    const errors = validateSchema(value, subSchema, options, false, [...path, 'allOf', i])
+    const errors = validateSchema(value, subSchema, options, [...path, 'allOf', i])
     if (errors.length > 0) {
       return errors
     }
@@ -74,7 +74,7 @@ export function validateAnyOf(
   }
 
   for (const subSchema of schema.anyOf) {
-    const errors = validateSchema(value, subSchema, options, false, path)
+    const errors = validateSchema(value, subSchema, options, path)
     if (errors.length === 0) {
       return []
     }
@@ -117,7 +117,7 @@ export function validateOneOf(
   let validCount = 0
 
   for (let i = 0; i < schema.oneOf.length; i++) {
-    const errors = validateSchema(value, schema.oneOf[i], options, false, path)
+    const errors = validateSchema(value, schema.oneOf[i], options, path)
     if (errors.length === 0) {
       validCount++
       if (validCount > 1) {
@@ -180,7 +180,7 @@ export function validateNot(
       : []
   }
 
-  const notErrors = validateSchema(value, schema.not, options, false, path)
+  const notErrors = validateSchema(value, schema.not, options, path)
   return notErrors.length === 0
     ? [{ path, validation: 'not' }]
     : []
