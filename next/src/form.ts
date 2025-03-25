@@ -1,4 +1,4 @@
-import type { ValidationError } from './errors'
+import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
 import { getErrorMessage } from './errors/messages'
@@ -24,6 +24,39 @@ export interface FormErrors {
 
 export interface ValidationResult {
   formErrors?: FormErrors
+}
+
+/**
+ * Remove composition keywords and their indices as well as conditional keywords from the path
+ * @param path - The path to clean
+ * @returns The cleaned path
+ * @example
+ * ```ts
+ * cleanErrorPath(['some_object','allOf', 0, 'then', 'field'])
+ * // ['some_object', 'field']
+ * ```
+ */
+function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
+  const result: ValidationErrorPath = []
+
+  for (let i = 0; i < path.length; i++) {
+    const segment = path[i]
+
+    if (['allOf', 'anyOf', 'oneOf'].includes(segment as string)) {
+      if (i + 1 < path.length && typeof path[i + 1] === 'number') {
+        i++
+      }
+      continue
+    }
+
+    if (segment === 'then' || segment === 'else') {
+      continue
+    }
+
+    result.push(segment)
+  }
+
+  return result
 }
 
 /**
@@ -56,61 +89,32 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
       return result
     }
 
-    // For conditional validation branches (then/else), show the error at the field level
-    const thenElseIndex = Math.max(path.indexOf('then'), path.indexOf('else'))
-    if (thenElseIndex !== -1) {
-      const fieldName = path[thenElseIndex + 1]
-      if (fieldName) {
-        result[fieldName] = error.message
-        return result
-      }
-    }
+    // Clean the path to remove intermediate composition structures
+    const cleanedPath = cleanErrorPath(path)
 
-    // For allOf/anyOf/oneOf validation errors, show the error at the field level
-    const compositionKeywords = ['allOf', 'anyOf', 'oneOf']
-    const compositionIndex = compositionKeywords.reduce((index, keyword) => {
-      const keywordIndex = path.indexOf(keyword)
-      return keywordIndex !== -1 ? keywordIndex : index
-    }, -1)
-
-    if (compositionIndex !== -1) {
-      // Get the field path before the composition keyword
-      const fieldPath = path.slice(0, compositionIndex)
-      if (fieldPath.length > 0) {
-        let current = result
-
-        // Process all segments except the last one
-        fieldPath.slice(0, -1).forEach((segment) => {
-          if (!(segment in current) || typeof current[segment] === 'string') {
-            current[segment] = {}
-          }
-          current = current[segment] as FormErrors
-        })
-
-        // Set the message at the last segment
-        const lastSegment = fieldPath[fieldPath.length - 1]
-        current[lastSegment] = error.message
-        return result
-      }
-    }
-
-    // For all other paths, recursively build the nested structure
+    // For all paths, recursively build the nested structure
     let current = result
 
     // Process all segments except the last one (which will hold the message)
-    path.slice(0, -1).forEach((segment) => {
+    cleanedPath.slice(0, -1).forEach((segment) => {
       // If this segment doesn't exist yet or is currently a string (from a previous error),
       // initialize it as an object
       if (!(segment in current) || typeof current[segment] === 'string') {
         current[segment] = {}
       }
 
-      current = current[segment]
+      current = current[segment] as FormErrors
     })
 
     // Set the message at the final level
-    const lastSegment = path[path.length - 1]
-    current[lastSegment] = error.message
+    if (cleanedPath.length > 0) {
+      const lastSegment = cleanedPath[cleanedPath.length - 1]
+      current[lastSegment] = error.message
+    }
+    else {
+      // Fallback for unexpected path structures
+      result[''] = error.message
+    }
 
     return result
   }, {})

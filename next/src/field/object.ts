@@ -28,7 +28,7 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
     type: schema['x-jsf-presentation']?.inputType || 'fieldset',
     inputType: schema['x-jsf-presentation']?.inputType || 'fieldset',
     jsonType: 'object',
-    name: schema.title || name,
+    name,
     required,
     fields: orderedFields,
     isVisible: true,

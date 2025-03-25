@@ -128,11 +128,15 @@ export function validateSchema(
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
+  const errors: ValidationError[] = []
 
+  // Check if the value is required but not provided
   if (valueIsUndefined && required) {
-    return [{ path, validation: 'required' }]
+    errors.push({ path, validation: 'required' })
+    return errors
   }
 
+  // If value is undefined but not required, no further validation needed
   if (valueIsUndefined) {
     return []
   }
@@ -156,16 +160,17 @@ export function validateSchema(
       const fieldValue = value[key]
       return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
     })
-    if (missingKeys.length > 0) {
-      // Return an error for each missing field.
-      return missingKeys.map(key => ({
+
+    for (const key of missingKeys) {
+      errors.push({
         path: [...path, key],
         validation: 'required',
-      }))
+      })
     }
   }
 
   return [
+    ...errors,
     ...validateConst(value, schema, path),
     ...validateEnum(value, schema, path),
     ...validateObject(value, schema, options, path),
