@@ -1,10 +1,14 @@
 import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
+import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldObject } from './field/object'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
+import { updateFieldVisibility } from './visibility'
+
+export { ValidationOptions } from './validation/schema'
 
 interface FormResult {
   fields: Field[]
@@ -252,228 +256,6 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
 }
 
 /**
- * Update the visibility of fields based on the values and schema
- * @param fields - The fields to update
- * @param values - The values of the fields
- * @param schema - The schema to validate against
- * @param options - The validation options
- */
-function updateFieldVisibility(
-  fields: Field[],
-  values: SchemaValue,
-  schema: JsfObjectSchema,
-  options: ValidationOptions = {},
-) {
-  // Skip non-object values
-  if (!isObjectValue(values)) {
-    return
-  }
-
-  // First check if any field has a specific other_job parent needing attention
-  const otherJobField = fields.find(f => f.name === 'other_job')
-  if (otherJobField && otherJobField.fields) {
-    // Check if has_other_job exists and what its value is
-    if (isObjectValue(values)) {
-      // Find rules in schema related to has_other_job
-      let hasOtherJobRules: NonBooleanJsfSchema[] = []
-
-      if (schema.allOf && Array.isArray(schema.allOf)) {
-        hasOtherJobRules = schema.allOf.filter((rule) => {
-          if (typeof rule === 'object' && rule !== null && 'if' in rule) {
-            const ifCondition = rule.if
-            return typeof ifCondition === 'object'
-              && ifCondition !== null
-              && 'properties' in ifCondition
-              && ifCondition.properties
-              && 'has_other_job' in ifCondition.properties
-          }
-          return false
-        }) as NonBooleanJsfSchema[]
-      }
-
-      // Apply visibility based on rules directly
-      if (hasOtherJobRules.length > 0) {
-        for (const rule of hasOtherJobRules) {
-          if (typeof rule !== 'object' || rule === null || !('if' in rule))
-            continue
-
-          // Check if the condition matches
-          const ifErrors = validateSchema(values, rule.if!, options)
-          const conditionMatches = ifErrors.length === 0
-
-          // Handle the subfields of other_job based on condition
-          if (otherJobField.fields) {
-            for (const subfield of otherJobField.fields) {
-              if (conditionMatches && rule.then) {
-                // If condition matches and field is in required, make visible
-                const isRequired = typeof rule.then === 'object'
-                  && rule.then !== null
-                  && 'required' in rule.then
-                  && Array.isArray(rule.then.required)
-                  && rule.then.required.includes(subfield.name)
-
-                if (isRequired) {
-                  subfield.isVisible = true
-                }
-              }
-              else if (!conditionMatches && rule.else) {
-                // If condition doesn't match and field is in properties with false, hide it
-                const shouldHide = typeof rule.else === 'object'
-                  && rule.else !== null
-                  && 'properties' in rule.else
-                  && rule.else.properties
-                  && subfield.name in rule.else.properties
-                  && rule.else.properties[subfield.name] === false
-
-                if (shouldHide) {
-                  subfield.isVisible = false
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-
-  // Continue with the generic processing for all other fields
-  processObjectFieldsWithConditions(fields, values, schema, options)
-}
-
-/**
- * Process object fields with their own conditional logic
- */
-function processObjectFieldsWithConditions(
-  fields: Field[],
-  values: SchemaValue,
-  schema: JsfObjectSchema,
-  options: ValidationOptions = {},
-) {
-  if (!isObjectValue(values)) {
-    return
-  }
-
-  // First, apply top-level rules to current fields
-  applySchemaRules(fields, values, schema, options)
-
-  // Special handling for nested object fields
-  for (const fieldName in schema.properties) {
-    const fieldSchema = schema.properties[fieldName]
-
-    // Skip non-object schemas and schemas without conditional logic
-    if (typeof fieldSchema !== 'object' || fieldSchema === null
-      || Array.isArray(fieldSchema) || !fieldSchema.allOf) {
-      continue
-    }
-
-    // This is an object schema with conditional logic - find the corresponding field
-    const objectField = fields.find(f => f.name === fieldSchema.title || f.name === fieldName)
-    if (!objectField || !objectField.fields || objectField.fields.length === 0) {
-      continue
-    }
-
-    // Get the field values
-    const fieldValues = isObjectValue(values[fieldName])
-      ? values[fieldName]
-      : isObjectValue(values[objectField.name]) ? values[objectField.name] : {}
-
-    // Process the field's own conditional logic
-    applySchemaRules(objectField.fields, fieldValues, fieldSchema as JsfObjectSchema, options)
-
-    // Recursively process nested fields
-    if (objectField.isVisible) {
-      processObjectFieldsWithConditions(
-        objectField.fields,
-        fieldValues,
-        fieldSchema as JsfObjectSchema,
-        options,
-      )
-    }
-  }
-}
-
-/**
- * Apply schema rules to a group of fields
- */
-function applySchemaRules(
-  fields: Field[],
-  values: SchemaValue,
-  schema: JsfObjectSchema,
-  options: ValidationOptions = {},
-) {
-  if (!schema.allOf || !Array.isArray(schema.allOf) || !isObjectValue(values)) {
-    return
-  }
-
-  // Collect all valid conditional rules
-  const conditionalRules = schema.allOf
-    .filter(rule => typeof rule === 'object' && rule !== null && 'if' in rule)
-    .map((rule) => {
-      const ruleObj = rule as NonBooleanJsfSchema
-
-      // Check if rule matches using the standard validation
-      const ifErrors = validateSchema(values, ruleObj.if!, options)
-      const matches = ifErrors.length === 0
-
-      // Check if any of the required fields have type validation errors
-      // This is to prevent fields from being shown when the required field has a type error
-      let hasTypeErrors = false
-      if (matches
-        && typeof ruleObj.if === 'object'
-        && ruleObj.if !== null
-        && 'required' in ruleObj.if
-        && Array.isArray(ruleObj.if.required)) {
-        const requiredFields = ruleObj.if.required
-        hasTypeErrors = requiredFields.some((fieldName) => {
-          if (!schema.properties || !schema.properties[fieldName]) {
-            return false
-          }
-          const fieldSchema = schema.properties[fieldName]
-          const fieldValue = values[fieldName]
-          const fieldErrors = validateSchema(fieldValue, fieldSchema, options)
-          return fieldErrors.some(error => error.validation === 'type')
-        })
-      }
-
-      return { rule: ruleObj, matches: matches && !hasTypeErrors }
-    })
-
-  // Apply rules to each field
-  for (const field of fields) {
-    // Start with default visibility based on required status
-    let isVisible = field.required
-
-    // Apply each conditional rule
-    for (const { rule, matches } of conditionalRules) {
-      // If condition matches and there's a then clause
-      if (matches && rule.then) {
-        // If field is required in then clause, make it visible
-        if (typeof rule.then === 'object' && rule.then !== null
-          && 'required' in rule.then && Array.isArray(rule.then.required)) {
-          if (rule.then.required.includes(field.name)) {
-            isVisible = true
-          }
-        }
-      }
-      // If condition doesn't match and there's an else clause
-      else if (!matches && rule.else) {
-        // If field is explicitly set to false in properties, hide it
-        if (typeof rule.else === 'object' && rule.else !== null
-          && 'properties' in rule.else && rule.else.properties) {
-          if (field.name in rule.else.properties
-            && rule.else.properties[field.name] === false) {
-            isVisible = false
-          }
-        }
-      }
-    }
-
-    // Set final visibility
-    field.isVisible = isVisible
-  }
-}
-
-/**
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
@@ -483,7 +265,6 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
-  // Apply custom error messages before converting to form errors
   const errorsWithMessages = addErrorMessages(value, schema, errors)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
@@ -494,16 +275,6 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   }
 
   return result
-}
-
-export interface ValidationOptions {
-  /**
-   * A null value will be treated as undefined.
-   * That means that when validating a null value, against a non-required field that is not of type 'null' or ['null']
-   * the validation will succeed instead of returning a type error.
-   * @default false
-   */
-  treatNullAsUndefined?: boolean
 }
 
 export interface CreateHeadlessFormOptions {
@@ -527,6 +298,7 @@ export function createHeadlessForm(
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
+    console.warn({ value, result })
     updateFieldVisibility(fields, value, schema, options.validationOptions)
     return result
   }

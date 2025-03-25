@@ -1,5 +1,4 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { ValidationOptions } from '../form'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
@@ -9,6 +8,16 @@ import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
 import { isObjectValue } from './util'
+
+export interface ValidationOptions {
+  /**
+   * A null value will be treated as undefined.
+   * That means that when validating a null value, against a non-required field that is not of type 'null' or ['null']
+   * the validation will succeed instead of returning a type error.
+   * @default false
+   */
+  treatNullAsUndefined?: boolean
+}
 
 /**
  * Get the type of a schema
