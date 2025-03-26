@@ -34,7 +34,7 @@ export function updateFieldVisibility(
       continue
     }
 
-    const objectField = fields.find(f => f.name === fieldSchema.title || f.name === fieldName)
+    const objectField = fields.find(field => field.name === fieldSchema.title || field.name === fieldName)
     if (!objectField || !objectField.fields || objectField.fields.length === 0) {
       continue
     }
