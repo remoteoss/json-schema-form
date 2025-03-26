@@ -93,7 +93,6 @@ function applySchemaRules(
       if (matches
         && typeof ruleObj.if === 'object'
         && ruleObj.if !== null
-        && 'required' in ruleObj.if
         && Array.isArray(ruleObj.if.required)) {
         const requiredFields = ruleObj.if.required
         hasTypeErrors = requiredFields.some((fieldName) => {
@@ -147,13 +146,13 @@ function isFieldVisible(
   let isVisible = currentVisibility
 
   if (typeof branch === 'object' && branch !== null) {
-    if ('required' in branch && Array.isArray(branch.required)) {
+    if (Array.isArray(branch.required)) {
       if (branch.required.includes(fieldName)) {
         isVisible = true
       }
     }
 
-    if ('properties' in branch && branch.properties) {
+    if (branch.properties !== undefined) {
       if (fieldName in branch.properties && branch.properties[fieldName] === false) {
         isVisible = false
       }
