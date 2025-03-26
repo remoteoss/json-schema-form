@@ -292,8 +292,9 @@ export function createHeadlessForm(
   schema: JsfObjectSchema,
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
+  const initialValues = options.initialValues || {}
   const fields = buildFields({ schema })
-  updateFieldVisibility(fields, options.initialValues, schema)
+  updateFieldVisibility(fields, initialValues, schema)
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
