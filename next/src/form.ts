@@ -1,10 +1,14 @@
-import type { ValidationError } from './errors'
+import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
+import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldObject } from './field/object'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
+import { updateFieldVisibility } from './visibility'
+
+export { ValidationOptions } from './validation/schema'
 
 interface FormResult {
   fields: Field[]
@@ -24,6 +28,39 @@ export interface FormErrors {
 
 export interface ValidationResult {
   formErrors?: FormErrors
+}
+
+/**
+ * Remove composition keywords and their indices as well as conditional keywords from the path
+ * @param path - The path to clean
+ * @returns The cleaned path
+ * @example
+ * ```ts
+ * cleanErrorPath(['some_object','allOf', 0, 'then', 'field'])
+ * // ['some_object', 'field']
+ * ```
+ */
+function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
+  const result: ValidationErrorPath = []
+
+  for (let i = 0; i < path.length; i++) {
+    const segment = path[i]
+
+    if (['allOf', 'anyOf', 'oneOf'].includes(segment as string)) {
+      if (i + 1 < path.length && typeof path[i + 1] === 'number') {
+        i++
+      }
+      continue
+    }
+
+    if (segment === 'then' || segment === 'else') {
+      continue
+    }
+
+    result.push(segment)
+  }
+
+  return result
 }
 
 /**
@@ -56,61 +93,32 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
       return result
     }
 
-    // For conditional validation branches (then/else), show the error at the field level
-    const thenElseIndex = Math.max(path.indexOf('then'), path.indexOf('else'))
-    if (thenElseIndex !== -1) {
-      const fieldName = path[thenElseIndex + 1]
-      if (fieldName) {
-        result[fieldName] = error.message
-        return result
-      }
-    }
+    // Clean the path to remove intermediate composition structures
+    const cleanedPath = cleanErrorPath(path)
 
-    // For allOf/anyOf/oneOf validation errors, show the error at the field level
-    const compositionKeywords = ['allOf', 'anyOf', 'oneOf']
-    const compositionIndex = compositionKeywords.reduce((index, keyword) => {
-      const keywordIndex = path.indexOf(keyword)
-      return keywordIndex !== -1 ? keywordIndex : index
-    }, -1)
-
-    if (compositionIndex !== -1) {
-      // Get the field path before the composition keyword
-      const fieldPath = path.slice(0, compositionIndex)
-      if (fieldPath.length > 0) {
-        let current = result
-
-        // Process all segments except the last one
-        fieldPath.slice(0, -1).forEach((segment) => {
-          if (!(segment in current) || typeof current[segment] === 'string') {
-            current[segment] = {}
-          }
-          current = current[segment] as FormErrors
-        })
-
-        // Set the message at the last segment
-        const lastSegment = fieldPath[fieldPath.length - 1]
-        current[lastSegment] = error.message
-        return result
-      }
-    }
-
-    // For all other paths, recursively build the nested structure
+    // For all paths, recursively build the nested structure
     let current = result
 
     // Process all segments except the last one (which will hold the message)
-    path.slice(0, -1).forEach((segment) => {
+    cleanedPath.slice(0, -1).forEach((segment) => {
       // If this segment doesn't exist yet or is currently a string (from a previous error),
       // initialize it as an object
       if (!(segment in current) || typeof current[segment] === 'string') {
         current[segment] = {}
       }
 
-      current = current[segment]
+      current = current[segment] as FormErrors
     })
 
     // Set the message at the final level
-    const lastSegment = path[path.length - 1]
-    current[lastSegment] = error.message
+    if (cleanedPath.length > 0) {
+      const lastSegment = cleanedPath[cleanedPath.length - 1]
+      current[lastSegment] = error.message
+    }
+    else {
+      // Fallback for unexpected path structures
+      result[''] = error.message
+    }
 
     return result
   }, {})
@@ -257,9 +265,6 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
-  // console.log(errors)
-
-  // Apply custom error messages before converting to form errors
   const errorsWithMessages = addErrorMessages(value, schema, errors)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
@@ -272,16 +277,6 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   return result
 }
 
-export interface ValidationOptions {
-  /**
-   * A null value will be treated as undefined.
-   * That means that when validating a null value, against a non-required field that is not of type 'null' or ['null']
-   * the validation will succeed instead of returning a type error.
-   * @default false
-   */
-  treatNullAsUndefined?: boolean
-}
-
 export interface CreateHeadlessFormOptions {
   initialValues?: SchemaValue
   validationOptions?: ValidationOptions
@@ -289,25 +284,27 @@ export interface CreateHeadlessFormOptions {
 
 function buildFields(params: { schema: JsfObjectSchema }): Field[] {
   const { schema } = params
-  return buildFieldObject(schema, 'root', true).fields || []
+  const fields = buildFieldObject(schema, 'root', true).fields || []
+  return fields
 }
 
 export function createHeadlessForm(
   schema: JsfObjectSchema,
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
-  const errors = validateSchema(options.initialValues, schema, options.validationOptions)
-  const errorsWithMessages = addErrorMessages(options.initialValues, schema, errors)
-  const validationResult = validationErrorsToFormErrors(errorsWithMessages)
-  const isError = validationResult !== null
+  const initialValues = options.initialValues || {}
+  const fields = buildFields({ schema })
+  updateFieldVisibility(fields, initialValues, schema)
+  const isError = false
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
+    updateFieldVisibility(fields, value, schema, options.validationOptions)
     return result
   }
 
   return {
-    fields: buildFields({ schema }),
+    fields,
     isError,
     error: null,
     handleValidation,

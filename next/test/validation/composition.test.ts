@@ -383,9 +383,10 @@ describe('schema composition validators', () => {
       it('should fail when base schema fails', () => {
         const value = { other: 'field' }
         const errors = validateSchema(value, schema)
-        expect(errors).toHaveLength(1)
-        expect(errors[0].validation).toBe('required')
-        expect(errors[0].path).toEqual(['type'])
+        expect(errors).toEqual([
+          { validation: 'required', path: ['type'] },
+          { validation: 'not', path: [] },
+        ])
       })
     })
 
