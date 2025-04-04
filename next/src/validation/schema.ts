@@ -137,13 +137,13 @@ export function validateSchema(
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
   const errors: ValidationError[] = []
 
+  if (typeof schema === 'boolean') {
+    return (schema || valueIsUndefined) ? [] : [{ path, validation: 'valid' }]
+  }
+
   // If value is undefined but not required, no further validation needed
   if (valueIsUndefined) {
     return []
-  }
-
-  if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid' }]
   }
 
   const typeValidationErrors = validateType(value, schema, path)

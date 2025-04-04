@@ -262,6 +262,7 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
  * @returns The validation result
  */
 function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOptions = {}): ValidationResult {
+  debugger
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
@@ -294,12 +295,13 @@ export function createHeadlessForm(
 ): FormResult {
   const initialValues = options.initialValues || {}
   const fields = buildFields({ schema })
-  updateFieldVisibility(fields, initialValues, schema)
+  const validationResult = validate(initialValues, schema, options.validationOptions)
+  updateFieldVisibility(fields, validationResult)
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
-    updateFieldVisibility(fields, value, schema, options.validationOptions)
+    updateFieldVisibility(fields, result)
     return result
   }
 
