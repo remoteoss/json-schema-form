@@ -294,7 +294,8 @@ export function createHeadlessForm(
 ): FormResult {
   const initialValues = options.initialValues || {}
   const fields = buildFields({ schema })
-  // Making sure visibility is set correctly upon form creation
+
+  // Making sure visibility is set correctly upon form creation, for initial values
   updateFieldVisibility(fields, initialValues, schema)
 
   // TODO: check if we need this isError variable exposed
@@ -302,8 +303,10 @@ export function createHeadlessForm(
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
+
     // Updating field visibility based on the new value
     updateFieldVisibility(fields, value, schema, options.validationOptions)
+
     return result
   }
 

@@ -5,6 +5,18 @@ import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
 
 /**
+ * Resets the visibility of all fields to true
+ * @param fields - The fields to reset
+ */
+function resetVisibility(fields: Field[]) {
+  for (const field of fields) {
+    field.isVisible = true
+    if (field.fields) {
+      resetVisibility(field.fields)
+    }
+  }
+}
+/**
  * Updates field visibility based on JSON schema conditional rules
  * @param fields - The fields to update
  * @param values - The current form values
@@ -21,51 +33,47 @@ export function updateFieldVisibility(
     return
   }
 
+  // Reseting fields visibility to the default before re-calculating it
+  resetVisibility(fields)
+
   // Apply rules to current level of fields
   applySchemaRules(fields, values, schema, options)
 
   // Process nested object fields that have conditional logic
   for (const fieldName in schema.properties) {
     const fieldSchema = schema.properties[fieldName]
+    const field = fields.find(field => field.name === fieldName)
 
-    // Only process object schemas with conditional logic (allOf)
-    if (typeof fieldSchema !== 'object' || fieldSchema === null
-      || Array.isArray(fieldSchema) || !fieldSchema.allOf) {
-      continue
+    if (field?.fields) {
+      applySchemaRules(field.fields, values[fieldName], fieldSchema as JsfObjectSchema, options)
     }
-
-    const objectField = fields.find(field => field.name === fieldSchema.title || field.name === fieldName)
-    if (!objectField || !objectField.fields || objectField.fields.length === 0) {
-      continue
-    }
-
-    const fieldValues = isObjectValue(values[fieldName])
-      ? values[fieldName]
-      : isObjectValue(values[objectField.name]) ? values[objectField.name] : {}
-
-    // Apply rules to nested fields
-    applySchemaRules(objectField.fields, fieldValues, fieldSchema as JsfObjectSchema, options)
   }
 }
 
+/**
+ * Evaluates the conditional rules for a field
+ * @param values - The current field values
+ * @param schema - The JSON schema definition
+ * @param rule - Schema identifying the conditional rule
+ * @param options - Validation options
+ * @returns An object containing the rule and whether it matches
+ */
 function evaluateConditional(
   values: ObjectValue,
   schema: JsfObjectSchema,
   rule: NonBooleanJsfSchema,
   options: ValidationOptions = {},
 ) {
-  const ruleObj = rule as NonBooleanJsfSchema
-
-  const ifErrors = validateSchema(values, ruleObj.if!, options)
+  const ifErrors = validateSchema(values, rule.if!, options)
   const matches = ifErrors.length === 0
 
   // Prevent fields from being shown when required fields have type errors
   let hasTypeErrors = false
   if (matches
-    && typeof ruleObj.if === 'object'
-    && ruleObj.if !== null
-    && Array.isArray(ruleObj.if.required)) {
-    const requiredFields = ruleObj.if.required
+    && typeof rule.if === 'object'
+    && rule.if !== null
+    && Array.isArray(rule.if.required)) {
+    const requiredFields = rule.if.required
     hasTypeErrors = requiredFields.some((fieldName) => {
       if (!schema.properties || !schema.properties[fieldName]) {
         return false
@@ -77,7 +85,7 @@ function evaluateConditional(
     })
   }
 
-  return { rule: ruleObj, matches: matches && !hasTypeErrors }
+  return { rule, matches: matches && !hasTypeErrors }
 }
 
 /**
@@ -87,10 +95,9 @@ function evaluateConditional(
  * @param schema - The JSON schema containing the rules
  * @param options - Validation options
  *
- * Fields start with visibility based on their required status.
- * Conditional rules in the schema's allOf property can then:
- * - Make fields visible by including them in a required array
- * - Make fields hidden by setting them to false in properties
+ * Fields start visible by default, and they're set to hidden if their schema is
+ * set to false (a falsy schema means the schema fails whenever a value is sent for that field)
+ *
  */
 function applySchemaRules(
   fields: Field[],
@@ -104,11 +111,12 @@ function applySchemaRules(
 
   const conditionalRules: { rule: NonBooleanJsfSchema, matches: boolean }[] = []
 
+  // If the schema has an if property, evaluate it and add it to the conditional rules array
   if (schema.if) {
     conditionalRules.push(evaluateConditional(values, schema, schema, options))
   }
 
-  /// TODO: should we check for anyOf as well??
+  // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
   (schema.allOf ?? [])
     .filter(rule => typeof rule === 'object' && rule !== null && 'if' in rule)
     .forEach((rule) => {
@@ -116,30 +124,28 @@ function applySchemaRules(
       conditionalRules.push(result)
     })
 
-  resetVisibility(fields)
-
+  // Process the conditional rules
   for (const { rule, matches } of conditionalRules) {
+    // If the rule matches, process the then branch
     if (matches && rule.then) {
       processBranch(fields, rule.then)
     }
+    // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
       processBranch(fields, rule.else)
     }
   }
 }
 
-function resetVisibility(fields: Field[]) {
-  for (const field of fields) {
-    field.isVisible = true
-    if (field.fields) {
-      resetVisibility(field.fields)
-    }
-  }
-}
-
+/**
+ * Processes a branch of a conditional rule, updating the visibility of fields based on the branch's schema
+ * @param fields - The fields to process
+ * @param branch - The branch (schema representing and then/else) to process
+ */
 function processBranch(fields: Field[], branch: JsfSchema) {
   if (branch.properties) {
-    // cycle through each branch property
+    // Cycle through each property in the schema and search for any (possibly nested)
+    // fields that have a false boolean schema. If found, set the field's visibility to false
     for (const fieldName in branch.properties) {
       const fieldSchema = branch.properties[fieldName]
       const field = fields.find(e => e.name === fieldName)
