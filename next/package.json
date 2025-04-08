@@ -28,7 +28,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
+    "dev": "NODE_ENV=development tsup --watch",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "test:file": "jest --runTestsByPath",
