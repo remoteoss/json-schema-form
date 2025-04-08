@@ -262,7 +262,6 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
  * @returns The validation result
  */
 function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOptions = {}): ValidationResult {
-  debugger
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
