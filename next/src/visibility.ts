@@ -1,9 +1,5 @@
 import type { Field } from './field/type'
 import type { FormErrors, ValidationResult } from './form'
-import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
-import type { ValidationOptions } from './validation/schema'
-import { validateSchema } from './validation/schema'
-import { isObjectValue } from './validation/util'
 
 function resetVisibility(fields: Field[]) {
   for (const field of fields) {
