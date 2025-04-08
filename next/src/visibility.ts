@@ -1,5 +1,5 @@
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
@@ -48,6 +48,38 @@ export function updateFieldVisibility(
   }
 }
 
+function evaluateConditional(
+  values: ObjectValue,
+  schema: JsfObjectSchema,
+  rule: NonBooleanJsfSchema,
+  options: ValidationOptions = {},
+) {
+  const ruleObj = rule as NonBooleanJsfSchema
+
+  const ifErrors = validateSchema(values, ruleObj.if!, options)
+  const matches = ifErrors.length === 0
+
+  // Prevent fields from being shown when required fields have type errors
+  let hasTypeErrors = false
+  if (matches
+    && typeof ruleObj.if === 'object'
+    && ruleObj.if !== null
+    && Array.isArray(ruleObj.if.required)) {
+    const requiredFields = ruleObj.if.required
+    hasTypeErrors = requiredFields.some((fieldName) => {
+      if (!schema.properties || !schema.properties[fieldName]) {
+        return false
+      }
+      const fieldSchema = schema.properties[fieldName]
+      const fieldValue = values[fieldName]
+      const fieldErrors = validateSchema(fieldValue, fieldSchema, options)
+      return fieldErrors.some(error => error.validation === 'type')
+    })
+  }
+
+  return { rule: ruleObj, matches: matches && !hasTypeErrors }
+}
+
 /**
  * Applies JSON Schema conditional rules to determine field visibility
  * @param fields - The fields to apply rules to
@@ -66,42 +98,23 @@ function applySchemaRules(
   schema: JsfObjectSchema,
   options: ValidationOptions = {},
 ) {
-  if (!schema.allOf || !Array.isArray(schema.allOf) || !isObjectValue(values)) {
+  if (!isObjectValue(values)) {
     return
   }
 
-  const conditionalRules = schema.allOf
+  const conditionalRules: { rule: NonBooleanJsfSchema, matches: boolean }[] = []
+
+  if (schema.if) {
+    conditionalRules.push(evaluateConditional(values, schema, schema, options))
+  }
+
+  /// TODO: should we check for anyOf as well??
+  (schema.allOf ?? [])
     .filter(rule => typeof rule === 'object' && rule !== null && 'if' in rule)
-    .map((rule) => {
-      const ruleObj = rule as NonBooleanJsfSchema
-
-      const ifErrors = validateSchema(values, ruleObj.if!, options)
-      const matches = ifErrors.length === 0
-
-      // Prevent fields from being shown when required fields have type errors
-      let hasTypeErrors = false
-      if (matches
-        && typeof ruleObj.if === 'object'
-        && ruleObj.if !== null
-        && Array.isArray(ruleObj.if.required)) {
-        const requiredFields = ruleObj.if.required
-        hasTypeErrors = requiredFields.some((fieldName) => {
-          if (!schema.properties || !schema.properties[fieldName]) {
-            return false
-          }
-          const fieldSchema = schema.properties[fieldName]
-          const fieldValue = values[fieldName]
-          const fieldErrors = validateSchema(fieldValue, fieldSchema, options)
-          return fieldErrors.some(error => error.validation === 'type')
-        })
-      }
-
-      return { rule: ruleObj, matches: matches && !hasTypeErrors }
+    .forEach((rule) => {
+      const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options)
+      conditionalRules.push(result)
     })
-
-  // for (const field of fields) {
-  //   // Default visibility is based on required status
-  //   let isVisible = field.isVisible ?? true
 
   resetVisibility(fields)
 

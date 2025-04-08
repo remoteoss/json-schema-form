@@ -258,9 +258,9 @@ describe('Field visibility', () => {
 
     it('should show the password field if the name is admin', () => {
       const form = createHeadlessForm(schema, { initialValues: { form: { name: 'admin', password: null } } })
-      form.handleValidation({
+      form.handleValidation({ form: {
         name: 'admin',
-      })
+      } })
       expect(form.fields.find(field => field.name === 'form')?.fields?.find(field => field.name === 'password')?.isVisible).toBe(true)
     })
   })
