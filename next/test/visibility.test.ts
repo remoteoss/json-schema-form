@@ -1,4 +1,4 @@
-import type { JsfObjectSchema, ObjectValue, SchemaValue } from '../src/types'
+import type { JsfObjectSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../src'
 
