@@ -294,13 +294,12 @@ export function createHeadlessForm(
 ): FormResult {
   const initialValues = options.initialValues || {}
   const fields = buildFields({ schema })
-  const validationResult = validate(initialValues, schema, options.validationOptions)
-  updateFieldVisibility(fields, validationResult)
+  updateFieldVisibility(fields, initialValues, schema)
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
-    updateFieldVisibility(fields, result)
+    updateFieldVisibility(fields, value, schema, options.validationOptions)
     return result
   }
 
