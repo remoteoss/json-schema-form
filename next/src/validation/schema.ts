@@ -143,7 +143,13 @@ export function validateSchema(
   }
 
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid' }]
+    // It means the property does not exist in the payload
+    if (!schema && typeof value !== 'undefined') {
+      return [{ path, validation: 'valid' }]
+    }
+    else {
+      return []
+    }
   }
 
   const typeValidationErrors = validateType(value, schema, path)

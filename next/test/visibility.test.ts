@@ -1,271 +1,217 @@
-import type { JsfObjectSchema, ObjectValue, SchemaValue } from '../src/types'
+import type { JsfObjectSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../src'
 
 describe('Field visibility', () => {
-  describe('updateFieldVisibility behavior', () => {
-    it('should keep all fields visible by default without conditional rules', () => {
+  describe('if inside allOf', () => {
+    describe('if a "then" branch is not provided', () => {
       const schema: JsfObjectSchema = {
         type: 'object',
         properties: {
-          requiredField: { type: 'string' },
-          optionalField: { type: 'string' },
-        },
-        required: ['requiredField'],
-      }
-
-      const form = createHeadlessForm(schema)
-
-      const requiredField = form.fields.find(field => field.name === 'requiredField')
-      const optionalField = form.fields.find(field => field.name === 'optionalField')
-
-      expect(requiredField?.isVisible).toBe(true)
-      expect(optionalField?.isVisible).toBe(true)
-    })
-
-    it('should make fields visible when included in required array of conditional rule', () => {
-      const schema: JsfObjectSchema = {
-        type: 'object',
-        properties: {
-          showDetails: { type: 'boolean' },
-          details: { type: 'string' },
-        },
-        allOf: [
-          {
-            if: {
-              properties: {
-                showDetails: { const: true },
-              },
-              required: ['showDetails'],
-            },
-            then: {
-              required: ['details'],
-            },
+          name: {
+            type: 'string',
           },
-        ],
-      }
-
-      const form = createHeadlessForm(schema)
-
-      const detailsField = form.fields.find(field => field.name === 'details')
-      expect(detailsField?.isVisible).toBe(false)
-
-      const value1: ObjectValue = { showDetails: true as unknown as SchemaValue }
-      form.handleValidation(value1)
-      expect(detailsField?.isVisible).toBe(true)
-
-      const value2: ObjectValue = { showDetails: false as unknown as SchemaValue }
-      form.handleValidation(value2)
-      expect(detailsField?.isVisible).toBe(false)
-    })
-
-    it('should hide fields explicitly set to false in properties', () => {
-      const schema: JsfObjectSchema = {
-        type: 'object',
-        properties: {
-          toggle: { type: 'boolean' },
-          alwaysVisible: { type: 'string' },
+          password: {
+            type: 'string',
+          },
         },
-        required: ['alwaysVisible'],
         allOf: [
           {
             if: {
               properties: {
-                toggle: { const: true },
+                name: {
+                  const: 'admin',
+                },
               },
-              required: ['toggle'],
+              required: ['name'],
             },
-            then: {
+            else: {
               properties: {
-                alwaysVisible: false,
+                password: false,
               },
             },
           },
         ],
       }
 
-      const form = createHeadlessForm(schema)
+      it('should hide the password field by default', () => {
+        const form = createHeadlessForm(schema, { initialValues: { name: 'asd', password: null } })
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(false)
 
-      const targetField = form.fields.find(field => field.name === 'alwaysVisible')
-      expect(targetField?.isVisible).toBe(true)
+        // Different name provided
+        form.handleValidation({
+          name: 'some name',
+          password: null,
+        })
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(false)
+      })
 
-      const value: ObjectValue = { toggle: true as unknown as SchemaValue }
-      form.handleValidation(value)
-      expect(targetField?.isVisible).toBe(false)
+      it('should show the password field if the name is admin', () => {
+        const form = createHeadlessForm(schema)
+        form.handleValidation({
+          name: 'admin',
+        })
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+      })
     })
-
-    it('should handle nested field visibility', () => {
+    describe('if an "else" branch is not provided', () => {
+      const userName = 'user that does not need password field visible'
       const schema: JsfObjectSchema = {
         type: 'object',
         properties: {
-          user: {
-            type: 'object',
+          name: {
+            type: 'string',
+          },
+          password: {
+            type: 'string',
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                name: {
+                  const: userName,
+                },
+              },
+              required: ['name'],
+            },
+            then: {
+              properties: {
+                password: false,
+              },
+            },
+          },
+        ],
+      }
+
+      it('should show the password field by default', () => {
+        const form = createHeadlessForm(schema)
+        // No name provided
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+
+        // Different name provided
+        form.handleValidation({
+          name: 'some name',
+        })
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+      })
+
+      it('should hide the password field if the name is "user that does not need password field visible"', () => {
+        const form = createHeadlessForm(schema, { initialValues: { name: userName, password: null } })
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(false)
+      })
+    })
+    describe('if no "else" or "then" branch are provided', () => {
+      const userName = 'admin'
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+          password: {
+            type: 'string',
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                name: {
+                  const: userName,
+                },
+              },
+              required: ['name'],
+            },
+          },
+        ],
+      }
+
+      it('should show the password field by default', () => {
+        const form = createHeadlessForm(schema)
+        // No name provided
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+
+        // Different name provided
+        form.handleValidation({
+          name: 'some name',
+        })
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+      })
+
+      it('should show the password field if the name is "admin"', () => {
+        const form = createHeadlessForm(schema)
+        form.handleValidation({
+          name: userName,
+        })
+        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+      })
+    })
+  })
+
+  // This does not work with v0 but I think it should work with v1
+  describe('if on a fieldset schema level', () => {
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        form: {
+          type: 'object',
+          properties: {
+            name: {
+              type: 'string',
+            },
+            password: {
+              type: 'string',
+            },
+          },
+        },
+      },
+      if: {
+        properties: {
+          form: {
             properties: {
-              type: { type: 'string', enum: ['personal', 'business'] },
-              personalName: { type: 'string' },
-              businessName: { type: 'string' },
+              name: {
+                const: 'admin',
+              },
             },
-            required: ['type'],
-            allOf: [
-              {
-                if: {
-                  properties: {
-                    type: { const: 'personal' },
-                  },
-                  required: ['type'],
-                },
-                then: {
-                  required: ['personalName'],
-                },
-              },
-              {
-                if: {
-                  properties: {
-                    type: { const: 'business' },
-                  },
-                  required: ['type'],
-                },
-                then: {
-                  required: ['businessName'],
-                },
-              },
-            ],
+            required: ['name'],
           },
         },
-      }
+        required: ['form'],
+      },
+      else: {
+        properties: {
+          form: {
+            properties: {
+              password: false,
+            },
+          },
+        },
+      },
+    }
 
-      // We need to initialize with user object explicitly for nested fields
-      const form = createHeadlessForm(schema, { initialValues: { user: {} } })
+    it('should hide the password field by default', () => {
+      const form = createHeadlessForm(schema, { initialValues: { form: { name: '', password: null } } })
+      // No name provided
+      expect(form.fields.find(field => field.name === 'form')?.fields?.find(field => field.name === 'password')?.isVisible).toBe(false)
 
-      const userField = form.fields.find(field => field.name === 'user')
-      expect(userField?.fields).toBeTruthy()
-
-      if (userField?.fields) {
-        const typeField = userField.fields.find(f => f.name === 'type')
-        const personalNameField = userField.fields.find(f => f.name === 'personalName')
-        const businessNameField = userField.fields.find(f => f.name === 'businessName')
-
-        expect(typeField?.isVisible).toBe(true)
-        expect(personalNameField?.isVisible).toBe(false)
-        expect(businessNameField?.isVisible).toBe(false)
-
-        const personalValue: ObjectValue = { user: { type: 'personal' } as ObjectValue }
-        form.handleValidation(personalValue)
-        expect(personalNameField?.isVisible).toBe(true)
-        expect(businessNameField?.isVisible).toBe(false)
-
-        const businessValue: ObjectValue = { user: { type: 'business' } as ObjectValue }
-        form.handleValidation(businessValue)
-        expect(personalNameField?.isVisible).toBe(false)
-        expect(businessNameField?.isVisible).toBe(true)
-      }
+      // Different name provided
+      form.handleValidation({
+        form: {
+          name: 'some name',
+          password: null,
+        },
+      })
+      expect(form.fields.find(field => field.name === 'form')?.fields?.find(field => field.name === 'password')?.isVisible).toBe(false)
     })
 
-    it('should consider type errors in conditional fields', () => {
-      const schema: JsfObjectSchema = {
-        type: 'object',
-        properties: {
-          count: { type: 'number' },
-          details: { type: 'string' },
-        },
-        allOf: [
-          {
-            if: {
-              properties: {
-                count: { minimum: 1 },
-              },
-              required: ['count'],
-            },
-            then: {
-              required: ['details'],
-            },
-          },
-        ],
-      }
-
-      const form = createHeadlessForm(schema)
-
-      const detailsField = form.fields.find(field => field.name === 'details')
-      expect(detailsField?.isVisible).toBe(false)
-
-      const invalidValue: ObjectValue = { count: 'not-a-number' }
-      form.handleValidation(invalidValue)
-      expect(detailsField?.isVisible).toBe(false)
-
-      const validValue: ObjectValue = { count: 2 }
-      form.handleValidation(validValue)
-      expect(detailsField?.isVisible).toBe(true)
-    })
-
-    it('should handle multiple conditional rules affecting the same field', () => {
-      const schema: JsfObjectSchema = {
-        type: 'object',
-        properties: {
-          isAdult: { type: 'boolean' },
-          hasJob: { type: 'boolean' },
-          salary: { type: 'string' },
-        },
-        allOf: [
-          {
-            if: {
-              properties: {
-                isAdult: { const: true },
-              },
-              required: ['isAdult'],
-            },
-            then: {
-              required: ['hasJob'],
-            },
-          },
-          {
-            if: {
-              properties: {
-                hasJob: { const: true },
-              },
-              required: ['hasJob'],
-            },
-            then: {
-              required: ['salary'],
-            },
-          },
-        ],
-      }
-
-      const form = createHeadlessForm(schema)
-
-      const hasJobField = form.fields.find(f => f.name === 'hasJob')
-      const salaryField = form.fields.find(f => f.name === 'salary')
-
-      expect(hasJobField?.isVisible).toBe(false)
-      expect(salaryField?.isVisible).toBe(false)
-
-      const value1: ObjectValue = { isAdult: true as unknown as SchemaValue }
-      form.handleValidation(value1)
-      expect(hasJobField?.isVisible).toBe(true)
-      expect(salaryField?.isVisible).toBe(false)
-
-      const value2: ObjectValue = {
-        isAdult: true as unknown as SchemaValue,
-        hasJob: true as unknown as SchemaValue,
-      }
-      form.handleValidation(value2)
-      expect(hasJobField?.isVisible).toBe(true)
-      expect(salaryField?.isVisible).toBe(true)
-
-      const value3: ObjectValue = {
-        isAdult: true as unknown as SchemaValue,
-        hasJob: false as unknown as SchemaValue,
-      }
-      form.handleValidation(value3)
-      expect(hasJobField?.isVisible).toBe(true)
-      expect(salaryField?.isVisible).toBe(false)
-
-      const value4: ObjectValue = {
-        isAdult: false as unknown as SchemaValue,
-      }
-      form.handleValidation(value4)
-      expect(hasJobField?.isVisible).toBe(false)
-      expect(salaryField?.isVisible).toBe(false)
+    it('should show the password field if the name is admin', () => {
+      const form = createHeadlessForm(schema, { initialValues: { form: { name: 'admin', password: null } } })
+      form.handleValidation({ form: {
+        name: 'admin',
+      } })
+      expect(form.fields.find(field => field.name === 'form')?.fields?.find(field => field.name === 'password')?.isVisible).toBe(true)
     })
   })
 })
