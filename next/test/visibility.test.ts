@@ -4,7 +4,7 @@ import { createHeadlessForm } from '../src'
 
 describe('Field visibility', () => {
   describe('if inside allOf', () => {
-    describe('if no "then" branch is provided', () => {
+    describe('if a "then" branch is not provided', () => {
       const schema: JsfObjectSchema = {
         type: 'object',
         properties: {
