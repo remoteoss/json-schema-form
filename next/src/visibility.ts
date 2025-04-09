@@ -69,10 +69,7 @@ function evaluateConditional(
 
   // Prevent fields from being shown when required fields have type errors
   let hasTypeErrors = false
-  if (matches
-    && typeof rule.if === 'object'
-    && rule.if !== null
-    && Array.isArray(rule.if.required)) {
+  if (matches && rule.if?.required) {
     const requiredFields = rule.if.required
     hasTypeErrors = requiredFields.some((fieldName) => {
       if (!schema.properties || !schema.properties[fieldName]) {
