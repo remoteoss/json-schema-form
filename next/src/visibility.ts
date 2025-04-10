@@ -115,7 +115,7 @@ function applySchemaRules(
 
   // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
   (schema.allOf ?? [])
-    .filter(rule => typeof rule === 'object' && rule !== null && 'if' in rule)
+    .filter((rule: JsfSchema) => rule.if)
     .forEach((rule) => {
       const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options)
       conditionalRules.push(result)
