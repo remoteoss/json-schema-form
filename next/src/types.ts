@@ -61,22 +61,6 @@ export type JsfSchema = JSONSchema & {
  */
 export type NonBooleanJsfSchema = Exclude<JsfSchema, boolean>
 
-const ok: NonBooleanJsfSchema = {
-  allOf: [
-    {
-      if: {
-        required: ['123'],
-      },
-    },
-  ],
-}
-
-const ok2: JSONSchema = {
-  if: {
-    required: ['123'],
-  },
-}
-
 /**
  * JSON Schema Form type specifically for object schemas.
  * This type ensures the schema has type 'object'.
