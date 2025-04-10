@@ -32,7 +32,7 @@ export function validateAllOf(
   options: ValidationOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
-  if (!schema.allOf || !Array.isArray(schema.allOf)) {
+  if (!schema.allOf) {
     return []
   }
 
@@ -69,7 +69,7 @@ export function validateAnyOf(
   options: ValidationOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
-  if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
+  if (!schema.anyOf) {
     return []
   }
 
@@ -110,7 +110,7 @@ export function validateOneOf(
   options: ValidationOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
-  if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
+  if (!schema.oneOf) {
     return []
   }
 
