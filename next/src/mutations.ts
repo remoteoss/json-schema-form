@@ -13,7 +13,7 @@ import { isObjectValue } from './validation/util'
  * @param schema - The JSON schema definition
  * @param options - Validation options
  */
-export function updateFieldVisibility(
+export function mutateFields(
   fields: Field[],
   values: SchemaValue,
   schema: JsfObjectSchema,

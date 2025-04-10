@@ -4,9 +4,9 @@ import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } fro
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldObject } from './field/object'
+import { mutateFields } from './mutations'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
-import { updateFieldVisibility } from './visibility'
 
 export { ValidationOptions } from './validation/schema'
 
@@ -295,8 +295,8 @@ export function createHeadlessForm(
   const initialValues = options.initialValues || {}
   const fields = buildFields({ schema })
 
-  // Making sure visibility is set correctly upon form creation, for initial values
-  updateFieldVisibility(fields, initialValues, schema)
+  // Making sure field properties are correct for the initial values
+  mutateFields(fields, initialValues, schema)
 
   // TODO: check if we need this isError variable exposed
   const isError = false
@@ -304,11 +304,11 @@ export function createHeadlessForm(
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
 
-    // Fields might have changed, so we need to rebuild the fields by updating them in place
+    // Fields properties might have changed, so we need to reset the fields by updating them in place
     buildFieldsInPlace(fields, schema)
 
-    // Updating field visibility based on the new form value
-    updateFieldVisibility(fields, value, schema, options.validationOptions)
+    // Updating field properties based on the new form value
+    mutateFields(fields, value, schema, options.validationOptions)
 
     return result
   }
