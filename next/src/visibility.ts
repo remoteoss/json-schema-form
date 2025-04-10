@@ -69,10 +69,7 @@ function evaluateConditional(
 
   // Prevent fields from being shown when required fields have type errors
   let hasTypeErrors = false
-  if (matches
-    && typeof rule.if === 'object'
-    && rule.if !== null
-    && Array.isArray(rule.if.required)) {
+  if (matches && rule.if?.required) {
     const requiredFields = rule.if.required
     hasTypeErrors = requiredFields.some((fieldName) => {
       if (!schema.properties || !schema.properties[fieldName]) {
@@ -118,7 +115,7 @@ function applySchemaRules(
 
   // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
   (schema.allOf ?? [])
-    .filter(rule => typeof rule === 'object' && rule !== null && 'if' in rule)
+    .filter((rule: JsfSchema) => rule.if)
     .forEach((rule) => {
       const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options)
       conditionalRules.push(result)

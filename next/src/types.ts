@@ -45,6 +45,10 @@ export type JsfSchema = JSONSchema & {
     validations: Record<string, object>
     computedValues: Record<string, object>
   }
+  // Note: if we don't have this property here, when inspecting any recursive
+  // schema (like an if inside another schema), the required property won't be
+  // present in the type
+  'required'?: string[]
   'x-jsf-order'?: string[]
   'x-jsf-presentation'?: JsfPresentation
   'x-jsf-errorMessage'?: Record<string, string>

@@ -159,9 +159,7 @@ export function validateSchema(
 
   // If the schema defines "required", run required checks even when type is undefined.
   if (
-    schema.required
-    && Array.isArray(schema.required)
-    && isObjectValue(value)
+    schema.required && isObjectValue(value)
   ) {
     const missingKeys = schema.required.filter((key: string) => {
       const fieldValue = value[key]

@@ -1,6 +1,7 @@
 import type { JsfObjectSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../src'
+import { getField } from '../src/utils'
 
 describe('Field visibility', () => {
   describe('if inside allOf', () => {
@@ -36,14 +37,14 @@ describe('Field visibility', () => {
 
       it('should hide the password field by default', () => {
         const form = createHeadlessForm(schema, { initialValues: { name: 'asd', password: null } })
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(false)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(false)
 
         // Different name provided
         form.handleValidation({
           name: 'some name',
           password: null,
         })
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(false)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(false)
       })
 
       it('should show the password field if the name is admin', () => {
@@ -51,7 +52,7 @@ describe('Field visibility', () => {
         form.handleValidation({
           name: 'admin',
         })
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(true)
       })
     })
     describe('if an "else" branch is not provided', () => {
@@ -88,18 +89,18 @@ describe('Field visibility', () => {
       it('should show the password field by default', () => {
         const form = createHeadlessForm(schema)
         // No name provided
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(true)
 
         // Different name provided
         form.handleValidation({
           name: 'some name',
         })
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(true)
       })
 
       it('should hide the password field if the name is "user that does not need password field visible"', () => {
         const form = createHeadlessForm(schema, { initialValues: { name: userName, password: null } })
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(false)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(false)
       })
     })
     describe('if no "else" or "then" branch are provided', () => {
@@ -131,13 +132,13 @@ describe('Field visibility', () => {
       it('should show the password field by default', () => {
         const form = createHeadlessForm(schema)
         // No name provided
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(true)
 
         // Different name provided
         form.handleValidation({
           name: 'some name',
         })
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(true)
       })
 
       it('should show the password field if the name is "admin"', () => {
@@ -145,7 +146,7 @@ describe('Field visibility', () => {
         form.handleValidation({
           name: userName,
         })
-        expect(form.fields.find(field => field.name === 'password')?.isVisible).toBe(true)
+        expect(getField(form.fields, 'password')?.isVisible).toBe(true)
       })
     })
   })
@@ -194,7 +195,7 @@ describe('Field visibility', () => {
     it('should hide the password field by default', () => {
       const form = createHeadlessForm(schema, { initialValues: { form: { name: '', password: null } } })
       // No name provided
-      expect(form.fields.find(field => field.name === 'form')?.fields?.find(field => field.name === 'password')?.isVisible).toBe(false)
+      expect(getField(form.fields, 'form', 'password')?.isVisible).toBe(false)
 
       // Different name provided
       form.handleValidation({
@@ -203,7 +204,7 @@ describe('Field visibility', () => {
           password: null,
         },
       })
-      expect(form.fields.find(field => field.name === 'form')?.fields?.find(field => field.name === 'password')?.isVisible).toBe(false)
+      expect(getField(form.fields, 'form', 'password')?.isVisible).toBe(false)
     })
 
     it('should show the password field if the name is admin', () => {
@@ -211,7 +212,7 @@ describe('Field visibility', () => {
       form.handleValidation({ form: {
         name: 'admin',
       } })
-      expect(form.fields.find(field => field.name === 'form')?.fields?.find(field => field.name === 'password')?.isVisible).toBe(true)
+      expect(getField(form.fields, 'form', 'password')?.isVisible).toBe(true)
     })
   })
 })
