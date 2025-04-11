@@ -331,6 +331,7 @@ export function processNode({
   accRequired = new Set(),
   parentID = 'root',
   logic,
+  processingConditional = false,
 }) {
   // Set initial required fields
   const requiredFields = new Set(accRequired);
@@ -339,6 +340,24 @@ export function processNode({
   Object.keys(node.properties ?? []).forEach((fieldName) => {
     const field = getField(fieldName, formFields);
     updateField(field, requiredFields, node, formValues, logic, { parentID });
+
+    // If we're processing a conditional field node and it's respective to a fieldset field,
+    // update the nested fields going through the node recursively.
+    // As an example, the node here can be:
+    // 1. { properties: { perks: { properties: { retirement: { const: 'basic' } } } } } }
+    // 2. { properties: { perks: { required: ['retirement'] } } } }
+    // where 'perks' is a fieldset field.
+    const nestedNode = node.properties[fieldName];
+    const isFieldset = field?.inputType === supportedTypes.FIELDSET;
+    if (isFieldset && processingConditional) {
+      processNode({
+        node: nestedNode,
+        formValues: formValues[fieldName] || {},
+        formFields: field.fields,
+        parentID,
+        logic,
+      });
+    }
   });
 
   // Update required fields based on the `required` property and mutate node if needed
@@ -361,6 +380,7 @@ export function processNode({
         accRequired: requiredFields,
         parentID,
         logic,
+        processingConditional: true,
       });
 
       branchRequired.forEach((field) => requiredFields.add(field));
@@ -372,6 +392,7 @@ export function processNode({
         accRequired: requiredFields,
         parentID,
         logic,
+        processingConditional: true,
       });
       branchRequired.forEach((field) => requiredFields.add(field));
     }
@@ -391,6 +412,22 @@ export function processNode({
     });
   }
 
+  if (node.properties) {
+    Object.entries(node.properties).forEach(([name, nestedNode]) => {
+      const inputType = getInputType(nestedNode);
+      if (inputType === supportedTypes.FIELDSET) {
+        // It's a fieldset, which might contain scoped conditions
+        processNode({
+          node: nestedNode,
+          formValues: formValues[name] || {},
+          formFields: getField(name, formFields).fields,
+          parentID: name,
+          logic,
+        });
+      }
+    });
+  }
+
   if (node.allOf) {
     node.allOf
       .map((allOfNode) =>
@@ -406,22 +443,6 @@ export function processNode({
       .forEach(({ required: allOfItemRequired }) => {
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
-  }
-
-  if (node.properties) {
-    Object.entries(node.properties).forEach(([name, nestedNode]) => {
-      const inputType = getInputType(nestedNode);
-      if (inputType === supportedTypes.FIELDSET) {
-        // It's a fieldset, which might contain scoped conditions
-        processNode({
-          node: nestedNode,
-          formValues: formValues[name] || {},
-          formFields: getField(name, formFields).fields,
-          parentID: name,
-          logic,
-        });
-      }
-    });
   }
 
   if (node['x-jsf-logic']) {

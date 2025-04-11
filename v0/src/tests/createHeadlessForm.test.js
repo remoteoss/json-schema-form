@@ -63,6 +63,7 @@ import {
   schemaForErrorMessageSpecificity,
   jsfConfigForErrorMessageSpecificity,
   schemaInputTypeFile,
+  schemaWithRootFieldsetsConditionals,
 } from './helpers';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 import { createHeadlessForm } from '@/createHeadlessForm';
@@ -2198,6 +2199,47 @@ describe('createHeadlessForm', () => {
               perks: perksForLowWorkHours,
             })
           ).toBeUndefined();
+        });
+      });
+
+      describe('supports root fieldsets conditionals', () => {
+        it('Given a basic retirement, the perks.has_pension is hidden', async () => {
+          const { fields, handleValidation } = createHeadlessForm(
+            schemaWithRootFieldsetsConditionals,
+            {}
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+          expect(validateForm({})).toEqual({
+            perks: {
+              retirement: 'Required field',
+            },
+          });
+
+          // has_pension is not visible
+          expect(getField(fields, 'perks', 'has_pension').isVisible).toBe(false);
+
+          expect(
+            validateForm({
+              perks: { retirement: 'plus' },
+            })
+          ).toEqual({
+            perks: {
+              has_pension: 'Required field',
+            },
+          });
+
+          // field becomes visible
+          expect(getField(fields, 'perks', 'has_pension').isVisible).toBe(true);
+
+          expect(
+            validateForm({
+              perks: { retirement: 'basic' },
+            })
+          ).toBeUndefined();
+
+          // field becomes invisible
+          expect(getField(fields, 'perks', 'has_pension').isVisible).toBe(false);
         });
       });
     });
