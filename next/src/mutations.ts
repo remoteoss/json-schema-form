@@ -1,7 +1,6 @@
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
-import { buildFieldObject } from './field/object'
 import { buildFieldSchema } from './field/schema'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
@@ -124,7 +123,9 @@ function applySchemaRules(
 /**
  * Processes a branch of a conditional rule, updating the visibility of fields based on the branch's schema
  * @param fields - The fields to process
+ * @param values - The current form values
  * @param branch - The branch (schema representing and then/else) to process
+ * @param options - Validation options
  */
 function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}) {
   if (branch.properties) {
