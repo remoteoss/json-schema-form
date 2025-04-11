@@ -1,7 +1,7 @@
-import type { JsfObjectSchema } from '../src/types'
+import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
-import { createHeadlessForm } from '../src'
-import { getField } from '../src/utils'
+import { createHeadlessForm } from '../../src'
+import { getField } from '../../src/utils'
 
 describe('Field visibility', () => {
   describe('if inside allOf', () => {

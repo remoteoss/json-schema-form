@@ -1,21 +1,10 @@
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
+import { buildFieldSchema } from './field/schema'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
 
-/**
- * Resets the visibility of all fields to true
- * @param fields - The fields to reset
- */
-function resetVisibility(fields: Field[]) {
-  for (const field of fields) {
-    field.isVisible = true
-    if (field.fields) {
-      resetVisibility(field.fields)
-    }
-  }
-}
 /**
  * Updates field visibility based on JSON schema conditional rules
  * @param fields - The fields to update
@@ -23,7 +12,7 @@ function resetVisibility(fields: Field[]) {
  * @param schema - The JSON schema definition
  * @param options - Validation options
  */
-export function updateFieldVisibility(
+export function mutateFields(
   fields: Field[],
   values: SchemaValue,
   schema: JsfObjectSchema,
@@ -32,9 +21,6 @@ export function updateFieldVisibility(
   if (!isObjectValue(values)) {
     return
   }
-
-  // Reseting fields visibility to the default before re-calculating it
-  resetVisibility(fields)
 
   // Apply rules to current level of fields
   applySchemaRules(fields, values, schema, options)
@@ -125,11 +111,11 @@ function applySchemaRules(
   for (const { rule, matches } of conditionalRules) {
     // If the rule matches, process the then branch
     if (matches && rule.then) {
-      processBranch(fields, rule.then)
+      processBranch(fields, values, rule.then, options)
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
-      processBranch(fields, rule.else)
+      processBranch(fields, values, rule.else, options)
     }
   }
 }
@@ -137,9 +123,11 @@ function applySchemaRules(
 /**
  * Processes a branch of a conditional rule, updating the visibility of fields based on the branch's schema
  * @param fields - The fields to process
+ * @param values - The current form values
  * @param branch - The branch (schema representing and then/else) to process
+ * @param options - Validation options
  */
-function processBranch(fields: Field[], branch: JsfSchema) {
+function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}) {
   if (branch.properties) {
     // Cycle through each property in the schema and search for any (possibly nested)
     // fields that have a false boolean schema. If found, set the field's visibility to false
@@ -148,15 +136,26 @@ function processBranch(fields: Field[], branch: JsfSchema) {
       const field = fields.find(e => e.name === fieldName)
       if (field) {
         if (field?.fields) {
-          processBranch(field.fields, fieldSchema)
+          processBranch(field.fields, values, fieldSchema)
         }
         else if (fieldSchema === false) {
           field.isVisible = false
         }
         else {
-          field.isVisible = true
+          // If the field has properties being declared on this branch, we need to update the field
+          // with the new properties
+          const newField = buildFieldSchema(fieldSchema as JsfObjectSchema, fieldName, true)
+          for (const key in newField) {
+            // We don't want to override the type property
+            if (!['type'].includes(key)) {
+              field[key] = newField[key]
+            }
+          }
         }
       }
     }
   }
+
+  // Apply rules to the branch
+  applySchemaRules(fields, values, branch as JsfObjectSchema, options)
 }
