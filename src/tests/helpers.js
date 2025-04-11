@@ -1973,6 +1973,90 @@ export const schemaWithConditionalToFieldset = {
   required: ['perks', 'work_hours_per_week'],
 };
 
+export const schemaWithRootFieldsetsConditionals = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    perks: {
+      additionalProperties: false,
+      properties: {
+        retirement: {
+          oneOf: [
+            {
+              const: 'basic',
+              title: 'Basic',
+            },
+            {
+              const: 'plus',
+              title: 'Plus',
+            },
+          ],
+          title: 'Retirement',
+          type: 'string',
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+        },
+        has_pension: {
+          oneOf: [
+            {
+              const: 'yes',
+              title: 'Yes',
+            },
+            {
+              const: 'no',
+              title: 'No',
+            },
+          ],
+          title: 'Has pension',
+          type: 'string',
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+        },
+      },
+      required: ['retirement'],
+      title: 'Perks',
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+    },
+  },
+  required: ['perks'],
+  allOf: [
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              retirement: {
+                const: 'basic',
+              },
+            },
+          },
+        },
+      },
+      then: {
+        properties: {
+          perks: {
+            properties: {
+              has_pension: false,
+            },
+          },
+        },
+      },
+      else: {
+        properties: {
+          perks: {
+            required: ['has_pension'],
+          },
+        },
+      },
+    },
+  ],
+};
+
 export const schemaWorkSchedule = {
   type: 'object',
   properties: {
