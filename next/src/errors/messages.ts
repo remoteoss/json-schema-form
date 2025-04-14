@@ -19,7 +19,7 @@ export function getErrorMessage(
     case 'valid':
       return 'Always fails'
     case 'const':
-      return `The only accepted value is ${JSON.stringify(schema.const)}`
+      return `The only accepted value is ${JSON.stringify(schema.const)}.`
     case 'enum':
       return `The option "${valueToString(value)}" is not valid.`
     // Schema composition

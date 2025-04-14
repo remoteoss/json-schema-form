@@ -122,8 +122,8 @@ describe('validation error messages', () => {
       })
 
       expect(result.formErrors).toMatchObject({
-        type: 'The only accepted value is "user"',
-        version: 'The only accepted value is 1',
+        type: 'The only accepted value is "user".',
+        version: 'The only accepted value is 1.',
       })
     })
   })
