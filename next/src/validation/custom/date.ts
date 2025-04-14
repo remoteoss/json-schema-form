@@ -53,6 +53,7 @@ function validateMaxDate(value: string, maxDate: string): boolean {
  * Validate that a date value is valid
  * @param value - The value to validate
  * @param schema - The schema to validate against
+ * @param options - The validation options
  * @param path - The path to the value
  * @returns An array of validation errors
  * @description This function validates that a dat string value matches the maximum
