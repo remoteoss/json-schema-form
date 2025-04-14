@@ -50,6 +50,29 @@ describe('validation error messages', () => {
       })
     })
 
+    it('shows required field error messages for checkbox fields', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          consent: {
+            'type': 'string',
+            'const': 'yes',
+            'x-jsf-presentation': {
+              inputType: 'checkbox',
+            },
+          },
+        },
+        required: ['consent'],
+      }
+      const form = createHeadlessForm(schema)
+
+      const result = form.handleValidation({})
+
+      expect(result.formErrors).toMatchObject({
+        consent: 'Please acknowledge this field',
+      })
+    })
+
     it('shows enum validation error messages', () => {
       const schema: JsfObjectSchema = {
         type: 'object',
@@ -99,8 +122,8 @@ describe('validation error messages', () => {
       })
 
       expect(result.formErrors).toMatchObject({
-        type: 'The only accepted value is "user"',
-        version: 'The only accepted value is 1',
+        type: 'The only accepted value is "user".',
+        version: 'The only accepted value is 1.',
       })
     })
   })

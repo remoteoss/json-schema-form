@@ -12,11 +12,14 @@ export function getErrorMessage(
     case 'type':
       return getTypeErrorMessage(schema.type)
     case 'required':
+      if (schema['x-jsf-presentation']?.inputType === 'checkbox') {
+        return 'Please acknowledge this field'
+      }
       return 'Required field'
     case 'valid':
       return 'Always fails'
     case 'const':
-      return `The only accepted value is ${JSON.stringify(schema.const)}`
+      return `The only accepted value is ${JSON.stringify(schema.const)}.`
     case 'enum':
       return `The option "${valueToString(value)}" is not valid.`
     // Schema composition
