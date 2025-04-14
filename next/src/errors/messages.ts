@@ -12,6 +12,9 @@ export function getErrorMessage(
     case 'type':
       return getTypeErrorMessage(schema.type)
     case 'required':
+      if (schema['x-jsf-presentation']?.inputType === 'checkbox') {
+        return 'Please acknowledge this field'
+      }
       return 'Required field'
     case 'valid':
       return 'Always fails'
