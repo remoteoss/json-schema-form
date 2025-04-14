@@ -21,6 +21,10 @@ export type SchemaValidationErrorType =
    * Number validation keywords
    */
   | 'multipleOf' | 'maximum' | 'exclusiveMaximum' | 'minimum' | 'exclusiveMinimum'
+  /**
+   * Date validation keywords
+   */
+  | 'minDate' | 'maxDate'
 
 export type ValidationErrorPath = Array<string | number>
 

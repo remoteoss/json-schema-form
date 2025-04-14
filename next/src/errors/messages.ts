@@ -52,6 +52,11 @@ export function getErrorMessage(
       return `Must be greater or equal to ${schema.minimum}`
     case 'exclusiveMinimum':
       return `Must be greater than ${schema.exclusiveMinimum}`
+      // Date validation
+    case 'minDate':
+      return `The date must be ${schema['x-jsf-presentation']?.minDate} or after.`
+    case 'maxDate':
+      return `The date must be ${schema['x-jsf-presentation']?.maxDate} or before.`
   }
 }
 
