@@ -209,4 +209,78 @@ describe('fields', () => {
       },
     ])
   })
+
+  describe('radio field', () => {
+    it('builds a radio field with options', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          status: {
+            'type': 'string',
+            'oneOf': [
+              { const: 'active', title: 'Active' },
+              { const: 'inactive', title: 'Inactive' },
+            ],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          type: 'radio',
+          inputType: 'radio',
+          jsonType: 'string',
+          isVisible: true,
+          name: 'status',
+          required: false,
+          options: [
+            { label: 'Active', value: 'active' },
+            { label: 'Inactive', value: 'inactive' },
+          ],
+        },
+      ])
+    })
+
+    it('skips options without a const value', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          status: {
+            'type': 'string',
+            'oneOf': [
+              { const: 'active', title: 'Active' },
+              { const: 'inactive', title: 'Inactive' },
+              { const: null, title: 'Null' },
+              { title: 'Undefined' },
+            ],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          type: 'radio',
+          inputType: 'radio',
+          jsonType: 'string',
+          isVisible: true,
+          name: 'status',
+          required: false,
+          options: [
+            { label: 'Active', value: 'active' },
+            { label: 'Inactive', value: 'inactive' },
+          ],
+        },
+      ])
+    })
+  })
 })

@@ -1,5 +1,5 @@
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema } from '../types'
-import type { Field } from './type'
+import type { Field, FieldOption } from './type'
 import { buildFieldObject } from './object'
 
 /**
@@ -22,15 +22,18 @@ function getJsonType(schema: NonBooleanJsfSchema): string {
 /**
  * Convert options to the required format
  * This is used when we have a oneOf or anyOf schema property
+ * @param nodeOptions - The options to convert - the oneOf/anyOf elements in a schema
+ * @returns The converted options
+ * @description
+ * The options are converted to the required format by checking if the option has a const property.
+ * If it does, we add the option to the options array.
+ * If it doesn't, we skip the option.
  */
-function convertToOptions(nodeOptions: JsfSchema[]): Array<{
-  label: string
-  value: unknown
-  [key: string]: unknown
-}> {
+function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
   return nodeOptions
     .filter((option): option is NonBooleanJsfSchema =>
-      option !== null && typeof option === 'object')
+      'const' in option && option.const !== undefined && option.const !== null,
+    )
     .map((schemaOption) => {
       const title = schemaOption.title
       const value = schemaOption.const
