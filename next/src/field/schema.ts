@@ -30,7 +30,8 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<{
 }> {
   return nodeOptions
     .filter((option): option is NonBooleanJsfSchema =>
-      option !== null && typeof option === 'object')
+      'const' in option && option.const !== undefined && option.const !== null,
+    )
     .map((schemaOption) => {
       const title = schemaOption.title
       const value = schemaOption.const
