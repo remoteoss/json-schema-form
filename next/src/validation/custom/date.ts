@@ -69,24 +69,21 @@ export function validateDate(
   const isEmptyString = value === ''
   const isUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
   const isEmpty = isEmptyString || isUndefined
+  const errors: ValidationError[] = []
 
   if (!isString || isEmpty || schema['x-jsf-presentation'] === undefined) {
-    return []
+    return errors
   }
 
   const { minDate, maxDate } = schema['x-jsf-presentation']
 
   if (minDate && !validateMinDate(value, minDate)) {
-    return [
-      { path, validation: 'minDate' },
-    ]
+    errors.push({ path, validation: 'minDate' })
   }
 
   if (maxDate && !validateMaxDate(value, maxDate)) {
-    return [
-      { path, validation: 'maxDate' },
-    ]
+    errors.push({ path, validation: 'maxDate' })
   }
 
-  return []
+  return errors
 }
