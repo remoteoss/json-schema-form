@@ -2521,7 +2521,7 @@ describe('createHeadlessForm', () => {
           .addInput({
             username: {
               ...mockTextInputDeprecated,
-              presentation: {
+              'x-jsf-presentation': {
                 inputType: 'text',
                 maskSecret: 2,
                 // should override the root level description

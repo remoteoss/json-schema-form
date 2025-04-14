@@ -11,7 +11,7 @@ export const schemaInputTypeTextarea = {
   properties: {
     comment: {
       title: 'Your comment',
-      presentation: {
+      'x-jsf-presentation': {
         inputType: 'textarea',
       },
       maxLength: 250,
@@ -29,7 +29,7 @@ export const inputTypeCountriesSolo = {
     { title: 'Algeria', const: 'Algeria' },
   ],
   type: 'string',
-  presentation: {
+  'x-jsf-presentation': {
     inputType: 'countries',
   },
 };
@@ -58,7 +58,7 @@ export const schemaInputTypeCountriesMultiple = {
         ],
       },
       type: 'array',
-      presentation: {
+      'x-jsf-presentation': {
         inputType: 'countries',
       },
     },
@@ -90,7 +90,7 @@ export const schemaInputTypeTel = {
       type: 'string',
       pattern: '^(\\+|00)[0-9]{6,}$',
       maxLength: 30,
-      presentation: {
+      'x-jsf-presentation': {
         inputType: 'tel',
       },
       errorMessage: {
@@ -106,7 +106,7 @@ const mockTelInput = {
   title: 'Phone number',
   description: 'Enter your telephone number',
   maxLength: 30,
-  presentation: {
+  'x-jsf-presentation': {
     inputType: 'tel',
   },
   pattern: '^(\\+|00)\\d*$',
@@ -116,7 +116,7 @@ const mockTelInput = {
 export const mockMoneyInput = {
   title: 'Weekly salary',
   description: 'This field has a min and max values. Max has a custom error message.',
-  presentation: {
+  'x-jsf-presentation': {
     inputType: 'money',
     currency: 'EUR',
   },
@@ -150,7 +150,7 @@ export const schemaCustomComponent = {
     salary: {
       title: 'Monthly gross salary',
       description: 'This field gets represented by a custom UI Component.',
-      presentation: {
+      'x-jsf-presentation': {
         inputType: 'money',
         currency: 'EUR',
       },
