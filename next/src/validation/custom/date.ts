@@ -2,7 +2,7 @@ import type { ValidationError, ValidationErrorPath } from '../../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../../types'
 import type { ValidationOptions } from '../schema'
 
-export const DEFAULT_DATE_FORMAT = 'yyyy-MM-dd'
+export const DATE_FORMAT = 'yyyy-MM-dd'
 type DateComparisonResult = 'LESSER' | 'GREATER' | 'EQUAL'
 
 /**
@@ -34,7 +34,6 @@ function compareDates(d1: string, d2: string): DateComparisonResult {
  */
 function validateMinDate(value: string, minDate: string): boolean {
   const result = compareDates(value, minDate)
-
   return result === 'GREATER' || result === 'EQUAL'
 };
 

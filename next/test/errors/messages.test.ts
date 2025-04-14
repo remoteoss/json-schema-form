@@ -1,6 +1,7 @@
 import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
+import { DATE_FORMAT } from '../../src/validation/custom/date'
 
 describe('validation error messages', () => {
   describe('core validation errors', () => {
@@ -176,7 +177,7 @@ describe('validation error messages', () => {
       expect(result.formErrors?.alphanumeric).toMatch(/^Must have a valid format. E.g./)
     })
 
-    it('shows format validation error messages', () => {
+    it('shows format validation error messages for emails', () => {
       const schema: JsfObjectSchema = {
         type: 'object',
         properties: {
@@ -200,6 +201,29 @@ describe('validation error messages', () => {
       expect(result.formErrors).toMatchObject({
         email: 'Please enter a valid email address',
         uri: 'Must be a valid uri format',
+      })
+    })
+
+    it('shows format validation error messages for dates', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          date_of_birth: {
+            type: 'string',
+            format: 'date',
+          },
+        },
+      }
+      const form = createHeadlessForm(schema)
+
+      const result = form.handleValidation({
+        date_of_birth: 'not-a-date',
+      })
+
+      const currentDate = new Date().toISOString().split('T')[0]
+
+      expect(result.formErrors).toMatchObject({
+        date_of_birth: `Must be a valid date in ${DATE_FORMAT.toLowerCase()} format. e.g. ${currentDate}`,
       })
     })
   })
@@ -413,6 +437,55 @@ describe('validation error messages', () => {
 
       expect(result2.formErrors).toMatchObject({
         value: 'Number must be divisible by either 3 or 5, but not both',
+      })
+    })
+    describe('date validation errors', () => {
+      it('shows no error if data is empty/not defined or if there are not date constraints', () => {
+        const schema: JsfObjectSchema = {
+          type: 'object',
+          properties: {
+            dateWithoutConstraints: {
+              type: 'string',
+              format: 'date',
+            },
+            dateWithConstraints: {
+              'type': 'string',
+              'format': 'date',
+              'x-jsf-presentation': {
+                minDate: '2022-01-01',
+                maxDate: '2022-12-31',
+              },
+            },
+          },
+        }
+        let form = createHeadlessForm(schema)
+
+        let result = form.handleValidation({
+          dateWithoutConstraints: '1950-04-04',
+          dateWithConstraints: undefined,
+        })
+
+        expect(result.formErrors).toBeUndefined()
+
+        form = createHeadlessForm(schema, { validationOptions: { treatNullAsUndefined: true } })
+
+        result = form.handleValidation({
+          dateWithoutConstraints: null,
+          dateWithConstraints: '2025-04-04',
+        })
+
+        expect(result.formErrors).toMatchObject({
+          dateWithConstraints: 'The date must be 2022-12-31 or before.',
+        })
+
+        result = form.handleValidation({
+          dateWithoutConstraints: null,
+          dateWithConstraints: '1950-04-04',
+        })
+
+        expect(result.formErrors).toMatchObject({
+          dateWithConstraints: 'The date must be 2022-01-01 or after.',
+        })
       })
     })
   })
