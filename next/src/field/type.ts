@@ -28,3 +28,15 @@ export interface Field {
   // Allow additional properties from x-jsf-presentation (e.g. meta from oneOf/anyOf)
   [key: string]: unknown
 }
+
+/**
+ * Field option
+ * @description
+ * Represents a key/value pair that is used to populate the options for a field.
+ * Will be created from the oneOf/anyOf elements in a schema.
+ */
+export interface FieldOption {
+  label: string
+  value: unknown
+  [key: string]: unknown
+}
