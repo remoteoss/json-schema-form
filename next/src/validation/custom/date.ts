@@ -56,7 +56,7 @@ function validateMaxDate(value: string, maxDate: string): boolean {
  * @param options - The validation options
  * @param path - The path to the value
  * @returns An array of validation errors
- * @description This function validates that a dat string value matches the maximum
+ * @description This function validates that a date string value matches the maximum
  * and minimum date set in the x-jsf-presentation property.
  */
 export function validateDate(
