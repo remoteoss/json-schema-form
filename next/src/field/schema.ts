@@ -32,7 +32,7 @@ function getJsonType(schema: NonBooleanJsfSchema): string {
 function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
   return nodeOptions
     .filter((option): option is NonBooleanJsfSchema =>
-      'const' in option && option.const !== undefined && option.const !== null,
+      option !== null && typeof option === 'object' && option.const !== null,
     )
     .map((schemaOption) => {
       const title = schemaOption.title
