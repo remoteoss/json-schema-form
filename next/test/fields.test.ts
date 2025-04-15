@@ -248,7 +248,7 @@ describe('fields', () => {
       ])
     })
 
-    it('skips options without a const value', () => {
+    it('skips options without a null const value', () => {
       const schema = {
         type: 'object',
         properties: {
@@ -280,6 +280,7 @@ describe('fields', () => {
           options: [
             { label: 'Active', value: 'active' },
             { label: 'Inactive', value: 'inactive' },
+            { label: 'Undefined', value: undefined },
           ],
         },
       ])
