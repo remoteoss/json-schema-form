@@ -1,3 +1,9 @@
+#### 0.11.12-beta.0 (2025-04-15)
+
+##### Chores
+
+*  change deprecated 'presentation' to 'x-jsf-presentation' in test helpers ([#159](https://github.com/remoteoss/json-schema-form/pull/159)) ([3f03b16d](https://github.com/remoteoss/json-schema-form/commit/3f03b16dce6acd801ff497a9c547cceb1b6347c5))
+
 #### 0.11.11-beta.0 (2025-02-20)
 
 ##### Bug Fixes
