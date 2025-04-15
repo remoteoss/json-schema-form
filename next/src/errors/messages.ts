@@ -1,6 +1,7 @@
 import type { SchemaValidationErrorType } from '.'
 import type { JsfSchemaType, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { randexp } from 'randexp'
+import { DATE_FORMAT } from '../validation/custom/date'
 
 export function getErrorMessage(
   schema: NonBooleanJsfSchema,
@@ -40,6 +41,12 @@ export function getErrorMessage(
       if (schema.format === 'email') {
         return 'Please enter a valid email address'
       }
+
+      if (schema.format === 'date') {
+        const currentDate = new Date().toISOString().split('T')[0]
+        return `Must be a valid date in ${DATE_FORMAT.toLowerCase()} format. e.g. ${currentDate}`
+      }
+
       return `Must be a valid ${schema.format} format`
     // Number validation
     case 'multipleOf':
@@ -52,6 +59,11 @@ export function getErrorMessage(
       return `Must be greater or equal to ${schema.minimum}`
     case 'exclusiveMinimum':
       return `Must be greater than ${schema.exclusiveMinimum}`
+      // Date validation
+    case 'minDate':
+      return `The date must be ${schema['x-jsf-presentation']?.minDate} or after.`
+    case 'maxDate':
+      return `The date must be ${schema['x-jsf-presentation']?.maxDate} or before.`
   }
 }
 

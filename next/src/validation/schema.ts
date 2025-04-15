@@ -3,6 +3,7 @@ import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
 import { validateConst } from './const'
+import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
 import { validateNumber } from './number'
 import { validateObject } from './object'
@@ -176,6 +177,7 @@ export function validateSchema(
 
   return [
     ...errors,
+    // JSON-schema spec validations
     ...validateConst(value, schema, path),
     ...validateEnum(value, schema, path),
     ...validateObject(value, schema, options, path),
@@ -186,5 +188,7 @@ export function validateSchema(
     ...validateAnyOf(value, schema, options, path),
     ...validateOneOf(value, schema, options, path),
     ...validateCondition(value, schema, options, path),
+    // Custom validations
+    ...validateDate(value, schema, options, path),
   ]
 }
