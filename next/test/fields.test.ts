@@ -42,6 +42,7 @@ describe('fields', () => {
     const schema = {
       type: 'object',
       title: 'User',
+      description: 'User information',
       properties: {
         name: { type: 'string', title: 'Name' },
         age: { type: 'number', title: 'Age' },
@@ -58,6 +59,7 @@ describe('fields', () => {
       isVisible: true,
       name: 'user',
       label: 'User',
+      description: 'User information',
       required: false,
       jsonType: 'object',
       fields: [
