@@ -151,7 +151,6 @@ describe('Field visibility', () => {
     })
   })
 
-  // This does not work with v0 but I think it should work with v1
   describe('if on a fieldset schema level', () => {
     const schema: JsfObjectSchema = {
       type: 'object',
@@ -213,6 +212,46 @@ describe('Field visibility', () => {
         name: 'admin',
       } })
       expect(getField(form.fields, 'form', 'password')?.isVisible).toBe(true)
+    })
+
+    it('should allow hiding the whole fieldset', () => {
+      const conditionalFieldsetSchema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          hide_form: {
+            type: 'string',
+          },
+          form: {
+            type: 'object',
+            properties: {
+              name: {
+                type: 'string',
+              },
+              password: {
+                type: 'string',
+              },
+            },
+          },
+        },
+        if: {
+          properties: {
+            hide_form: {
+              const: 'yes',
+            },
+          },
+          required: ['hide_form'],
+        },
+        then: {
+          properties: {
+            form: false,
+          },
+        },
+      }
+
+      const form = createHeadlessForm(conditionalFieldsetSchema, { initialValues: { form: { name: 'admin', password: null } } })
+      form.handleValidation({ hide_form: 'yes' })
+
+      expect(getField(form.fields, 'form')?.isVisible).toBe(false)
     })
   })
 })

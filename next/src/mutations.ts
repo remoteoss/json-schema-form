@@ -101,7 +101,7 @@ function applySchemaRules(
 
   // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
   (schema.allOf ?? [])
-    .filter((rule: JsfSchema) => rule.if)
+    .filter((rule: JsfSchema) => typeof rule.if !== 'undefined')
     .forEach((rule) => {
       const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options)
       conditionalRules.push(result)
@@ -135,21 +135,21 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
       const fieldSchema = branch.properties[fieldName]
       const field = fields.find(e => e.name === fieldName)
       if (field) {
-        if (field?.fields) {
-          processBranch(field.fields, values, fieldSchema)
-        }
-        else if (fieldSchema === false) {
+        // If the field has a false schema, it should be removed from the form (hidden)
+        if (fieldSchema === false) {
           field.isVisible = false
         }
-        else {
-          // If the field has properties being declared on this branch, we need to update the field
-          // with the new properties
-          const newField = buildFieldSchema(fieldSchema as JsfObjectSchema, fieldName, true)
-          for (const key in newField) {
-            // We don't want to override the type property
-            if (!['type'].includes(key)) {
-              field[key] = newField[key]
-            }
+        // If the field has inner fields, we need to process them
+        else if (field?.fields) {
+          processBranch(field.fields, values, fieldSchema)
+        }
+        // If the field has properties being declared on this branch, we need to update the field
+        // with the new properties
+        const newField = buildFieldSchema(fieldSchema as JsfObjectSchema, fieldName, true)
+        for (const key in newField) {
+          // We don't want to override the type property
+          if (!['type'].includes(key)) {
+            field[key] = newField[key]
           }
         }
       }
