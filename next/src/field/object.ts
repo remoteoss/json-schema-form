@@ -38,6 +38,10 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
     field.label = schema.title
   }
 
+  if (schema.description !== undefined) {
+    field.description = schema.description
+  }
+
   if (schema['x-jsf-presentation']?.accept) {
     field.accept = schema['x-jsf-presentation']?.accept
   }
