@@ -6,6 +6,15 @@ import merge from 'lodash/merge'
 import mergeWith from 'lodash/mergeWith'
 import set from 'lodash/set'
 
+interface ModifyConfig {
+  fields?: Record<string, Partial<JsfSchema> | ((attrs: JsfSchema) => Partial<JsfSchema>)>
+  allFields?: (name: string, attrs: JsfSchema) => Partial<JsfSchema>
+  create?: Record<string, Partial<JsfSchema>>
+  pick?: string[]
+  orderRoot?: string[] | ((originalOrder: string[]) => string[])
+  muteLogging?: boolean
+};
+
 type WarningType = 'FIELD_TO_CHANGE_NOT_FOUND'
   | 'ORDER_MISSING_FIELDS'
   | 'FIELD_TO_CREATE_EXISTS'
@@ -14,6 +23,7 @@ type WarningType = 'FIELD_TO_CHANGE_NOT_FOUND'
 interface Warning {
   type: WarningType
   message: string
+  meta?: Record<string, any>
 }
 
 interface ModifyResult {
@@ -39,17 +49,6 @@ function shortToFullPath(path: string) {
 function mergeReplaceArray(_: any, newVal: any) {
   return Array.isArray(newVal) ? newVal : undefined
 }
-
-// TODO: our modify fn should not allow for property names that the json-schema-form parser itself does not support
-// function standardizeAttrs(attrs: Partial<JsfSchema>) {
-//   const { errorMessage, presentation, properties, ...rest } = attrs
-
-//   return {
-//     ...rest,
-//     ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
-//     ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
-//   }
-// }
 
 /**
  *  Checks if a conditional schema references any of the fields being picked
@@ -120,18 +119,19 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
 
     const fieldChanges = typeof mutation === 'function' ? mutation(fieldAttrs) : mutation
 
+    const { properties, ...rest } = fieldChanges
+
     mergeWith(
       get(schema.properties, fieldPath),
       {
         ...(fieldAttrs as object),
-        ...fieldChanges,
+        ...rest,
       },
       mergeReplaceArray,
     )
 
     if (fieldChanges.properties) {
       const result = rewriteFields(get(schema.properties!, fieldPath), fieldChanges.properties as ModifyConfig['fields'])
-
       if (result.warnings) {
         warnings.push(...result.warnings)
       }
@@ -172,6 +172,12 @@ function rewriteAllFields(schema: JsfSchema, configCallback: ModifyConfig['allFi
   return { warnings: null }
 }
 
+/**
+ * Reorders fields in the schema in-place
+ * @param {JsfSchema} schema - The schema to reorder
+ * @param {ModifyConfig['orderRoot']} configOrder - The order to reorder the fields
+ * @returns {ModifyResult}
+ */
 function reorderFields(schema: JsfSchema, configOrder: ModifyConfig['orderRoot']) {
   if (!configOrder) {
     return { warnings: null }
@@ -195,6 +201,12 @@ function reorderFields(schema: JsfSchema, configOrder: ModifyConfig['orderRoot']
   return { warnings }
 }
 
+/**
+ * Creates fields in the schema in-place
+ * @param {JsfSchema} schema - The schema to create fields in
+ * @param {ModifyConfig['create']} fieldsConfig - The fields to create
+ * @returns {ModifyResult}
+ */
 function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
   if (!fieldsConfig) {
     return { warnings: null }
@@ -238,7 +250,14 @@ function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
   return { warnings: warnings.flat() }
 }
 
-function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick']): { schema: JsfSchema, warnings: Warning[] | null } {
+/**
+ * Returns a new schema with only the picked fields
+ *
+ * @param {JsfSchema} originalSchema - The original schema
+ * @param {ModifyConfig['pick']} fieldsToPick - The fields to pick
+ * @returns {ModifyResult}
+ */
+function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick']): { schema: JsfSchema } & ModifyResult {
   if (!fieldsToPick) {
     return { schema: originalSchema, warnings: null }
   }
@@ -278,7 +297,7 @@ function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick'
 
   // TODO: Improve this, as this logic could be done in the isConditionalReferencingAnyPickedField function
   // Look for unpicked fields in the conditionals
-  let missingFields = {}
+  let missingFields: Record<string, { path: string }> = {}
   if (newSchema.allOf?.length) {
     newSchema.allOf.forEach((condition: JsfSchema) => {
       const { if: ifCondition, then: thenCondition, else: elseCondition } = condition
@@ -301,7 +320,7 @@ function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick'
     })
   }
 
-  const warnings = []
+  const warnings: Warning[] = []
 
   if (Object.keys(missingFields).length > 0) {
     // Re-add them to the schema...
@@ -323,6 +342,14 @@ function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick'
   return { schema: newSchema, warnings }
 }
 
+/**
+ * Finds missing fields in a conditional
+ * @param {JsfSchema} conditional - The conditional schema
+ * @param {object} params - The parameters
+ * @param {string[]} params.fields - The fields to pick
+ * @param {string} params.path - The path to the conditional
+ * @returns {Record<string, { path: string }>}
+ */
 function findMissingFields(conditional: JsfSchema | undefined, { fields, path }: { fields: string[], path: string }) {
   if (!conditional) {
     return null
@@ -349,15 +376,20 @@ function findMissingFields(conditional: JsfSchema | undefined, { fields, path }:
   return missingFields
 }
 
-interface ModifyConfig {
-  fields?: Record<string, Partial<JsfSchema> | ((attrs: JsfSchema) => Partial<JsfSchema>)>
-  allFields?: (name: string, attrs: JsfSchema) => Partial<JsfSchema>
-  create?: Record<string, Partial<JsfSchema>>
-  pick?: string[]
-  orderRoot?: string[] | ((originalOrder: string[]) => string[])
-  muteLogging?: boolean
-};
-
+/**
+ * Modifies the schema
+ * Use modify() when you need to customize the generated fields. This function creates a new version of JSON schema based on a provided configuration. Then you pass the new schema to createHeadlessForm()
+ *
+ * @example
+ * const modifiedSchema = modify(schema, {
+ *   fields: {
+ *     name: { type: 'string', title: 'Name' },
+ *   },
+ * })
+ * @param {JsfSchema} originalSchema - The original schema
+ * @param {ModifyConfig} config - The config
+ * @returns {ModifyResult}
+ */
 export function modifySchema(originalSchema: JsfSchema, config: ModifyConfig) {
   // Create a deep copy of the original schema so we don't mutate the original one.
   const schema = JSON.parse(JSON.stringify(originalSchema))
