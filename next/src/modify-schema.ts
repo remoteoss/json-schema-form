@@ -6,12 +6,18 @@ import merge from 'lodash/merge'
 import mergeWith from 'lodash/mergeWith'
 import set from 'lodash/set'
 
-// NOTE: If you change this, also update the d.ts file.
-export const WARNING_TYPES = {
-  FIELD_TO_CHANGE_NOT_FOUND: 'FIELD_TO_CHANGE_NOT_FOUND',
-  ORDER_MISSING_FIELDS: 'ORDER_MISSING_FIELDS',
-  FIELD_TO_CREATE_EXISTS: 'FIELD_TO_CREATE_EXISTS',
-  PICK_MISSED_FIELD: 'PICK_MISSED_FIELD',
+type WarningType = 'FIELD_TO_CHANGE_NOT_FOUND'
+  | 'ORDER_MISSING_FIELDS'
+  | 'FIELD_TO_CREATE_EXISTS'
+  | 'PICK_MISSED_FIELD'
+
+interface Warning {
+  type: WarningType
+  message: string
+}
+
+interface ModifyResult {
+  warnings: Warning[] | null
 }
 
 /**
@@ -79,27 +85,18 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
   return false
 }
 
-interface RewriteWarning {
-  type: typeof WARNING_TYPES[keyof typeof WARNING_TYPES]
-  message: string
-}
-
-interface RewriteResult {
-  warnings: RewriteWarning[] | null
-}
-
 /**
  * Rewrites fields in the schema
  * @param {JsfSchema} schema - The schema to rewrite
  * @param {ModifyConfig['fields']} fieldsConfig - The fields to rewrite
- * @returns {RewriteResult}
+ * @returns {ModifyResult}
  */
-function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']): RewriteResult {
+function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']): ModifyResult {
   if (!fieldsConfig) {
     return { warnings: null }
   }
 
-  const warnings: RewriteWarning[] = []
+  const warnings: Warning[] = []
 
   const fieldsToModify = Object.entries(fieldsConfig)
 
@@ -110,7 +107,7 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
       // Do not override/edit a field that does not exist.
       // That's the job of config.create() method.
       warnings.push({
-        type: WARNING_TYPES.FIELD_TO_CHANGE_NOT_FOUND,
+        type: 'FIELD_TO_CHANGE_NOT_FOUND',
         message: `Changing field "${shortPath}" was ignored because it does not exist.`,
       })
       return
@@ -180,14 +177,14 @@ function reorderFields(schema: JsfSchema, configOrder: ModifyConfig['orderRoot']
     return { warnings: null }
   }
 
-  const warnings: RewriteWarning[] = []
+  const warnings: Warning[] = []
   const originalOrder = schema['x-jsf-order'] || []
   const orderConfig = typeof configOrder === 'function' ? configOrder(originalOrder) : configOrder
   const remaining = difference(originalOrder, orderConfig)
 
   if (remaining.length > 0) {
     warnings.push({
-      type: WARNING_TYPES.ORDER_MISSING_FIELDS,
+      type: 'ORDER_MISSING_FIELDS',
       message: `Some fields got forgotten in the new order. They were automatically appended: ${remaining.join(
         ', ',
       )}`,
@@ -203,19 +200,22 @@ function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
     return { warnings: null }
   }
 
-  const warnings: RewriteWarning[] = []
+  const warnings: Warning[] = []
   const fieldsToCreate = Object.entries(fieldsConfig)
 
   fieldsToCreate.forEach(([shortPath, fieldAttrs]) => {
     const fieldPath = shortToFullPath(shortPath)
-    const newFieldAttrs = get(schema.properties, fieldPath)
-    if (!fieldAttrs || !newFieldAttrs) {
+    if (!fieldAttrs) {
       return { warnings: null }
     }
 
     if (fieldAttrs.properties) {
       // Recursive to nested fields...
-      const result = createFields(newFieldAttrs, fieldAttrs.properties)
+      const recursiveFieldAttrs = get(schema.properties, fieldPath)
+      if (!recursiveFieldAttrs) {
+        return { warnings: null }
+      }
+      const result = createFields(recursiveFieldAttrs, fieldAttrs.properties)
       if (result.warnings) {
         warnings.push(...result.warnings)
       }
@@ -225,7 +225,7 @@ function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
 
     if (fieldInSchema) {
       warnings.push({
-        type: WARNING_TYPES.FIELD_TO_CREATE_EXISTS,
+        type: 'FIELD_TO_CREATE_EXISTS',
         message: `Creating field "${shortPath}" was ignored because it already exists.`,
       })
       return
@@ -238,7 +238,7 @@ function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
   return { warnings: warnings.flat() }
 }
 
-function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick']): { schema: JsfSchema, warnings: RewriteWarning[] | null } {
+function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick']): { schema: JsfSchema, warnings: Warning[] | null } {
   if (!fieldsToPick) {
     return { schema: originalSchema, warnings: null }
   }
@@ -310,7 +310,7 @@ function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick'
     })
 
     warnings.push({
-      type: WARNING_TYPES.PICK_MISSED_FIELD,
+      type: 'PICK_MISSED_FIELD',
       message: `The picked fields are in conditionals that refeer other fields. They added automatically: ${Object.keys(
         missingFields,
       )
