@@ -6,10 +6,12 @@ import merge from 'lodash/merge'
 import mergeWith from 'lodash/mergeWith'
 import set from 'lodash/set'
 
+type FieldOutput = Partial<JsfSchema> | Record<string, unknown>
+
 interface ModifyConfig {
-  fields?: Record<string, Partial<JsfSchema> | ((attrs: JsfSchema) => Partial<JsfSchema>)>
-  allFields?: (name: string, attrs: JsfSchema) => Partial<JsfSchema>
-  create?: Record<string, Partial<JsfSchema>>
+  fields?: Record<string, FieldOutput | ((attrs: JsfSchema) => FieldOutput)>
+  allFields?: (name: string, attrs: JsfSchema) => FieldOutput
+  create?: Record<string, FieldOutput>
   pick?: string[]
   orderRoot?: string[] | ((originalOrder: string[]) => string[])
   muteLogging?: boolean

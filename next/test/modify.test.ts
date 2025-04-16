@@ -1,8 +1,13 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
+import type { JSONSchema } from 'json-schema-typed'
 
+import type { JsfPresentation, JsfSchema } from '../src/types'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import { modifySchema } from '../src/modify-schema'
 
 describe('modifySchema', () => {
+  function fail() {
+    throw new Error('It should not reach this point of the code')
+  }
   const schemaPet = {
     'type': 'object',
     'additionalProperties': false,
@@ -108,36 +113,7 @@ describe('modifySchema', () => {
     },
   }
 
-  let baseSchema
-
   beforeEach(() => {
-    baseSchema = {
-      'properties': {
-        name: {
-          type: 'string',
-          title: 'Name',
-        },
-        age: {
-          type: 'number',
-          title: 'Age',
-        },
-        address: {
-          type: 'object',
-          properties: {
-            street: {
-              type: 'string',
-              title: 'Street',
-            },
-            city: {
-              type: 'string',
-              title: 'City',
-            },
-          },
-        },
-      },
-      'required': ['name', 'age'],
-      'x-jsf-order': ['name', 'age', 'address'],
-    }
   })
 
   beforeAll(() => {
@@ -145,11 +121,38 @@ describe('modifySchema', () => {
   })
 
   afterAll(() => {
-    console.warn.mockRestore()
+    (console.warn as jest.Mock).mockRestore()
   })
 
   describe('Common behavior', () => {
     it('should not mutate the original schema', () => {
+      const baseSchema: JsfSchema = {
+        'properties': {
+          name: {
+            type: 'string',
+            title: 'Name',
+          },
+          age: {
+            type: 'number',
+            title: 'Age',
+          },
+          address: {
+            type: 'object',
+            properties: {
+              street: {
+                type: 'string',
+                title: 'Street',
+              },
+              city: {
+                type: 'string',
+                title: 'City',
+              },
+            },
+          },
+        },
+        'required': ['name', 'age'],
+        'x-jsf-order': ['name', 'age', 'address'],
+      }
       const originalSchema = JSON.parse(JSON.stringify(baseSchema))
 
       modifySchema(baseSchema, {
@@ -169,9 +172,9 @@ describe('modifySchema', () => {
 
         expect(console.warn).toBeCalledWith(
           'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteLogging: true` to the config.',
-        )
+        );
 
-        console.warn.mockClear()
+        (console.warn as jest.Mock).mockClear()
         expect(result.warnings).toEqual([])
       })
 
@@ -194,7 +197,10 @@ describe('modifySchema', () => {
             title: 'Your pet name',
           },
           has_pet: (fieldAttrs) => {
-            const options = fieldAttrs.oneOf?.map(({ title }) => title).join(' or ') || ''
+            if (typeof fieldAttrs.oneOf !== 'object') {
+              fail()
+            }
+            const options = (fieldAttrs.oneOf as { title?: string }[]).map(({ title }) => title).join(' or ') || ''
             return {
               title: 'Pet owner',
               description: `Do you own a pet? ${options}?`, // "Do you own a pet? Yes or No?"
@@ -230,10 +236,10 @@ describe('modifySchema', () => {
           'address': (fieldAttrs) => {
             return {
               properties: {
-                number: (nestedAttrs) => {
+                number: (nestedAttrs: JsfSchema) => {
                   return {
-                    'x-test-siblings': Object.keys(fieldAttrs.properties),
-                    'title': `Door ${nestedAttrs.title}`,
+                    'x-test-siblings': Object.keys(fieldAttrs.properties!),
+                    'title': `Door ${(nestedAttrs as { title?: string }).title}`,
                   }
                 },
               },
@@ -281,9 +287,9 @@ describe('modifySchema', () => {
         },
       })
 
-      expect(result.schema.properties.unknown_field).toBeUndefined()
-      expect(result.schema.properties.nested).toBeUndefined()
-      expect(result.schema.properties.pet_name).toEqual({
+      expect(result.schema.properties?.unknown_field).toBeUndefined()
+      expect(result.schema.properties?.nested).toBeUndefined()
+      expect(result.schema.properties?.pet_name).toEqual({
         ...schemaPet.properties.pet_name,
         title: 'New pet title',
       })
@@ -303,7 +309,13 @@ describe('modifySchema', () => {
     it('replace all fields', () => {
       const result = modifySchema(schemaPet, {
         allFields: (fieldName, fieldAttrs) => {
-          const { inputType, percentage } = fieldAttrs?.['x-jsf-presentation'] || {}
+          let inputType, percentage
+          const presentation = fieldAttrs['x-jsf-presentation']
+
+          if (presentation) {
+            inputType = presentation.inputType
+            percentage = presentation.percentage
+          }
 
           if (inputType === 'number' && percentage === true) {
             return {
@@ -352,17 +364,20 @@ describe('modifySchema', () => {
             }
 
             return {
-              oneOf: fieldAttrs.oneOf.map((option) => {
-                const customTitle = labelsMap[option.const]
-                if (!customTitle) {
-                // TODO - test this
-                // console.error('The option is not handled.');
-                  return option
+              oneOf: fieldAttrs.oneOf?.map((option: JsfSchema) => {
+                if (typeof option === 'object' && 'const' in option) {
+                  const customTitle = (labelsMap as any)[option.const]
+                  if (!customTitle) {
+                    // TODO - test this
+                    // console.error('The option is not handled.');
+                    return option
+                  }
+                  return {
+                    ...option,
+                    title: customTitle,
+                  }
                 }
-                return {
-                  ...option,
-                  title: customTitle,
-                }
+                return option
               }),
             }
           },
@@ -653,8 +668,7 @@ describe('modifySchema', () => {
       const result = modifySchema(baseExample, {
         fields: {
           address: (attrs) => {
-          // eslint-disable-next-line no-unused-vars
-            const [_firstLine, ...restOrder] = attrs['x-jsf-order']
+            const [_firstLine, ...restOrder] = attrs['x-jsf-order'] || []
             return { 'x-jsf-order': restOrder.reverse() } // ['city', 'zipcode']
           },
         },
@@ -696,7 +710,8 @@ describe('modifySchema', () => {
       })
 
       // this is ignored because the field already exists
-      expect(result.schema.properties.address.someAttr).toBe(undefined)
+      // @ts-expect-error someAttr is not a known property of the spec
+      expect(result.schema.properties?.address?.someAttr).toBe(undefined)
 
       expect(result.warnings).toEqual([
         {
@@ -729,7 +744,7 @@ describe('modifySchema', () => {
         },
       })
 
-      expect(result.schema.properties.address.properties).toMatchObject({
+      expect(result.schema.properties?.address.properties).toMatchObject({
         ...schemaAddress.properties.address.properties,
         state: {
           title: 'State',
@@ -740,10 +755,13 @@ describe('modifySchema', () => {
       })
 
       // Ignore address.someAttr because the address itself already exists.
-      expect(result.schema.properties.address.someAttr).toBeUndefined()
+      // @ts-expect-error someAttr is not a known property of the spec
+      expect(result.schema.properties?.address?.someAttr).toBeUndefined()
 
       // Ignore field street because it already exists [1]
-      expect(result.schema.properties.address.properties.street.title).toBe('Street')
+      if (typeof result.schema.properties?.address?.properties?.street === 'object') {
+        expect(result.schema.properties?.address?.properties?.street?.title).toBe('Street')
+      }
 
       expect(result.warnings).toEqual([
         {
@@ -772,9 +790,9 @@ describe('modifySchema', () => {
           type: 'integer',
         },
       })
-      expect(schema.properties.age).toBeUndefined()
-      expect(schema.properties.has_premium).toBeUndefined()
-      expect(schema.properties.premium_id).toBeUndefined()
+      expect(schema.properties?.age).toBeUndefined()
+      expect(schema.properties?.has_premium).toBeUndefined()
+      expect(schema.properties?.premium_id).toBeUndefined()
 
       expect(schema['x-jsf-order']).toEqual(['quantity'])
       expect(schema.allOf).toEqual([]) // conditional got removed.
@@ -800,8 +818,8 @@ describe('modifySchema', () => {
         pick: ['quantity'],
       })
 
-      expect(schema.properties.quantity).toBeDefined()
-      expect(schema.properties.age).toBeUndefined()
+      expect(schema.properties?.quantity).toBeDefined()
+      expect(schema.properties?.age).toBeUndefined()
       // `allOf` conditionals were not defined, and continue to be so.
       // This test guards against a regression where lack of `allOf` caused a TypeError.
       expect(schema.allOf).toBeUndefined()
@@ -828,8 +846,8 @@ describe('modifySchema', () => {
         allOf: [schemaTickets.allOf[1], schemaTickets.allOf[2]],
       })
 
-      expect(schema.properties.quantity).toBeUndefined()
-      expect(schema.properties.age).toBeUndefined()
+      expect(schema.properties?.quantity).toBeUndefined()
+      expect(schema.properties?.age).toBeUndefined()
       expect(warnings).toEqual([
         {
           type: 'PICK_MISSED_FIELD',
@@ -857,8 +875,8 @@ describe('modifySchema', () => {
         allOf: [schemaTickets.allOf[0]],
       })
 
-      expect(schema.properties.quantity).toBeUndefined()
-      expect(schema.properties.age).toBeUndefined()
+      expect(schema.properties?.quantity).toBeUndefined()
+      expect(schema.properties?.age).toBeUndefined()
       expect(warnings).toEqual([
         {
           type: 'PICK_MISSED_FIELD',
@@ -881,10 +899,10 @@ describe('modifySchema', () => {
       expect(warnings).toHaveLength(0)
 
       // Sanity check the result
-      expect(schema.properties.quantity).toBeDefined()
-      expect(schema.properties.age).toBeDefined()
-      expect(schema.properties.has_premium).toBeUndefined()
-      expect(schema.properties.premium_id).toBeUndefined()
+      expect(schema.properties?.quantity).toBeDefined()
+      expect(schema.properties?.age).toBeDefined()
+      expect(schema.properties?.has_premium).toBeUndefined()
+      expect(schema.properties?.premium_id).toBeUndefined()
       expect(schema.allOf).toEqual([])
     })
 
