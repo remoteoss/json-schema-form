@@ -1,5 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
+import { validateArray } from './array'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
 import { validateConst } from './const'
@@ -70,7 +71,11 @@ function validateType(
     return []
   }
 
-  const valueType = value === null ? 'null' : typeof value
+  const valueType = value === null
+    ? 'null'
+    : Array.isArray(value)
+      ? 'array'
+      : typeof value
 
   if (Array.isArray(schemaType)) {
     if (value === null && schemaType.includes('null')) {
@@ -96,8 +101,7 @@ function validateType(
     return []
   }
 
-  return [{ path, validation: 'type' },
-  ]
+  return [{ path, validation: 'type' }]
 }
 
 /**
@@ -181,6 +185,7 @@ export function validateSchema(
     ...validateConst(value, schema, path),
     ...validateEnum(value, schema, path),
     ...validateObject(value, schema, options, path),
+    ...validateArray(value, schema, options, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
     ...validateNot(value, schema, options, path),

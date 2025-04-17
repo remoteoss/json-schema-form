@@ -25,6 +25,10 @@ export type SchemaValidationErrorType =
    * Date validation keywords
    */
   | 'minDate' | 'maxDate'
+  /**
+   * Array validation keywords
+   */
+  | 'minItems' | 'maxItems' | 'uniqueItems' | 'contains' | 'maxContains' | 'minContains'
 
 export type ValidationErrorPath = Array<string | number>
 
