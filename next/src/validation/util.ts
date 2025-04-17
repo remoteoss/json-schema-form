@@ -10,15 +10,6 @@ export function isObjectValue(v: SchemaValue): v is ObjectValue {
 }
 
 /**
- * Type guard to check if a given SchemaValue is an Array
- * @param v - The value to check
- * @returns `true` if the value is an array, `false` otherwise
- */
-export function isArrayValue(v: SchemaValue): v is Array<SchemaValue> {
-  return Array.isArray(v)
-}
-
-/**
  * Compare two values for deep equality
  * @param a - The first value to compare
  * @param b - The second value to compare

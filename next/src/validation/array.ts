@@ -1,7 +1,7 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfSchema, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema, type ValidationOptions } from './schema'
-import { deepEqual, isArrayValue } from './util'
+import { deepEqual } from './util'
 
 /**
  * Validate an array against a schema
@@ -20,7 +20,7 @@ export function validateArray(
   options: ValidationOptions,
   path: ValidationErrorPath,
 ): ValidationError[] {
-  if (typeof schema !== 'object' || !isArrayValue(value)) {
+  if (!Array.isArray(value)) {
     return []
   }
 
