@@ -173,12 +173,16 @@ function validateUniqueItems(schema: NonBooleanJsfSchema, values: SchemaValue[],
     return []
   }
 
+  const seen = new Map()
+
   for (let i = 0; i < values.length; i++) {
-    for (let j = i + 1; j < values.length; j++) {
-      if (deepEqual(values[i], values[j])) {
+    for (const prevItem of seen.values()) {
+      if (deepEqual(values[i], prevItem)) {
         return [{ path, validation: 'uniqueItems' }]
       }
     }
+    seen.set(i, values[i])
   }
+
   return []
 }
