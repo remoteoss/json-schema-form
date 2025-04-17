@@ -1,5 +1,6 @@
 import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema } from '../types'
 import type { Field, FieldOption } from './type'
+import { getSchemaType } from '../validation/schema'
 import { buildFieldObject } from './object'
 
 /**
@@ -14,6 +15,30 @@ function getJsonType(schema: NonBooleanJsfSchema): string {
 
   if (schema.type !== undefined) {
     return schema.type as string
+  }
+
+  return 'text'
+}
+
+/**
+ * Get the input type for a field
+ * @param schema - The non boolean schema of the field
+ * @returns The input type for the field, based schema type. Default to 'text'
+ */
+function getInputType(schema: NonBooleanJsfSchema): string {
+  const presentation = schema['x-jsf-presentation']
+  if (presentation?.inputType) {
+    return presentation.inputType
+  }
+
+  const schemaType = schema.type
+
+  if (schemaType === 'string') {
+    return 'text'
+  }
+
+  if (schemaType === 'number') {
+    return 'number'
   }
 
   return 'text'
@@ -121,7 +146,7 @@ export function buildFieldSchema(
   const errorMessage = schema['x-jsf-errorMessage']
 
   // Get input type from presentation or fallback to schema type
-  const inputType = presentation.inputType || getJsonType(schema)
+  const inputType = getInputType(schema)
 
   // Build field with all schema properties by default, excluding ones that need special handling
   const field: Field = {
