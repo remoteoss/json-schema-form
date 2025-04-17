@@ -42,4 +42,12 @@ export function getField(fields: Field[], name: string, ...subNames: string[]) {
     return getField(field.fields, subNames[0], ...subNames.slice(1))
   }
   return field
-};
+}
+
+// Helper function to convert KB to MB
+export function convertKBToMB(kb: number): number {
+  if (kb === 0)
+    return 0
+  const mb = kb / 1024 // KB to MB
+  return Number.parseFloat(mb.toFixed(2)) // Keep 2 decimal places
+}

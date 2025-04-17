@@ -5,6 +5,7 @@ import { validateCondition } from './conditions'
 import { validateConst } from './const'
 import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
+import { validateFile } from './file'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -73,31 +74,38 @@ function validateType(
   const valueType = value === null ? 'null' : typeof value
 
   if (Array.isArray(schemaType)) {
+    // Handle cases where schema type is an array (e.g., ["string", "null"])
     if (value === null && schemaType.includes('null')) {
       return []
     }
 
     for (const type of schemaType) {
+      if (type === 'array' && Array.isArray(value)) {
+        return [] // Correctly validate array type
+      }
       if (valueType === 'number' && type === 'integer' && Number.isInteger(value)) {
         return []
       }
-
       if (valueType === type || (type === 'null' && value === null)) {
         return []
       }
     }
   }
-
-  if (valueType === 'number' && schemaType === 'integer' && Number.isInteger(value)) {
-    return []
+  else {
+    // Handle cases where schema type is a single type string
+    if (schemaType === 'array' && Array.isArray(value)) {
+      return [] // Correctly validate array type
+    }
+    if (valueType === 'number' && schemaType === 'integer' && Number.isInteger(value)) {
+      return []
+    }
+    if (valueType === schemaType) {
+      return []
+    }
   }
 
-  if (valueType === schemaType) {
-    return []
-  }
-
-  return [{ path, validation: 'type' },
-  ]
+  // If none of the conditions matched, it's a type error
+  return [{ path, validation: 'type' }]
 }
 
 /**
@@ -138,30 +146,47 @@ export function validateSchema(
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
   const errors: ValidationError[] = []
 
-  // If value is undefined but not required, no further validation needed
+  // Check if it is a file input (needed early for null check)
+  const presentation = schema['x-jsf-presentation']
+  const isExplicitFileInput = presentation?.inputType === 'file'
+  const hasFileKeywords
+    = typeof presentation?.maxFileSize === 'number' || typeof presentation?.accept === 'string'
+  const isPotentialFileInput = isExplicitFileInput || hasFileKeywords
+
+  // 1. Handle undefined value
   if (valueIsUndefined) {
     return []
   }
 
-  if (typeof schema === 'boolean') {
-    // It means the property does not exist in the payload
-    if (!schema && typeof value !== 'undefined') {
-      return [{ path, validation: 'valid' }]
-    }
-    else {
+  // 2. Handle null specifically for potential file inputs (treat as valid empty state)
+  if (value === null && isPotentialFileInput) {
+    // Check schema doesn't ONLY allow null (unlikely edge case for files)
+    const schemaTypes = getSchemaType(schema)
+    if (
+      schemaTypes !== 'null'
+      && (!Array.isArray(schemaTypes) || !schemaTypes.every(t => t === 'null'))
+    ) {
       return []
     }
+    // If schema ONLY allows null, let type validation handle it below.
   }
 
-  const typeValidationErrors = validateType(value, schema, path)
-  if (typeValidationErrors.length > 0) {
-    return typeValidationErrors
+  // 3. Handle boolean schemas
+  if (typeof schema === 'boolean') {
+    return schema ? [] : [{ path, validation: 'valid' }]
   }
 
-  // If the schema defines "required", run required checks even when type is undefined.
-  if (
-    schema.required && isObjectValue(value)
-  ) {
+  let typeValidationErrors: ValidationError[] = []
+  // Skip standard type validation ONLY if inputType is explicitly 'file'
+  // (The null check above already handled null for potential file inputs)
+  if (!isExplicitFileInput) {
+    typeValidationErrors = validateType(value, schema, path)
+    if (typeValidationErrors.length > 0) {
+      return typeValidationErrors
+    }
+  }
+
+  if (schema.required && isObjectValue(value)) {
     const missingKeys = schema.required.filter((key: string) => {
       const fieldValue = value[key]
       return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
@@ -175,6 +200,11 @@ export function validateSchema(
     }
   }
 
+  // Call validateFile if potential file input AND value is an array
+  // (null/undefined cases handled above, non-arrays handled by type check)
+  const shouldCallValidateFile = isPotentialFileInput && Array.isArray(value)
+
+  // --- Other Validations ---
   return [
     ...errors,
     // JSON-schema spec validations
@@ -183,6 +213,9 @@ export function validateSchema(
     ...validateObject(value, schema, options, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
+    // File validation (conditionally run)
+    ...(shouldCallValidateFile ? validateFile(value, schema, path) : []),
+    // Composition and conditional logic
     ...validateNot(value, schema, options, path),
     ...validateAllOf(value, schema, options, path),
     ...validateAnyOf(value, schema, options, path),
