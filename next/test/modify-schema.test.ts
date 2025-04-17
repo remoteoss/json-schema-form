@@ -1,6 +1,4 @@
-import type { JSONSchema } from 'json-schema-typed'
-
-import type { JsfPresentation, JsfSchema } from '../src/types'
+import type { JsfSchema } from '../src/types'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import { modifySchema } from '../src/modify-schema'
 
