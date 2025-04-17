@@ -35,6 +35,7 @@ interface ModifyResult {
 /**
  * Converts a short path to a full path
  * @param {string} path
+ * @returns {string} The full path
  * @example
  * shortToFullPath('foo.bar') // 'foo.properties.bar'
  */
@@ -56,7 +57,7 @@ function mergeReplaceArray(_: any, newVal: any) {
  *  Checks if a conditional schema references any of the fields being picked
  * @param {JsfSchema} condition - The conditional schema
  * @param {string[]} fieldsToPick - The fields being picked
- * @returns {boolean}
+ * @returns {boolean} True if the conditional schema references any of the fields being picked
  */
 function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPick: string[]): boolean {
   const { if: ifCondition, then: thenCondition, else: elseCondition } = condition
@@ -90,7 +91,7 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
  * Rewrites fields in the schema
  * @param {JsfSchema} schema - The schema to rewrite
  * @param {ModifyConfig['fields']} fieldsConfig - The fields to rewrite
- * @returns {ModifyResult}
+ * @returns {ModifyResult} The warnings that occurred during the rewrite
  */
 function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']): ModifyResult {
   if (!fieldsConfig) {
@@ -178,7 +179,7 @@ function rewriteAllFields(schema: JsfSchema, configCallback: ModifyConfig['allFi
  * Reorders fields in the schema in-place
  * @param {JsfSchema} schema - The schema to reorder
  * @param {ModifyConfig['orderRoot']} configOrder - The order to reorder the fields
- * @returns {ModifyResult}
+ * @returns {ModifyResult} The warnings that occurred during the reordering
  */
 function reorderFields(schema: JsfSchema, configOrder: ModifyConfig['orderRoot']) {
   if (!configOrder) {
@@ -207,7 +208,7 @@ function reorderFields(schema: JsfSchema, configOrder: ModifyConfig['orderRoot']
  * Creates fields in the schema in-place
  * @param {JsfSchema} schema - The schema to create fields in
  * @param {ModifyConfig['create']} fieldsConfig - The fields to create
- * @returns {ModifyResult}
+ * @returns {ModifyResult} The warnings that occurred during the creation
  */
 function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
   if (!fieldsConfig) {
@@ -229,7 +230,7 @@ function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
       if (!recursiveFieldAttrs) {
         return { warnings: null }
       }
-      const result = createFields(recursiveFieldAttrs, fieldAttrs.properties)
+      const result = createFields(recursiveFieldAttrs, fieldAttrs.properties as ModifyConfig['create'])
       if (result.warnings) {
         warnings.push(...result.warnings)
       }
@@ -257,7 +258,7 @@ function createFields(schema: JsfSchema, fieldsConfig: ModifyConfig['create']) {
  *
  * @param {JsfSchema} originalSchema - The original schema
  * @param {ModifyConfig['pick']} fieldsToPick - The fields to pick
- * @returns {ModifyResult}
+ * @returns {ModifyResult} The new schema and the warnings that occurred during the picking
  */
 function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick']): { schema: JsfSchema } & ModifyResult {
   if (!fieldsToPick) {
@@ -350,7 +351,7 @@ function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick'
  * @param {object} params - The parameters
  * @param {string[]} params.fields - The fields to pick
  * @param {string} params.path - The path to the conditional
- * @returns {Record<string, { path: string }>}
+ * @returns {Record<string, { path: string }>} The missing fields
  */
 function findMissingFields(conditional: JsfSchema | undefined, { fields, path }: { fields: string[], path: string }) {
   if (!conditional) {
@@ -390,7 +391,7 @@ function findMissingFields(conditional: JsfSchema | undefined, { fields, path }:
  * })
  * @param {JsfSchema} originalSchema - The original schema
  * @param {ModifyConfig} config - The config
- * @returns {ModifyResult}
+ * @returns {ModifyResult} The new schema and the warnings that occurred during the modifications
  */
 export function modifySchema(originalSchema: JsfSchema, config: ModifyConfig) {
   // Create a deep copy of the original schema so we don't mutate the original one.
