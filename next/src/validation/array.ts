@@ -27,7 +27,7 @@ export function validateArray(
   return [
     ...validateLength(schema, value, path),
     ...validateUniqueItems(schema, value, path),
-    ...validateArrayContains(value, schema, options, path),
+    ...validateContains(value, schema, options, path),
     ...validatePrefixItems(schema, value, options, path),
     ...validateItems(schema, value, options, path),
   ]
@@ -124,13 +124,13 @@ function validatePrefixItems(schema: NonBooleanJsfSchema, values: SchemaValue[],
  * - When the `contains` keyword is defined without `minContains` and `maxContains`, the array must contain at least one item that is valid against the `contains` schema.
  * - When the `contains` keyword is defined with `minContains` and `maxContains`, the array must contain a number of items that is between `minContains` and `maxContains` that are valid against the `contains` schema.
  */
-function validateArrayContains(
+function validateContains(
   value: SchemaValue[],
   schema: NonBooleanJsfSchema,
   options: ValidationOptions,
   path: ValidationErrorPath,
 ): ValidationError[] {
-  if (typeof schema.contains !== 'object' || schema.contains === null) {
+  if (!('contains' in schema)) {
     return []
   }
 

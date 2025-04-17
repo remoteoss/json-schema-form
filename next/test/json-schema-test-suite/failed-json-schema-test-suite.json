@@ -35,13 +35,6 @@
     "same $anchor with different base uri": [
       "$ref does not resolve to /$defs/A/allOf/0"
     ],
-    "contains keyword with boolean schema true": [
-      "empty array is invalid"
-    ],
-    "contains keyword with boolean schema false": [
-      "any non-empty array is invalid",
-      "empty array is invalid"
-    ],
     "validate definition against metaschema": [
       "invalid definition schema"
     ],
