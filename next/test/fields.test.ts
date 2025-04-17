@@ -25,6 +25,40 @@ describe('fields', () => {
     ])
   })
 
+  it('should use x-jsf-presentation.inputType to set the input type and fallback to the json type if no presentation is provided', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        age: { 'type': 'number', 'title': 'Age', 'x-jsf-presentation': { inputType: 'number' } },
+        amount: { type: 'number', title: 'Amount' },
+      },
+    }
+
+    const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+    // Both fields should have the same input type
+    expect(fields).toEqual([
+      {
+        type: 'number',
+        inputType: 'number',
+        jsonType: 'number',
+        name: 'age',
+        label: 'Age',
+        required: false,
+        isVisible: true,
+      },
+      {
+        type: 'number',
+        inputType: 'number',
+        jsonType: 'number',
+        name: 'amount',
+        label: 'Amount',
+        required: false,
+        isVisible: true,
+      },
+    ])
+  })
+
   it('should throw an error if the type equals "array" (group-array)', () => {
     const schema = {
       type: 'object',
@@ -73,8 +107,8 @@ describe('fields', () => {
           required: true,
         },
         {
-          type: 'text',
-          inputType: 'text',
+          type: 'number',
+          inputType: 'number',
           isVisible: true,
           jsonType: 'number',
           name: 'age',
