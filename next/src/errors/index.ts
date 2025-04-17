@@ -7,24 +7,44 @@ export type SchemaValidationErrorType =
   /**
    * Core validation keywords
    */
-  | 'type' | 'required' | 'valid' | 'const' | 'enum'
+  | 'type'
+  | 'required'
+  | 'valid'
+  | 'const'
+  | 'enum'
   /**
    * Schema composition keywords (allOf, anyOf, oneOf, not)
    * These keywords apply subschemas in a logical manner according to JSON Schema spec
    */
-  | 'anyOf' | 'oneOf' | 'not'
+  | 'anyOf'
+  | 'oneOf'
+  | 'not'
   /**
    * String validation keywords
    */
-  | 'format' | 'minLength' | 'maxLength' | 'pattern'
+  | 'format'
+  | 'minLength'
+  | 'maxLength'
+  | 'pattern'
   /**
    * Number validation keywords
    */
-  | 'multipleOf' | 'maximum' | 'exclusiveMaximum' | 'minimum' | 'exclusiveMinimum'
+  | 'multipleOf'
+  | 'maximum'
+  | 'exclusiveMaximum'
+  | 'minimum'
+  | 'exclusiveMinimum'
   /**
    * Date validation keywords
    */
-  | 'minDate' | 'maxDate'
+  | 'minDate'
+  | 'maxDate'
+  /**
+   * File validation keywords
+   */
+  | 'fileStructure'
+  | 'maxFileSize'
+  | 'accept'
 
 export type ValidationErrorPath = Array<string | number>
 
