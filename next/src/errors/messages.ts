@@ -64,6 +64,18 @@ export function getErrorMessage(
       return `The date must be ${schema['x-jsf-presentation']?.minDate} or after.`
     case 'maxDate':
       return `The date must be ${schema['x-jsf-presentation']?.maxDate} or before.`
+    case 'minItems':
+      throw new Error('Array support is not implemented yet')
+    case 'maxItems':
+      throw new Error('Array support is not implemented yet')
+    case 'uniqueItems':
+      throw new Error('Array support is not implemented yet')
+    case 'contains':
+      throw new Error('Array support is not implemented yet')
+    case 'minContains':
+      throw new Error('Array support is not implemented yet')
+    case 'maxContains':
+      throw new Error('Array support is not implemented yet')
   }
 }
 
