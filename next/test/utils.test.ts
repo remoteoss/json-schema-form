@@ -15,8 +15,8 @@ describe('getField', () => {
     },
     {
       name: 'address',
-      type: 'object',
-      inputType: 'object',
+      type: 'fieldset',
+      inputType: 'fieldset',
       jsonType: 'object',
       label: 'Address',
       required: false,
@@ -75,8 +75,8 @@ describe('getField', () => {
     const deepFields: Field[] = [
       {
         name: 'level1',
-        type: 'object',
-        inputType: 'object',
+        type: 'fieldset',
+        inputType: 'fieldset',
         jsonType: 'object',
         label: 'Level 1',
         required: false,
@@ -84,8 +84,8 @@ describe('getField', () => {
         fields: [
           {
             name: 'level2',
-            type: 'object',
-            inputType: 'object',
+            type: 'fieldset',
+            inputType: 'fieldset',
             jsonType: 'object',
             label: 'Level 2',
             required: false,
