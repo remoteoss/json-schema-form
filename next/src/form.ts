@@ -278,8 +278,19 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
 }
 
 export interface CreateHeadlessFormOptions {
+  /**
+   * The initial values to use for the form
+   */
   initialValues?: SchemaValue
+  /**
+   * The validation options to use for the form
+   */
   validationOptions?: ValidationOptions
+  /**
+   * When enabled, ['x-jsf-presentation'].inputType is required for all properties.
+   * @default false
+   */
+  strictInputType?: boolean
 }
 
 function buildFields(params: { schema: JsfObjectSchema }): Field[] {
@@ -293,6 +304,7 @@ export function createHeadlessForm(
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
   const initialValues = options.initialValues || {}
+  const strictInputType = options.strictInputType || false
   const fields = buildFields({ schema })
 
   // Making sure field properties are correct for the initial values

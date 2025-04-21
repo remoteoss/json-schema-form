@@ -7,8 +7,9 @@ export interface Field {
   label?: string
   description?: string
   fields?: Field[]
-  type: string
-  inputType: string
+  // @deprecated in favor of inputType,
+  type: FieldType
+  inputType: FieldType
   required: boolean
   jsonType: string
   isVisible: boolean
@@ -40,3 +41,5 @@ export interface FieldOption {
   value: unknown
   [key: string]: unknown
 }
+
+export type FieldType = 'text' | 'number' | 'select' | 'file' | 'radio' | 'group-array' | 'email' | 'date' | 'checkbox' | 'fieldset'
