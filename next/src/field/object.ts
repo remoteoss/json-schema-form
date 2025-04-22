@@ -10,12 +10,12 @@ import { buildFieldSchema } from './schema'
  * @param required - Whether the field is required
  * @returns The field
  */
-export function buildFieldObject(schema: JsfObjectSchema, name: string, required: boolean) {
+export function buildFieldObject(schema: JsfObjectSchema, name: string, required: boolean, strictInputType?: boolean) {
   const fields: Field[] = []
 
   for (const key in schema.properties) {
     const isRequired = schema.required?.includes(key) || false
-    const field = buildFieldSchema(schema.properties[key], key, isRequired)
+    const field = buildFieldSchema(schema.properties[key], key, isRequired, strictInputType)
     if (field) {
       fields.push(field)
     }

@@ -6,7 +6,7 @@ describe('modifySchema', () => {
   function fail() {
     throw new Error('It should not reach this point of the code')
   }
-  const schemaPet = {
+  const schemaPet: JsfSchema = {
     'type': 'object',
     'additionalProperties': false,
     'properties': {
@@ -166,7 +166,7 @@ describe('modifySchema', () => {
     })
     describe('modify() - warnings', () => {
       it('logs a warning by default', () => {
-        const result = modifySchema(schemaPet, {})
+        const result = modifySchema(schemaPet as JsfSchema, {})
 
         expect(console.warn).toBeCalledWith(
           'json-schema-form modify(): We highly recommend you to handle/report the returned `warnings` as they highlight possible bugs in your modifications. To mute this log, pass `muteLogging: true` to the config.',
@@ -177,7 +177,7 @@ describe('modifySchema', () => {
       })
 
       it('given muteLogging, it does not log the warning', () => {
-        const result = modifySchema(schemaPet, {
+        const result = modifySchema(schemaPet as JsfSchema, {
           muteLogging: true,
         })
 
@@ -288,7 +288,7 @@ describe('modifySchema', () => {
       expect(result.schema.properties?.unknown_field).toBeUndefined()
       expect(result.schema.properties?.nested).toBeUndefined()
       expect(result.schema.properties?.pet_name).toEqual({
-        ...schemaPet.properties.pet_name,
+        ...((schemaPet as any).properties?.pet_name),
         title: 'New pet title',
       })
 
@@ -306,7 +306,7 @@ describe('modifySchema', () => {
 
     it('replace all fields', () => {
       const result = modifySchema(schemaPet, {
-        allFields: (fieldName, fieldAttrs) => {
+        allFields: (_, fieldAttrs) => {
           let inputType, percentage
           const presentation = fieldAttrs['x-jsf-presentation']
 
@@ -425,7 +425,7 @@ describe('modifySchema', () => {
   })
 
   describe('supporting custom attributes', () => {
-    const invoiceSchema = {
+    const invoiceSchema: JsfSchema = {
       properties: {
         title: {
           'title': 'Invoice title',
@@ -459,8 +459,8 @@ describe('modifySchema', () => {
               'x-jsf-presentation': {
                 inputType: 'number',
               },
+              'type': 'integer',
             },
-            type: 'integer',
           },
         },
       },
