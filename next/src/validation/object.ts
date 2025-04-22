@@ -9,6 +9,7 @@ import { isObjectValue } from './util'
  * @param value - The value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
+ * @param jsonLogicBag - The JSON Logic bag
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
