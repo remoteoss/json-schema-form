@@ -72,12 +72,12 @@ export function getErrorMessage(
       return 'Not a valid file.'
     case 'maxFileSize': {
       const limitKB = presentation?.maxFileSize
-      const limitMB = typeof limitKB === 'number' ? convertKBToMB(limitKB) : 'N/A'
-      return `File size too large. The limit is ${limitMB} MB.`
+      const limitMB = typeof limitKB === 'number' ? convertKBToMB(limitKB) : undefined
+      return `File size too large.${limitMB ? ` The limit is ${limitMB} MB.` : ''}`
     }
     case 'accept': {
-      const formats = presentation?.accept || 'N/A'
-      return `Unsupported file format. The acceptable formats are ${formats}.`
+      const formats = presentation?.accept
+      return `Unsupported file format.${formats ? ` The acceptable formats are ${formats}.` : ''}`
     }
     // Arrays
     case 'minItems':
