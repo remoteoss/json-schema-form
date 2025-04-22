@@ -186,7 +186,7 @@ function addErrorMessages(rootValue: SchemaValue, rootSchema: JsfSchema, errors:
 
     return {
       ...error,
-      message: getErrorMessage(errorSchema, errorValue, error.validation),
+      message: getErrorMessage(errorSchema, errorValue, error.validation, error.customErrorMessage),
     }
   })
 }

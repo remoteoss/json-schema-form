@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { JsfSchema, JsonLogicBag, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema, type ValidationOptions } from './schema'
 import { deepEqual } from './util'
 
@@ -8,6 +8,7 @@ import { deepEqual } from './util'
  * @param value - The value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
+ * @param jsonLogicBag - The JSON logic bag
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -18,6 +19,7 @@ export function validateArray(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (!Array.isArray(value)) {
@@ -27,9 +29,9 @@ export function validateArray(
   return [
     ...validateLength(schema, value, path),
     ...validateUniqueItems(schema, value, path),
-    ...validateContains(value, schema, options, path),
-    ...validatePrefixItems(schema, value, options, path),
-    ...validateItems(schema, value, options, path),
+    ...validateContains(value, schema, options, jsonLogicBag, path),
+    ...validatePrefixItems(schema, value, options, jsonLogicBag, path),
+    ...validateItems(schema, value, options, jsonLogicBag, path),
   ]
 }
 
@@ -44,7 +46,11 @@ export function validateArray(
  * If the `maxItems` keyword is defined, the array must contain at most `maxItems` items.
  * If the `minItems` keyword is defined, the array must contain at least `minItems` items.
  */
-function validateLength(schema: NonBooleanJsfSchema, value: SchemaValue[], path: ValidationErrorPath): ValidationError[] {
+function validateLength(
+  schema: NonBooleanJsfSchema,
+  value: SchemaValue[],
+  path: ValidationErrorPath,
+): ValidationError[] {
   const errors: ValidationError[] = []
 
   const itemsLength = value.length
@@ -65,6 +71,7 @@ function validateLength(schema: NonBooleanJsfSchema, value: SchemaValue[], path:
  * @param schema - The schema to validate against
  * @param values - The array value to validate
  * @param options - The validation options
+ * @param jsonLogicBag - The JSON logic bag
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -72,7 +79,13 @@ function validateLength(schema: NonBooleanJsfSchema, value: SchemaValue[], path:
  * If the `items` keyword is defined, each item in the array must match the schema of the `items` keyword.
  * When the `prefixItems` keyword is defined, the items constraint is validated only for the items after the prefix items.
  */
-function validateItems(schema: NonBooleanJsfSchema, values: SchemaValue[], options: ValidationOptions, path: ValidationErrorPath): ValidationError[] {
+function validateItems(
+  schema: NonBooleanJsfSchema,
+  values: SchemaValue[],
+  options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
+  path: ValidationErrorPath,
+): ValidationError[] {
   if (schema.items === undefined) {
     return []
   }
@@ -81,7 +94,15 @@ function validateItems(schema: NonBooleanJsfSchema, values: SchemaValue[], optio
   const startIndex = Array.isArray(schema.prefixItems) ? schema.prefixItems.length : 0
 
   for (const [i, item] of values.slice(startIndex).entries()) {
-    errors.push(...validateSchema(item, schema.items, options, [...path, 'items', i + startIndex]))
+    errors.push(
+      ...validateSchema(
+        item,
+        schema.items,
+        options,
+        [...path, 'items', i + startIndex],
+        jsonLogicBag,
+      ),
+    )
   }
 
   return errors
@@ -92,13 +113,20 @@ function validateItems(schema: NonBooleanJsfSchema, values: SchemaValue[], optio
  * @param schema - The schema to validate against
  * @param values - The array value to validate
  * @param options - The validation options
+ * @param jsonLogicBag - The JSON logic bag
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
  * Validates the prefixItems constraint of an array.
  * If the `prefixItems` keyword is defined, each item in the array must match the schema of the corresponding prefix item.
  */
-function validatePrefixItems(schema: NonBooleanJsfSchema, values: SchemaValue[], options: ValidationOptions, path: ValidationErrorPath): ValidationError[] {
+function validatePrefixItems(
+  schema: NonBooleanJsfSchema,
+  values: SchemaValue[],
+  options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
+  path: ValidationErrorPath,
+): ValidationError[] {
   if (!Array.isArray(schema.prefixItems)) {
     return []
   }
@@ -106,7 +134,15 @@ function validatePrefixItems(schema: NonBooleanJsfSchema, values: SchemaValue[],
   const errors: ValidationError[] = []
   for (const [i, item] of values.entries()) {
     if (i < schema.prefixItems.length) {
-      errors.push(...validateSchema(item, schema.prefixItems[i] as JsfSchema, options, [...path, 'prefixItems', i]))
+      errors.push(
+        ...validateSchema(
+          item,
+          schema.prefixItems[i] as JsfSchema,
+          options,
+          [...path, 'prefixItems', i],
+          jsonLogicBag,
+        ),
+      )
     }
   }
 
@@ -118,6 +154,7 @@ function validatePrefixItems(schema: NonBooleanJsfSchema, values: SchemaValue[],
  * @param value - The array value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
+ * @param jsonLogicBag - The JSON logic bag
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -128,6 +165,7 @@ function validateContains(
   value: SchemaValue[],
   schema: NonBooleanJsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (!('contains' in schema)) {
@@ -137,8 +175,15 @@ function validateContains(
   const errors: ValidationError[] = []
 
   // How many items in the array are valid against the contains schema?
-  const contains = value.filter(item =>
-    validateSchema(item, schema.contains as JsfSchema, options, [...path, 'contains']).length === 0,
+  const contains = value.filter(
+    item =>
+      validateSchema(
+        item,
+        schema.contains as JsfSchema,
+        options,
+        [...path, 'contains'],
+        jsonLogicBag,
+      ).length === 0,
   ).length
 
   if (schema.minContains === undefined && schema.maxContains === undefined) {
@@ -168,7 +213,11 @@ function validateContains(
  * @description
  * Validates the uniqueItems constraint of an array when the `uniqueItems` keyword is defined as `true`.
  */
-function validateUniqueItems(schema: NonBooleanJsfSchema, values: SchemaValue[], path: ValidationErrorPath): ValidationError[] {
+function validateUniqueItems(
+  schema: NonBooleanJsfSchema,
+  values: SchemaValue[],
+  path: ValidationErrorPath,
+): ValidationError[] {
   if (schema.uniqueItems !== true) {
     return []
   }

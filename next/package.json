@@ -41,6 +41,9 @@
     "release:dev": "cd .. && npm run release:v1:dev",
     "release:beta": "cd .. && npm run release:v1:beta"
   },
+  "dependencies": {
+    "json-logic-js": "^2.0.5"
+  },
   "devDependencies": {
     "@antfu/eslint-config": "^3.14.0",
     "@babel/core": "^7.23.7",
@@ -48,6 +51,7 @@
     "@babel/preset-typescript": "^7.26.0",
     "@jest/globals": "^29.7.0",
     "@jest/reporters": "^29.7.0",
+    "@types/json-logic-js": "^2.0.8",
     "@types/lodash": "^4.17.16",
     "@types/validator": "^13.12.2",
     "babel-jest": "^29.7.0",

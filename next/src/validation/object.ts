@@ -1,6 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { ValidationOptions } from '../form'
-import type { NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { JsonLogicBag, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 import { isObjectValue } from './util'
 
@@ -9,6 +9,7 @@ import { isObjectValue } from './util'
  * @param value - The value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
+ * @param jsonLogicBag - The JSON Logic bag
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -19,12 +20,13 @@ export function validateObject(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (typeof schema === 'object' && schema.properties && isObjectValue(value)) {
     const errors = []
     for (const [key, propertySchema] of Object.entries(schema.properties)) {
-      errors.push(...validateSchema(value[key], propertySchema, options, [...path, key]))
+      errors.push(...validateSchema(value[key], propertySchema, options, [...path, key], jsonLogicBag))
     }
     return errors
   }
