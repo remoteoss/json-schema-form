@@ -78,6 +78,19 @@ export function getErrorMessage(
       const formats = presentation?.accept || 'N/A'
       return `Unsupported file format. The acceptable formats are ${formats}.`
     }
+    // Arrays
+    case 'minItems':
+      throw new Error('Array support is not implemented yet')
+    case 'maxItems':
+      throw new Error('Array support is not implemented yet')
+    case 'uniqueItems':
+      throw new Error('Array support is not implemented yet')
+    case 'contains':
+      throw new Error('Array support is not implemented yet')
+    case 'minContains':
+      throw new Error('Array support is not implemented yet')
+    case 'maxContains':
+      throw new Error('Array support is not implemented yet')
   }
 }
 

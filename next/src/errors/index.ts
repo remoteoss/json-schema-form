@@ -45,6 +45,10 @@ export type SchemaValidationErrorType =
   | 'fileStructure'
   | 'maxFileSize'
   | 'accept'
+  /**
+   * Array validation keywords
+   */
+  | 'minItems' | 'maxItems' | 'uniqueItems' | 'contains' | 'maxContains' | 'minContains'
 
 export type ValidationErrorPath = Array<string | number>
 

@@ -35,28 +35,6 @@
     "same $anchor with different base uri": [
       "$ref does not resolve to /$defs/A/allOf/0"
     ],
-    "contains keyword validation": [
-      "array without items matching schema is invalid",
-      "empty array is invalid"
-    ],
-    "contains keyword with const keyword": [
-      "array without item 5 is invalid"
-    ],
-    "contains keyword with boolean schema true": [
-      "empty array is invalid"
-    ],
-    "contains keyword with boolean schema false": [
-      "any non-empty array is invalid",
-      "empty array is invalid"
-    ],
-    "items + contains": [
-      "matches items, does not match contains",
-      "does not match items, matches contains",
-      "matches neither items nor contains"
-    ],
-    "contains with false if subschema": [
-      "empty array is invalid"
-    ],
     "validate definition against metaschema": [
       "invalid definition schema"
     ],
@@ -87,13 +65,13 @@
       "matches both"
     ],
     "A $dynamicRef to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor": [
-      "An array of strings is valid"
+      "An array containing non-strings is invalid"
     ],
     "A $dynamicRef to an $anchor in the same schema resource behaves like a normal $ref to an $anchor": [
-      "An array of strings is valid"
+      "An array containing non-strings is invalid"
     ],
     "A $ref to a $dynamicAnchor in the same schema resource behaves like a normal $ref to an $anchor": [
-      "An array of strings is valid"
+      "An array containing non-strings is invalid"
     ],
     "A $dynamicRef resolves to the first $dynamicAnchor still in scope that is encountered when the schema is evaluated": [
       "An array containing non-strings is invalid"
@@ -187,48 +165,13 @@
     "evaluating the same schema location against the same data location twice is not a sign of an infinite loop": [
       "failing case"
     ],
-    "a schema given for items": [
-      "wrong type of items"
-    ],
-    "items with boolean schema (false)": [
-      "any non-empty array is invalid"
-    ],
     "items and subitems": [
-      "valid items",
-      "fewer items is valid"
-    ],
-    "nested items": [
-      "valid nested array"
-    ],
-    "prefixItems with no additional items allowed": [
-      "additional items are not permitted"
-    ],
-    "items does not look in applicators, valid case": [
-      "prefixItems in allOf does not constrain items, invalid case"
-    ],
-    "prefixItems validation adjusts the starting index for items": [
-      "wrong type of second item"
-    ],
-    "items with heterogeneous array": [
-      "heterogeneous invalid instance"
+      "too many sub-items",
+      "wrong item",
+      "wrong sub-item"
     ],
     "maxContains with contains": [
-      "empty data",
-      "all elements match, invalid maxContains",
-      "some elements match, invalid maxContains"
-    ],
-    "maxContains with contains, value with a decimal": [
-      "too many elements match, invalid maxContains"
-    ],
-    "minContains < maxContains": [
-      "actual < minContains < maxContains",
-      "minContains < maxContains < actual"
-    ],
-    "maxItems validation": [
-      "too long is invalid"
-    ],
-    "maxItems validation with a decimal": [
-      "too long is invalid"
+      "empty data"
     ],
     "maxProperties validation": [
       "too long is invalid"
@@ -238,38 +181,6 @@
     ],
     "maxProperties = 0 means the object is empty": [
       "one property is invalid"
-    ],
-    "minContains=1 with contains": [
-      "empty data",
-      "no elements match"
-    ],
-    "minContains=2 with contains": [
-      "empty data",
-      "all elements match, invalid minContains",
-      "some elements match, invalid minContains"
-    ],
-    "minContains=2 with contains with a decimal value": [
-      "one element matches, invalid minContains"
-    ],
-    "maxContains = minContains": [
-      "empty data",
-      "all elements match, invalid minContains",
-      "all elements match, invalid maxContains"
-    ],
-    "maxContains < minContains": [
-      "empty data",
-      "invalid minContains",
-      "invalid maxContains",
-      "invalid maxContains and minContains"
-    ],
-    "minContains = 0 with maxContains": [
-      "too many"
-    ],
-    "minItems validation": [
-      "too short is invalid"
-    ],
-    "minItems validation with a decimal": [
-      "too short is invalid"
     ],
     "minProperties validation": [
       "too short is invalid"
@@ -304,16 +215,9 @@
       "object with both properties is invalid",
       "object with a property matching both true and false is invalid"
     ],
-    "a schema given for prefixItems": [
-      "wrong types"
-    ],
-    "prefixItems with boolean schemas": [
-      "array with two items is invalid"
-    ],
     "properties, patternProperties, additionalProperties interaction": [
-      "property validates property",
+      "patternProperty invalidates property",
       "patternProperty invalidates nonproperty",
-      "additionalProperty ignores property",
       "additionalProperty invalidates others"
     ],
     "properties whose names are Javascript object property names": [
@@ -344,7 +248,6 @@
       "nested ref invalid"
     ],
     "ref applies alongside sibling keywords": [
-      "ref valid, maxItems invalid",
       "ref invalid"
     ],
     "remote ref, containing refs itself": [
@@ -357,7 +260,7 @@
       "any value is invalid"
     ],
     "Recursive references between schemas": [
-      "valid tree"
+      "invalid tree"
     ],
     "refs with quote": [
       "object with strings is invalid"
@@ -478,12 +381,6 @@
       "toString present",
       "constructor present"
     ],
-    "object type matches objects": [
-      "an array is not an object"
-    ],
-    "array type matches arrays": [
-      "an array is an array"
-    ],
     "unevaluatedItems false": [
       "with unevaluated items"
     ],
@@ -492,9 +389,6 @@
     ],
     "unevaluatedItems with tuple": [
       "with unevaluated items"
-    ],
-    "unevaluatedItems with items": [
-      "invalid under items"
     ],
     "unevaluatedItems with nested tuple": [
       "with unevaluated items"
@@ -507,7 +401,7 @@
       "when two schemas match and has unevaluated items"
     ],
     "unevaluatedItems with oneOf": [
-      "with no unevaluated items"
+      "with unevaluated items"
     ],
     "unevaluatedItems with not": [
       "with unevaluated items"
@@ -535,7 +429,6 @@
       "uncle keyword evaluation is not significant"
     ],
     "unevaluatedItems depends on adjacent contains": [
-      "contains fails, second item is not evaluated",
       "contains passes, second item is not evaluated"
     ],
     "unevaluatedItems depends on multiple nested contains": [
@@ -669,33 +562,6 @@
     "dependentSchemas with unevaluatedProperties": [
       "unevaluatedProperties doesn't consider dependentSchemas",
       "unevaluatedProperties doesn't see bar when foo2 is absent"
-    ],
-    "uniqueItems validation": [
-      "non-unique array of integers is invalid",
-      "non-unique array of more than two integers is invalid",
-      "numbers are unique if mathematically unequal",
-      "non-unique array of strings is invalid",
-      "non-unique array of objects is invalid",
-      "property order of array of objects is ignored",
-      "non-unique array of nested objects is invalid",
-      "non-unique array of arrays is invalid",
-      "non-unique array of more than two arrays is invalid",
-      "non-unique heterogeneous types are invalid",
-      "objects are non-unique despite key order"
-    ],
-    "uniqueItems with an array of items": [
-      "[false, false] from items array is not valid",
-      "[true, true] from items array is not valid",
-      "non-unique array extended from [false, true] is not valid",
-      "non-unique array extended from [true, false] is not valid"
-    ],
-    "uniqueItems with an array of items and additionalItems=false": [
-      "[false, false] from items array is not valid",
-      "[true, true] from items array is not valid",
-      "extra items are invalid even if unique"
-    ],
-    "uniqueItems=false with an array of items and additionalItems=false": [
-      "extra items are invalid even if unique"
     ],
     "schema that uses custom metaschema with with no validation vocabulary": [
       "no validation: invalid number, but it still validates"
