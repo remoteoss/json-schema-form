@@ -7,6 +7,7 @@ export function getErrorMessage(
   schema: NonBooleanJsfSchema,
   value: SchemaValue,
   validation: SchemaValidationErrorType,
+  customErrorMessage?: string,
 ): string {
   switch (validation) {
     // Core validation
@@ -76,6 +77,8 @@ export function getErrorMessage(
       throw new Error('Array support is not implemented yet')
     case 'maxContains':
       throw new Error('Array support is not implemented yet')
+    case 'json-logic':
+      return customErrorMessage || 'The value is not valid'
   }
 }
 

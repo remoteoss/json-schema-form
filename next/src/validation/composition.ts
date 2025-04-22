@@ -7,7 +7,7 @@
 
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { ValidationOptions } from '../form'
-import type { JsfSchema, SchemaValue } from '../types'
+import type { JsfSchema, JsonLogicBag, JsonLogicSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
 /**
@@ -30,6 +30,7 @@ export function validateAllOf(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.allOf) {
@@ -38,7 +39,7 @@ export function validateAllOf(
 
   for (let i = 0; i < schema.allOf.length; i++) {
     const subSchema = schema.allOf[i]
-    const errors = validateSchema(value, subSchema, options, [...path, 'allOf', i])
+    const errors = validateSchema(value, subSchema, options, [...path, 'allOf', i], jsonLogicBag)
     if (errors.length > 0) {
       return errors
     }
@@ -67,6 +68,7 @@ export function validateAnyOf(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.anyOf) {
@@ -74,7 +76,7 @@ export function validateAnyOf(
   }
 
   for (const subSchema of schema.anyOf) {
-    const errors = validateSchema(value, subSchema, options, path)
+    const errors = validateSchema(value, subSchema, options, path, jsonLogicBag)
     if (errors.length === 0) {
       return []
     }
@@ -108,6 +110,7 @@ export function validateOneOf(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.oneOf) {
@@ -117,7 +120,7 @@ export function validateOneOf(
   let validCount = 0
 
   for (let i = 0; i < schema.oneOf.length; i++) {
-    const errors = validateSchema(value, schema.oneOf[i], options, path)
+    const errors = validateSchema(value, schema.oneOf[i], options, path, jsonLogicBag)
     if (errors.length === 0) {
       validCount++
       if (validCount > 1) {
@@ -168,6 +171,7 @@ export function validateNot(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.not === undefined) {
@@ -180,7 +184,7 @@ export function validateNot(
       : []
   }
 
-  const notErrors = validateSchema(value, schema.not, options, path)
+  const notErrors = validateSchema(value, schema.not, options, path, jsonLogicBag)
   return notErrors.length === 0
     ? [{ path, validation: 'not' }]
     : []

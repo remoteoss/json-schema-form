@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { JsfSchema, JsonLogicBag, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema, type ValidationOptions } from './schema'
 import { deepEqual } from './util'
 
@@ -18,6 +18,7 @@ export function validateArray(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (!Array.isArray(value)) {
@@ -27,9 +28,9 @@ export function validateArray(
   return [
     ...validateLength(schema, value, path),
     ...validateUniqueItems(schema, value, path),
-    ...validateContains(value, schema, options, path),
-    ...validatePrefixItems(schema, value, options, path),
-    ...validateItems(schema, value, options, path),
+    ...validateContains(value, schema, options, jsonLogicBag, path),
+    ...validatePrefixItems(schema, value, options, jsonLogicBag, path),
+    ...validateItems(schema, value, options, jsonLogicBag, path),
   ]
 }
 
@@ -72,7 +73,7 @@ function validateLength(schema: NonBooleanJsfSchema, value: SchemaValue[], path:
  * If the `items` keyword is defined, each item in the array must match the schema of the `items` keyword.
  * When the `prefixItems` keyword is defined, the items constraint is validated only for the items after the prefix items.
  */
-function validateItems(schema: NonBooleanJsfSchema, values: SchemaValue[], options: ValidationOptions, path: ValidationErrorPath): ValidationError[] {
+function validateItems(schema: NonBooleanJsfSchema, values: SchemaValue[], options: ValidationOptions, jsonLogicBag: JsonLogicBag | undefined, path: ValidationErrorPath): ValidationError[] {
   if (schema.items === undefined) {
     return []
   }
@@ -81,7 +82,7 @@ function validateItems(schema: NonBooleanJsfSchema, values: SchemaValue[], optio
   const startIndex = Array.isArray(schema.prefixItems) ? schema.prefixItems.length : 0
 
   for (const [i, item] of values.slice(startIndex).entries()) {
-    errors.push(...validateSchema(item, schema.items, options, [...path, 'items', i + startIndex]))
+    errors.push(...validateSchema(item, schema.items, options, [...path, 'items', i + startIndex], jsonLogicBag))
   }
 
   return errors
@@ -98,7 +99,7 @@ function validateItems(schema: NonBooleanJsfSchema, values: SchemaValue[], optio
  * Validates the prefixItems constraint of an array.
  * If the `prefixItems` keyword is defined, each item in the array must match the schema of the corresponding prefix item.
  */
-function validatePrefixItems(schema: NonBooleanJsfSchema, values: SchemaValue[], options: ValidationOptions, path: ValidationErrorPath): ValidationError[] {
+function validatePrefixItems(schema: NonBooleanJsfSchema, values: SchemaValue[], options: ValidationOptions, jsonLogicBag: JsonLogicBag | undefined, path: ValidationErrorPath): ValidationError[] {
   if (!Array.isArray(schema.prefixItems)) {
     return []
   }
@@ -106,7 +107,7 @@ function validatePrefixItems(schema: NonBooleanJsfSchema, values: SchemaValue[],
   const errors: ValidationError[] = []
   for (const [i, item] of values.entries()) {
     if (i < schema.prefixItems.length) {
-      errors.push(...validateSchema(item, schema.prefixItems[i] as JsfSchema, options, [...path, 'prefixItems', i]))
+      errors.push(...validateSchema(item, schema.prefixItems[i] as JsfSchema, options, [...path, 'prefixItems', i], jsonLogicBag))
     }
   }
 
@@ -128,6 +129,7 @@ function validateContains(
   value: SchemaValue[],
   schema: NonBooleanJsfSchema,
   options: ValidationOptions,
+  jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (!('contains' in schema)) {
@@ -138,7 +140,7 @@ function validateContains(
 
   // How many items in the array are valid against the contains schema?
   const contains = value.filter(item =>
-    validateSchema(item, schema.contains as JsfSchema, options, [...path, 'contains']).length === 0,
+    validateSchema(item, schema.contains as JsfSchema, options, [...path, 'contains'], jsonLogicBag).length === 0,
   ).length
 
   if (schema.minContains === undefined && schema.maxContains === undefined) {

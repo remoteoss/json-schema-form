@@ -1,11 +1,12 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, JsfSchemaType, SchemaValue } from '../types'
+import type { JsfSchema, JsfSchemaType, JsonLogicBag, JsonLogicSchema, SchemaValue } from '../types'
 import { validateArray } from './array'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
 import { validateConst } from './const'
 import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
+import { validateJsonLogic } from './json-logic'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -138,7 +139,17 @@ export function validateSchema(
   schema: JsfSchema,
   options: ValidationOptions = {},
   path: ValidationErrorPath = [],
+  rootJsonLogicBag?: JsonLogicBag,
 ): ValidationError[] {
+  // If we have a rootJsonLogicBag, we shoud use that. If not, we try to check for the 'x-jsf-logic' property in the schema.
+  let jsonLogicBag = rootJsonLogicBag
+  if (!rootJsonLogicBag && schema['x-jsf-logic']) {
+    jsonLogicBag = {
+      schema: schema['x-jsf-logic'],
+      value,
+    }
+  }
+
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
   const errors: ValidationError[] = []
 
@@ -184,16 +195,17 @@ export function validateSchema(
     // JSON-schema spec validations
     ...validateConst(value, schema, path),
     ...validateEnum(value, schema, path),
-    ...validateObject(value, schema, options, path),
-    ...validateArray(value, schema, options, path),
+    ...validateObject(value, schema, options, jsonLogicBag, path),
+    ...validateArray(value, schema, options, jsonLogicBag, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
-    ...validateNot(value, schema, options, path),
-    ...validateAllOf(value, schema, options, path),
-    ...validateAnyOf(value, schema, options, path),
-    ...validateOneOf(value, schema, options, path),
-    ...validateCondition(value, schema, options, path),
+    ...validateNot(value, schema, options, jsonLogicBag, path),
+    ...validateAllOf(value, schema, options, jsonLogicBag, path),
+    ...validateAnyOf(value, schema, options, jsonLogicBag, path),
+    ...validateOneOf(value, schema, options, jsonLogicBag, path),
+    ...validateCondition(value, schema, options, jsonLogicBag, path),
     // Custom validations
     ...validateDate(value, schema, options, path),
+    ...validateJsonLogic(schema, options, jsonLogicBag, path),
   ]
 }
