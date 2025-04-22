@@ -72,11 +72,7 @@ function validateType(
     return []
   }
 
-  const valueType = value === null
-    ? 'null'
-    : Array.isArray(value)
-      ? 'array'
-      : typeof value
+  const valueType = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value
 
   if (Array.isArray(schemaType)) {
     // Handle cases where schema type is an array (e.g., ["string", "null"])
@@ -158,25 +154,12 @@ export function validateSchema(
     = typeof presentation?.maxFileSize === 'number' || typeof presentation?.accept === 'string'
   const isPotentialFileInput = isExplicitFileInput || hasFileKeywords
 
-  // 1. Handle undefined value
+  // Handle undefined value
   if (valueIsUndefined) {
     return []
   }
 
-  // 2. Handle null specifically for potential file inputs (treat as valid empty state)
-  if (value === null && isPotentialFileInput) {
-    // Check schema doesn't ONLY allow null (unlikely edge case for files)
-    const schemaTypes = getSchemaType(schema)
-    if (
-      schemaTypes !== 'null'
-      && (!Array.isArray(schemaTypes) || !schemaTypes.every(t => t === 'null'))
-    ) {
-      return []
-    }
-    // If schema ONLY allows null, let type validation handle it below.
-  }
-
-  // 3. Handle boolean schemas
+  // Handle boolean schemas
   if (typeof schema === 'boolean') {
     return schema ? [] : [{ path, validation: 'valid' }]
   }
@@ -194,6 +177,8 @@ export function validateSchema(
   if (schema.required && isObjectValue(value)) {
     const missingKeys = schema.required.filter((key: string) => {
       const fieldValue = value[key]
+      // Field is considered missing if it's undefined OR
+      // if it's null AND treatNullAsUndefined option is true
       return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
     })
 
