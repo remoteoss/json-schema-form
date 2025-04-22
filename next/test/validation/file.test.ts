@@ -102,7 +102,10 @@ describe('validateFile', () => {
   it('should fail validation for array with non-object item', () => {
     const value = ['file.txt'] as any[]
     const errors = validateSchema(value, fileSchemaWithSizeLimitKB)
-    expect(errors).toEqual([{ path: [], validation: 'fileStructure' }])
+    expect(errors).toEqual([
+      { path: ['items', 0], validation: 'type' },
+      { path: [], validation: 'fileStructure' },
+    ])
   })
 
   // --- Max File Size ---
