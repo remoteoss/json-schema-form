@@ -27,7 +27,7 @@ describe('fields', () => {
   })
 
   it('should use x-jsf-presentation.inputType to set the input type and fallback to the json type if no presentation is provided', () => {
-    const schema = {
+    const schema: JsfSchema = {
       type: 'object',
       properties: {
         age: { 'type': 'number', 'title': 'Age', 'x-jsf-presentation': { inputType: 'number' } },
@@ -130,7 +130,7 @@ describe('fields', () => {
   })
 
   it('should handle custom x-jsf-presentation properties', () => {
-    const schema = {
+    const schema: JsfSchema = {
       type: 'object',
       properties: {
         file: {
@@ -249,7 +249,7 @@ describe('fields', () => {
 
   describe('radio field', () => {
     it('builds a radio field with options', () => {
-      const schema = {
+      const schema: JsfSchema = {
         type: 'object',
         properties: {
           status: {
