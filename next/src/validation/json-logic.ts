@@ -20,7 +20,6 @@ function replaceUndefinedValuesWithNulls(values: any = {}) {
  * Validates the JSON Logic for a given schema.
  *
  * @param {NonBooleanJsfSchema} schema - The JSON Schema to validate.
- * @param {ValidationOptions} options - The validation options.
  * @param {JsonLogicBag | undefined} jsonLogicBag - The JSON Logic bag.
  */
 export function validateJsonLogic(

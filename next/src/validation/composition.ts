@@ -7,7 +7,7 @@
 
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { ValidationOptions } from '../form'
-import type { JsfSchema, JsonLogicBag, JsonLogicSchema, SchemaValue } from '../types'
+import type { JsfSchema, JsonLogicBag, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
 /**
@@ -179,13 +179,9 @@ export function validateNot(
   }
 
   if (typeof schema.not === 'boolean') {
-    return schema.not
-      ? [{ path, validation: 'not' }]
-      : []
+    return schema.not ? [{ path, validation: 'not' }] : []
   }
 
   const notErrors = validateSchema(value, schema.not, options, path, jsonLogicBag)
-  return notErrors.length === 0
-    ? [{ path, validation: 'not' }]
-    : []
+  return notErrors.length === 0 ? [{ path, validation: 'not' }] : []
 }

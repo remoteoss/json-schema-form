@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, JsfSchemaType, JsonLogicBag, JsonLogicSchema, SchemaValue } from '../types'
+import type { JsfSchema, JsfSchemaType, JsonLogicBag, SchemaValue } from '../types'
 import { validateArray } from './array'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
@@ -72,11 +72,7 @@ function validateType(
     return []
   }
 
-  const valueType = value === null
-    ? 'null'
-    : Array.isArray(value)
-      ? 'array'
-      : typeof value
+  const valueType = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value
 
   if (Array.isArray(schemaType)) {
     if (value === null && schemaType.includes('null')) {
@@ -174,9 +170,7 @@ export function validateSchema(
   }
 
   // If the schema defines "required", run required checks even when type is undefined.
-  if (
-    schema.required && isObjectValue(value)
-  ) {
+  if (schema.required && isObjectValue(value)) {
     const missingKeys = schema.required.filter((key: string) => {
       const fieldValue = value[key]
       return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
