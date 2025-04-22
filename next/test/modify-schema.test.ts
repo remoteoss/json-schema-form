@@ -306,7 +306,7 @@ describe('modifySchema', () => {
 
     it('replace all fields', () => {
       const result = modifySchema(schemaPet, {
-        allFields: (fieldName, fieldAttrs) => {
+        allFields: (_, fieldAttrs) => {
           let inputType, percentage
           const presentation = fieldAttrs['x-jsf-presentation']
 

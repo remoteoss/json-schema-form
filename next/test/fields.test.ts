@@ -284,7 +284,7 @@ describe('fields', () => {
     })
 
     it('skips options without a null const value', () => {
-      const schema = {
+      const schema: JsfSchema = {
         type: 'object',
         properties: {
           status: {
