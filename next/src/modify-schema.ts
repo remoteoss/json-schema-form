@@ -284,7 +284,7 @@ function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick'
         break
       case 'allOf': {
         // remove conditionals that do not contain any reference to fieldsToPick
-        const newConditionalArray = originalSchema[attrKey]?.filter(condition =>
+        const newConditionalArray = originalSchema[attrKey]?.filter((condition: JsfSchema) =>
           isConditionalReferencingAnyPickedField(condition, fieldsToPick),
         )
 

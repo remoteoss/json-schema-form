@@ -1,4 +1,5 @@
 import type { JSONSchema } from 'json-schema-typed/draft-2020-12'
+import type { FieldType } from './field/type'
 
 /**
  * Defines the type of a `Field` in the form.
@@ -18,7 +19,7 @@ export interface ObjectValue {
 }
 
 export type JsfPresentation = {
-  inputType?: string
+  inputType?: FieldType
   description?: string
   accept?: string
   maxFileSize?: number
