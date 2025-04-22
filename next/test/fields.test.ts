@@ -1,3 +1,4 @@
+import type { JsfSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { buildFieldSchema } from '../src/field/schema'
 
@@ -318,6 +319,146 @@ describe('fields', () => {
           ],
         },
       ])
+    })
+  })
+
+  describe('input type calculation', () => {
+    it('prioritizes x-jsf-presentation.inputType', () => {
+      const schema: JsfSchema = {
+        'type': 'string',
+        'x-jsf-presentation': { inputType: 'textarea' },
+      }
+      const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('textarea')
+    })
+
+    it('throws error with strictInputType when x-jsf-presentation.inputType is missing', () => {
+      const schema = {
+        type: 'string',
+        title: 'Test',
+      }
+      expect(() => buildFieldSchema(schema, 'test', false, true))
+        .toThrow(/Strict error: Missing inputType to field "Test"/)
+    })
+
+    it.skip('defaults to group-array for schema with no type but items.properties', () => {
+      const schema = {
+        items: {
+          properties: {
+            name: { type: 'string' },
+          },
+        },
+      }
+      const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('group-array')
+    })
+
+    it('defaults to select for schema with no type but properties', () => {
+      const schema = {
+        properties: {
+          option: { type: 'string' },
+        },
+      }
+      const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('select')
+    })
+
+    describe('string type inputs', () => {
+      it('uses email input for email format', () => {
+        const schema = {
+          type: 'string',
+          format: 'email',
+        }
+        const field = buildFieldSchema(schema, 'test')
+        expect(field?.inputType).toBe('email')
+      })
+
+      it('uses date input for date format', () => {
+        const schema = {
+          type: 'string',
+          format: 'date',
+        }
+        const field = buildFieldSchema(schema, 'test')
+        expect(field?.inputType).toBe('date')
+      })
+
+      it('uses file input for data-url format', () => {
+        const schema = {
+          type: 'string',
+          format: 'data-url',
+        }
+        const field = buildFieldSchema(schema, 'test')
+        expect(field?.inputType).toBe('file')
+      })
+
+      it('uses radio input when oneOf is present', () => {
+        const schema = {
+          type: 'string',
+          oneOf: [
+            { const: 'a', title: 'A' },
+            { const: 'b', title: 'B' },
+          ],
+        }
+        const field = buildFieldSchema(schema, 'test')
+        expect(field?.inputType).toBe('radio')
+      })
+
+      it('defaults to text input for string type', () => {
+        const schema = {
+          type: 'string',
+        }
+        const field = buildFieldSchema(schema, 'test')
+        expect(field?.inputType).toBe('text')
+      })
+    })
+
+    it('uses number input for number/integer type', () => {
+      const numberSchema = {
+        type: 'number',
+      }
+      const integerSchema = {
+        type: 'integer',
+      }
+
+      expect(buildFieldSchema(numberSchema, 'test')?.inputType).toBe('number')
+      expect(buildFieldSchema(integerSchema, 'test')?.inputType).toBe('number')
+    })
+
+    it('uses fieldset input for object type', () => {
+      const schema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+      }
+      const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('fieldset')
+    })
+
+    describe.skip('array type inputs', () => {
+      it('uses group-array when items has properties', () => {
+        const schema = {
+          type: 'array',
+          items: {
+            properties: {
+              name: { type: 'string' },
+            },
+          },
+        }
+        const field = buildFieldSchema(schema, 'test')
+        expect(field?.inputType).toBe('group-array')
+      })
+
+      it('uses select when items has no properties', () => {
+        const schema = {
+          type: 'array',
+          items: {
+            type: 'string',
+          },
+        }
+        const field = buildFieldSchema(schema, 'test')
+        expect(field?.inputType).toBe('select')
+      })
     })
   })
 })
