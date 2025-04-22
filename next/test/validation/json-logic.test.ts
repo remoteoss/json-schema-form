@@ -19,7 +19,7 @@ describe('validateJsonLogic', () => {
       properties: {},
     }
 
-    const result = validateJsonLogic(schema, {}, undefined)
+    const result = validateJsonLogic(schema, undefined)
     expect(result).toEqual([])
   })
 
@@ -30,7 +30,7 @@ describe('validateJsonLogic', () => {
       'x-jsf-logic-validations': [],
     }
 
-    const result = validateJsonLogic(schema, {}, undefined)
+    const result = validateJsonLogic(schema, undefined)
     expect(result).toEqual([])
   })
 
@@ -48,7 +48,7 @@ describe('validateJsonLogic', () => {
       value: {},
     }
 
-    const result = validateJsonLogic(schema, {}, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicBag)
     expect(result).toEqual([])
   })
 
@@ -74,7 +74,7 @@ describe('validateJsonLogic', () => {
     // Mock the jsonLogic.apply to return false (false is the return value for invalid logic)
     (jsonLogic.apply as jest.Mock).mockReturnValue(false)
 
-    const result = validateJsonLogic(schema, {}, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicBag)
 
     expect(result).toEqual([
       {
@@ -112,7 +112,7 @@ describe('validateJsonLogic', () => {
     // Mock the jsonLogic.apply to return true
     ;(jsonLogic.apply as jest.Mock).mockReturnValue(true)
 
-    const result = validateJsonLogic(schema, {}, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicBag)
     expect(result).toEqual([])
   })
 
@@ -137,7 +137,7 @@ describe('validateJsonLogic', () => {
 
     ;(jsonLogic.apply as jest.Mock).mockReturnValue(true)
 
-    validateJsonLogic(schema, {}, jsonLogicBag)
+    validateJsonLogic(schema, jsonLogicBag)
 
     expect(jsonLogic.apply).toHaveBeenCalledWith(
       { '==': [{ var: 'field' }, null] },
@@ -173,7 +173,7 @@ describe('validateJsonLogic', () => {
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true)
 
-    const result = validateJsonLogic(schema, {}, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicBag)
 
     expect(result).toEqual([
       {

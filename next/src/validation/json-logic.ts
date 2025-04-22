@@ -1,6 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsonLogicBag, NonBooleanJsfSchema } from '../types'
-import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
 
 /**
@@ -26,7 +25,6 @@ function replaceUndefinedValuesWithNulls(values: any = {}) {
  */
 export function validateJsonLogic(
   schema: NonBooleanJsfSchema,
-  options: ValidationOptions,
   jsonLogicBag: JsonLogicBag | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {

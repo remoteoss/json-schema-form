@@ -206,6 +206,6 @@ export function validateSchema(
     ...validateCondition(value, schema, options, jsonLogicBag, path),
     // Custom validations
     ...validateDate(value, schema, options, path),
-    ...validateJsonLogic(schema, options, jsonLogicBag, path),
+    ...validateJsonLogic(schema, jsonLogicBag, path),
   ]
 }
