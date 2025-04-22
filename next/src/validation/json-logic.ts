@@ -4,7 +4,7 @@ import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
 
 /**
- * (Ported from v0)
+ * (Ported from v0. TODO: check why we need it and if the name is correct)
  * We removed undefined values in this function as `json-logic` ignores them.
  * Means we will always check against a value for validations.
  *
@@ -17,6 +17,13 @@ function replaceUndefinedValuesWithNulls(values: any = {}) {
   }, {})
 }
 
+/**
+ * Validates the JSON Logic for a given schema.
+ *
+ * @param {NonBooleanJsfSchema} schema - The JSON Schema to validate.
+ * @param {ValidationOptions} options - The validation options.
+ * @param {JsonLogicBag | undefined} jsonLogicBag - The JSON Logic bag.
+ */
 export function validateJsonLogic(
   schema: NonBooleanJsfSchema,
   options: ValidationOptions,
