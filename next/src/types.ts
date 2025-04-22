@@ -1,6 +1,6 @@
+import type { RulesLogic } from 'json-logic-js'
 import type { JSONSchema } from 'json-schema-typed/draft-2020-12'
 import type { FieldType } from './field/type'
-
 /**
  * Defines the type of a `Field` in the form.
  */
@@ -29,6 +29,21 @@ export type JsfPresentation = {
   [key: string]: unknown
 }
 
+export interface JsonLogicBag {
+  schema: JsonLogicSchema
+  value: SchemaValue
+}
+
+export interface JsonLogicSchema {
+  validations?: Record<string, {
+    errorMessage?: string
+    rule: RulesLogic
+  }>
+  computedValues?: Record<string, {
+    rule: RulesLogic
+  }>
+}
+
 /**
  * JSON Schema Form extending JSON Schema with additional JSON Schema Form properties.
  */
@@ -42,17 +57,21 @@ export type JsfSchema = JSONSchema & {
   'if'?: JsfSchema
   'then'?: JsfSchema
   'else'?: JsfSchema
-  'x-jsf-logic'?: {
-    validations: Record<string, object>
-    computedValues: Record<string, object>
-  }
   // Note: if we don't have this property here, when inspecting any recursive
   // schema (like an if inside another schema), the required property won't be
   // present in the type
   'required'?: string[]
+  // Defines the order of the fields in the form.
   'x-jsf-order'?: string[]
+  // Defines the presentation of the field in the form.
   'x-jsf-presentation'?: JsfPresentation
+  // Defines the error message of the field in the form.
   'x-jsf-errorMessage'?: Record<string, string>
+  'x-jsf-logic'?: JsonLogicSchema
+  // Extra validations to run. References validations in the `x-jsf-logic` root property.
+  'x-jsf-logic-validations'?: string[]
+  // Extra attributes to add to the schema. References computedValues in the `x-jsf-logic` root property.
+  'x-jsf-logic-computedAttrs'?: Record<keyof JsfSchema, string>
 }
 
 /**
