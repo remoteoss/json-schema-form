@@ -49,6 +49,10 @@ export type SchemaValidationErrorType =
    * Array validation keywords
    */
   | 'minItems' | 'maxItems' | 'uniqueItems' | 'contains' | 'maxContains' | 'minContains'
+  /**
+   * Custom validation keywords
+   */
+  | 'json-logic'
 
 export type ValidationErrorPath = Array<string | number>
 
@@ -75,4 +79,10 @@ export interface ValidationError {
    * 'required'
    */
   validation: SchemaValidationErrorType
+  /**
+   * The custom error message to display
+   * @example
+   * 'The value is not valid'
+   */
+  customErrorMessage?: string
 }
