@@ -158,13 +158,6 @@ export function validateSchema(
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
   const errors: ValidationError[] = []
 
-  // Check if it is a file input (needed early for null check)
-  const presentation = schema['x-jsf-presentation']
-  const isExplicitFileInput = presentation?.inputType === 'file'
-  const hasFileKeywords
-    = typeof presentation?.maxFileSize === 'number' || typeof presentation?.accept === 'string'
-  const isPotentialFileInput = isExplicitFileInput || hasFileKeywords
-
   // Handle undefined value
   if (valueIsUndefined) {
     return []
@@ -174,6 +167,10 @@ export function validateSchema(
   if (typeof schema === 'boolean') {
     return schema ? [] : [{ path, validation: 'valid' }]
   }
+
+  // Check if it is a file input (needed early for null check)
+  const presentation = schema['x-jsf-presentation']
+  const isExplicitFileInput = presentation?.inputType === 'file'
 
   let typeValidationErrors: ValidationError[] = []
   // Skip standard type validation ONLY if inputType is explicitly 'file'
@@ -202,11 +199,6 @@ export function validateSchema(
     }
   }
 
-  // Call validateFile if potential file input AND value is an array
-  // (null/undefined cases handled above, non-arrays handled by type check)
-  const shouldCallValidateFile = isPotentialFileInput && Array.isArray(value)
-
-  // --- Other Validations ---
   return [
     ...errors,
     // JSON-schema spec validations
@@ -216,8 +208,8 @@ export function validateSchema(
     ...validateArray(value, schema, options, jsonLogicBag, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
-    // File validation (conditionally run)
-    ...(shouldCallValidateFile ? validateFile(value, schema, path) : []),
+    // File validation
+    ...validateFile(value, schema, path),
     // Composition and conditional logic
     ...validateNot(value, schema, options, jsonLogicBag, path),
     ...validateAllOf(value, schema, options, jsonLogicBag, path),

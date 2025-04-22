@@ -23,14 +23,26 @@ export function validateFile(
   schema: NonBooleanJsfSchema,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
-  // 1. Check the overall structure: Value must be null, undefined, or an array.
-  if (value !== null && value !== undefined && !Array.isArray(value)) {
-    // This case should typically be caught by `validateType` in `schema.ts` first, but we can add a safeguard here.
-    return [{ path, validation: 'type' }] // Expects an array (or null/undefined)
+  // Early exit conditions
+  // 1. Check if schema indicates a potential file input
+  const presentation = schema['x-jsf-presentation']
+  const isExplicitFileInput = presentation?.inputType === 'file'
+  const hasFileKeywords
+    = typeof presentation?.maxFileSize === 'number' || typeof presentation?.accept === 'string'
+  const isPotentialFileInput = isExplicitFileInput || hasFileKeywords
+
+  if (!isPotentialFileInput) {
+    return [] // Not a file input schema, nothing to validate here.
   }
 
-  // If value is null, undefined, or an empty array, no further file validation needed.
-  if (value === null || value === undefined || value.length === 0) {
+  // 2. Check if the value is an array. Non-arrays (like null, object, string) are handled by validateType.
+  if (!Array.isArray(value)) {
+    return [] // File validation only applies to arrays.
+  }
+
+  // Actual file validation logic
+  // If value is an empty array, no further file validation needed.
+  if (value.length === 0) {
     return []
   }
 
@@ -45,7 +57,6 @@ export function validateFile(
 
   // Now we know value is a valid FileLike[] with at least one item.
   const files = value as FileLike[]
-  const presentation = schema['x-jsf-presentation']
 
   // 3. Validate maxFileSize (presentation.maxFileSize is expected in KB)
   if (typeof presentation?.maxFileSize === 'number') {
