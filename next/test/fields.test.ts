@@ -341,6 +341,7 @@ describe('fields', () => {
         .toThrow(/Strict error: Missing inputType to field "Test"/)
     })
 
+    // Skipping this test until we have group-array support
     it.skip('defaults to group-array for schema with no type but items.properties', () => {
       const schema = {
         items: {
@@ -435,6 +436,15 @@ describe('fields', () => {
       expect(field?.inputType).toBe('fieldset')
     })
 
+    it('uses checkbox input for boolean type', () => {
+      const schema = {
+        type: 'boolean',
+      }
+      const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('checkbox')
+    })
+
+    // Skipping these tests until we have group-array support
     describe.skip('array type inputs', () => {
       it('uses group-array when items has properties', () => {
         const schema = {

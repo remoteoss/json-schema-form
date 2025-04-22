@@ -55,6 +55,8 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
       }
       return 'select'
     }
+    case 'boolean':
+      return 'checkbox'
     default:
       return 'text'
   }
