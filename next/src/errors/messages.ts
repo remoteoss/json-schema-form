@@ -1,6 +1,7 @@
 import type { SchemaValidationErrorType } from '.'
 import type { JsfSchemaType, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { randexp } from 'randexp'
+import { convertKBToMB } from '../utils'
 import { DATE_FORMAT } from '../validation/custom/date'
 
 export function getErrorMessage(
@@ -9,6 +10,7 @@ export function getErrorMessage(
   validation: SchemaValidationErrorType,
   customErrorMessage?: string,
 ): string {
+  const presentation = schema['x-jsf-presentation']
   switch (validation) {
     // Core validation
     case 'type':
@@ -60,11 +62,24 @@ export function getErrorMessage(
       return `Must be greater or equal to ${schema.minimum}`
     case 'exclusiveMinimum':
       return `Must be greater than ${schema.exclusiveMinimum}`
-      // Date validation
+    // Date validation
     case 'minDate':
-      return `The date must be ${schema['x-jsf-presentation']?.minDate} or after.`
+      return `The date must be ${presentation?.minDate} or after.`
     case 'maxDate':
-      return `The date must be ${schema['x-jsf-presentation']?.maxDate} or before.`
+      return `The date must be ${presentation?.maxDate} or before.`
+    // File validation
+    case 'fileStructure':
+      return 'Not a valid file.'
+    case 'maxFileSize': {
+      const limitKB = presentation?.maxFileSize
+      const limitMB = typeof limitKB === 'number' ? convertKBToMB(limitKB) : undefined
+      return `File size too large.${limitMB ? ` The limit is ${limitMB} MB.` : ''}`
+    }
+    case 'accept': {
+      const formats = presentation?.accept
+      return `Unsupported file format.${formats ? ` The acceptable formats are ${formats}.` : ''}`
+    }
+    // Arrays
     case 'minItems':
       throw new Error('Array support is not implemented yet')
     case 'maxItems':

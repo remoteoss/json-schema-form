@@ -6,6 +6,7 @@ import { validateCondition } from './conditions'
 import { validateConst } from './const'
 import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
+import { validateFile } from './file'
 import { validateJsonLogic } from './json-logic'
 import { validateNumber } from './number'
 import { validateObject } from './object'
@@ -75,29 +76,37 @@ function validateType(
   const valueType = value === null ? 'null' : Array.isArray(value) ? 'array' : typeof value
 
   if (Array.isArray(schemaType)) {
+    // Handle cases where schema type is an array (e.g., ["string", "null"])
     if (value === null && schemaType.includes('null')) {
       return []
     }
 
     for (const type of schemaType) {
+      if (type === 'array' && Array.isArray(value)) {
+        return [] // Correctly validate array type
+      }
       if (valueType === 'number' && type === 'integer' && Number.isInteger(value)) {
         return []
       }
-
       if (valueType === type || (type === 'null' && value === null)) {
         return []
       }
     }
   }
-
-  if (valueType === 'number' && schemaType === 'integer' && Number.isInteger(value)) {
-    return []
+  else {
+    // Handle cases where schema type is a single type string
+    if (schemaType === 'array' && Array.isArray(value)) {
+      return [] // Correctly validate array type
+    }
+    if (valueType === 'number' && schemaType === 'integer' && Number.isInteger(value)) {
+      return []
+    }
+    if (valueType === schemaType) {
+      return []
+    }
   }
 
-  if (valueType === schemaType) {
-    return []
-  }
-
+  // If none of the conditions matched, it's a type error
   return [{ path, validation: 'type' }]
 }
 
@@ -149,30 +158,36 @@ export function validateSchema(
   const valueIsUndefined = value === undefined || (value === null && options.treatNullAsUndefined)
   const errors: ValidationError[] = []
 
-  // If value is undefined but not required, no further validation needed
+  // Handle undefined value
   if (valueIsUndefined) {
     return []
   }
 
+  // Handle boolean schemas
   if (typeof schema === 'boolean') {
-    // It means the property does not exist in the payload
-    if (!schema && typeof value !== 'undefined') {
-      return [{ path, validation: 'valid' }]
-    }
-    else {
-      return []
-    }
+    return schema ? [] : [{ path, validation: 'valid' }]
   }
 
-  const typeValidationErrors = validateType(value, schema, path)
-  if (typeValidationErrors.length > 0) {
-    return typeValidationErrors
+  // Check if it is a file input (needed early for null check)
+  const presentation = schema['x-jsf-presentation']
+  const isExplicitFileInput = presentation?.inputType === 'file'
+
+  let typeValidationErrors: ValidationError[] = []
+  // Skip standard type validation ONLY if inputType is explicitly 'file'
+  // (The null check above already handled null for potential file inputs)
+  if (!isExplicitFileInput) {
+    typeValidationErrors = validateType(value, schema, path)
+    if (typeValidationErrors.length > 0) {
+      return typeValidationErrors
+    }
   }
 
   // If the schema defines "required", run required checks even when type is undefined.
   if (schema.required && isObjectValue(value)) {
     const missingKeys = schema.required.filter((key: string) => {
       const fieldValue = value[key]
+      // Field is considered missing if it's undefined OR
+      // if it's null AND treatNullAsUndefined option is true
       return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
     })
 
@@ -193,6 +208,9 @@ export function validateSchema(
     ...validateArray(value, schema, options, jsonLogicBag, path),
     ...validateString(value, schema, path),
     ...validateNumber(value, schema, path),
+    // File validation
+    ...validateFile(value, schema, path),
+    // Composition and conditional logic
     ...validateNot(value, schema, options, jsonLogicBag, path),
     ...validateAllOf(value, schema, options, jsonLogicBag, path),
     ...validateAnyOf(value, schema, options, jsonLogicBag, path),
