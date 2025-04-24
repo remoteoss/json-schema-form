@@ -179,7 +179,7 @@ export function validateSchema(
       value,
     }
     // - We need to validate any schema that's in the 'x-jsf-logic' property, like if/then/else/allOf/etc.
-    // This is done below in the recursive validateSchema call.
+    // This is done below in the validateJsonLogicSchema call.
     jsonLogicRootSchema = rest
   }
 
