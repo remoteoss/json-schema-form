@@ -161,8 +161,8 @@ export function validateSchema(
       schema: JsonLogicBagSchema,
       value,
     }
-    // - We need to validate the actual schema that's in the 'x-jsf-logic' property
-    // (done below in the recursive validateSchema call)
+    // - We need to validate any schema that's in the 'x-jsf-logic' property, like if/then/else/allOf/etc.
+    // This is done below in the recursive validateSchema call.
     jsonLogicRootSchema = rest
   }
 
