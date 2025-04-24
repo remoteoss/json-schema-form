@@ -111,6 +111,23 @@ function validateType(
 }
 
 /**
+ * Validate a value against a json-logic schema (inner conditions inside a 'x-jsf-logic' property)
+ * @param value - The value to validate
+ * @param schema - The schema to validate against
+ * @param options - The validation options
+ * @param path - The path to the current field being validated
+ * @param jsonLogicContext - The json-logic context
+ * @returns An array of validation errors
+ */
+function validateJsonLogicSchema(value: SchemaValue, schema: JsfSchema | undefined, options: ValidationOptions = {}, path: ValidationErrorPath = [], jsonLogicContext?: JsonLogicContext): ValidationError[] {
+  if (!schema) {
+    return []
+  }
+
+  return validateSchema(value, schema, options, path, jsonLogicContext)
+}
+
+/**
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
@@ -229,7 +246,8 @@ export function validateSchema(
     ...validateCondition(value, schema, options, jsonLogicContext, path),
     // Custom validations
     ...validateDate(value, schema, options, path),
-    ...(jsonLogicRootSchema ? validateSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext) : []),
+    ...validateJsonLogicSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext),
+    // If we have a jsonLogicContext, we should validate the json-logic
     ...validateJsonLogic(schema, jsonLogicContext, path),
   ]
 }
