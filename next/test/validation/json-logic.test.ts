@@ -240,7 +240,7 @@ describe('validateJsonLogic', () => {
       }, [])
     })
 
-    it('should call json logic apply fn when "x-jsf-logic-validations" is present', () => {
+    it('should call json logic\'s apply function fn when "x-jsf-logic-validations" are present for a field', () => {
       const schema: JsfSchema = {
         'properties': {
           num_guests: {
@@ -291,7 +291,7 @@ describe('validateJsonLogic', () => {
       expect(jsonLogic.apply).toHaveBeenCalledTimes(2)
     })
 
-    it('should not call json logic apply fn when "x-jsf-logic-validations" is not present or when it references an invalid rule', () => {
+    it('should not call json logic\'s apply function when "x-jsf-logic-validations" are not present or when they reference an invalid rule', () => {
       const schema: JsfSchema = {
         'properties': {
           num_guests: {
@@ -319,58 +319,7 @@ describe('validateJsonLogic', () => {
       expect(jsonLogic.apply).not.toHaveBeenCalled()
     })
 
-    it('should call validateJsonLogic when "x-jsf-logic-validations" is present', () => {
-      const schema: JsfSchema = {
-        'properties': {
-          num_guests: {
-            title: 'Number of guests to invite',
-            type: 'number',
-          },
-          amount_of_snacks_to_bring: {
-            'title': 'Number of snacks to bring',
-            'type': 'number',
-            'x-jsf-logic-validations': [
-              'more_snacks_than_guests',
-            ],
-          },
-        },
-        'required': [
-          'num_guests',
-        ],
-        'x-jsf-logic': {
-          validations: {
-            more_snacks_than_guests: {
-              errorMessage: 'Consider bringing extra snacks so theres something for everyone.',
-              rule: {
-                '>=': [
-                  {
-                    var: 3,
-                  },
-                  {
-                    var: 2,
-                  },
-                ],
-              },
-            },
-          },
-        },
-      };
-
-      // Mock the jsonLogic.apply to return false (false is the return value for invalid logic)
-      (jsonLogic.apply as jest.Mock).mockReturnValue(false)
-
-      let errors = validateSchema({ num_guests: 4, amount_of_snacks_to_bring: 3 }, schema)
-      expect(errors).toHaveLength(1)
-      expect(errors[0].validation).toBe('json-logic');
-
-      (jsonLogic.apply as jest.Mock).mockReturnValue(true)
-      errors = validateSchema({ num_guests: 4, amount_of_snacks_to_bring: 10 }, schema)
-      expect(errors).toHaveLength(0)
-
-      expect(jsonLogic.apply).toHaveBeenCalledTimes(2)
-    })
-
-    it('should validate conditions inside "x-jsf-logic"', () => {
+    it('should validate conditions inside "x-jsf-logic", when present', () => {
       // jest.spyOn(jsonLogiValidation, 'validateJsonLogic')
       // jest.spyOn(jsonLogic, 'apply')
 
