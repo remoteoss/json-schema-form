@@ -29,12 +29,13 @@ export type JsfPresentation = {
   [key: string]: unknown
 }
 
-export interface JsonLogicBag {
-  schema: JsonLogicSchema
+export interface JsonLogicContext {
+  schema: JsonLogicRules
   value: SchemaValue
 }
 
-export interface JsonLogicSchema {
+// x-jsf-logic schema can have validations/computedValues as well as conditional rules present in any JSON Schema
+export interface JsonLogicRules {
   validations?: Record<string, {
     errorMessage?: string
     rule: RulesLogic
@@ -43,6 +44,9 @@ export interface JsonLogicSchema {
     rule: RulesLogic
   }>
 }
+export interface JsonLogicRootSchema extends Pick<NonBooleanJsfSchema, 'if' | 'then' | 'else' | 'allOf' | 'anyOf' | 'oneOf' | 'not'> {}
+
+export interface JsonLogicSchema extends JsonLogicRules, JsonLogicRootSchema {}
 
 /**
  * JSON Schema Form extending JSON Schema with additional JSON Schema Form properties.

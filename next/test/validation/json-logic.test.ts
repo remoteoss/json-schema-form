@@ -1,4 +1,4 @@
-import type { JsonLogicBag, NonBooleanJsfSchema } from '../../src/types'
+import type { JsonLogicContext, NonBooleanJsfSchema } from '../../src/types'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import jsonLogic from 'json-logic-js'
 import { validateJsonLogic } from '../../src/validation/json-logic'
@@ -41,14 +41,14 @@ describe('validateJsonLogic', () => {
       'x-jsf-logic-validations': ['someValidation'],
     }
 
-    const jsonLogicBag: JsonLogicBag = {
+    const jsonLogicContext: JsonLogicContext = {
       schema: {
         validations: {},
       },
       value: {},
     }
 
-    const result = validateJsonLogic(schema, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicContext)
     expect(result).toEqual([])
   })
 
@@ -59,7 +59,7 @@ describe('validateJsonLogic', () => {
       'x-jsf-logic-validations': ['ageCheck'],
     }
 
-    const jsonLogicBag: JsonLogicBag = {
+    const jsonLogicContext: JsonLogicContext = {
       schema: {
         validations: {
           ageCheck: {
@@ -74,7 +74,7 @@ describe('validateJsonLogic', () => {
     // Mock the jsonLogic.apply to return false (false is the return value for invalid logic)
     (jsonLogic.apply as jest.Mock).mockReturnValue(false)
 
-    const result = validateJsonLogic(schema, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicContext)
 
     expect(result).toEqual([
       {
@@ -97,7 +97,7 @@ describe('validateJsonLogic', () => {
       'x-jsf-logic-validations': ['ageCheck'],
     }
 
-    const jsonLogicBag: JsonLogicBag = {
+    const jsonLogicContext: JsonLogicContext = {
       schema: {
         validations: {
           ageCheck: {
@@ -112,7 +112,7 @@ describe('validateJsonLogic', () => {
     // Mock the jsonLogic.apply to return true
     ;(jsonLogic.apply as jest.Mock).mockReturnValue(true)
 
-    const result = validateJsonLogic(schema, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicContext)
     expect(result).toEqual([])
   })
 
@@ -123,7 +123,7 @@ describe('validateJsonLogic', () => {
       'x-jsf-logic-validations': ['check'],
     }
 
-    const jsonLogicBag: JsonLogicBag = {
+    const jsonLogicContext: JsonLogicContext = {
       schema: {
         validations: {
           check: {
@@ -137,7 +137,7 @@ describe('validateJsonLogic', () => {
 
     ;(jsonLogic.apply as jest.Mock).mockReturnValue(true)
 
-    validateJsonLogic(schema, jsonLogicBag)
+    validateJsonLogic(schema, jsonLogicContext)
 
     expect(jsonLogic.apply).toHaveBeenCalledWith(
       { '==': [{ var: 'field' }, null] },
@@ -152,7 +152,7 @@ describe('validateJsonLogic', () => {
       'x-jsf-logic-validations': ['check1', 'check2'],
     }
 
-    const jsonLogicBag: JsonLogicBag = {
+    const jsonLogicContext: JsonLogicContext = {
       schema: {
         validations: {
           check1: {
@@ -173,7 +173,7 @@ describe('validateJsonLogic', () => {
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true)
 
-    const result = validateJsonLogic(schema, jsonLogicBag)
+    const result = validateJsonLogic(schema, jsonLogicContext)
 
     expect(result).toEqual([
       {

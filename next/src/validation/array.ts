@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, JsonLogicBag, NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema, type ValidationOptions } from './schema'
 import { deepEqual } from './util'
 
@@ -8,7 +8,7 @@ import { deepEqual } from './util'
  * @param value - The value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
- * @param jsonLogicBag - The JSON logic bag
+ * @param jsonLogicContext - The JSON logic context
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -19,7 +19,7 @@ export function validateArray(
   value: SchemaValue,
   schema: JsfSchema,
   options: ValidationOptions,
-  jsonLogicBag: JsonLogicBag | undefined,
+  jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (!Array.isArray(value)) {
@@ -29,9 +29,9 @@ export function validateArray(
   return [
     ...validateLength(schema, value, path),
     ...validateUniqueItems(schema, value, path),
-    ...validateContains(value, schema, options, jsonLogicBag, path),
-    ...validatePrefixItems(schema, value, options, jsonLogicBag, path),
-    ...validateItems(schema, value, options, jsonLogicBag, path),
+    ...validateContains(value, schema, options, jsonLogicContext, path),
+    ...validatePrefixItems(schema, value, options, jsonLogicContext, path),
+    ...validateItems(schema, value, options, jsonLogicContext, path),
   ]
 }
 
@@ -71,7 +71,7 @@ function validateLength(
  * @param schema - The schema to validate against
  * @param values - The array value to validate
  * @param options - The validation options
- * @param jsonLogicBag - The JSON logic bag
+ * @param jsonLogicContext - The JSON logic context
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -83,7 +83,7 @@ function validateItems(
   schema: NonBooleanJsfSchema,
   values: SchemaValue[],
   options: ValidationOptions,
-  jsonLogicBag: JsonLogicBag | undefined,
+  jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (schema.items === undefined) {
@@ -100,7 +100,7 @@ function validateItems(
         schema.items,
         options,
         [...path, 'items', i + startIndex],
-        jsonLogicBag,
+        jsonLogicContext,
       ),
     )
   }
@@ -113,7 +113,7 @@ function validateItems(
  * @param schema - The schema to validate against
  * @param values - The array value to validate
  * @param options - The validation options
- * @param jsonLogicBag - The JSON logic bag
+ * @param jsonLogicContext - The JSON logic context
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -124,7 +124,7 @@ function validatePrefixItems(
   schema: NonBooleanJsfSchema,
   values: SchemaValue[],
   options: ValidationOptions,
-  jsonLogicBag: JsonLogicBag | undefined,
+  jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (!Array.isArray(schema.prefixItems)) {
@@ -140,7 +140,7 @@ function validatePrefixItems(
           schema.prefixItems[i] as JsfSchema,
           options,
           [...path, 'prefixItems', i],
-          jsonLogicBag,
+          jsonLogicContext,
         ),
       )
     }
@@ -154,7 +154,7 @@ function validatePrefixItems(
  * @param value - The array value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
- * @param jsonLogicBag - The JSON logic bag
+ * @param jsonLogicContext - The JSON logic context
  * @param path - The path to the current field being validated
  * @returns An array of validation errors
  * @description
@@ -165,7 +165,7 @@ function validateContains(
   value: SchemaValue[],
   schema: NonBooleanJsfSchema,
   options: ValidationOptions,
-  jsonLogicBag: JsonLogicBag | undefined,
+  jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
   if (!('contains' in schema)) {
@@ -182,7 +182,7 @@ function validateContains(
         schema.contains as JsfSchema,
         options,
         [...path, 'contains'],
-        jsonLogicBag,
+        jsonLogicContext,
       ).length === 0,
   ).length
 
