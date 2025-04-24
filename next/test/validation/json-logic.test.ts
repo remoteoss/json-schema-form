@@ -240,7 +240,7 @@ describe('validateJsonLogic', () => {
       }, [])
     })
 
-    it('should call json logic\'s apply function fn when "x-jsf-logic-validations" are present for a field', () => {
+    it('should call json logic\'s apply function when "x-jsf-logic-validations" are present for a field', () => {
       const schema: JsfSchema = {
         'properties': {
           num_guests: {

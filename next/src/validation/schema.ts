@@ -170,12 +170,12 @@ export function validateSchema(
   // If not, it probably means the current schema is the root schema (or that there's no json-logic node in the current schema)
   if (!rootJsonLogicContext && schema['x-jsf-logic']) {
     // - We should set the jsonLogicContext's schema as the schema in the 'x-jsf-logic' property
-    const { validations, computedValues, ...rest } = schema['x-jsf-logic']
-    const JsonLogicBagSchema: JsonLogicRules = {
+    const { validations, computedValues: _, ...rest } = schema['x-jsf-logic']
+    const jsonLogicRules: JsonLogicRules = {
       validations,
     }
     jsonLogicContext = {
-      schema: JsonLogicBagSchema,
+      schema: jsonLogicRules,
       value,
     }
     // - We need to validate any schema that's in the 'x-jsf-logic' property, like if/then/else/allOf/etc.
@@ -247,7 +247,6 @@ export function validateSchema(
     // Custom validations
     ...validateDate(value, schema, options, path),
     ...validateJsonLogicSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext),
-    // If we have a jsonLogicContext, we should validate the json-logic
     ...validateJsonLogic(schema, jsonLogicContext, path),
   ]
 }
