@@ -112,6 +112,7 @@ function validateType(
 
 /**
  * Validate a value against a json-logic schema (inner conditions inside a 'x-jsf-logic' property)
+ * Note: for this validator, the schema might be absent, so we return early in that case.
  * @param value - The value to validate
  * @param schema - The schema to validate against
  * @param options - The validation options
