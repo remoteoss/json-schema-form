@@ -150,7 +150,7 @@ export function validateSchema(
   let jsonLogicRootSchema: JsonLogicRootSchema | undefined
 
   // If we have a root jsonLogicContext, we shoud use that.
-  // If not, it probably means the current schema is the root schema (or that there's not json-logic node in the current schema)
+  // If not, it probably means the current schema is the root schema (or that there's no json-logic node in the current schema)
   if (!rootJsonLogicContext && schema['x-jsf-logic']) {
     // - We should set the jsonLogicContext's schema as the schema in the 'x-jsf-logic' property
     const { validations, computedValues, ...rest } = schema['x-jsf-logic']
