@@ -6,7 +6,7 @@ import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
 
 /**
- * Updates field visibility based on JSON schema conditional rules
+ * Updates field properties based on JSON schema conditional rules
  * @param fields - The fields to update
  * @param values - The current form values
  * @param schema - The JSON schema definition
@@ -72,14 +72,11 @@ function evaluateConditional(
 }
 
 /**
- * Applies JSON Schema conditional rules to determine field visibility
+ * Applies JSON Schema conditional rules to determine updated field properties
  * @param fields - The fields to apply rules to
  * @param values - The current form values
  * @param schema - The JSON schema containing the rules
  * @param options - Validation options
- *
- * Fields start visible by default, and they're set to hidden if their schema is
- * set to false (a falsy schema means the schema fails whenever a value is sent for that field)
  *
  */
 function applySchemaRules(
@@ -121,7 +118,7 @@ function applySchemaRules(
 }
 
 /**
- * Processes a branch of a conditional rule, updating the visibility of fields based on the branch's schema
+ * Processes a branch of a conditional rule, updating the properties of fields based on the branch's schema
  * @param fields - The fields to process
  * @param values - The current form values
  * @param branch - The branch (schema representing and then/else) to process
@@ -129,8 +126,9 @@ function applySchemaRules(
  */
 function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}) {
   if (branch.properties) {
-    // Cycle through each property in the schema and search for any (possibly nested)
-    // fields that have a false boolean schema. If found, set the field's visibility to false
+    // Cycle through each property in the schema and search for any property that needs
+    // to be updated in the fields collection.
+    // Note: False schemas mean the field should be hidden in the form (isVisible = false)
     for (const fieldName in branch.properties) {
       const fieldSchema = branch.properties[fieldName]
       const field = fields.find(e => e.name === fieldName)
