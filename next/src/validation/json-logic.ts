@@ -1,6 +1,8 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsonLogicContext, NonBooleanJsfSchema } from '../types'
+import type { JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
+import { validateSchema } from './schema'
 
 /**
  * (Ported from v0. TODO: check why we need it and if the name is correct)
@@ -17,12 +19,12 @@ function replaceUndefinedValuesWithNulls(values: any = {}) {
 }
 
 /**
- * Validates the JSON Logic for a given schema.
+ * Validates the JSON Logic rules for a given schema.
  *
  * @param {NonBooleanJsfSchema} schema - The JSON Schema to validate.
  * @param {JsonLogicContext | undefined} jsonLogicContext - The JSON Logic context.
  */
-export function validateJsonLogic(
+export function validateJsonLogicRules(
   schema: NonBooleanJsfSchema,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
@@ -51,4 +53,52 @@ export function validateJsonLogic(
 
     return []
   }).flat()
+}
+
+/**
+ * Validates the JSON Logic computed attributes for a given schema.
+ *
+ * @param {NonBooleanJsfSchema} schema - The JSON Schema to validate.
+ * @param {JsonLogicContext | undefined} jsonLogicContext - The JSON Logic context.
+ */
+export function validateJsonLogicComputedAttributes(
+  values: SchemaValue,
+  schema: NonBooleanJsfSchema,
+  options: ValidationOptions = {},
+  jsonLogicContext: JsonLogicContext | undefined,
+  path: ValidationErrorPath = [],
+): ValidationError[] {
+  const computedAttributes = schema['x-jsf-logic-computedAttrs']
+
+  // if the current schema has no computed attributes, we skip the validation
+  if (!computedAttributes || Object.keys(computedAttributes).length === 0) {
+    return []
+  }
+
+  // Create a copy of the schema
+  const schemaCopy: NonBooleanJsfSchema = { ...schema }
+
+  // Remove the computed attributes from the schema
+  delete schemaCopy['x-jsf-logic-computedAttrs']
+
+  // add the new computed attributes to the schema
+  Object.entries(computedAttributes).forEach(([schemaKey, computationName]) => {
+    const computedAttributeRule = jsonLogicContext?.schema?.computedValues?.[computationName]?.rule
+    const formValue = jsonLogicContext?.value
+
+    // if the computation name does not reference any valid rule, we ignore it
+    if (!computedAttributeRule) {
+      return
+    }
+
+    const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedValuesWithNulls(formValue))
+
+    if (typeof result === 'undefined') {
+      return
+    }
+
+    schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = result
+  })
+
+  return validateSchema(values, schemaCopy, options, path, jsonLogicContext)
 }

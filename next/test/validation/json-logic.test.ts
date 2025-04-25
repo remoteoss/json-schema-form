@@ -5,7 +5,7 @@ import * as JsonLogicValidation from '../../src/validation/json-logic'
 import * as SchemaValidation from '../../src/validation/schema'
 import { errorLike } from '../test-utils'
 
-const validateJsonLogic = JsonLogicValidation.validateJsonLogic
+const validateJsonLogic = JsonLogicValidation.validateJsonLogicRules
 
 // Mock json-logic-js
 jest.mock('json-logic-js', () => ({
@@ -233,7 +233,7 @@ describe('validateJsonLogic', () => {
 
       validateSchema({ num_guests: 4, amount_of_snacks_to_bring: 3 }, schema)
 
-      expect(JsonLogicValidation.validateJsonLogic).toHaveBeenCalledWith(schema, {
+      expect(JsonLogicValidation.validateJsonLogicRules).toHaveBeenCalledWith(schema, {
         schema: {
           validations: schema['x-jsf-logic']?.validations,
         },
