@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals'
 import { validateSchema } from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 describe('enum validation', () => {
   it('returns no errors for values that are in the enum', () => {
@@ -12,10 +13,10 @@ describe('enum validation', () => {
   it('returns an error for values that are not in the enum', () => {
     const schema = { enum: [1, 2, 3] }
     expect(validateSchema(4, schema)).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'enum',
-      },
+      }),
     ])
   })
 
@@ -31,10 +32,10 @@ describe('enum validation', () => {
     }
     expect(validateSchema({ foo: 'bar' }, schema)).toEqual([])
     expect(validateSchema({ foo: 'baz' }, schema)).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'enum',
-      },
+      }),
     ])
     expect(validateSchema(1, schema)).toEqual([])
   })
@@ -49,16 +50,16 @@ describe('enum validation', () => {
     expect(validateSchema({ foo: 'bar' }, schema)).toEqual([])
 
     expect(validateSchema('other', schema)).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'enum',
-      },
+      }),
     ])
     expect(validateSchema({ foo: 'baz' }, schema)).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'enum',
-      },
+      }),
     ])
   })
 })

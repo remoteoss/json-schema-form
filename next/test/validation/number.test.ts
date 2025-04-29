@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals'
 import { validateSchema } from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 describe('number validation', () => {
   it('validates values against number type schemas', () => {
@@ -18,24 +19,24 @@ describe('number validation', () => {
     expect(validateSchema(12.34, { type: ['number'] })).toEqual([])
 
     expect(validateSchema('10', { type: 'number' })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'type',
-      },
+      }),
     ])
 
     expect(validateSchema('42.0', { type: 'number' })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'type',
-      },
+      }),
     ])
 
     expect(validateSchema('test', { type: 'number' })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'type',
-      },
+      }),
     ])
   })
 
@@ -46,68 +47,68 @@ describe('number validation', () => {
     expect(validateSchema(23.0, { type: ['integer'] })).toEqual([])
     expect(validateSchema(10, { type: ['integer'] })).toEqual([])
     expect(validateSchema(0.42, { type: 'integer' })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'type',
-      },
+      }),
     ])
 
     expect(validateSchema(12.34, { type: ['integer'] })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'type',
-      },
+      }),
     ])
   })
 
   it('validates the number against the minimum and maximum properties', () => {
     expect(validateSchema(10, { type: 'number', minimum: 10 })).toEqual([])
     expect(validateSchema(9, { type: 'number', minimum: 10 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'minimum',
-      },
+      }),
     ])
 
     expect(validateSchema(10, { type: 'number', maximum: 10 })).toEqual([])
     expect(validateSchema(11, { type: 'number', maximum: 10 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'maximum',
-      },
+      }),
     ])
 
     expect(validateSchema(10, { type: 'number', minimum: 10, maximum: 10 })).toEqual([])
     expect(validateSchema(11, { type: 'number', minimum: 10, maximum: 10 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'maximum',
-      },
+      }),
     ])
 
     expect(validateSchema(9, { type: 'number', minimum: 10, maximum: 10 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'minimum',
-      },
+      }),
     ])
   })
 
   it('validates the number against the exclusiveMinimum and exclusiveMaximum properties', () => {
     expect(validateSchema(11, { type: 'number', exclusiveMinimum: 10 })).toEqual([])
     expect(validateSchema(10, { type: 'number', exclusiveMinimum: 10 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'exclusiveMinimum',
-      },
+      }),
     ])
 
     expect(validateSchema(9, { type: 'number', exclusiveMaximum: 10 })).toEqual([])
     expect(validateSchema(10, { type: 'number', exclusiveMaximum: 10 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'exclusiveMaximum',
-      },
+      }),
     ])
 
     expect(
@@ -116,38 +117,38 @@ describe('number validation', () => {
     expect(
       validateSchema(11, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 }),
     ).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'exclusiveMaximum',
-      },
+      }),
     ])
     expect(
       validateSchema(9, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 }),
     ).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'exclusiveMinimum',
-      },
+      }),
     ])
 
     expect(
       validateSchema(10, { type: 'number', exclusiveMinimum: 10, exclusiveMaximum: 10 }),
     ).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'exclusiveMaximum',
-      },
-      {
+      }),
+      errorLike({
         path: [],
         validation: 'exclusiveMinimum',
-      },
+      }),
     ])
 
     expect(validateSchema(3, { type: 'number', exclusiveMaximum: 3 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'exclusiveMaximum',
-      },
+      }),
     ])
   })
 
@@ -156,10 +157,10 @@ describe('number validation', () => {
     expect(validateSchema(10, { type: 'number', multipleOf: 5 })).toEqual([])
     expect(validateSchema(15, { type: 'number', multipleOf: 5 })).toEqual([])
     expect(validateSchema(12, { type: 'number', multipleOf: 5 })).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'multipleOf',
-      },
+      }),
     ])
   })
 })

@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals'
 import { validateSchema } from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 describe('array validation', () => {
   it('validates the array type', () => {
@@ -7,10 +8,10 @@ describe('array validation', () => {
     expect(validateSchema([], schema)).toEqual([])
     expect(validateSchema([1, 2, 3], schema)).toEqual([])
     expect(validateSchema('not an array', schema)).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'type',
-      },
+      }),
     ])
   })
 
@@ -28,10 +29,10 @@ describe('array validation', () => {
 
     it('returns an error for arrays with more than maxItems', () => {
       expect(validateSchema([1, 2, 3, 4], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'maxItems',
-        },
+        }),
       ])
     })
   })
@@ -45,19 +46,19 @@ describe('array validation', () => {
 
     it('returns an error for arrays with less than minItems', () => {
       expect(validateSchema([1], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'minItems',
-        },
+        }),
       ])
     })
 
     it('returns an error for empty arrays', () => {
       expect(validateSchema([], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'minItems',
-        },
+        }),
       ])
     })
   })
@@ -72,28 +73,28 @@ describe('array validation', () => {
 
     it('returns an error for arrays with duplicate items', () => {
       expect(validateSchema([1, 2, 1], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'uniqueItems',
-        },
+        }),
       ])
     })
 
     it('returns an error for arrays with duplicate arrays', () => {
       expect(validateSchema([[1, 2], [1, 2]], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'uniqueItems',
-        },
+        }),
       ])
     })
 
     it('returns an error for arrays with duplicate objects', () => {
       expect(validateSchema([{ a: 1 }, { a: 1 }, { a: 1 }], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'uniqueItems',
-        },
+        }),
       ])
     })
   })
@@ -113,10 +114,10 @@ describe('array validation', () => {
       const schema = { type: 'array', items: { type: 'number' } }
 
       expect(validateSchema([1, 'string', 3], schema)).toEqual([
-        {
+        errorLike({
           path: ['items', 1],
           validation: 'type',
-        },
+        }),
       ])
     })
   })
@@ -140,10 +141,10 @@ describe('array validation', () => {
 
     it('returns an error for arrays with prefixItems that do not match the schema', () => {
       expect(validateSchema(['test', 'not a number'], schema)).toEqual([
-        {
+        errorLike({
           path: ['prefixItems', 1],
           validation: 'type',
-        },
+        }),
       ])
     })
   })
@@ -165,19 +166,19 @@ describe('array validation', () => {
 
     it('returns an error for arrays that do not match the prefixItems constraint', () => {
       expect(validateSchema(['test', 'not a number', true, false], schema)).toEqual([
-        {
+        errorLike({
           path: ['prefixItems', 1],
           validation: 'type',
-        },
+        }),
       ])
     })
 
     it('returns an error for arrays that have additional items after the prefixItems that do not match the items constraint', () => {
       expect(validateSchema(['test', 42, true, false, 'extra'], schema)).toEqual([
-        {
+        errorLike({
           path: ['items', 4],
           validation: 'type',
-        },
+        }),
       ])
     })
   })
@@ -194,17 +195,17 @@ describe('array validation', () => {
 
     it('returns an error for arrays that do not contain any matching items', () => {
       expect(validateSchema([1, 2, 3], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'contains',
-        },
+        }),
       ])
 
       expect(validateSchema([], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'contains',
-        },
+        }),
       ])
     })
   })
@@ -233,10 +234,10 @@ describe('array validation', () => {
 
     it('returns an error for arrays with fewer than minContains items', () => {
       expect(validateSchema([1], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'minContains',
-        },
+        }),
       ])
     })
   })
@@ -254,10 +255,10 @@ describe('array validation', () => {
 
     it('returns an error for arrays with more than maxContains items', () => {
       expect(validateSchema([1, 2, 3], schema)).toEqual([
-        {
+        errorLike({
           path: [],
           validation: 'maxContains',
-        },
+        }),
       ])
     })
   })

@@ -1,5 +1,6 @@
 import { describe, expect, it } from '@jest/globals'
 import { validateSchema } from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 describe('treatNullAsUndefined', () => {
   it('returns no error when an undefined value is validated against a non-required field', () => {
@@ -27,10 +28,11 @@ describe('treatNullAsUndefined', () => {
       }
 
       expect(validateSchema({ name: null }, schema)).toEqual([
-        {
+        errorLike({
           path: ['name'],
           validation: 'type',
-        },
+          value: null,
+        }),
       ])
     })
   })
@@ -82,10 +84,10 @@ describe('treatNullAsUndefined', () => {
       }
 
       expect(validateSchema({ name: null }, schema, { treatNullAsUndefined: true })).toEqual([
-        {
+        errorLike({
           path: ['name'],
           validation: 'required',
-        },
+        }),
       ])
     })
 
@@ -101,10 +103,10 @@ describe('treatNullAsUndefined', () => {
       }
 
       expect(validateSchema({ name: null }, schema, { treatNullAsUndefined: true })).toEqual([
-        {
+        errorLike({
           path: ['name'],
           validation: 'required',
-        },
+        }),
       ])
     })
   })

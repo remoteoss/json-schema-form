@@ -46,7 +46,7 @@ export function validateJsonLogic(
 
     // If the condition is false, we return a validation error
     if (result === false) {
-      return [{ path, validation: 'json-logic', customErrorMessage: validationData.errorMessage } as ValidationError]
+      return [{ path, validation: 'json-logic', customErrorMessage: validationData.errorMessage, schema, value: formValue } as ValidationError]
     }
 
     return []

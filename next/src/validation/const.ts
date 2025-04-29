@@ -25,7 +25,7 @@ export function validateConst(
 
   if (!deepEqual(schema.const, value)) {
     return [
-      { path, validation: 'const' },
+      { path, validation: 'const', schema, value },
     ]
   }
 

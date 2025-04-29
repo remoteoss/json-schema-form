@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import jsonLogic from 'json-logic-js'
 import * as JsonLogicValidation from '../../src/validation/json-logic'
 import * as SchemaValidation from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 const validateJsonLogic = JsonLogicValidation.validateJsonLogic
 
@@ -81,11 +82,11 @@ describe('validateJsonLogic', () => {
     const result = validateJsonLogic(schema, jsonLogicContext)
 
     expect(result).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'json-logic',
         customErrorMessage: 'Must be over 18',
-      },
+      }),
     ])
 
     expect(jsonLogic.apply).toHaveBeenCalledWith(
@@ -180,11 +181,11 @@ describe('validateJsonLogic', () => {
     const result = validateJsonLogic(schema, jsonLogicContext)
 
     expect(result).toEqual([
-      {
+      errorLike({
         path: [],
         validation: 'json-logic',
         customErrorMessage: 'Must be over 18',
-      },
+      }),
     ])
 
     expect(jsonLogic.apply).toHaveBeenCalledTimes(2)
@@ -320,9 +321,6 @@ describe('validateJsonLogic', () => {
     })
 
     it('should validate conditions inside "x-jsf-logic", when present', () => {
-      // jest.spyOn(jsonLogiValidation, 'validateJsonLogic')
-      // jest.spyOn(jsonLogic, 'apply')
-
       const innerSchema: JsfSchema = {
         if: { properties: { foo: { const: 'test' } }, required: ['foo'] },
         then: { properties: { bar: { const: 1 } }, required: ['bar'] },
