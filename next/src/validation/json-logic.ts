@@ -5,8 +5,8 @@ import jsonLogic from 'json-logic-js'
 import { validateSchema } from './schema'
 
 /**
- * This function is needed because undefined and null values behave differently on json-logic.apply function.
- * This ensures consistent results.
+ * jsonLogic interprets  undefined and null values differently when running comparisons and that creates inconsistent results.
+ * This function attempts to fix that (ported from v0).
  *
  * @param {object} values - a set of values from a form
  * @returns {object} values object without any undefined
