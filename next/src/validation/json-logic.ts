@@ -20,8 +20,9 @@ function replaceUndefinedAndNullValuesWithNaN(values: any = {}) {
 /**
  * Validates the JSON Logic rules for a given schema.
  *
- * @param {NonBooleanJsfSchema} schema - The JSON Schema to validate.
- * @param {JsonLogicContext | undefined} jsonLogicContext - The JSON Logic context.
+ * @param {NonBooleanJsfSchema} schema - JSON Schema to validate.
+ * @param {JsonLogicContext | undefined} jsonLogicContext - JSON Logic context.
+ * @param {ValidationErrorPath} path - Current validation error path.
  */
 export function validateJsonLogicRules(
   schema: NonBooleanJsfSchema,
@@ -57,8 +58,11 @@ export function validateJsonLogicRules(
 /**
  * Validates the JSON Logic computed attributes for a given schema.
  *
- * @param {NonBooleanJsfSchema} schema - The JSON Schema to validate.
- * @param {JsonLogicContext | undefined} jsonLogicContext - The JSON Logic context.
+ * @param {SchemaValue} values - Current form values.
+ * @param {NonBooleanJsfSchema} schema - JSON Schema to validate.
+ * @param {ValidationOptions} options - Validation options.
+ * @param {JsonLogicContext | undefined} jsonLogicContext - JSON Logic context.
+ * @param {ValidationErrorPath} path - Current validation error path.
  */
 export function validateJsonLogicComputedAttributes(
   values: SchemaValue,
