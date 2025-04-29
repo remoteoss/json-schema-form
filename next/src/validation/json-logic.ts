@@ -5,14 +5,13 @@ import jsonLogic from 'json-logic-js'
 import { validateSchema } from './schema'
 
 /**
- * (Ported from v0. TODO: check why we need it and if the name is correct)
- * We removed undefined values in this function as `json-logic` ignores them.
- * Means we will always check against a value for validations.
+ * This function is needed because undefined and null values behave differently on json-logic.apply function.
+ * This ensures consistent results.
  *
  * @param {object} values - a set of values from a form
  * @returns {object} values object without any undefined
  */
-function replaceUndefinedValuesWithNulls(values: any = {}) {
+function replaceUndefinedAndNullValuesWithNaN(values: any = {}) {
   return Object.entries(values).reduce((prev, [key, value]) => {
     return { ...prev, [key]: value === undefined || value === null ? Number.NaN : value }
   }, {})
@@ -44,7 +43,7 @@ export function validateJsonLogicRules(
       return []
     }
 
-    const result: any = jsonLogic.apply(validationData.rule, replaceUndefinedValuesWithNulls(formValue))
+    const result: any = jsonLogic.apply(validationData.rule, replaceUndefinedAndNullValuesWithNaN(formValue))
 
     // If the condition is false, we return a validation error
     if (result === false) {
@@ -91,7 +90,7 @@ export function validateJsonLogicComputedAttributes(
       return
     }
 
-    const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedValuesWithNulls(formValue))
+    const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue))
 
     if (typeof result === 'undefined') {
       return
