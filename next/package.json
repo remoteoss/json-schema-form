@@ -31,7 +31,7 @@
     "dev": "NODE_ENV=development tsup --watch",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "test:file": "jest --runTestsByPath",
+    "test:file": "jest --runTestsByPath --watch",
     "test:v0-update-baseline": "jest --roots '<rootDir>/../src/tests' --json --outputFile=test/v0-baseline-test-results.json",
     "test:v0-compare-results": "node test/v0_compare_test_results.js",
     "test:v0": "jest --roots '<rootDir>/../src/tests' --json --outputFile=test/v0-test-results.json; pnpm run test:v0-compare-results",

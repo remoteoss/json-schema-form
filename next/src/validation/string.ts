@@ -35,24 +35,24 @@ export function validateString(
 
   // Length validation
   if (schema.minLength !== undefined && valueLength < schema.minLength) {
-    errors.push({ path, validation: 'minLength' })
+    errors.push({ path, validation: 'minLength', schema, value })
   }
 
   if (schema.maxLength !== undefined && valueLength > schema.maxLength) {
-    errors.push({ path, validation: 'maxLength' })
+    errors.push({ path, validation: 'maxLength', schema, value })
   }
 
   // Pattern validation
   if (schema.pattern !== undefined) {
     const pattern = new RegExp(schema.pattern)
     if (!pattern.test(value)) {
-      errors.push({ path, validation: 'pattern' })
+      errors.push({ path, validation: 'pattern', schema, value })
     }
   }
 
   // Format validation (annotation by default in 2020-12)
   if (schema.format !== undefined) {
-    const formatErrors = validateFormat(value, schema.format, path)
+    const formatErrors = validateFormat(value, schema, path)
     errors.push(...formatErrors)
   }
 

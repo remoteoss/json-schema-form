@@ -86,6 +86,8 @@ export function validateAnyOf(
     {
       path,
       validation: 'anyOf',
+      schema,
+      value,
     },
   ]
 }
@@ -134,6 +136,8 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
+        schema,
+        value,
       },
     ]
   }
@@ -143,6 +147,8 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
+        schema,
+        value,
       },
     ]
   }
@@ -179,9 +185,9 @@ export function validateNot(
   }
 
   if (typeof schema.not === 'boolean') {
-    return schema.not ? [{ path, validation: 'not' }] : []
+    return schema.not ? [{ path, validation: 'not', schema, value }] : []
   }
 
   const notErrors = validateSchema(value, schema.not, options, path, jsonLogicContext)
-  return notErrors.length === 0 ? [{ path, validation: 'not' }] : []
+  return notErrors.length === 0 ? [{ path, validation: 'not', schema, value }] : []
 }

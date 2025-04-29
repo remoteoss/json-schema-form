@@ -56,11 +56,11 @@ function validateLength(
   const itemsLength = value.length
 
   if (schema.maxItems !== undefined && itemsLength > schema.maxItems) {
-    errors.push({ path, validation: 'maxItems' })
+    errors.push({ path, validation: 'maxItems', schema, value })
   }
 
   if (schema.minItems !== undefined && itemsLength < schema.minItems) {
-    errors.push({ path, validation: 'minItems' })
+    errors.push({ path, validation: 'minItems', schema, value })
   }
 
   return errors
@@ -188,16 +188,16 @@ function validateContains(
 
   if (schema.minContains === undefined && schema.maxContains === undefined) {
     if (contains < 1) {
-      errors.push({ path, validation: 'contains' })
+      errors.push({ path, validation: 'contains', schema, value })
     }
   }
   else {
     if (schema.minContains !== undefined && contains < schema.minContains) {
-      errors.push({ path, validation: 'minContains' })
+      errors.push({ path, validation: 'minContains', schema, value })
     }
 
     if (schema.maxContains !== undefined && contains > schema.maxContains) {
-      errors.push({ path, validation: 'maxContains' })
+      errors.push({ path, validation: 'maxContains', schema, value })
     }
   }
 
@@ -227,7 +227,7 @@ function validateUniqueItems(
   for (let i = 0; i < values.length; i++) {
     for (const prevItem of seen.values()) {
       if (deepEqual(values[i], prevItem)) {
-        return [{ path, validation: 'uniqueItems' }]
+        return [{ path, validation: 'uniqueItems', schema, value: values[i] }]
       }
     }
     seen.set(i, values[i])

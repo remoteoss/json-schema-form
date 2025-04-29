@@ -107,7 +107,7 @@ function validateType(
   }
 
   // If none of the conditions matched, it's a type error
-  return [{ path, validation: 'type' }]
+  return [{ path, validation: 'type', schema, value }]
 }
 
 /**
@@ -194,7 +194,7 @@ export function validateSchema(
 
   // Handle boolean schemas
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid' }]
+    return schema ? [] : [{ path, validation: 'valid', schema, value }]
   }
 
   // Check if it is a file input (needed early for null check)
@@ -224,6 +224,8 @@ export function validateSchema(
       errors.push({
         path: [...path, key],
         validation: 'required',
+        schema: schema?.properties?.[key] || schema,
+        value,
       })
     }
   }
