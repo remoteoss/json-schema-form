@@ -78,6 +78,12 @@ export type JsfSchema = JSONSchema & {
   'x-jsf-logic-computedAttrs'?: Record<keyof JsfSchema, string>
 }
 
+const ok: JsfSchema = {
+  'x-jsf-logic-computedAttrs': {
+    minimum: 'foo',
+  },
+}
+
 /**
  * JSON Schema Form type without booleans.
  * This type is used for convenience in places where a boolean is not allowed.
