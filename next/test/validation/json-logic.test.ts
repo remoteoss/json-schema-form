@@ -5,17 +5,17 @@ import * as JsonLogicValidation from '../../src/validation/json-logic'
 import * as SchemaValidation from '../../src/validation/schema'
 import { errorLike } from '../test-utils'
 
-const validateJsonLogic = JsonLogicValidation.validateJsonLogicRules
+const validateJsonLogicRules = JsonLogicValidation.validateJsonLogicRules
 
 // Mock json-logic-js
 jest.mock('json-logic-js', () => ({
   apply: jest.fn(),
 }))
 
-describe('validateJsonLogic', () => {
+describe('validateJsonLogicRules', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    jest.spyOn(JsonLogicValidation, 'validateJsonLogic')
+    jest.spyOn(JsonLogicValidation, 'validateJsonLogicRules')
   })
 
   it('returns empty array when no validations exist', () => {
@@ -24,7 +24,7 @@ describe('validateJsonLogic', () => {
       properties: {},
     }
 
-    const result = validateJsonLogic(schema, undefined)
+    const result = validateJsonLogicRules(schema, undefined)
     expect(result).toEqual([])
   })
 
@@ -35,7 +35,7 @@ describe('validateJsonLogic', () => {
       'x-jsf-logic-validations': [],
     }
 
-    const result = validateJsonLogic(schema, undefined)
+    const result = validateJsonLogicRules(schema, undefined)
     expect(result).toEqual([])
   })
 
@@ -53,7 +53,7 @@ describe('validateJsonLogic', () => {
       value: {},
     }
 
-    const result = validateJsonLogic(schema, jsonLogicContext)
+    const result = validateJsonLogicRules(schema, jsonLogicContext)
     expect(result).toEqual([])
   })
 
@@ -79,7 +79,7 @@ describe('validateJsonLogic', () => {
     // Mock the jsonLogic.apply to return false (false is the return value for invalid logic)
     (jsonLogic.apply as jest.Mock).mockReturnValue(false)
 
-    const result = validateJsonLogic(schema, jsonLogicContext)
+    const result = validateJsonLogicRules(schema, jsonLogicContext)
 
     expect(result).toEqual([
       errorLike({
@@ -117,7 +117,7 @@ describe('validateJsonLogic', () => {
     // Mock the jsonLogic.apply to return true
     ;(jsonLogic.apply as jest.Mock).mockReturnValue(true)
 
-    const result = validateJsonLogic(schema, jsonLogicContext)
+    const result = validateJsonLogicRules(schema, jsonLogicContext)
     expect(result).toEqual([])
   })
 
@@ -142,7 +142,7 @@ describe('validateJsonLogic', () => {
 
     ;(jsonLogic.apply as jest.Mock).mockReturnValue(true)
 
-    validateJsonLogic(schema, jsonLogicContext)
+    validateJsonLogicRules(schema, jsonLogicContext)
 
     expect(jsonLogic.apply).toHaveBeenCalledWith(
       { '==': [{ var: 'field' }, null] },
@@ -178,7 +178,7 @@ describe('validateJsonLogic', () => {
       .mockReturnValueOnce(false)
       .mockReturnValueOnce(true)
 
-    const result = validateJsonLogic(schema, jsonLogicContext)
+    const result = validateJsonLogicRules(schema, jsonLogicContext)
 
     expect(result).toEqual([
       errorLike({
@@ -194,7 +194,7 @@ describe('validateJsonLogic', () => {
   describe('validateSchema integration with "x-jsf-logic"', () => {
     const validateSchema = SchemaValidation.validateSchema
 
-    it('calls validateJsonLogic with correct context', () => {
+    it('calls validateJsonLogicRules with correct context', () => {
       const schema: JsfSchema = {
         'properties': {
           num_guests: {
