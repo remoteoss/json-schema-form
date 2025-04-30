@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
 import { validateSchema } from './schema'
@@ -11,7 +11,7 @@ import { validateSchema } from './schema'
  * @param {object} values - a set of values from a form
  * @returns {object} values object without any undefined
  */
-function replaceUndefinedAndNullValuesWithNaN(values: any = {}) {
+function replaceUndefinedAndNullValuesWithNaN(values: ObjectValue = {}) {
   return Object.entries(values).reduce((prev, [key, value]) => {
     return { ...prev, [key]: value === undefined || value === null ? Number.NaN : value }
   }, {})
@@ -44,7 +44,7 @@ export function validateJsonLogicRules(
       return []
     }
 
-    const result: any = jsonLogic.apply(validationData.rule, replaceUndefinedAndNullValuesWithNaN(formValue))
+    const result: any = jsonLogic.apply(validationData.rule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
 
     // If the condition is false, we return a validation error
     if (result === false) {
