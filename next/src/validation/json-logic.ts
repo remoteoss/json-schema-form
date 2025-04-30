@@ -1,9 +1,18 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
+import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
 import { validateSchema } from './schema'
 import { safeDeepClone } from './util'
+
+/**
+ * Checks if a string contains handlebars syntax ({{...}})
+ * @param value The string to check
+ * @returns true if the string contains handlebars syntax, false otherwise
+ */
+function containsHandlebars(value: string): boolean {
+  return /\{\{.*?\}\}/.test(value)
+}
 
 /**
  * jsonLogic interprets  undefined and null values differently when running comparisons and that creates inconsistent results.
@@ -86,24 +95,77 @@ export function validateJsonLogicComputedAttributes(
   delete schemaCopy['x-jsf-logic-computedAttrs']
 
   // add the new computed attributes to the schema
-  Object.entries(computedAttributes).forEach(([schemaKey, computationName]) => {
-    const computedAttributeRule = jsonLogicContext?.schema?.computedValues?.[computationName]?.rule
-    const formValue = jsonLogicContext?.value
+  Object.entries(computedAttributes).forEach(([schemaKey, value]) => {
+    // If the schema key is "x-jsf-errorMessage", it means we should tweak the error message, eventually interpolating any handlebars present in each message.
+    // Otherwise, the attribute should be referencing a computation, so we need to check if the computation name is a valid rule
+    if (schemaKey === 'x-jsf-errorMessage') {
+      const customErrorMessages = value as JsfSchema['x-jsf-errorMessage']
+      const computedErrorMessages: JsfSchema['x-jsf-errorMessage'] = {}
 
-    // if the computation name does not reference any valid rule, we ignore it
-    if (!computedAttributeRule) {
-      return
+      if (!customErrorMessages) {
+        return
+      }
+
+      Object.entries(customErrorMessages).forEach(([key, message]) => {
+        let computedMessage = message
+        if (containsHandlebars(message)) {
+          computedMessage = interpolate(message, jsonLogicContext)
+        }
+        computedErrorMessages[key] = computedMessage
+      })
+      schemaCopy['x-jsf-errorMessage'] = computedErrorMessages
     }
+    else {
+      const validationName = value as string
+      const computedAttributeRule = jsonLogicContext?.schema?.computedValues?.[validationName]?.rule
 
-    const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+      const formValue = jsonLogicContext?.value
 
-    if (typeof result === 'undefined') {
-      return
+      // if the computation name does not reference any valid rule, we ignore it
+      if (!computedAttributeRule) {
+        return
+      }
+
+      const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+
+      if (typeof result === 'undefined') {
+        return
+      }
+
+      schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = result
     }
-
-    schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = result
   })
 
   // Validate the modified schema
   return validateSchema(values, schemaCopy, options, path, jsonLogicContext)
+}
+
+/**
+ * Interpolates handlebars expressions in a message with computed values
+ * @param message The message containing handlebars expressions
+ * @param jsonLogicContext JSON Logic context containing computations
+ * @returns Interpolated message with computed values
+ */
+function interpolate(message: string, jsonLogicContext: JsonLogicContext | undefined): string {
+  if (!jsonLogicContext?.schema?.computedValues) {
+    console.warn('No computed values found in the JSON Logic context')
+    return message
+  }
+
+  return message.replace(/\{\{(.*?)\}\}/g, (_, computation) => {
+    const computationName = computation.trim()
+    const computedRule = jsonLogicContext.schema.computedValues?.[computationName]?.rule
+
+    if (!computedRule) {
+      console.warn(`No computed rule found for ${computationName}`)
+      return `{{${computationName}}}`
+    }
+
+    const result = jsonLogic.apply(
+      computedRule,
+      replaceUndefinedAndNullValuesWithNaN(jsonLogicContext.value as ObjectValue),
+    )
+
+    return result?.toString() ?? `{{${computationName}}}`
+  })
 }
