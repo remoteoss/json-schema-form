@@ -79,7 +79,7 @@ export function validateJsonLogicComputedAttributes(
   }
 
   // Create a copy of the schema
-  const schemaCopy: NonBooleanJsfSchema = { ...schema }
+  const schemaCopy: NonBooleanJsfSchema = structuredClone(schema)
 
   // Remove the computed attributes from the schema
   delete schemaCopy['x-jsf-logic-computedAttrs']
@@ -94,7 +94,7 @@ export function validateJsonLogicComputedAttributes(
       return
     }
 
-    const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue))
+    const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
 
     if (typeof result === 'undefined') {
       return
@@ -103,5 +103,6 @@ export function validateJsonLogicComputedAttributes(
     schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = result
   })
 
+  // Validate the modified schema
   return validateSchema(values, schemaCopy, options, path, jsonLogicContext)
 }
