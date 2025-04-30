@@ -30,7 +30,7 @@ function addCheckboxAttributes(inputType: string, field: Field, schema: NonBoole
   // So, we set it to what's specified in the schema (if any)
   field.checkboxValue = schema.const
 
-  // However, if the schema type is boolean, we should the valid value as `true`
+  // However, if the schema type is boolean, we should set the valid value as `true`
   if (schema.type === 'boolean') {
     field.checkboxValue = true
   }
