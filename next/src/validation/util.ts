@@ -1,4 +1,4 @@
-import type { NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
+import type { ObjectValue, SchemaValue } from '../types'
 
 /**
  * Type guard to check if a given SchemaValue is an ObjectValue

@@ -75,7 +75,7 @@ export type JsfSchema = JSONSchema & {
   // Extra validations to run. References validations in the `x-jsf-logic` root property.
   'x-jsf-logic-validations'?: string[]
   // Extra attributes to add to the schema. References computedValues in the `x-jsf-logic` root property.
-  'x-jsf-logic-computedAttrs'?: Partial<Record<keyof NonBooleanJsfSchema, string>>
+  'x-jsf-logic-computedAttrs'?: Partial<Record<keyof NonBooleanJsfSchema, string | JsfSchema['x-jsf-errorMessage']>>
 }
 
 /**

@@ -1,6 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldObject } from './field/object'
@@ -155,51 +155,15 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
   }
 
   return errors.map((error) => {
-    // Skip if no path or empty path
-    if (!error.path.length) {
-      return error
-    }
-
-    // Find the schema for this error path
-    let currentSchema: NonBooleanJsfSchema | null = typeof schema === 'object' ? schema : null
-    let fieldSchema: NonBooleanJsfSchema | null = null
-
-    // Navigate through the schema to find the field schema
-    for (const segment of error.path) {
-      if (!currentSchema || typeof currentSchema !== 'object') {
-        break
-      }
-
-      if (currentSchema.properties && currentSchema.properties[segment]) {
-        const nextSchema = currentSchema.properties[segment]
-        // Skip if the schema is a boolean
-        if (typeof nextSchema !== 'boolean') {
-          currentSchema = nextSchema
-          fieldSchema = currentSchema
-        }
-        else {
-          break
-        }
-      }
-      else if (currentSchema.items && typeof currentSchema.items !== 'boolean') {
-        // Handle array items
-        currentSchema = currentSchema.items
-        fieldSchema = currentSchema
-      }
-      else {
-        break
-      }
-    }
-
-    // If we found a schema with custom error messages, apply them
+    const fieldSchema = error.schema
+    const customErrorMessage = fieldSchema['x-jsf-errorMessage']?.[error.validation]
     if (
       fieldSchema
-      && fieldSchema['x-jsf-errorMessage']
-      && fieldSchema['x-jsf-errorMessage'][error.validation]
+      && customErrorMessage
     ) {
       return {
         ...error,
-        message: fieldSchema['x-jsf-errorMessage'][error.validation],
+        message: customErrorMessage,
       }
     }
 
