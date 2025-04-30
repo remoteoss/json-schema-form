@@ -36,3 +36,4 @@ describe('boolean validation', () => {
 
     expect(result.formErrors).toBeUndefined()
   })
+})
