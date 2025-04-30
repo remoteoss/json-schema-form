@@ -3,6 +3,7 @@ import type { JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } 
 import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
 import { validateSchema } from './schema'
+import { safeDeepClone } from './util'
 
 /**
  * jsonLogic interprets  undefined and null values differently when running comparisons and that creates inconsistent results.
@@ -79,7 +80,7 @@ export function validateJsonLogicComputedAttributes(
   }
 
   // Create a copy of the schema
-  const schemaCopy: NonBooleanJsfSchema = structuredClone(schema)
+  const schemaCopy: NonBooleanJsfSchema = safeDeepClone(schema)
 
   // Remove the computed attributes from the schema
   delete schemaCopy['x-jsf-logic-computedAttrs']
