@@ -20,6 +20,23 @@ function getJsonType(schema: NonBooleanJsfSchema): string {
 }
 
 /**
+ * Add checkbox attributes to a field
+ * @param inputType - The input type of the field
+ * @param field - The field to add the attributes to
+ * @param schema - The schema of the field
+ */
+function addCheckboxAttributes(inputType: string, field: Field, schema: NonBooleanJsfSchema) {
+  // The checkboxValue attribute indicates which is the valid value a checkbox can have (for example "acknowledge", or `true`)
+  // So, we set it to what's specified in the schema (if any)
+  field.checkboxValue = schema.const
+
+  // However, if the schema type is boolean, we should set the valid value as `true`
+  if (schema.type === 'boolean') {
+    field.checkboxValue = true
+  }
+}
+
+/**
  * Get the presentation input type for a field from a schema type (ported from v0)
  * @param type - The schema type
  * @param schema - The non boolean schema of the field
@@ -219,12 +236,8 @@ export function buildFieldSchema(
     ...(errorMessage && { errorMessage }),
   }
 
-  if (schema.const) {
-    field.const = schema.const
-
-    if (inputType === 'checkbox') {
-      field.checkboxValue = schema.const
-    }
+  if (inputType === 'checkbox') {
+    addCheckboxAttributes(inputType, field, schema)
   }
 
   if (schema.title) {
