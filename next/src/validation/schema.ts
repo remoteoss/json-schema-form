@@ -7,7 +7,7 @@ import { validateConst } from './const'
 import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
 import { validateFile } from './file'
-import { validateJsonLogic } from './json-logic'
+import { validateJsonLogicComputedAttributes, validateJsonLogicRules } from './json-logic'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -171,9 +171,10 @@ export function validateSchema(
   // If not, it probably means the current schema is the root schema (or that there's no json-logic node in the current schema)
   if (!rootJsonLogicContext && schema['x-jsf-logic']) {
     // - We should set the jsonLogicContext's schema as the schema in the 'x-jsf-logic' property
-    const { validations, computedValues: _, ...rest } = schema['x-jsf-logic']
+    const { validations, computedValues, ...rest } = schema['x-jsf-logic']
     const jsonLogicRules: JsonLogicRules = {
       validations,
+      computedValues,
     }
     jsonLogicContext = {
       schema: jsonLogicRules,
@@ -250,6 +251,7 @@ export function validateSchema(
     // Custom validations
     ...validateDate(value, schema, options, path),
     ...validateJsonLogicSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext),
-    ...validateJsonLogic(schema, jsonLogicContext, path),
+    ...validateJsonLogicRules(schema, jsonLogicContext, path),
+    ...validateJsonLogicComputedAttributes(value, schema, options, jsonLogicContext, path),
   ]
 }
