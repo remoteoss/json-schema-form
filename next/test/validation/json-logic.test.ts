@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import jsonLogic from 'json-logic-js'
 import * as JsonLogicValidation from '../../src/validation/json-logic'
 import * as SchemaValidation from '../../src/validation/schema'
+import { validateSchema } from '../../src/validation/schema'
 import { errorLike } from '../test-utils'
 
 const validateJsonLogicRules = JsonLogicValidation.validateJsonLogicRules
@@ -512,5 +513,67 @@ describe('validateJsonLogicComputedAttributes', () => {
     validateJsonLogicComputedAttributes(17, schema, {}, jsonLogicContext, [])
 
     expect(jsonLogic.apply).toHaveBeenCalledWith({ '+': [{ var: 'baseAge' }, 5] }, { baseAge: Number.NaN })
+  })
+
+  describe('Computed "error message" attribute', () => {
+    it('should interpolate computed attribute values in custom error messages', () => {
+      const schema: NonBooleanJsfSchema = {
+        'properties': {
+          someProperty: {
+            'type': 'number',
+            'x-jsf-logic-computedAttrs': {
+              'minimum': 'computeMinAge',
+              'x-jsf-errorMessage': {
+                minimum: 'Must be at least {{computeMinAge}} units',
+              },
+            },
+          },
+        },
+        'x-jsf-logic': {
+          computedValues: {
+            computeMinAge: {
+              rule: { '+': [{ var: 'someProperty' }, 5] },
+            },
+          },
+        },
+      };
+
+      (jsonLogic.apply as jest.Mock).mockReturnValue(15)
+
+      const result = validateSchema({ someProperty: 10 }, schema)
+      expect(result).toHaveLength(1)
+      expect(result[0].validation).toBe('minimum')
+      expect(result[0].schema['x-jsf-errorMessage']?.minimum).toBe('Must be at least 15 units')
+    })
+
+    it('should use the variable name if the computed attribute is not found', () => {
+      const schema: NonBooleanJsfSchema = {
+        'properties': {
+          someProperty: {
+            'type': 'number',
+            'x-jsf-logic-computedAttrs': {
+              'minimum': 'computeMinAge',
+              'x-jsf-errorMessage': {
+                minimum: 'Must be at least {{invalidVar}} units',
+              },
+            },
+          },
+        },
+        'x-jsf-logic': {
+          computedValues: {
+            computeMinAge: {
+              rule: { '+': [{ var: 'someProperty' }, 5] },
+            },
+          },
+        },
+      };
+
+      (jsonLogic.apply as jest.Mock).mockReturnValue(15)
+
+      const result = validateSchema({ someProperty: 10 }, schema)
+      expect(result).toHaveLength(1)
+      expect(result[0].validation).toBe('minimum')
+      expect(result[0].schema['x-jsf-errorMessage']?.minimum).toBe('Must be at least {{invalidVar}} units')
+    })
   })
 })

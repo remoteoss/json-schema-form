@@ -251,7 +251,7 @@ export function validateSchema(
     // Custom validations
     ...validateDate(value, schema, options, path),
     ...validateJsonLogicSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext),
-    ...validateJsonLogicRules(schema, jsonLogicContext, path),
     ...validateJsonLogicComputedAttributes(value, schema, options, jsonLogicContext, path),
+    ...validateJsonLogicRules(schema, jsonLogicContext, path),
   ]
 }
