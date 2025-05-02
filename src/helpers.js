@@ -605,8 +605,8 @@ export function extractParametersFromNode(schemaNode) {
       allOf: node.allOf,
       errorMessage,
 
-      // Pass down all x- prefixed keys
-      ...pickBy(node, (value, key) => key.startsWith('x-') && !key.startsWith('x-jsf-')),
+      // Pass down all x-* keys except x-jsf-*, as those are handled above.
+      ...pickBy(node, (_, key) => key.startsWith('x-') && !key.startsWith('x-jsf-')),
     },
     isNil
   );
