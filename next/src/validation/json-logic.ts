@@ -33,6 +33,7 @@ function replaceUndefinedAndNullValuesWithNaN(values: ObjectValue = {}) {
  * @param {NonBooleanJsfSchema} schema - JSON Schema to validate.
  * @param {JsonLogicContext | undefined} jsonLogicContext - JSON Logic context.
  * @param {ValidationErrorPath} path - Current validation error path.
+ * @throws {Error} If a validation has missing rule.
  */
 export function validateJsonLogicRules(
   schema: NonBooleanJsfSchema,
@@ -46,12 +47,15 @@ export function validateJsonLogicRules(
     return []
   }
 
-  return validations.map((validation: string) => {
-    const validationData = jsonLogicContext?.schema?.validations?.[validation]
+  return validations.map((validationName: string) => {
+    const validationData = jsonLogicContext?.schema?.validations?.[validationName]
     const formValue = jsonLogicContext?.value
 
+    // if the validation name does not reference any valid rule, we throw an error
     if (!validationData) {
-      return []
+      throw new Error(
+        `[json-schema-form] json-logic error: "${schema.title}" required validation "${validationName}" doesn't exist.`,
+      )
     }
 
     const result: any = jsonLogic.apply(validationData.rule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
@@ -73,6 +77,7 @@ export function validateJsonLogicRules(
  * @param {ValidationOptions} options - Validation options.
  * @param {JsonLogicContext | undefined} jsonLogicContext - JSON Logic context.
  * @param {ValidationErrorPath} path - Current validation error path.
+ * @throws {Error} If a computed attribute has missing rule.
  */
 export function validateJsonLogicComputedAttributes(
   values: SchemaValue,
@@ -111,14 +116,15 @@ export function validateJsonLogicComputedAttributes(
 
       const formValue = jsonLogicContext?.value
 
-      // if the computation name does not reference any valid rule, we ignore it
+      // if the computation name does not reference any valid rule, we throw an error
       if (!computedAttributeRule) {
-        return
+        throw new Error(`[json-schema-form] json-logic error: Computed value "${validationName}" has missing rule.`)
       }
 
       const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
 
-      if (typeof result === 'undefined') {
+      // If running the apply function returns null, some variables are probably missing
+      if (result === null) {
         return
       }
 
@@ -147,8 +153,9 @@ function interpolate(message: string, jsonLogicContext: JsonLogicContext | undef
     const computedRule = jsonLogicContext.schema.computedValues?.[computationName]?.rule
 
     if (!computedRule) {
-      console.warn(`No computed rule found for ${computationName}`)
-      return `{{${computationName}}}`
+      throw new Error(
+        `[json-schema-form] json-logic error: Computed value "${computationName}" doesn't exist`,
+      )
     }
 
     const result = jsonLogic.apply(

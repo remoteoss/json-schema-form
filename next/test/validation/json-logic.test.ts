@@ -43,6 +43,7 @@ describe('validateJsonLogicRules', () => {
   it('returns empty array when validation data is not found', () => {
     const schema: NonBooleanJsfSchema = {
       'type': 'object',
+      'title': 'foo',
       'properties': {},
       'x-jsf-logic-validations': ['someValidation'],
     }
@@ -54,8 +55,9 @@ describe('validateJsonLogicRules', () => {
       value: {},
     }
 
-    const result = validateJsonLogicRules(schema, jsonLogicContext)
-    expect(result).toEqual([])
+    expect(() => validateJsonLogicRules(schema, jsonLogicContext)).toThrow(
+      `[json-schema-form] json-logic error: "foo" required validation "someValidation" doesn't exist.`,
+    )
   })
 
   it('returns validation error when rule evaluates to false', () => {
@@ -316,8 +318,9 @@ describe('validateJsonLogicRules', () => {
         },
       }
 
-      const errors = validateSchema({ num_guests: 4, amount_of_snacks_to_bring: 3 }, schema)
-      expect(errors).toHaveLength(0)
+      expect(() => validateSchema({ num_guests: 4, amount_of_snacks_to_bring: 3 }, schema)).toThrow(
+        `[json-schema-form] json-logic error: "Number of snacks to bring" required validation "invalid-rule" doesn't exist.`,
+      )
       expect(jsonLogic.apply).not.toHaveBeenCalled()
     })
 
@@ -378,9 +381,10 @@ describe('validateJsonLogicComputedAttributes', () => {
     }
 
     const jsonLogicContext: JsonLogicContext = { schema: { computedValues: {} }, value: { age: 16 } }
-    const result = validateJsonLogicComputedAttributes({ age: 16 }, schema, {}, jsonLogicContext, [])
+    expect(() => validateJsonLogicComputedAttributes({ age: 16 }, schema, {}, jsonLogicContext, [])).toThrow(
+      `[json-schema-form] json-logic error: Computed value "nonexistentRule" has missing rule.`,
+    )
 
-    expect(result).toEqual([])
     expect(jsonLogic.apply).not.toHaveBeenCalled()
   })
 
@@ -570,10 +574,9 @@ describe('validateJsonLogicComputedAttributes', () => {
 
       (jsonLogic.apply as jest.Mock).mockReturnValue(15)
 
-      const result = validateSchema({ someProperty: 10 }, schema)
-      expect(result).toHaveLength(1)
-      expect(result[0].validation).toBe('minimum')
-      expect(result[0].schema['x-jsf-errorMessage']?.minimum).toBe('Must be at least {{invalidVar}} units')
+      expect(() => validateSchema({ someProperty: 10 }, schema)).toThrow(
+        `[json-schema-form] json-logic error: Computed value "invalidVar" doesn't exist`,
+      )
     })
   })
 })
