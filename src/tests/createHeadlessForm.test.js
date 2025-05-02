@@ -2567,6 +2567,36 @@ describe('createHeadlessForm', () => {
       });
     });
 
+    it('pass "x-rmt-enum-async" attribute to fields', () => {
+      const result = createHeadlessForm({
+        properties: {
+          country: {
+            title: 'Country',
+            type: 'string',
+            'x-rmt-enum-async': {
+              url: '/api/countries',
+              labelKey: 'name',
+              valueKey: 'code',
+            },
+            'x-jsf-presentation': {
+              inputType: 'select',
+            },
+          },
+        },
+      });
+
+      expect(result.fields[0]).toMatchObject({
+        name: 'country',
+        label: 'Country',
+        type: 'select',
+        'x-rmt-enum-async': {
+          url: '/api/countries',
+          labelKey: 'name',
+          valueKey: 'code',
+        },
+      });
+    });
+
     it('pass custom attributes as function', () => {
       function FakeComponent(props) {
         const { label, description } = props;

@@ -603,6 +603,9 @@ export function extractParametersFromNode(schemaNode) {
       anyOf: node.anyOf,
       allOf: node.allOf,
       errorMessage,
+      // Used for async selects
+      'x-rmt-enum-async': node['x-rmt-enum-async'],
+      // ...xKeys,
     },
     isNil
   );
