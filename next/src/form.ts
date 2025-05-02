@@ -20,9 +20,10 @@ interface FormResult {
  * Recursive type for form error messages
  * - String for leaf error messages
  * - Nested object for nested fields
+ * - Arrays for group-array fields
  */
 export interface FormErrors {
-  [key: string]: string | FormErrors
+  [key: string]: string | FormErrors | Array<null | FormErrors>
 }
 
 export interface ValidationResult {
@@ -77,13 +78,13 @@ function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
  * Schema-level error
  * { '': 'The value must match at least one schema' }
  */
-function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): FormErrors | null {
+function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[], _value: SchemaValue = {}): FormErrors | null {
   if (errors.length === 0) {
     return null
   }
 
   // Use a more functional approach with reduce
-  return errors.reduce<FormErrors>((result, error) => {
+  const result = errors.reduce<FormErrors>((result, error) => {
     const { path } = error
 
     // Handle schema-level errors (empty path)
@@ -94,19 +95,38 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
 
     // Clean the path to remove intermediate composition structures
     const cleanedPath = cleanErrorPath(path)
-
-    // For all paths, recursively build the nested structure
     let current = result
 
     // Process all segments except the last one (which will hold the message)
     cleanedPath.slice(0, -1).forEach((segment) => {
-      // If this segment doesn't exist yet or is currently a string (from a previous error),
-      // initialize it as an object
-      if (!(segment in current) || typeof current[segment] === 'string') {
-        current[segment] = {}
-      }
+      // Special case for group-arrays where the next segment is `items` followed by the index of the item
+      if (cleanedPath[1] === 'items' && typeof cleanedPath[2] === 'number') {
+        const [arrayName, _, arrayIndex] = cleanedPath
 
-      current = current[segment] as FormErrors
+        // const arrayName = cleanedPath[0] as string
+        if (!(arrayName in result) || typeof result[arrayName] === 'string') {
+          result[arrayName] = [] as Array<null | FormErrors>
+        }
+
+        const array = result[arrayName] as Array<null | FormErrors>
+
+        // Create a new object for this index if it doesn't exist
+        if (array[arrayIndex] === null || array[arrayIndex] === undefined) {
+          array[arrayIndex] = {}
+        }
+
+        // Update current to point to the array item object
+        current = array[arrayIndex] as FormErrors
+      }
+      else {
+        // If this segment doesn't exist yet or is currently a string (from a previous error),
+        // initialize it as an object
+        if (!(segment in current) || typeof current[segment] === 'string') {
+          current[segment] = {}
+        }
+
+        current = current[segment] as FormErrors
+      }
     })
 
     // Set the message at the final level
@@ -121,6 +141,8 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
 
     return result
   }, {})
+
+  return result
 }
 
 interface ValidationErrorWithMessage extends ValidationError {
@@ -184,7 +206,7 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const errorsWithMessages = addErrorMessages(errors)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
-  const formErrors = validationErrorsToFormErrors(processedErrors)
+  const formErrors = validationErrorsToFormErrors(processedErrors, value)
 
   if (formErrors) {
     result.formErrors = formErrors
