@@ -60,19 +60,6 @@ describe('fields', () => {
     ])
   })
 
-  it('should throw an error if the type equals "array" (group-array)', () => {
-    const schema = {
-      type: 'object',
-      properties: {
-        name: { type: 'array' },
-      },
-    }
-
-    expect(() => buildFieldSchema(schema, 'root', true)).toThrow(
-      'Array type is not yet supported',
-    )
-  })
-
   it('should build an object field with multiple properties', () => {
     const schema = {
       type: 'object',

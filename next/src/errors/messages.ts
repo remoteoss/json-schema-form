@@ -81,17 +81,17 @@ export function getErrorMessage(
     }
     // Arrays
     case 'minItems':
-      throw new Error('Array support is not implemented yet')
+      return `Must have at least ${schema.minItems} items`
     case 'maxItems':
-      throw new Error('Array support is not implemented yet')
+      return `Must have at most ${schema.maxItems} items`
     case 'uniqueItems':
-      throw new Error('Array support is not implemented yet')
+      return 'Items must be unique'
     case 'contains':
-      throw new Error('Array support is not implemented yet')
+      throw new Error('"contains" is not implemented yet')
     case 'minContains':
-      throw new Error('Array support is not implemented yet')
+      throw new Error('"minContains" is not implemented yet')
     case 'maxContains':
-      throw new Error('Array support is not implemented yet')
+      throw new Error('"maxContains" is not implemented yet')
     case 'json-logic':
       return customErrorMessage || 'The value is not valid'
   }

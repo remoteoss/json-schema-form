@@ -1,5 +1,6 @@
 import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema } from '../types'
 import type { Field, FieldOption, FieldType } from './type'
+import { buildFieldArray } from './array'
 import { buildFieldObject } from './object'
 
 /**
@@ -193,7 +194,8 @@ export function buildFieldSchema(
   }
 
   if (schema.type === 'array') {
-    throw new TypeError('Array type is not yet supported')
+    const arraySchema = schema as NonBooleanJsfSchema & { type: 'array' }
+    return buildFieldArray(arraySchema, name, required, strictInputType)
   }
 
   const presentation = schema['x-jsf-presentation'] || {}
