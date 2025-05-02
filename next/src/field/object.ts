@@ -1,4 +1,4 @@
-import type { JsfObjectSchema } from '../types'
+import type { JsfObjectSchema, JsonLogicContext } from '../types'
 import type { Field } from './type'
 import { setCustomOrder } from '../custom/order'
 import { buildFieldSchema } from './schema'
@@ -8,14 +8,16 @@ import { buildFieldSchema } from './schema'
  * @param schema - The schema of the field
  * @param name - The name of the field, used if the schema has no title
  * @param required - Whether the field is required
+ * @param strictInputType - Whether to use the strict input type
+ * @param jsonLogicContext - JSON Logic context
  * @returns The field
  */
-export function buildFieldObject(schema: JsfObjectSchema, name: string, required: boolean, strictInputType?: boolean) {
+export function buildFieldObject(schema: JsfObjectSchema, name: string, required: boolean, strictInputType?: boolean, jsonLogicContext?: JsonLogicContext) {
   const fields: Field[] = []
 
   for (const key in schema.properties) {
     const isRequired = schema.required?.includes(key) || false
-    const field = buildFieldSchema(schema.properties[key], key, isRequired, strictInputType)
+    const field = buildFieldSchema(schema.properties[key], key, isRequired, strictInputType, jsonLogicContext)
     if (field) {
       fields.push(field)
     }

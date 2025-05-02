@@ -69,6 +69,63 @@ export function validateJsonLogicRules(
   }).flat()
 }
 
+export function buildSchemaBasedOnComputedAttrs(schema: NonBooleanJsfSchema, jsonLogicContext: JsonLogicContext | undefined): NonBooleanJsfSchema | undefined {
+  const computedAttributes = schema['x-jsf-logic-computedAttrs']
+
+  // if the current schema has no computed attributes, we skip the validation
+  if (!computedAttributes || Object.keys(computedAttributes).length === 0) {
+    return undefined
+  }
+
+  // Create a copy of the schema
+  const schemaCopy: NonBooleanJsfSchema = safeDeepClone(schema)
+
+  // Remove the computed attributes from the schema
+  delete schemaCopy['x-jsf-logic-computedAttrs']
+
+  // add the new computed attributes to the schema
+  Object.entries(computedAttributes).forEach(([schemaKey, value]) => {
+    const refersToObject = typeof value === 'object'
+    if (refersToObject) {
+      const computedObjectValues = computeObjectValues(
+        value,
+        jsonLogicContext,
+      )
+      if (computedObjectValues) {
+        schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = computedObjectValues
+      }
+    }
+    else {
+      const validationName = value
+      const computedAttributeRule = jsonLogicContext?.schema?.computedValues?.[validationName]?.rule
+
+      const formValue = jsonLogicContext?.value
+
+      if (computedAttributeRule) {
+        const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+
+        // If running the apply function returns null, some variables are probably missing
+        if (result === null) {
+          return
+        }
+
+        schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = result
+      }
+      else if (containsHandlebars(validationName)) {
+        const computedAttributeRule = interpolate(validationName, jsonLogicContext)
+        if (computedAttributeRule) {
+          schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = computedAttributeRule
+        }
+      }
+      else {
+        throw new Error(`[json-schema-form] json-logic error: Computed value "${validationName}" has missing rule.`)
+      }
+    }
+  })
+
+  return schemaCopy
+}
+
 /**
  * Validates the JSON Logic computed attributes for a given schema.
  *
@@ -86,54 +143,14 @@ export function validateJsonLogicComputedAttributes(
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
-  const computedAttributes = schema['x-jsf-logic-computedAttrs']
+  const computedSchema = buildSchemaBasedOnComputedAttrs(schema, jsonLogicContext)
 
-  // if the current schema has no computed attributes, we skip the validation
-  if (!computedAttributes || Object.keys(computedAttributes).length === 0) {
+  if (!computedSchema) {
     return []
   }
 
-  // Create a copy of the schema
-  const schemaCopy: NonBooleanJsfSchema = safeDeepClone(schema)
-
-  // Remove the computed attributes from the schema
-  delete schemaCopy['x-jsf-logic-computedAttrs']
-
-  // add the new computed attributes to the schema
-  Object.entries(computedAttributes).forEach(([schemaKey, value]) => {
-    if (schemaKey === 'x-jsf-errorMessage') {
-      const computedErrorMessages = computeErrorMessages(
-        value as JsfSchema['x-jsf-errorMessage'],
-        jsonLogicContext,
-      )
-      if (computedErrorMessages) {
-        schemaCopy['x-jsf-errorMessage'] = computedErrorMessages
-      }
-    }
-    else {
-      const validationName = value as string
-      const computedAttributeRule = jsonLogicContext?.schema?.computedValues?.[validationName]?.rule
-
-      const formValue = jsonLogicContext?.value
-
-      // if the computation name does not reference any valid rule, we throw an error
-      if (!computedAttributeRule) {
-        throw new Error(`[json-schema-form] json-logic error: Computed value "${validationName}" has missing rule.`)
-      }
-
-      const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
-
-      // If running the apply function returns null, some variables are probably missing
-      if (result === null) {
-        return
-      }
-
-      schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = result
-    }
-  })
-
   // Validate the modified schema
-  return validateSchema(values, schemaCopy, options, path, jsonLogicContext)
+  return validateSchema(values, computedSchema, options, path, jsonLogicContext)
 }
 
 /**
@@ -174,23 +191,23 @@ function interpolate(message: string, jsonLogicContext: JsonLogicContext | undef
  * @param jsonLogicContext The JSON Logic context
  * @returns The computed error messages
  */
-function computeErrorMessages(
-  value: JsfSchema['x-jsf-errorMessage'],
+function computeObjectValues(
+  value: Record<string, string>,
   jsonLogicContext: JsonLogicContext | undefined,
-): JsfSchema['x-jsf-errorMessage'] | undefined {
+): Record<string, string> | undefined {
   if (!value) {
     return undefined
   }
 
-  const computedErrorMessages: JsfSchema['x-jsf-errorMessage'] = {}
+  const computedObjectValues: Record<string, string> = {}
 
   Object.entries(value).forEach(([key, message]) => {
     let computedMessage = message
     if (containsHandlebars(message)) {
       computedMessage = interpolate(message, jsonLogicContext)
     }
-    computedErrorMessages[key] = computedMessage
+    computedObjectValues[key] = computedMessage
   })
 
-  return computedErrorMessages
+  return computedObjectValues
 }
