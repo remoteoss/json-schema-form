@@ -1,6 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldObject } from './field/object'
@@ -222,18 +222,31 @@ export function createHeadlessForm(
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
   const fields = buildFields({ schema, strictInputType })
+  const jsonLogicNode = schema['x-jsf-logic']
+  const jsonLogicContext: JsonLogicContext | undefined = jsonLogicNode
+    ? {
+        schema: jsonLogicNode,
+        value: initialValues,
+      }
+    : undefined
 
   // Making sure field properties are correct for the initial values
-  mutateFields(fields, initialValues, schema)
+  mutateFields(fields, initialValues, schema, options.validationOptions, jsonLogicContext)
 
   // TODO: check if we need this isError variable exposed
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
     const result = validate(value, schema, options.validationOptions)
+    const jsonLogicContext: JsonLogicContext | undefined = jsonLogicNode
+      ? {
+          schema: jsonLogicNode,
+          value: initialValues,
+        }
+      : undefined
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
-    buildFieldsInPlace(fields, schema)
+    buildFieldsInPlace(fields, schema, jsonLogicContext)
 
     // Updating field properties based on the new form value
     mutateFields(fields, value, schema, options.validationOptions)
@@ -253,13 +266,14 @@ export function createHeadlessForm(
  * Updates fields in place based on a schema, recursively if needed
  * @param fields - The fields array to mutate
  * @param schema - The schema to use for updating fields
+ * @param jsonLogicContext - JSON Logic context
  */
-function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
+function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema, jsonLogicContext?: JsonLogicContext): void {
   // Clear existing fields array
   fields.length = 0
 
   // Get new fields from schema
-  const newFields = buildFieldObject(schema, 'root', true).fields || []
+  const newFields = buildFieldObject(schema, 'root', true, true, jsonLogicContext).fields || []
 
   // Push all new fields into existing array
   fields.push(...newFields)
@@ -269,7 +283,7 @@ function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
     // eslint-disable-next-line ts/ban-ts-comment
     // @ts-expect-error
     if (field.fields && schema.properties?.[field.name]?.type === 'object') {
-      buildFieldsInPlace(field.fields, schema.properties[field.name] as JsfObjectSchema)
+      buildFieldsInPlace(field.fields, schema.properties[field.name] as JsfObjectSchema, jsonLogicContext)
     }
   }
 }

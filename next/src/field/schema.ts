@@ -1,5 +1,7 @@
-import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema } from '../types'
+import type { JsfObjectSchema, JsfSchema, JsfSchemaType, JsonLogicContext, NonBooleanJsfSchema } from '../types'
 import type { Field, FieldOption, FieldType } from './type'
+import { buildSchemaBasedOnComputedAttrs } from '../validation/json-logic'
+import { safeDeepClone } from '../validation/util'
 import { buildFieldObject } from './object'
 
 /**
@@ -199,30 +201,48 @@ export function buildFieldSchema(
   name: string,
   required: boolean = false,
   strictInputType: boolean = false,
+  jsonLogicContext?: JsonLogicContext,
 ): Field | null {
-  if (typeof schema === 'boolean') {
+  let schemaCopy = safeDeepClone(schema)
+
+  const computedSchema = jsonLogicContext ? buildSchemaBasedOnComputedAttrs(schema, jsonLogicContext) : undefined
+
+  if (computedSchema) {
+    schemaCopy = {
+      ...schemaCopy as object,
+      ...computedSchema,
+      'x-jsf-presentation': {
+        ...(schemaCopy['x-jsf-presentation'] as object),
+        ...(computedSchema['x-jsf-presentation'] as object),
+        // Temporary solution for the bug where v0 forwarded any computed attributes to the presentation object
+        ...(computedSchema as object),
+      },
+    }
+  }
+
+  if (typeof schemaCopy === 'boolean') {
     return null
   }
 
-  if (schema.type === 'object') {
-    const objectSchema: JsfObjectSchema = { ...schema, type: 'object' }
+  if (schemaCopy.type === 'object') {
+    const objectSchema: JsfObjectSchema = { ...schemaCopy, type: 'object' }
     return buildFieldObject(objectSchema, name, required)
   }
 
-  if (schema.type === 'array') {
+  if (schemaCopy.type === 'array') {
     throw new TypeError('Array type is not yet supported')
   }
 
-  const presentation = schema['x-jsf-presentation'] || {}
-  const errorMessage = schema['x-jsf-errorMessage']
+  const presentation = schemaCopy['x-jsf-presentation'] || {}
+  const errorMessage = schemaCopy['x-jsf-errorMessage']
 
   // Get input type from presentation or fallback to schema type
-  const inputType = getInputType(schema, strictInputType)
+  const inputType = getInputType(schemaCopy, strictInputType)
 
   // Build field with all schema properties by default, excluding ones that need special handling
   const field: Field = {
     // Spread all schema properties except excluded ones
-    ...Object.entries(schema)
+    ...Object.entries(schemaCopy)
       .filter(([key]) => !excludedSchemaProps.includes(key))
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
 
@@ -230,18 +250,18 @@ export function buildFieldSchema(
     type: inputType,
     name,
     inputType,
-    jsonType: getJsonType(schema),
+    jsonType: getJsonType(schemaCopy),
     required,
     isVisible: true,
     ...(errorMessage && { errorMessage }),
   }
 
   if (inputType === 'checkbox') {
-    addCheckboxAttributes(inputType, field, schema)
+    addCheckboxAttributes(inputType, field, schemaCopy)
   }
 
-  if (schema.title) {
-    field.label = schema.title
+  if (schemaCopy.title) {
+    field.label = schemaCopy.title
   }
 
   // Spread presentation properties to the root level
@@ -255,7 +275,7 @@ export function buildFieldSchema(
   }
 
   // Handle options
-  const options = getFieldOptions(schema)
+  const options = getFieldOptions(schemaCopy)
   if (options) {
     field.options = options
   }

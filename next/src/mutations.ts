@@ -1,5 +1,5 @@
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
 import { validateSchema } from './validation/schema'
@@ -11,19 +11,21 @@ import { isObjectValue } from './validation/util'
  * @param values - The current form values
  * @param schema - The JSON schema definition
  * @param options - Validation options
+ * @param jsonLogicContext - JSON Logic context
  */
 export function mutateFields(
   fields: Field[],
   values: SchemaValue,
   schema: JsfObjectSchema,
   options: ValidationOptions = {},
+  jsonLogicContext?: JsonLogicContext,
 ) {
   if (!isObjectValue(values)) {
     return
   }
 
   // Apply rules to current level of fields
-  applySchemaRules(fields, values, schema, options)
+  applySchemaRules(fields, values, schema, options, jsonLogicContext)
 
   // Process nested object fields that have conditional logic
   for (const fieldName in schema.properties) {
@@ -31,7 +33,7 @@ export function mutateFields(
     const field = fields.find(field => field.name === fieldName)
 
     if (field?.fields) {
-      applySchemaRules(field.fields, values[fieldName], fieldSchema as JsfObjectSchema, options)
+      applySchemaRules(field.fields, values[fieldName], fieldSchema as JsfObjectSchema, options, jsonLogicContext)
     }
   }
 }
@@ -77,6 +79,7 @@ function evaluateConditional(
  * @param values - The current form values
  * @param schema - The JSON schema containing the rules
  * @param options - Validation options
+ * @param jsonLogicContext - JSON Logic context
  *
  */
 function applySchemaRules(
@@ -84,6 +87,7 @@ function applySchemaRules(
   values: SchemaValue,
   schema: JsfObjectSchema,
   options: ValidationOptions = {},
+  jsonLogicContext?: JsonLogicContext,
 ) {
   if (!isObjectValue(values)) {
     return
@@ -108,11 +112,11 @@ function applySchemaRules(
   for (const { rule, matches } of conditionalRules) {
     // If the rule matches, process the then branch
     if (matches && rule.then) {
-      processBranch(fields, values, rule.then, options)
+      processBranch(fields, values, rule.then, options, jsonLogicContext)
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
-      processBranch(fields, values, rule.else, options)
+      processBranch(fields, values, rule.else, options, jsonLogicContext)
     }
   }
 }
@@ -123,8 +127,9 @@ function applySchemaRules(
  * @param values - The current form values
  * @param branch - The branch (schema representing and then/else) to process
  * @param options - Validation options
+ * @param jsonLogicContext - JSON Logic context
  */
-function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}) {
+function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}, jsonLogicContext?: JsonLogicContext) {
   if (branch.properties) {
     // Cycle through each property in the schema and search for any property that needs
     // to be updated in the fields collection.
@@ -139,7 +144,7 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
         }
         // If the field has inner fields, we need to process them
         else if (field?.fields) {
-          processBranch(field.fields, values, fieldSchema)
+          processBranch(field.fields, values, fieldSchema, options, jsonLogicContext)
         }
         // If the field has properties being declared on this branch, we need to update the field
         // with the new properties
@@ -155,5 +160,5 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
   }
 
   // Apply rules to the branch
-  applySchemaRules(fields, values, branch as JsfObjectSchema, options)
+  applySchemaRules(fields, values, branch as JsfObjectSchema, options, jsonLogicContext)
 }
