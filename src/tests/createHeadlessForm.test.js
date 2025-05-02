@@ -2567,20 +2567,22 @@ describe('createHeadlessForm', () => {
       });
     });
 
-    it('pass "x-rmt-enum-async" attribute to fields', () => {
+    it('pass any "x-" attribute, expect for x-jsf-* keys', () => {
       const result = createHeadlessForm({
         properties: {
           country: {
             title: 'Country',
             type: 'string',
-            'x-rmt-enum-async': {
-              url: '/api/countries',
-              labelKey: 'name',
-              valueKey: 'code',
-            },
+            'x-foo': 123,
+            'x-bar': { something: true },
             'x-jsf-presentation': {
               inputType: 'select',
+              direction: 'row',
             },
+            'x-jsf-errorMessage': {
+              type: 'some error message',
+            },
+            'x-jsf-foo': 'bar',
           },
         },
       });
@@ -2589,12 +2591,17 @@ describe('createHeadlessForm', () => {
         name: 'country',
         label: 'Country',
         type: 'select',
-        'x-rmt-enum-async': {
-          url: '/api/countries',
-          labelKey: 'name',
-          valueKey: 'code',
-        },
+        inputType: 'select',
+        direction: 'row',
+        errorMessage: { type: 'some error message' },
+        'x-foo': 123,
+        'x-bar': { something: true },
       });
+
+      // These ones are excluded:
+      expect(result.fields[0]['x-jsf-presentation']).toBeUndefined();
+      expect(result.fields[0]['x-jsf-errorMessage']).toBeUndefined();
+      expect(result.fields[0]['x-jsf-foo']).toBeUndefined();
     });
 
     it('pass custom attributes as function', () => {

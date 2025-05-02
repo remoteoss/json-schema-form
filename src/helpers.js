@@ -2,6 +2,7 @@ import get from 'lodash/get';
 import isNil from 'lodash/isNil';
 import omit from 'lodash/omit';
 import omitBy from 'lodash/omitBy';
+import pickBy from 'lodash/pickBy';
 import set from 'lodash/set';
 import { lazy } from 'yup';
 
@@ -537,7 +538,7 @@ export function extractParametersFromNode(schemaNode) {
 
   // This is when a forced value is computed.
   const decoratedComputedAttributes = getDecoratedComputedAttributes(computedAttributes);
-  const node = omit(schemaNode, ['x-jsf-presentation', 'presentation']);
+  const node = omit(schemaNode, ['x-jsf-presentation', 'presentation', 'x-jsf-errorMessage']);
 
   const description = presentation?.description || node.description;
   const statementDescription = presentation.statement?.description;
@@ -603,9 +604,9 @@ export function extractParametersFromNode(schemaNode) {
       anyOf: node.anyOf,
       allOf: node.allOf,
       errorMessage,
-      // Used for async selects
-      'x-rmt-enum-async': node['x-rmt-enum-async'],
-      // ...xKeys,
+
+      // Pass down all x- prefixed keys
+      ...pickBy(node, (value, key) => key.startsWith('x-') && !key.startsWith('x-jsf-')),
     },
     isNil
   );
