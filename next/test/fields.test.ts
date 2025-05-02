@@ -1,4 +1,4 @@
-import type { JsfSchema } from '../src/types'
+import type { JsfSchema, NonBooleanJsfSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { buildFieldSchema } from '../src/field/schema'
 
@@ -429,6 +429,55 @@ describe('fields', () => {
       }
       const field = buildFieldSchema(schema, 'test')
       expect(field?.inputType).toBe('checkbox')
+      expect(field?.checkboxValue).toBe(true)
+    })
+
+    it('uses correct checkboxValue checkbox input types with boolean const value', () => {
+      const schema: NonBooleanJsfSchema = {
+        'x-jsf-presentation': {
+          inputType: 'checkbox',
+        },
+        'type': 'boolean',
+      }
+      const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('checkbox')
+      expect(field?.checkboxValue).toBe(true)
+    })
+
+    it('uses correct checkboxValue checkbox input types with string const value', () => {
+      // Setting a schema with a string const value and string type
+      const stringSchema: NonBooleanJsfSchema = {
+        'x-jsf-presentation': {
+          inputType: 'checkbox',
+        },
+        'type': 'string',
+        'const': 'accept',
+      }
+      let fields = buildFieldSchema(stringSchema, 'test')
+      expect(fields?.inputType).toBe('checkbox')
+      expect(fields?.checkboxValue).toBe('accept')
+
+      // Setting a schema with a string const value and boolean type
+      const booleanSchema: NonBooleanJsfSchema = {
+        'x-jsf-presentation': {
+          inputType: 'checkbox',
+        },
+        'type': 'boolean',
+      }
+
+      fields = buildFieldSchema(booleanSchema, 'test')
+      expect(fields?.inputType).toBe('checkbox')
+      expect(fields?.checkboxValue).toBe(true)
+    })
+
+    it('uses checkbox input for boolean type with boolean const value', () => {
+      const schema = {
+        type: 'boolean',
+        const: true,
+      }
+      const field = buildFieldSchema(schema, 'test')
+      expect(field?.inputType).toBe('checkbox')
+      expect(field?.checkboxValue).toBe(true)
     })
 
     // Skipping these tests until we have group-array support

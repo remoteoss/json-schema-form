@@ -2,6 +2,7 @@ import type { JsfSchema } from '../../src/types'
 import type { FileLike } from '../../src/validation/file'
 import { describe, expect, it } from '@jest/globals'
 import { validateSchema } from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 // Helper to create a dummy file-like object
 const createFile = (name: string, sizeInBytes: number): FileLike => ({ name, size: sizeInBytes })
@@ -84,27 +85,27 @@ describe('validateFile', () => {
     const value = { name: 'file.txt', size: 100 } // Not an array
     const errors = validateSchema(value, fileSchemaWithSizeLimitKB)
     // Expect type error first, as the schema expects an array but got an object
-    expect(errors).toEqual([{ path: [], validation: 'type' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'type' })])
   })
 
   it('should fail validation for array with invalid file object (missing size)', () => {
     const value = [{ name: 'file.txt' }] as any[] // Cast to bypass TS check, simulating bad input
     const errors = validateSchema(value, fileSchemaWithSizeLimitKB)
-    expect(errors).toEqual([{ path: [], validation: 'fileStructure' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'fileStructure' })])
   })
 
   it('should fail validation for array with invalid file object (missing name)', () => {
     const value = [{ size: 100 }] as any[] // Cast to bypass TS check
     const errors = validateSchema(value, fileSchemaWithSizeLimitKB)
-    expect(errors).toEqual([{ path: [], validation: 'fileStructure' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'fileStructure' })])
   })
 
   it('should fail validation for array with non-object item', () => {
     const value = ['file.txt'] as any[]
     const errors = validateSchema(value, fileSchemaWithSizeLimitKB)
     expect(errors).toEqual([
-      { path: ['items', 0], validation: 'type' },
-      { path: [], validation: 'fileStructure' },
+      errorLike({ path: ['items', 0], validation: 'type' }),
+      errorLike({ path: [], validation: 'fileStructure' }),
     ])
   })
 
@@ -115,32 +116,32 @@ describe('validateFile', () => {
       createFile('large.png', 1.5 * 1024 * 1024), // 1536 KB
     ] as any[]
     const errors = validateSchema(value, fileSchemaWithSizeLimitKB) // Limit is 1024 KB
-    expect(errors).toEqual([{ path: [], validation: 'maxFileSize' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'maxFileSize' })])
   })
 
   // --- Accept ---
   it('should fail validation if ALL files have unsupported format', () => {
     const value = [createFile('document.txt', 100), createFile('archive.zip', 200)] as any[]
     const errors = validateSchema(value, fileSchemaWithAccept)
-    expect(errors).toEqual([{ path: [], validation: 'accept' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'accept' })])
   })
 
   it('should fail validation if file has no extension when accept is defined', () => {
     const value = [createFile('image', 100)] as any[]
     const errors = validateSchema(value, fileSchemaWithAccept)
-    expect(errors).toEqual([{ path: [], validation: 'accept' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'accept' })])
   })
 
   // --- Combined ---
   it('should fail with maxFileSize if size is invalid (KB), even if format is valid', () => {
     const value = [createFile('large_valid.pdf', 600 * 1024)] as any[] // 600 KB > 500 KB limit
     const errors = validateSchema(value, fileSchemaWithLimitAndAcceptKB)
-    expect(errors).toEqual([{ path: [], validation: 'maxFileSize' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'maxFileSize' })])
   })
 
   it('should fail with accept if format is invalid, even if size is valid (KB)', () => {
     const value = [createFile('small_invalid.txt', 400 * 1024)] as any[] // 400 KB < 500 KB limit, but .txt invalid
     const errors = validateSchema(value, fileSchemaWithLimitAndAcceptKB)
-    expect(errors).toEqual([{ path: [], validation: 'accept' }])
+    expect(errors).toEqual([errorLike({ path: [], validation: 'accept' })])
   })
 })

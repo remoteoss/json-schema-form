@@ -1,6 +1,7 @@
 import type { JsfSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { validateSchema } from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 describe('schema composition validators', () => {
   describe('validateAllOf', () => {
@@ -384,8 +385,8 @@ describe('schema composition validators', () => {
         const value = { other: 'field' }
         const errors = validateSchema(value, schema)
         expect(errors).toEqual([
-          { validation: 'required', path: ['type'] },
-          { validation: 'not', path: [] },
+          errorLike({ validation: 'required', path: ['type'] }),
+          errorLike({ validation: 'not', path: [] }),
         ])
       })
     })

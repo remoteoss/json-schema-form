@@ -28,7 +28,7 @@ export function validateEnum(
 
   if (!schema.enum.some(enumValue => deepEqual(enumValue, value))) {
     return [
-      { path, validation: 'enum' },
+      { path, validation: 'enum', schema, value },
     ]
   }
 

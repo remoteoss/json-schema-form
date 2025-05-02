@@ -1,12 +1,11 @@
 import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldObject } from './field/object'
 import { mutateFields } from './mutations'
 import { validateSchema } from './validation/schema'
-import { isObjectValue } from './validation/util'
 
 export { ValidationOptions } from './validation/schema'
 
@@ -128,65 +127,18 @@ interface ValidationErrorWithMessage extends ValidationError {
   message: string
 }
 
-function getSchemaAndValueAtPath(rootSchema: JsfSchema, rootValue: SchemaValue, path: (string | number)[]): { schema: JsfSchema, value: SchemaValue } {
-  let currentSchema = rootSchema
-  let currentValue = rootValue
-
-  for (const segment of path) {
-    if (typeof currentSchema === 'object' && currentSchema !== null) {
-      if (currentSchema.properties && currentSchema.properties[segment]) {
-        currentSchema = currentSchema.properties[segment]
-        if (isObjectValue(currentValue)) {
-          currentValue = currentValue[segment]
-        }
-      }
-      else if (currentSchema.items && typeof currentSchema.items !== 'boolean') {
-        currentSchema = currentSchema.items
-        if (Array.isArray(currentValue)) {
-          currentValue = currentValue[Number(segment)]
-        }
-      }
-      // Skip the 'allOf', 'anyOf', and 'oneOf' segments, the next segment will be the index
-      else if (segment === 'allOf' && currentSchema.allOf) {
-        continue
-      }
-      else if (segment === 'anyOf' && currentSchema.anyOf) {
-        continue
-      }
-      else if (segment === 'oneOf' && currentSchema.oneOf) {
-        continue
-      }
-      // Skip the 'then' and 'else' segments, the next segment will be the field name
-      else if ((segment === 'then' || segment === 'else') && currentSchema[segment]) {
-        currentSchema = currentSchema[segment]
-        continue
-      }
-      // If we have we are in a composition context, get the subschema
-      else if (currentSchema.allOf || currentSchema.anyOf || currentSchema.oneOf) {
-        const index = Number(segment)
-        if (currentSchema.allOf && index >= 0 && index < currentSchema.allOf.length) {
-          currentSchema = currentSchema.allOf[index]
-        }
-        else if (currentSchema.anyOf && index >= 0 && index < currentSchema.anyOf.length) {
-          currentSchema = currentSchema.anyOf[index]
-        }
-        else if (currentSchema.oneOf && index >= 0 && index < currentSchema.oneOf.length) {
-          currentSchema = currentSchema.oneOf[index]
-        }
-      }
-    }
-  }
-
-  return { schema: currentSchema, value: currentValue }
-}
-
-function addErrorMessages(rootValue: SchemaValue, rootSchema: JsfSchema, errors: ValidationError[]): ValidationErrorWithMessage[] {
+/**
+ * Add error messages to validation errors (based on the validation type, schema, and value)
+ * @param errors - The validation errors
+ * @returns The validation errors with error messages added
+ */
+function addErrorMessages(errors: ValidationError[]): ValidationErrorWithMessage[] {
   return errors.map((error) => {
-    const { schema: errorSchema, value: errorValue } = getSchemaAndValueAtPath(rootSchema, rootValue, error.path)
+    const { schema, value, validation, customErrorMessage } = error
 
     return {
       ...error,
-      message: getErrorMessage(errorSchema, errorValue, error.validation, error.customErrorMessage),
+      message: getErrorMessage(schema, value, validation, customErrorMessage),
     }
   })
 }
@@ -203,51 +155,15 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
   }
 
   return errors.map((error) => {
-    // Skip if no path or empty path
-    if (!error.path.length) {
-      return error
-    }
-
-    // Find the schema for this error path
-    let currentSchema: NonBooleanJsfSchema | null = typeof schema === 'object' ? schema : null
-    let fieldSchema: NonBooleanJsfSchema | null = null
-
-    // Navigate through the schema to find the field schema
-    for (const segment of error.path) {
-      if (!currentSchema || typeof currentSchema !== 'object') {
-        break
-      }
-
-      if (currentSchema.properties && currentSchema.properties[segment]) {
-        const nextSchema = currentSchema.properties[segment]
-        // Skip if the schema is a boolean
-        if (typeof nextSchema !== 'boolean') {
-          currentSchema = nextSchema
-          fieldSchema = currentSchema
-        }
-        else {
-          break
-        }
-      }
-      else if (currentSchema.items && typeof currentSchema.items !== 'boolean') {
-        // Handle array items
-        currentSchema = currentSchema.items
-        fieldSchema = currentSchema
-      }
-      else {
-        break
-      }
-    }
-
-    // If we found a schema with custom error messages, apply them
+    const fieldSchema = error.schema
+    const customErrorMessage = fieldSchema['x-jsf-errorMessage']?.[error.validation]
     if (
       fieldSchema
-      && fieldSchema['x-jsf-errorMessage']
-      && fieldSchema['x-jsf-errorMessage'][error.validation]
+      && customErrorMessage
     ) {
       return {
         ...error,
-        message: fieldSchema['x-jsf-errorMessage'][error.validation],
+        message: customErrorMessage,
       }
     }
 
@@ -265,7 +181,7 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
-  const errorsWithMessages = addErrorMessages(value, schema, errors)
+  const errorsWithMessages = addErrorMessages(errors)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
   const formErrors = validationErrorsToFormErrors(processedErrors)

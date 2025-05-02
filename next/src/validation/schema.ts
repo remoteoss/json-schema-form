@@ -7,7 +7,7 @@ import { validateConst } from './const'
 import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
 import { validateFile } from './file'
-import { validateJsonLogic } from './json-logic'
+import { validateJsonLogicComputedAttributes, validateJsonLogicRules } from './json-logic'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -107,7 +107,7 @@ function validateType(
   }
 
   // If none of the conditions matched, it's a type error
-  return [{ path, validation: 'type' }]
+  return [{ path, validation: 'type', schema, value }]
 }
 
 /**
@@ -171,9 +171,10 @@ export function validateSchema(
   // If not, it probably means the current schema is the root schema (or that there's no json-logic node in the current schema)
   if (!rootJsonLogicContext && schema['x-jsf-logic']) {
     // - We should set the jsonLogicContext's schema as the schema in the 'x-jsf-logic' property
-    const { validations, computedValues: _, ...rest } = schema['x-jsf-logic']
+    const { validations, computedValues, ...rest } = schema['x-jsf-logic']
     const jsonLogicRules: JsonLogicRules = {
       validations,
+      computedValues,
     }
     jsonLogicContext = {
       schema: jsonLogicRules,
@@ -194,7 +195,7 @@ export function validateSchema(
 
   // Handle boolean schemas
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid' }]
+    return schema ? [] : [{ path, validation: 'valid', schema, value }]
   }
 
   // Check if it is a file input (needed early for null check)
@@ -224,6 +225,8 @@ export function validateSchema(
       errors.push({
         path: [...path, key],
         validation: 'required',
+        schema: schema?.properties?.[key] || schema,
+        value,
       })
     }
   }
@@ -248,6 +251,7 @@ export function validateSchema(
     // Custom validations
     ...validateDate(value, schema, options, path),
     ...validateJsonLogicSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext),
-    ...validateJsonLogic(schema, jsonLogicContext, path),
+    ...validateJsonLogicComputedAttributes(value, schema, options, jsonLogicContext, path),
+    ...validateJsonLogicRules(schema, jsonLogicContext, path),
   ]
 }

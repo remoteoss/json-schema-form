@@ -1,3 +1,5 @@
+import type { JsfSchema, SchemaValue } from '../types'
+
 /**
  * The type of validation error
  * @description
@@ -79,6 +81,14 @@ export interface ValidationError {
    * 'required'
    */
   validation: SchemaValidationErrorType
+  /**
+   * The schema that has a failed validation
+   */
+  schema: JsfSchema
+  /**
+   * The value that triggered the validation error
+   */
+  value: SchemaValue
   /**
    * The custom error message to display
    * @example

@@ -52,7 +52,7 @@ export function validateFile(
   )
 
   if (!isStructureValid) {
-    return [{ path, validation: 'fileStructure' }]
+    return [{ path, validation: 'fileStructure', schema, value }]
   }
 
   // Now we know value is a valid FileLike[] with at least one item.
@@ -65,7 +65,7 @@ export function validateFile(
     const isAnyFileTooLarge = files.some(file => file.size > maxSizeInBytes)
 
     if (isAnyFileTooLarge) {
-      return [{ path, validation: 'maxFileSize' }]
+      return [{ path, validation: 'maxFileSize', schema, value }]
     }
   }
 
@@ -89,7 +89,7 @@ export function validateFile(
 
       // Fail only if *none* of the files have an accepted format.
       if (!isAnyFileFormatAccepted) {
-        return [{ path, validation: 'accept' }]
+        return [{ path, validation: 'accept', schema, value }]
       }
     }
   }

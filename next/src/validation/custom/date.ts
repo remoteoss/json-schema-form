@@ -78,11 +78,11 @@ export function validateDate(
   const { minDate, maxDate } = schema['x-jsf-presentation']
 
   if (minDate && !validateMinDate(value, minDate)) {
-    errors.push({ path, validation: 'minDate' })
+    errors.push({ path, validation: 'minDate', schema, value })
   }
 
   if (maxDate && !validateMaxDate(value, maxDate)) {
-    errors.push({ path, validation: 'maxDate' })
+    errors.push({ path, validation: 'maxDate', schema, value })
   }
 
   return errors

@@ -34,27 +34,27 @@ export function validateNumber(
 
   // MultipleOf validation - dividing value by multipleOf must have no remainder
   if (schema.multipleOf !== undefined && value % schema.multipleOf !== 0) {
-    errors.push({ path, validation: 'multipleOf' })
+    errors.push({ path, validation: 'multipleOf', schema, value })
   }
 
   // Maximum validation - value must be less than or equal to maximum
   if (schema.maximum !== undefined && value > schema.maximum) {
-    errors.push({ path, validation: 'maximum' })
+    errors.push({ path, validation: 'maximum', schema, value })
   }
 
   // ExclusiveMaximum validation - value must be less than exclusiveMaximum
   if (schema.exclusiveMaximum !== undefined && value >= schema.exclusiveMaximum) {
-    errors.push({ path, validation: 'exclusiveMaximum' })
+    errors.push({ path, validation: 'exclusiveMaximum', schema, value })
   }
 
   // Minimum validation - value must be greater than or equal to minimum
   if (schema.minimum !== undefined && value < schema.minimum) {
-    errors.push({ path, validation: 'minimum' })
+    errors.push({ path, validation: 'minimum', schema, value })
   }
 
   // ExclusiveMinimum validation - value must be greater than exclusiveMinimum
   if (schema.exclusiveMinimum !== undefined && value <= schema.exclusiveMinimum) {
-    errors.push({ path, validation: 'exclusiveMinimum' })
+    errors.push({ path, validation: 'exclusiveMinimum', schema, value })
   }
 
   return errors
