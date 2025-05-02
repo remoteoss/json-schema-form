@@ -96,24 +96,14 @@ export function validateJsonLogicComputedAttributes(
 
   // add the new computed attributes to the schema
   Object.entries(computedAttributes).forEach(([schemaKey, value]) => {
-    // If the schema key is "x-jsf-errorMessage", it means we should tweak the error message, eventually interpolating any handlebars present in each message.
-    // Otherwise, the attribute should be referencing a computation, so we need to check if the computation name is a valid rule
     if (schemaKey === 'x-jsf-errorMessage') {
-      const customErrorMessages = value as JsfSchema['x-jsf-errorMessage']
-      const computedErrorMessages: JsfSchema['x-jsf-errorMessage'] = {}
-
-      if (!customErrorMessages) {
-        return
+      const computedErrorMessages = computeErrorMessages(
+        value as JsfSchema['x-jsf-errorMessage'],
+        jsonLogicContext,
+      )
+      if (computedErrorMessages) {
+        schemaCopy['x-jsf-errorMessage'] = computedErrorMessages
       }
-
-      Object.entries(customErrorMessages).forEach(([key, message]) => {
-        let computedMessage = message
-        if (containsHandlebars(message)) {
-          computedMessage = interpolate(message, jsonLogicContext)
-        }
-        computedErrorMessages[key] = computedMessage
-      })
-      schemaCopy['x-jsf-errorMessage'] = computedErrorMessages
     }
     else {
       const validationName = value as string
@@ -168,4 +158,32 @@ function interpolate(message: string, jsonLogicContext: JsonLogicContext | undef
 
     return result?.toString() ?? `{{${computationName}}}`
   })
+}
+
+/**
+ * Computes the error messages for a given schema, running the handlebars expressions through the JSON Logic context
+ *
+ * @param value The error message to compute
+ * @param jsonLogicContext The JSON Logic context
+ * @returns The computed error messages
+ */
+function computeErrorMessages(
+  value: JsfSchema['x-jsf-errorMessage'],
+  jsonLogicContext: JsonLogicContext | undefined,
+): JsfSchema['x-jsf-errorMessage'] | undefined {
+  if (!value) {
+    return undefined
+  }
+
+  const computedErrorMessages: JsfSchema['x-jsf-errorMessage'] = {}
+
+  Object.entries(value).forEach(([key, message]) => {
+    let computedMessage = message
+    if (containsHandlebars(message)) {
+      computedMessage = interpolate(message, jsonLogicContext)
+    }
+    computedErrorMessages[key] = computedMessage
+  })
+
+  return computedErrorMessages
 }
