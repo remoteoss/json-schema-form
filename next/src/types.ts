@@ -52,8 +52,6 @@ export interface JsonLogicSchema extends JsonLogicRules, JsonLogicRootSchema {}
  * JSON Schema Form extending JSON Schema with additional JSON Schema Form properties.
  */
 export type JsfSchema = JSONSchema & {
-  'title'?: string
-  'description'?: string
   'properties'?: Record<string, JsfSchema>
   'items'?: JsfSchema
   'anyOf'?: JsfSchema[]
