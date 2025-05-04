@@ -283,7 +283,7 @@ describe('fields', () => {
       ])
     })
 
-    it.only('build a radio field with enum', () => {
+    it('build a radio field with enum', () => {
       const schema: JsfSchema = {
         type: 'object',
         properties: {
