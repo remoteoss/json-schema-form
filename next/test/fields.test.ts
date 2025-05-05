@@ -363,8 +363,7 @@ describe('fields', () => {
         .toThrow(/Strict error: Missing inputType to field "Test"/)
     })
 
-    // Skipping this test until we have group-array support
-    it.skip('defaults to group-array for schema with no type but items.properties', () => {
+    it('defaults to group-array for schema with no type but items.properties', () => {
       const schema = {
         items: {
           properties: {
