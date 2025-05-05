@@ -132,6 +132,9 @@ async function publish({ newVersion, releaseType, otp }) {
     }
 
     console.log(`🎉 ${npmTag} version ${newVersion} published!`);
+    if (releaseType === 'beta') {
+      console.log(`✍️ REMINDER: Please publish the release on Github too as "pre-release".`);
+    }
     console.log(`Install with: npm i @remoteoss/json-schema-form@${npmTag}`);
   } catch {
     console.log('🚨 Publish failed! Perhaps the OTP is wrong.');

@@ -4,23 +4,6 @@ import { buildFieldArray } from './array'
 import { buildFieldObject } from './object'
 
 /**
- * Get the JSON type for a field
- * @param schema - The non boolean schema of the field
- * @returns The JSON type for the field, based schema type. Default to 'text'
- */
-function getJsonType(schema: NonBooleanJsfSchema): string {
-  if (Array.isArray(schema.type)) {
-    return 'select'
-  }
-
-  if (schema.type !== undefined) {
-    return schema.type as string
-  }
-
-  return 'text'
-}
-
-/**
  * Add checkbox attributes to a field
  * @param inputType - The input type of the field
  * @param field - The field to add the attributes to
@@ -161,7 +144,6 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
  * Get field options from schema
  */
 function getFieldOptions(schema: NonBooleanJsfSchema) {
-  // Handle oneOf or radio input type
   if (schema.oneOf) {
     return convertToOptions(schema.oneOf || [])
   }
@@ -174,6 +156,15 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
   // Handle anyOf
   if (schema.anyOf) {
     return convertToOptions(schema.anyOf)
+  }
+
+  // Handle enum
+  if (schema.enum) {
+    const enumAsOneOf: JsfSchema['oneOf'] = schema.enum?.map(value => ({
+      title: typeof value === 'string' ? value : JSON.stringify(value),
+      const: value,
+    })) || []
+    return convertToOptions(enumAsOneOf)
   }
 
   return null
@@ -232,7 +223,7 @@ export function buildFieldSchema(
     type: inputType,
     name,
     inputType,
-    jsonType: getJsonType(schema),
+    jsonType: schema.type,
     required,
     isVisible: true,
     ...(errorMessage && { errorMessage }),

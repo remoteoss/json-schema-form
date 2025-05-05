@@ -1,5 +1,6 @@
 import type { JsfSchema, NonBooleanJsfSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
+import { TypeName } from 'json-schema-typed'
 import { buildFieldSchema } from '../src/field/schema'
 
 describe('fields', () => {
@@ -270,6 +271,40 @@ describe('fields', () => {
       ])
     })
 
+    it('build a radio field with enum', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          status: {
+            'enum': ['active', true, false, 1],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          type: 'radio',
+          inputType: 'radio',
+          jsonType: undefined,
+          isVisible: true,
+          name: 'status',
+          required: false,
+          enum: ['active', true, false, 1],
+          options: [
+            { label: 'active', value: 'active' },
+            { label: 'true', value: true },
+            { label: 'false', value: false },
+            { label: '1', value: 1 },
+          ],
+        },
+      ])
+    })
+
     it('skips options without a null const value', () => {
       const schema: JsfSchema = {
         type: 'object',
@@ -505,6 +540,28 @@ describe('fields', () => {
         const field = buildFieldSchema(schema, 'test')
         expect(field?.inputType).toBe('select')
       })
+    })
+  })
+
+  describe('jsonType', () => {
+    it('should be the type of the schema', () => {
+      const schemaTypes = Object.values(TypeName)
+      for (const type of schemaTypes) {
+        // TODO: remove once array is supported
+        if (type === 'array') {
+          continue
+        }
+        expect(buildFieldSchema({ type }, 'test')?.jsonType).toBe(type)
+      }
+    })
+
+    it('should work for array types as well', () => {
+      expect(buildFieldSchema({ type: ['string', 'number'] }, 'test')?.jsonType).toEqual(['string', 'number'])
+      expect(buildFieldSchema({ type: [] }, 'test')?.jsonType).toEqual([])
+    })
+
+    it('should be undefined when the schema has no type', () => {
+      expect(buildFieldSchema({}, 'test')?.jsonType).toBeUndefined()
     })
   })
 })
