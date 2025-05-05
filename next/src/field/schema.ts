@@ -143,7 +143,6 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
  * Get field options from schema
  */
 function getFieldOptions(schema: NonBooleanJsfSchema) {
-  // Handle oneOf or radio input type
   if (schema.oneOf) {
     return convertToOptions(schema.oneOf || [])
   }
@@ -156,6 +155,15 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
   // Handle anyOf
   if (schema.anyOf) {
     return convertToOptions(schema.anyOf)
+  }
+
+  // Handle enum
+  if (schema.enum) {
+    const enumAsOneOf: JsfSchema['oneOf'] = schema.enum?.map(value => ({
+      title: typeof value === 'string' ? value : JSON.stringify(value),
+      const: value,
+    })) || []
+    return convertToOptions(enumAsOneOf)
   }
 
   return null
