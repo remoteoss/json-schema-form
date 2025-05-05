@@ -1,5 +1,6 @@
 import type { JsfSchema, NonBooleanJsfSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
+import { TypeName } from 'json-schema-typed'
 import { buildFieldSchema } from '../src/field/schema'
 
 describe('fields', () => {
@@ -302,7 +303,7 @@ describe('fields', () => {
         {
           type: 'radio',
           inputType: 'radio',
-          jsonType: 'text', // BUG: This is wrong, should be undefined.
+          jsonType: undefined,
           isVisible: true,
           name: 'status',
           required: false,
@@ -552,6 +553,28 @@ describe('fields', () => {
         const field = buildFieldSchema(schema, 'test')
         expect(field?.inputType).toBe('select')
       })
+    })
+  })
+
+  describe('jsonType', () => {
+    it('should be the type of the schema', () => {
+      const schemaTypes = Object.values(TypeName)
+      for (const type of schemaTypes) {
+        // TODO: remove once array is supported
+        if (type === 'array') {
+          continue
+        }
+        expect(buildFieldSchema({ type }, 'test')?.jsonType).toBe(type)
+      }
+    })
+
+    it('should work for array types as well', () => {
+      expect(buildFieldSchema({ type: ['string', 'number'] }, 'test')?.jsonType).toEqual(['string', 'number'])
+      expect(buildFieldSchema({ type: [] }, 'test')?.jsonType).toEqual([])
+    })
+
+    it('should be undefined when the schema has no type', () => {
+      expect(buildFieldSchema({}, 'test')?.jsonType).toBeUndefined()
     })
   })
 })
