@@ -520,4 +520,17 @@ describe('fields', () => {
       })
     })
   })
+
+  describe('jsonType', () => {
+    it('should be the type of the schema', () => {
+      expect(buildFieldSchema({ type: 'string' }, 'test')?.jsonType).toBe('string')
+      expect(buildFieldSchema({ type: 'number' }, 'test')?.jsonType).toBe('number')
+      expect(buildFieldSchema({ type: 'boolean' }, 'test')?.jsonType).toBe('boolean')
+      expect(buildFieldSchema({ type: 'object' }, 'test')?.jsonType).toBe('object')
+    })
+
+    it('should be undefined when the schema has no type', () => {
+      expect(buildFieldSchema({}, 'test')?.jsonType).toBeUndefined()
+    })
+  })
 })

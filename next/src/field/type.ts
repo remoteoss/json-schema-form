@@ -1,3 +1,5 @@
+import type { JsfSchemaType } from '../types'
+
 /**
  * WIP type for UI field output that allows for all `x-jsf-presentation` properties to be splatted
  * TODO/QUESTION: what are the required fields for a field? what are the things we want to deprecate, if any?
@@ -11,7 +13,7 @@ export interface Field {
   type: FieldType
   inputType: FieldType
   required: boolean
-  jsonType: string
+  jsonType: JsfSchemaType
   isVisible: boolean
   accept?: string
   errorMessage?: Record<string, string>
