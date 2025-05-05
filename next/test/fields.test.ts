@@ -303,7 +303,7 @@ describe('fields', () => {
         {
           type: 'radio',
           inputType: 'radio',
-          jsonType: 'text', // BUG: This is wrong, should be undefined.
+          jsonType: undefined,
           isVisible: true,
           name: 'status',
           required: false,
