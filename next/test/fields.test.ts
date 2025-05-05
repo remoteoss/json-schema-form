@@ -283,6 +283,40 @@ describe('fields', () => {
       ])
     })
 
+    it('build a radio field with enum', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          status: {
+            'enum': ['active', true, false, 1],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          type: 'radio',
+          inputType: 'radio',
+          jsonType: 'text', // BUG: This is wrong, should be undefined.
+          isVisible: true,
+          name: 'status',
+          required: false,
+          enum: ['active', true, false, 1],
+          options: [
+            { label: 'active', value: 'active' },
+            { label: 'true', value: true },
+            { label: 'false', value: false },
+            { label: '1', value: 1 },
+          ],
+        },
+      ])
+    })
+
     it('skips options without a null const value', () => {
       const schema: JsfSchema = {
         type: 'object',
