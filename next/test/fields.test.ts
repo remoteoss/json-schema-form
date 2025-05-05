@@ -1,5 +1,6 @@
 import type { JsfSchema, NonBooleanJsfSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
+import { TypeName } from 'json-schema-typed'
 import { buildFieldSchema } from '../src/field/schema'
 
 describe('fields', () => {
@@ -523,10 +524,19 @@ describe('fields', () => {
 
   describe('jsonType', () => {
     it('should be the type of the schema', () => {
-      expect(buildFieldSchema({ type: 'string' }, 'test')?.jsonType).toBe('string')
-      expect(buildFieldSchema({ type: 'number' }, 'test')?.jsonType).toBe('number')
-      expect(buildFieldSchema({ type: 'boolean' }, 'test')?.jsonType).toBe('boolean')
-      expect(buildFieldSchema({ type: 'object' }, 'test')?.jsonType).toBe('object')
+      const schemaTypes = Object.values(TypeName)
+      for (const type of schemaTypes) {
+        // TODO: remove once array is supported
+        if (type === 'array') {
+          continue
+        }
+        expect(buildFieldSchema({ type }, 'test')?.jsonType).toBe(type)
+      }
+    })
+
+    it('should work for array types as well', () => {
+      expect(buildFieldSchema({ type: ['string', 'number'] }, 'test')?.jsonType).toEqual(['string', 'number'])
+      expect(buildFieldSchema({ type: [] }, 'test')?.jsonType).toEqual([])
     })
 
     it('should be undefined when the schema has no type', () => {
