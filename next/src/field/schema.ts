@@ -184,6 +184,20 @@ const excludedSchemaProps = [
 ]
 
 /**
+ * Returns all schema properties which can be propagated to a field
+ * @param schema - The schema to exclude properties from
+ * @returns The schema with the excluded properties removed
+ * @description This function is used to get all properties from a schema that can be propagated to a field.
+ * It excludes properties that are handled separately or need special handling.
+ * @see excludedSchemaProps
+ */
+export function propagatedSchemaProps(schema: NonBooleanJsfSchema): Record<string, unknown> {
+  return Object.entries(schema)
+    .filter(([key]) => !excludedSchemaProps.includes(key))
+    .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {})
+}
+
+/**
  * Build a field from any schema
  */
 export function buildFieldSchema(
@@ -215,10 +229,7 @@ export function buildFieldSchema(
   // Build field with all schema properties by default, excluding ones that need special handling
   const field: Field = {
     // Spread all schema properties except excluded ones
-    ...Object.entries(schema)
-      .filter(([key]) => !excludedSchemaProps.includes(key))
-      .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
-
+    ...propagatedSchemaProps(schema),
     // Add required field properties
     type: inputType,
     name,

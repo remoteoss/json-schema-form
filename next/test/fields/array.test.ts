@@ -650,4 +650,60 @@ describe('buildFieldArray', () => {
       ],
     })
   })
+
+  it('propagates schema properties to the field', () => {
+    const schema: JsfSchema & Record<string, unknown> = {
+      'type': 'array',
+      'title': 'My array',
+      'description': 'My array description',
+      'x-jsf-presentation': {
+        inputType: 'group-array',
+      },
+      'x-custom-prop': 'custom value',
+      'foo': 'bar',
+      'items': {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+      },
+    }
+
+    const field = buildFieldSchema(schema, 'myArray', true)
+
+    expect(field).toBeDefined()
+    expect(field?.title).toBe('My array')
+    expect(field?.description).toBe('My array description')
+  })
+
+  it('does not propagate excluded schema properties to the field', () => {
+    const schema: JsfSchema & Record<string, unknown> = {
+      'type': 'array',
+      'title': 'My array',
+      'description': 'My array description',
+      'x-jsf-presentation': {
+        inputType: 'group-array',
+      },
+      'x-jsf-errorMessage': {
+        minItems: 'At least one item is required',
+      },
+      'label': 'My label',
+      'minItems': 1,
+      'items': {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+      },
+    }
+
+    const field = buildFieldSchema(schema, 'myArray', true)
+
+    expect(field).toBeDefined()
+    expect(field?.label).toBe('My array')
+    expect(field?.items).toBeUndefined()
+    expect(field?.minItems).toBe(1)
+    expect(field?.['x-jsf-errorMessage']).toBeUndefined()
+    expect(field?.['x-jsf-presentation']).toBeUndefined()
+  })
 })

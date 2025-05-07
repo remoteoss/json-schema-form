@@ -1,6 +1,6 @@
 import type { JsfObjectSchema, NonBooleanJsfSchema } from '../types'
 import type { Field, FieldType } from './type'
-import { buildFieldSchema } from './schema'
+import { buildFieldSchema, propagatedSchemaProps } from './schema'
 
 /**
  * Build a field from an array schema
@@ -40,6 +40,7 @@ export function buildFieldArray(schema: NonBooleanJsfSchema, name: string, requi
   }
 
   const field: Field = {
+    ...propagatedSchemaProps(schema),
     ...schema['x-jsf-presentation'],
     type: 'group-array' as FieldType,
     inputType: 'group-array' as FieldType,
@@ -52,10 +53,6 @@ export function buildFieldArray(schema: NonBooleanJsfSchema, name: string, requi
 
   if (schema.title !== undefined) {
     field.label = schema.title
-  }
-
-  if (schema.description !== undefined) {
-    field.description = schema.description
   }
 
   return field
