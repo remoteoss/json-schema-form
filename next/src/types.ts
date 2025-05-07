@@ -54,6 +54,7 @@ export interface JsonLogicSchema extends JsonLogicRules, JsonLogicRootSchema {}
 export type JsfSchema = JSONSchema & {
   'properties'?: Record<string, JsfSchema>
   'items'?: JsfSchema
+  'enum'?: unknown[]
   'anyOf'?: JsfSchema[]
   'allOf'?: JsfSchema[]
   'oneOf'?: JsfSchema[]
