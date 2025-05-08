@@ -138,12 +138,17 @@ describe('buildFieldArray', () => {
     expect(nestedFields?.[0]?.name).toBe('name')
   })
 
-  it('throws an error if the items schema is not an object', () => {
-    expect(() => buildFieldSchema({ type: 'array', items: { type: 'string' } }, 'root', true)).toThrow()
-    expect(() => buildFieldSchema({ type: 'array', items: { type: 'number' } }, 'root', true)).toThrow()
-    expect(() => buildFieldSchema({ type: 'array', items: { type: 'array' } }, 'root', true)).toThrow()
-    expect(() => buildFieldSchema({ type: 'array', items: { type: 'enum' } }, 'root', true)).toThrow()
-    expect(() => buildFieldSchema({ type: 'array', items: { type: 'boolean' } }, 'root', true)).toThrow()
+  it('allows non-object items', () => {
+    const groupArray = () => expect.objectContaining({
+      inputType: 'group-array',
+      fields: [expect.anything()],
+    })
+
+    expect(buildFieldSchema({ type: 'array', items: { type: 'string' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ type: 'array', items: { type: 'number' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ type: 'array', items: { type: 'array' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ type: 'array', items: { type: 'enum' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ type: 'array', items: { type: 'boolean' } }, 'root', true)).toEqual(groupArray())
   })
 
   it('creates correct form errors validation errors in array items', () => {
@@ -268,8 +273,6 @@ describe('buildFieldArray', () => {
     }
 
     const result = form.handleValidation(data)
-
-    console.warn(JSON.stringify(result, null, 2))
 
     expect(result.formErrors).toEqual({
       departments: [
@@ -654,7 +657,7 @@ describe('buildFieldArray', () => {
   it('propagates schema properties to the field', () => {
     const schema: JsfSchema & Record<string, unknown> = {
       'type': 'array',
-      'title': 'My array',
+      'label': 'My array',
       'description': 'My array description',
       'x-jsf-presentation': {
         inputType: 'group-array',
@@ -672,7 +675,7 @@ describe('buildFieldArray', () => {
     const field = buildFieldSchema(schema, 'myArray', true)
 
     expect(field).toBeDefined()
-    expect(field?.title).toBe('My array')
+    expect(field?.label).toBe('My array')
     expect(field?.description).toBe('My array description')
   })
 
@@ -701,7 +704,12 @@ describe('buildFieldArray', () => {
 
     expect(field).toBeDefined()
     expect(field?.label).toBe('My array')
-    expect(field?.items).toBeUndefined()
+    expect(field?.items).toEqual({
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+      },
+    })
     expect(field?.minItems).toBe(1)
     expect(field?.['x-jsf-errorMessage']).toBeUndefined()
     expect(field?.['x-jsf-presentation']).toBeUndefined()

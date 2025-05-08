@@ -3,7 +3,7 @@ import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
-import { buildFieldObject } from './field/object'
+import { buildFieldSchema } from './field/schema'
 import { mutateFields } from './mutations'
 import { validateSchema } from './validation/schema'
 
@@ -233,7 +233,7 @@ export interface CreateHeadlessFormOptions {
 
 function buildFields(params: { schema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
   const { schema, strictInputType } = params
-  const fields = buildFieldObject(schema, 'root', true, strictInputType).fields || []
+  const fields = buildFieldSchema(schema, 'root', true, strictInputType)?.fields || []
   return fields
 }
 
@@ -281,7 +281,7 @@ function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
   fields.length = 0
 
   // Get new fields from schema
-  const newFields = buildFieldObject(schema, 'root', true).fields || []
+  const newFields = buildFieldSchema(schema, 'root', true)?.fields || []
 
   // Push all new fields into existing array
   fields.push(...newFields)

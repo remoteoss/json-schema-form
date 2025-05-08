@@ -1,7 +1,6 @@
 import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema } from '../types'
 import type { Field, FieldOption, FieldType } from './type'
-import { buildFieldArray } from './array'
-import { buildFieldObject } from './object'
+import { setCustomOrder } from '../custom/order'
 
 /**
  * Add checkbox attributes to a field
@@ -49,13 +48,8 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
       return 'number'
     case 'object':
       return 'fieldset'
-    case 'array': {
-      const { items } = schema
-      if (items?.properties) {
-        return 'group-array'
-      }
-      return 'select'
-    }
+    case 'array':
+      return 'group-array'
     case 'boolean':
       return 'checkbox'
     default:
@@ -68,7 +62,7 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
  * @param schema - The non boolean schema of the field
  * @returns The input type for the field, based schema type. Default to 'text'
  */
-function getInputType(schema: NonBooleanJsfSchema, strictInputType?: boolean): FieldType {
+export function getInputType(schema: NonBooleanJsfSchema, strictInputType?: boolean): FieldType {
   const presentation = schema['x-jsf-presentation']
   if (presentation?.inputType) {
     return presentation.inputType as FieldType
@@ -170,6 +164,68 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
   return null
 }
 
+function getObjectFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
+  const fields: Field[] = []
+
+  for (const key in schema.properties) {
+    const isRequired = schema.required?.includes(key) || false
+    const field = buildFieldSchema(schema.properties[key], key, isRequired, strictInputType)
+    if (field) {
+      fields.push(field)
+    }
+  }
+
+  const orderedFields = setCustomOrder({ fields, schema })
+
+  return orderedFields
+}
+
+function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] {
+  const fields: Field[] = []
+
+  if (typeof schema.items !== 'object' || schema.items === null) {
+    return []
+  }
+
+  if (schema.items?.type === 'object') {
+    const objectSchema = schema.items as JsfObjectSchema
+
+    for (const key in objectSchema.properties) {
+      const isFieldRequired = objectSchema.required?.includes(key) || false
+      const field = buildFieldSchema(objectSchema.properties[key], key, isFieldRequired, strictInputType)
+      if (field) {
+        field.nameKey = key
+        fields.push(field)
+      }
+    }
+  }
+  else {
+    const field = buildFieldSchema(schema.items, 'item', false, strictInputType)
+    if (field) {
+      fields.push(field)
+    }
+  }
+
+  return fields
+}
+
+/**
+ * Get the fields for a schema from either `items` or `properties`
+ * @param schema - The schema of the field
+ * @param strictInputType - Whether to strictly enforce the input type
+ * @returns The fields for the schema
+ */
+function getFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
+  if (typeof schema.items === 'object') {
+    return getArrayFields(schema, strictInputType)
+  }
+  else if (schema.type === 'object') {
+    return getObjectFields(schema, strictInputType)
+  }
+
+  return null
+}
+
 /**
  * List of schema properties that should be excluded from the final field or handled specially
  */
@@ -180,7 +236,7 @@ const excludedSchemaProps = [
   'x-jsf-presentation', // Handled separately
   'oneOf', // Transformed to 'options'
   'anyOf', // Transformed to 'options'
-  'items', // Handled specially for arrays
+  'properties', // Handled separately
 ]
 
 /**
@@ -208,16 +264,6 @@ export function buildFieldSchema(
 ): Field | null {
   if (typeof schema === 'boolean') {
     return null
-  }
-
-  if (schema.type === 'object') {
-    const objectSchema: JsfObjectSchema = { ...schema, type: 'object' }
-    return buildFieldObject(objectSchema, name, required)
-  }
-
-  if (schema.type === 'array') {
-    const arraySchema = schema as NonBooleanJsfSchema & { type: 'array' }
-    return buildFieldArray(arraySchema, name, required, strictInputType)
   }
 
   const presentation = schema['x-jsf-presentation'] || {}
@@ -262,6 +308,12 @@ export function buildFieldSchema(
   const options = getFieldOptions(schema)
   if (options) {
     field.options = options
+  }
+
+  // Handle array fields
+  const fields = getFields(schema, strictInputType)
+  if (fields) {
+    field.fields = fields
   }
 
   return field
