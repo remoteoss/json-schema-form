@@ -103,7 +103,6 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[], _val
       if (cleanedPath[1] === 'items' && typeof cleanedPath[2] === 'number') {
         const [arrayName, _, arrayIndex] = cleanedPath
 
-        // const arrayName = cleanedPath[0] as string
         if (!(arrayName in result) || typeof result[arrayName] === 'string') {
           result[arrayName] = [] as Array<null | FormErrors>
         }
