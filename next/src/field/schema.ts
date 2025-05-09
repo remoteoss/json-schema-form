@@ -1,5 +1,5 @@
 import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema } from '../types'
-import type { Field, FieldOption, FieldType } from './type'
+import type { Field, FieldCheckbox, FieldOption, FieldType } from './type'
 import { buildFieldObject } from './object'
 
 /**
@@ -8,7 +8,7 @@ import { buildFieldObject } from './object'
  * @param field - The field to add the attributes to
  * @param schema - The schema of the field
  */
-function addCheckboxAttributes(inputType: string, field: Field, schema: NonBooleanJsfSchema) {
+function addCheckboxAttributes(inputType: string, field: FieldCheckbox, schema: NonBooleanJsfSchema) {
   // The checkboxValue attribute indicates which is the valid value a checkbox can have (for example "acknowledge", or `true`)
   // So, we set it to what's specified in the schema (if any)
   field.checkboxValue = schema.const
@@ -120,7 +120,7 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
 
       const result: {
         label: string
-        value: unknown
+        value: string
         [key: string]: unknown
       } = {
         label: title || '',
@@ -211,7 +211,7 @@ export function buildFieldSchema(
   const inputType = getInputType(schema, strictInputType)
 
   // Build field with all schema properties by default, excluding ones that need special handling
-  const field: Field = {
+  const field = {
     // Spread all schema properties except excluded ones
     ...Object.entries(schema)
       .filter(([key]) => !excludedSchemaProps.includes(key))
@@ -225,10 +225,10 @@ export function buildFieldSchema(
     required,
     isVisible: true,
     ...(errorMessage && { errorMessage }),
-  }
+  } as Field
 
   if (inputType === 'checkbox') {
-    addCheckboxAttributes(inputType, field, schema)
+    addCheckboxAttributes(inputType, field as FieldCheckbox, schema)
   }
 
   if (schema.title) {
@@ -237,12 +237,8 @@ export function buildFieldSchema(
 
   // Spread presentation properties to the root level
   if (Object.keys(presentation).length > 0) {
-    Object.entries(presentation).forEach(([key, value]) => {
-      // inputType is already handled above
-      if (key !== 'inputType') {
-        field[key] = value
-      }
-    })
+    const { inputType: _, ...presentationProps } = presentation
+    Object.assign(field, presentationProps)
   }
 
   // Handle options

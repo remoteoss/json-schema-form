@@ -31,7 +31,7 @@ export function mutateFields(
     const field = fields.find(field => field.name === fieldName)
 
     if (field?.fields) {
-      applySchemaRules(field.fields, values[fieldName], fieldSchema as JsfObjectSchema, options)
+      applySchemaRules(field.fields as Field[], values[fieldName], fieldSchema as JsfObjectSchema, options)
     }
   }
 }
@@ -139,16 +139,14 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
         }
         // If the field has inner fields, we need to process them
         else if (field?.fields) {
-          processBranch(field.fields, values, fieldSchema)
+          processBranch(field.fields as Field[], values, fieldSchema)
         }
         // If the field has properties being declared on this branch, we need to update the field
         // with the new properties
         const newField = buildFieldSchema(fieldSchema as JsfObjectSchema, fieldName, true)
-        for (const key in newField) {
-          // We don't want to override the type property
-          if (!['type'].includes(key)) {
-            field[key] = newField[key]
-          }
+        if (newField) {
+          const { type: _, ...newProps } = newField
+          Object.assign(field, newProps)
         }
       }
     }
