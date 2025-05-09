@@ -330,6 +330,9 @@ export function buildFieldSchema(
   const options = getFieldOptions(schema)
   if (options) {
     field.options = options
+    if (schema.type === 'array') {
+      field.multiple = true
+    }
   }
   else {
     const fields = getFields(schema, strictInputType)
