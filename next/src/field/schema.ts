@@ -237,12 +237,8 @@ export function buildFieldSchema(
 
   // Spread presentation properties to the root level
   if (Object.keys(presentation).length > 0) {
-    Object.entries(presentation).forEach(([key, value]) => {
-      // inputType is already handled above
-      if (key !== 'inputType') {
-        field[key] = value
-      }
-    })
+    const { inputType: _, ...presentationProps } = presentation
+    Object.assign(field, presentationProps)
   }
 
   // Handle options

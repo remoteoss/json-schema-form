@@ -9,17 +9,9 @@ interface BaseField {
   required: boolean
   inputType: FieldType
   jsonType: JsfSchemaType
-  computedAttributes?: Record<string, unknown>
   errorMessage: Record<string, string>
   schema: any
   isVisible: boolean
-  description?: string
-  statement?: {
-    title: string
-    inputType: 'statement'
-    severity: 'warning' | 'error' | 'info'
-  }
-  [key: string]: unknown
 }
 
 export interface FieldOption {
@@ -51,6 +43,7 @@ export interface FieldText extends BaseField {
   type: 'text'
   maxLength?: number
   maskSecret?: number
+  pattern?: string
 }
 
 export interface FieldRadio extends BaseField {
@@ -112,19 +105,60 @@ export interface GroupArrayField extends BaseField {
 
 export interface FieldCountry extends BaseField {
   type: 'country'
+  options?: FieldOption[]
 }
 
-export type Field =
-  | FieldSelect
-  | FieldTextarea
-  | FieldDate
-  | FieldText
-  | FieldRadio
-  | FieldNumber
-  | FieldMoney
-  | FieldCheckbox
-  | FieldEmail
-  | FieldFile
-  | FieldFieldSet
-  | GroupArrayField
-  | FieldCountry
+export interface Field extends BaseField {
+  computedAttributes?: Record<string, unknown>
+  description?: string
+  statement?: {
+    title: string
+    inputType: 'statement'
+    severity: 'warning' | 'error' | 'info'
+  }
+
+  // Select specific properties
+  options?: FieldOption[]
+
+  // Text specific properties
+  maxLength?: number
+  maskSecret?: number
+  minLength?: number
+  pattern?: string
+
+  // Date specific properties
+  format?: string
+  minDate?: string
+  maxDate?: string
+
+  // Radio specific properties
+  direction?: 'row' | 'column'
+  const?: string
+
+  // Number specific properties
+  minimum?: number
+  maximum?: number
+
+  // Money specific properties
+  currency?: string
+
+  // Checkbox specific properties
+  multiple?: boolean
+  checkboxValue?: string | boolean
+
+  // File specific properties
+  accept?: string
+  fileDownload?: string
+  fileName?: string
+
+  // Fieldset specific properties
+  valueGroupingDisabled?: boolean
+  visualGroupingDisabled?: boolean
+  variant?: 'card' | 'focused' | 'default'
+  fields?: Field[]
+
+  // GroupArray specific properties
+  addFieldText?: string
+
+  enum?: string[]
+}

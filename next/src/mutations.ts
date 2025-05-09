@@ -144,11 +144,9 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
         // If the field has properties being declared on this branch, we need to update the field
         // with the new properties
         const newField = buildFieldSchema(fieldSchema as JsfObjectSchema, fieldName, true)
-        for (const key in newField) {
-          // We don't want to override the type property
-          if (!['type'].includes(key)) {
-            field[key] = newField[key]
-          }
+        if (newField) {
+          const { type: _, ...newProps } = newField
+          Object.assign(field, newProps)
         }
       }
     }
