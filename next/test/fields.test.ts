@@ -61,19 +61,6 @@ describe('fields', () => {
     ])
   })
 
-  it('should throw an error if the type equals "array" (group-array)', () => {
-    const schema = {
-      type: 'object',
-      properties: {
-        name: { type: 'array' },
-      },
-    }
-
-    expect(() => buildFieldSchema(schema, 'root', true)).toThrow(
-      'Array type is not yet supported',
-    )
-  })
-
   it('should build an object field with multiple properties', () => {
     const schema = {
       type: 'object',
@@ -376,8 +363,7 @@ describe('fields', () => {
         .toThrow(/Strict error: Missing inputType to field "Test"/)
     })
 
-    // Skipping this test until we have group-array support
-    it.skip('defaults to group-array for schema with no type but items.properties', () => {
+    it('defaults to group-array for schema with no type but items.properties', () => {
       const schema = {
         items: {
           properties: {
