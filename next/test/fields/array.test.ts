@@ -9,6 +9,9 @@ describe('buildFieldArray', () => {
       type: 'array',
       items: {
         type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
       },
     }
 
@@ -144,11 +147,11 @@ describe('buildFieldArray', () => {
       fields: [expect.anything()],
     })
 
-    expect(buildFieldSchema({ type: 'array', items: { type: 'string' } }, 'root', true)).toEqual(groupArray())
-    expect(buildFieldSchema({ type: 'array', items: { type: 'number' } }, 'root', true)).toEqual(groupArray())
-    expect(buildFieldSchema({ type: 'array', items: { type: 'array' } }, 'root', true)).toEqual(groupArray())
-    expect(buildFieldSchema({ type: 'array', items: { type: 'enum' } }, 'root', true)).toEqual(groupArray())
-    expect(buildFieldSchema({ type: 'array', items: { type: 'boolean' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ 'type': 'array', 'x-jsf-presentation': { inputType: 'group-array' }, 'items': { type: 'string' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ 'type': 'array', 'x-jsf-presentation': { inputType: 'group-array' }, 'items': { type: 'number' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ 'type': 'array', 'x-jsf-presentation': { inputType: 'group-array' }, 'items': { type: 'array' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ 'type': 'array', 'x-jsf-presentation': { inputType: 'group-array' }, 'items': { type: 'enum' } }, 'root', true)).toEqual(groupArray())
+    expect(buildFieldSchema({ 'type': 'array', 'x-jsf-presentation': { inputType: 'group-array' }, 'items': { type: 'boolean' } }, 'root', true)).toEqual(groupArray())
   })
 
   it('creates correct form errors validation errors in array items', () => {

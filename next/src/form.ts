@@ -232,7 +232,7 @@ export interface CreateHeadlessFormOptions {
 
 function buildFields(params: { schema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
   const { schema, strictInputType } = params
-  const fields = buildFieldSchema(schema, 'root', true, strictInputType)?.fields || []
+  const fields = buildFieldSchema(schema, 'root', true, strictInputType, 'object')?.fields || []
   return fields
 }
 
@@ -280,7 +280,7 @@ function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
   fields.length = 0
 
   // Get new fields from schema
-  const newFields = buildFieldSchema(schema, 'root', true)?.fields || []
+  const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
 
   // Push all new fields into existing array
   fields.push(...newFields)

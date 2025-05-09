@@ -48,8 +48,13 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
       return 'number'
     case 'object':
       return 'fieldset'
-    case 'array':
-      return 'group-array'
+    case 'array': {
+      const { items } = schema
+      if (items?.properties) {
+        return 'group-array'
+      }
+      return 'select'
+    }
     case 'boolean':
       return 'checkbox'
     default:
@@ -62,13 +67,13 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
  * @param schema - The non boolean schema of the field
  * @returns The input type for the field, based schema type. Default to 'text'
  */
-export function getInputType(schema: NonBooleanJsfSchema, strictInputType?: boolean): FieldType {
+export function getInputType(type: JsfSchemaType, name: string, schema: NonBooleanJsfSchema, strictInputType?: boolean): FieldType {
   const presentation = schema['x-jsf-presentation']
   if (presentation?.inputType) {
     return presentation.inputType as FieldType
   }
 
-  if (strictInputType) {
+  if (strictInputType && name !== 'root') {
     throw new Error(`Strict error: Missing inputType to field "${schema.title}".
 You can fix the json schema or skip this error by calling createHeadlessForm(schema, { strictInputType: false })`)
   }
@@ -89,7 +94,7 @@ You can fix the json schema or skip this error by calling createHeadlessForm(sch
   }
 
   // Get input type from schema (fallback type is "string")
-  return getInputTypeFromSchema(schema.type || 'string', schema)
+  return getInputTypeFromSchema(type || schema.type || 'string', schema)
 }
 
 /**
@@ -164,6 +169,12 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
   return null
 }
 
+/**
+ * Get the fields for an object schema
+ * @param schema - The schema of the field
+ * @param strictInputType - Whether to strictly enforce the input type
+ * @returns The fields for the schema or an empty array if the schema does not define any properties
+ */
 function getObjectFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
   const fields: Field[] = []
 
@@ -180,6 +191,12 @@ function getObjectFields(schema: NonBooleanJsfSchema, strictInputType?: boolean)
   return orderedFields
 }
 
+/**
+ * Get the fields for an array schema
+ * @param schema - The schema of the field
+ * @param strictInputType - Whether to strictly enforce the input type
+ * @returns The fields for the schema or an empty array if the schema does not define any items
+ */
 function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] {
   const fields: Field[] = []
 
@@ -216,11 +233,11 @@ function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean):
  * @returns The fields for the schema
  */
 function getFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
-  if (typeof schema.items === 'object') {
-    return getArrayFields(schema, strictInputType)
-  }
-  else if (schema.type === 'object') {
+  if (typeof schema.properties === 'object' && schema.properties !== null) {
     return getObjectFields(schema, strictInputType)
+  }
+  else if (typeof schema.items === 'object' && schema.items !== null) {
+    return getArrayFields(schema, strictInputType)
   }
 
   return null
@@ -247,7 +264,22 @@ export function buildFieldSchema(
   name: string,
   required: boolean = false,
   strictInputType: boolean = false,
+  type: JsfSchemaType = undefined,
 ): Field | null {
+  // If schema is boolean false, return a field with isVisible=false
+  if (schema === false) {
+    const inputType = getInputType(type, name, schema, strictInputType)
+    return {
+      type: inputType,
+      name,
+      inputType,
+      jsonType: 'boolean',
+      required,
+      isVisible: false,
+    }
+  }
+
+  // If schema is any other boolean (true), just return null
   if (typeof schema === 'boolean') {
     return null
   }
@@ -256,7 +288,7 @@ export function buildFieldSchema(
   const errorMessage = schema['x-jsf-errorMessage']
 
   // Get input type from presentation or fallback to schema type
-  const inputType = getInputType(schema, strictInputType)
+  const inputType = getInputType(type, name, schema, strictInputType)
 
   // Build field with all schema properties by default, excluding ones that need special handling
   const field: Field = {
@@ -268,7 +300,7 @@ export function buildFieldSchema(
     type: inputType,
     name,
     inputType,
-    jsonType: schema.type,
+    jsonType: type || schema.type,
     required,
     isVisible: true,
     ...(errorMessage && { errorMessage }),
@@ -286,9 +318,11 @@ export function buildFieldSchema(
   if (Object.keys(presentation).length > 0) {
     Object.entries(presentation).forEach(([key, value]) => {
       // inputType is already handled above
-      if (key !== 'inputType') {
-        field[key] = value
+      if (key === 'inputType') {
+        return
       }
+
+      field[key] = value
     })
   }
 
@@ -297,12 +331,14 @@ export function buildFieldSchema(
   if (options) {
     field.options = options
   }
+  else {
+    const fields = getFields(schema, strictInputType)
+    if (fields) {
+      field.fields = fields
+    }
+  }
 
   // Handle array fields
-  const fields = getFields(schema, strictInputType)
-  if (fields) {
-    field.fields = fields
-  }
 
   return field
 }
