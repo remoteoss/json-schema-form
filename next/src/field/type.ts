@@ -99,7 +99,7 @@ export interface GroupArrayField extends BaseField {
   name: string
   label: string
   description: string
-  fields: () => Field[]
+  fields: Field[]
   addFieldText: string
 }
 
