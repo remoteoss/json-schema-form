@@ -16,8 +16,8 @@ interface BaseField {
 
 export interface FieldOption {
   label: string
-  value: string
-  description?: string
+  value?: string | number | boolean | Record<string, any>
+  [key: string]: unknown
 }
 
 export interface FieldSelect extends BaseField {
@@ -61,7 +61,7 @@ export interface FieldNumber extends BaseField {
 
 export interface FieldMoney extends BaseField {
   type: 'money'
-  currency: string
+
 }
 
 export interface FieldCheckbox extends BaseField {
@@ -111,11 +111,6 @@ export interface FieldCountry extends BaseField {
 export interface Field extends BaseField {
   computedAttributes?: Record<string, unknown>
   description?: string
-  statement?: {
-    title: string
-    inputType: 'statement'
-    severity: 'warning' | 'error' | 'info'
-  }
 
   // Select specific properties
   options?: FieldOption[]
@@ -132,7 +127,6 @@ export interface Field extends BaseField {
   maxDate?: string
 
   // Radio specific properties
-  direction?: 'row' | 'column'
   const?: string
 
   // Number specific properties
@@ -148,13 +142,12 @@ export interface Field extends BaseField {
 
   // File specific properties
   accept?: string
-  fileDownload?: string
   fileName?: string
 
   // Fieldset specific properties
   valueGroupingDisabled?: boolean
   visualGroupingDisabled?: boolean
-  variant?: 'card' | 'focused' | 'default'
+
   fields?: Field[]
 
   // GroupArray specific properties
