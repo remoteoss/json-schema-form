@@ -339,13 +339,12 @@ export function buildFieldSchema(
     }
   }
   else {
+    // We did not find options, so we might have an array to generate fields from
     const fields = getFields(schema, strictInputType)
     if (fields) {
       field.fields = fields
     }
   }
-
-  // Handle array fields
 
   return field
 }
