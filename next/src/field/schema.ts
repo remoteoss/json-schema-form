@@ -64,8 +64,12 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
 
 /**
  * Get the input type for a field
+ * @param type - The schema type
+ * @param name - The name of the field
  * @param schema - The non boolean schema of the field
+ * @param strictInputType - Whether to strictly enforce the input type
  * @returns The input type for the field, based schema type. Default to 'text'
+ * @throws If the input type is missing and strictInputType is true with the exception of the root field
  */
 export function getInputType(type: JsfSchemaType, name: string, schema: NonBooleanJsfSchema, strictInputType?: boolean): FieldType {
   const presentation = schema['x-jsf-presentation']
