@@ -212,7 +212,7 @@ export interface CreateHeadlessFormOptions {
 function buildFields(params: { schema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
   const { schema, strictInputType } = params
   const fields = buildFieldObject(schema, 'root', true, strictInputType).fields || []
-  return fields
+  return fields as Field[]
 }
 
 export function createHeadlessForm(
@@ -262,14 +262,12 @@ function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
   const newFields = buildFieldObject(schema, 'root', true).fields || []
 
   // Push all new fields into existing array
-  fields.push(...newFields)
+  fields.push(...(newFields as Field[]))
 
   // Recursively update any nested fields
   for (const field of fields) {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error
-    if (field.fields && schema.properties?.[field.name]?.type === 'object') {
-      buildFieldsInPlace(field.fields, schema.properties[field.name] as JsfObjectSchema)
+    if (field.fields && schema.properties?.[field.name] && typeof schema.properties[field.name] === 'object' && (schema.properties[field.name] as JsfObjectSchema).type === 'object') {
+      buildFieldsInPlace(field.fields as Field[], schema.properties[field.name] as JsfObjectSchema)
     }
   }
 }

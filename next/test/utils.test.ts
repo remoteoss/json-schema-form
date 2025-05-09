@@ -12,6 +12,8 @@ describe('getField', () => {
       label: 'Name',
       required: false,
       isVisible: true,
+      errorMessage: {},
+      schema: {},
     },
     {
       name: 'address',
@@ -21,6 +23,8 @@ describe('getField', () => {
       label: 'Address',
       required: false,
       isVisible: true,
+      errorMessage: {},
+      schema: {},
       fields: [
         {
           name: 'street',
@@ -30,6 +34,8 @@ describe('getField', () => {
           label: 'Street',
           required: false,
           isVisible: true,
+          errorMessage: {},
+          schema: {},
         },
         {
           name: 'city',
@@ -39,6 +45,8 @@ describe('getField', () => {
           label: 'City',
           required: false,
           isVisible: true,
+          errorMessage: {},
+          schema: {},
         },
       ],
     },
@@ -81,6 +89,8 @@ describe('getField', () => {
         label: 'Level 1',
         required: false,
         isVisible: true,
+        errorMessage: {},
+        schema: {},
         fields: [
           {
             name: 'level2',
@@ -90,6 +100,8 @@ describe('getField', () => {
             label: 'Level 2',
             required: false,
             isVisible: true,
+            errorMessage: {},
+            schema: {},
             fields: [
               {
                 name: 'level3',
@@ -99,6 +111,8 @@ describe('getField', () => {
                 label: 'Level 3',
                 required: false,
                 isVisible: true,
+                errorMessage: {},
+                schema: {},
               },
             ],
           },

@@ -35,7 +35,7 @@ export interface FieldSelect extends BaseField {
 
 export interface FieldTextarea extends BaseField {
   type: 'textarea'
-  maxLength: number
+  maxLength?: number
   minLength?: number
 }
 
@@ -49,7 +49,7 @@ export interface FieldDate extends BaseField {
 
 export interface FieldText extends BaseField {
   type: 'text'
-  maxLength: number
+  maxLength?: number
   maskSecret?: number
 }
 
@@ -62,6 +62,8 @@ export interface FieldRadio extends BaseField {
 
 export interface FieldNumber extends BaseField {
   type: 'number'
+  minimum?: number
+  maximum?: number
 }
 
 export interface FieldMoney extends BaseField {
@@ -80,7 +82,7 @@ export interface FieldCheckbox extends BaseField {
 
 export interface FieldEmail extends BaseField {
   type: 'email'
-  maxLength: number
+  maxLength?: number
   format: 'email'
 }
 
@@ -108,6 +110,10 @@ export interface GroupArrayField extends BaseField {
   addFieldText: string
 }
 
+export interface FieldCountry extends BaseField {
+  type: 'country'
+}
+
 export type Field =
   | FieldSelect
   | FieldTextarea
@@ -121,3 +127,4 @@ export type Field =
   | FieldFile
   | FieldFieldSet
   | GroupArrayField
+  | FieldCountry

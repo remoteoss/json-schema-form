@@ -39,7 +39,7 @@ export function getField(fields: Field[], name: string, ...subNames: string[]) {
     if (!field?.fields) {
       return undefined
     }
-    return getField(field.fields, subNames[0], ...subNames.slice(1))
+    return getField(field.fields as Field[], subNames[0], ...subNames.slice(1))
   }
   return field
 }

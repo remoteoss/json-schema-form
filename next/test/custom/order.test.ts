@@ -1,3 +1,4 @@
+import type { FieldFieldSet } from '../../src/field/type'
 import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
@@ -43,7 +44,7 @@ describe('custom order', () => {
     const mainKeys = form.fields.map(field => field.name)
     expect(mainKeys).toEqual(['name', 'address'])
 
-    const addressField = form.fields.find(field => field.name === 'address')
+    const addressField = form.fields.find(field => field.name === 'address') as FieldFieldSet
     if (addressField === undefined)
       throw new Error('Address field not found')
 

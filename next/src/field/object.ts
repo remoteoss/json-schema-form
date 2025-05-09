@@ -1,5 +1,5 @@
 import type { JsfObjectSchema } from '../types'
-import type { Field } from './type'
+import type { Field, FieldFile } from './type'
 import { setCustomOrder } from '../custom/order'
 import { buildFieldSchema } from './schema'
 
@@ -23,7 +23,7 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
 
   const orderedFields = setCustomOrder({ fields, schema })
 
-  const field: Field = {
+  const field = {
     ...schema['x-jsf-presentation'],
     type: schema['x-jsf-presentation']?.inputType || 'fieldset',
     inputType: schema['x-jsf-presentation']?.inputType || 'fieldset',
@@ -32,7 +32,7 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
     required,
     fields: orderedFields,
     isVisible: true,
-  }
+  } as Field
 
   if (schema.title !== undefined) {
     field.label = schema.title
@@ -43,7 +43,7 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
   }
 
   if (schema['x-jsf-presentation']?.accept) {
-    field.accept = schema['x-jsf-presentation']?.accept
+    (field as FieldFile).accept = schema['x-jsf-presentation']?.accept
   }
 
   return field
