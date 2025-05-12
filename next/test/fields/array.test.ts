@@ -46,7 +46,7 @@ describe('buildFieldArray', () => {
     expect(arrayField?.required).toBe(true)
   })
 
-  it('should handle arrays with complex object items', () => {
+  it('should handle arrays with object items (fields) inside', () => {
     const schema: JsfSchema = {
       type: 'array',
       items: {
