@@ -31,21 +31,21 @@ export interface ValidationResult {
 }
 
 /**
- * Remove composition keywords and their indices as well as conditional keywords from the path
- * @param path - The path to clean
- * @returns The cleaned path
- * @example
- * ```ts
- * cleanErrorPath(['some_object','allOf', 0, 'then', 'field'])
- * // ['some_object', 'field']
- * ```
+ * @param path - The path to transform
+ * @returns The transformed path
+ * Transforms a validation error path in two ways:
+ * 1. Removes composition keywords (allOf, anyOf, oneOf) and conditional keywords (then, else)
+ * 2. Converts array paths by removing "items" keywords but keeping indices
+ *
+ * Example: ['some_object','allOf', 0, 'then', 'items', 3, 'field'] -> ['some_object', 3, 'field']
  */
-function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
-  const result: ValidationErrorPath = []
+function transformErrorPath(path: ValidationErrorPath): Array<string | number> {
+  const result: Array<string | number> = []
 
   for (let i = 0; i < path.length; i++) {
     const segment = path[i]
 
+    // Skip composition keywords and their indices
     if (['allOf', 'anyOf', 'oneOf'].includes(segment as string)) {
       if (i + 1 < path.length && typeof path[i + 1] === 'number') {
         i++
@@ -53,17 +53,27 @@ function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
       continue
     }
 
+    // Skip conditional keywords
     if (segment === 'then' || segment === 'else') {
       continue
     }
 
-    result.push(segment)
+    // Skip 'items' but keep the array index that follows
+    if (segment === 'items' && typeof path[i + 1] === 'number') {
+      i++
+      result.push(path[i] as number)
+    }
+    else {
+      result.push(segment as string)
+    }
   }
 
   return result
 }
 
 /**
+ * @param errors - The validation errors
+ * @returns The form errors
  * Transform validation errors into an object with the field names as keys and the error messages as values.
  * For nested fields, creates a nested object structure rather than using dot notation.
  * When multiple errors exist for the same field, the last error message is used.
@@ -83,63 +93,53 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
     return null
   }
 
-  // Use a more functional approach with reduce
-  const result = errors.reduce<FormErrors>((result, error) => {
+  const result: FormErrors = {}
+
+  for (const error of errors) {
     const { path } = error
 
     // Handle schema-level errors (empty path)
     if (path.length === 0) {
       result[''] = error.message
-      return result
+      continue
     }
 
-    // Clean the path to remove intermediate composition structures
-    const cleanedPath = cleanErrorPath(path)
+    const segments = transformErrorPath(path)
     let current = result
 
-    // Process all segments except the last one (which will hold the message)
-    cleanedPath.slice(0, -1).forEach((segment) => {
-      // Special case for group-arrays where the next segment is `items` followed by the index of the item
-      if (cleanedPath[1] === 'items' && typeof cleanedPath[2] === 'number') {
-        const [arrayName, _, arrayIndex] = cleanedPath
+    for (let i = 0; i < segments.length - 1; i++) {
+      const segment = segments[i]
 
-        if (!(arrayName in result) || typeof result[arrayName] === 'string') {
-          result[arrayName] = [] as Array<null | FormErrors>
+      if (typeof segment === 'number') {
+        if (!Array.isArray(current)) {
+          throw new TypeError(`Expected an array at path: ${segments.slice(0, i).join('.')}`)
         }
 
-        const array = result[arrayName] as Array<null | FormErrors>
-
-        // Create a new object for this index if it doesn't exist
-        if (array[arrayIndex] == null) {
-          array[arrayIndex] = {}
-        }
-
-        // Update current to point to the array item object
-        current = array[arrayIndex] as FormErrors
-      }
-      else {
-        // If this segment doesn't exist yet or is currently a string (from a previous error),
-        // initialize it as an object
-        if (!(segment in current) || typeof current[segment] === 'string') {
+        if (!current[segment]) {
           current[segment] = {}
         }
 
         current = current[segment] as FormErrors
       }
-    })
+      else {
+        if (typeof segments[i + 1] === 'number') {
+          if (!(segment in current)) {
+            current[segment] = []
+          }
+        }
+        else if (!(segment in current) || typeof current[segment] === 'string') {
+          current[segment] = {}
+        }
 
-    // Set the message at the final level
-    if (cleanedPath.length > 0) {
-      const lastSegment = cleanedPath[cleanedPath.length - 1]
+        current = current[segment] as FormErrors
+      }
+    }
+
+    if (segments.length > 0) {
+      const lastSegment = segments[segments.length - 1]
       current[lastSegment] = error.message
     }
-    else {
-      // Fallback for unexpected path structures
-      result[''] = error.message
-    }
-
-    return result
-  }, {})
+  }
 
   return result
 }

@@ -376,7 +376,7 @@ describe('buildFieldArray', () => {
       })
     })
 
-    it.skip('handles validation of nested group-arrays', () => {
+    it('handles validation of nested group-arrays', () => {
       const schema: JsfObjectSchema = {
         type: 'object',
         properties: {
@@ -398,7 +398,7 @@ describe('buildFieldArray', () => {
                   },
                 },
               },
-              required: ['name'],
+              required: ['name', 'employees'],
             },
           },
         },
@@ -409,18 +409,28 @@ describe('buildFieldArray', () => {
       // Test validation with nested array errors
       const data = {
         departments: [
+          // missing employees
           {
             name: 'Engineering',
+          },
+          // missing name
+          {
             employees: [
-              { name: 'Alice' }, // missing role
-              { name: 'Bob', role: 'Developer' }, // valid
-              { role: 'Manager' }, // missing name
+              { name: 'Charlie', role: 'Designer' }, // valid
+            ],
+          },
+          // Valid
+          {
+            name: 'Sales',
+            employees: [
+              { name: 'Alice', role: 'Manager' },
             ],
           },
           {
-          // missing name
+            name: 'Customer Support',
             employees: [
-              { name: 'Charlie', role: 'Designer' }, // valid
+              { name: 'Bob', role: 'Support Agent' }, // valid
+              { name: 'Peter' }, // missing role
             ],
           },
         ],
@@ -431,14 +441,17 @@ describe('buildFieldArray', () => {
       expect(result.formErrors).toEqual({
         departments: [
           {
-            employees: [
-              { role: 'Required field' },
-              undefined,
-              { name: 'Required field' },
-            ],
+            employees: 'Required field',
           },
           {
             name: 'Required field',
+          },
+          undefined,
+          {
+            employees: [
+              undefined,
+              { role: 'Required field' },
+            ],
           },
         ],
       })
