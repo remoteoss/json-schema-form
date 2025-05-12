@@ -110,7 +110,7 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
         const array = result[arrayName] as Array<null | FormErrors>
 
         // Create a new object for this index if it doesn't exist
-        if (array[arrayIndex] === null || array[arrayIndex] === undefined) {
+        if (array[arrayIndex] == null) {
           array[arrayIndex] = {}
         }
 
