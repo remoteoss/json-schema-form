@@ -78,7 +78,7 @@ function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
  * Schema-level error
  * { '': 'The value must match at least one schema' }
  */
-function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[], _value: SchemaValue = {}): FormErrors | null {
+function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): FormErrors | null {
   if (errors.length === 0) {
     return null
   }
@@ -205,7 +205,7 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const errorsWithMessages = addErrorMessages(errors)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
-  const formErrors = validationErrorsToFormErrors(processedErrors, value)
+  const formErrors = validationErrorsToFormErrors(processedErrors)
 
   if (formErrors) {
     result.formErrors = formErrors
