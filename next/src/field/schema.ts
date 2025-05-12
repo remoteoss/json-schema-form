@@ -190,7 +190,7 @@ function getObjectFields(schema: NonBooleanJsfSchema, strictInputType?: boolean)
     }
   }
 
-  const orderedFields = setCustomOrder({ fields, schema })
+  const orderedFields = setCustomOrder(schema, fields)
 
   return orderedFields
 }

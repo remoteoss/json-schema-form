@@ -1,19 +1,14 @@
 import type { Field } from '../field/type'
 import type { JsfSchema } from '../types'
 
-function sort(params: {
-  fields: Field[]
-  order: string[]
-}): Field[] {
-  const { fields: prevFields, order } = params
-
+function sort(fields: Field[], order: string[]): Field[] {
   // Map from field name to expected index
   const indexMap: Record<string, number | undefined> = {}
   order.forEach((key, index) => {
     indexMap[key] = index
   })
 
-  const nextFields = prevFields.sort((a, b) => {
+  const nextFields = fields.sort((a, b) => {
     // Compare by index
     const indexA = indexMap[a.name] ?? Infinity
     const indexB = indexMap[b.name] ?? Infinity
@@ -24,7 +19,7 @@ function sort(params: {
       return indexA - indexB
 
     // If not specified, maintain original relative order
-    return prevFields.indexOf(a) - prevFields.indexOf(b)
+    return fields.indexOf(a) - fields.indexOf(b)
   })
 
   return nextFields
@@ -33,12 +28,7 @@ function sort(params: {
 /**
  * Sort fields by schema's `x-jsf-order`
  */
-export function setCustomOrder(params: {
-  schema: JsfSchema
-  fields: Field[]
-}): Field[] {
-  const { schema, fields } = params
-
+export function setCustomOrder(schema: JsfSchema, fields: Field[]): Field[] {
   // TypeScript does not yield if we remove this check,
   // but it's only because our typing is likely not right.
   // See internal discussion:
@@ -47,7 +37,7 @@ export function setCustomOrder(params: {
     throw new Error('Schema must be an object')
 
   if (schema['x-jsf-order'] !== undefined)
-    return sort({ fields, order: schema['x-jsf-order'] })
+    return sort(fields, schema['x-jsf-order'])
 
   return fields
 }
