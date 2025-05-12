@@ -9,6 +9,8 @@ export interface Field {
   label?: string
   description?: string
   fields?: Field[]
+  // @deprecated in favor of inputType,
+  type: FieldType
   inputType: FieldType
   required: boolean
   jsonType: JsfSchemaType

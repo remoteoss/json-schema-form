@@ -19,6 +19,7 @@ describe('buildFieldArray', () => {
 
     expect(field).toEqual({
       inputType: 'group-array',
+      type: 'group-array',
       jsonType: 'array',
       isVisible: true,
       name: 'root',
@@ -27,6 +28,7 @@ describe('buildFieldArray', () => {
       fields: [
         {
           inputType: 'text',
+          type: 'text',
           jsonType: 'string',
           name: 'name',
           isVisible: true,
@@ -66,6 +68,7 @@ describe('buildFieldArray', () => {
 
     expect(arrayField).toEqual({
       inputType: 'group-array',
+      type: 'group-array',
       jsonType: 'array',
       isVisible: true,
       name: 'arrayProperty',
@@ -74,6 +77,7 @@ describe('buildFieldArray', () => {
       fields: [
         {
           inputType: 'text',
+          type: 'text',
           jsonType: 'string',
           name: 'name',
           isVisible: true,
@@ -101,6 +105,7 @@ describe('buildFieldArray', () => {
 
     expect(field).toEqual(expect.objectContaining({
       inputType: 'group-array',
+      type: 'group-array',
       jsonType: 'array',
       isVisible: true,
       name: 'objectArray',
@@ -108,6 +113,7 @@ describe('buildFieldArray', () => {
       fields: [
         {
           inputType: 'text',
+          type: 'text',
           jsonType: 'string',
           name: 'name',
           label: 'Name',
@@ -117,6 +123,7 @@ describe('buildFieldArray', () => {
         },
         {
           inputType: 'number',
+          type: 'number',
           jsonType: 'number',
           name: 'age',
           label: 'Age',
@@ -149,6 +156,7 @@ describe('buildFieldArray', () => {
 
     expect(field).toEqual({
       inputType: 'group-array',
+      type: 'group-array',
       jsonType: 'array',
       isVisible: true,
       name: 'tasksArray',
@@ -160,6 +168,7 @@ describe('buildFieldArray', () => {
       fields: [
         {
           inputType: 'text',
+          type: 'text',
           jsonType: 'string',
           name: 'title',
           isVisible: true,
@@ -196,6 +205,7 @@ describe('buildFieldArray', () => {
 
     expect(field).toEqual({
       inputType: 'group-array',
+      type: 'group-array',
       jsonType: 'array',
       isVisible: true,
       name: 'matrix',
@@ -205,6 +215,7 @@ describe('buildFieldArray', () => {
       fields: [
         {
           inputType: 'group-array',
+          type: 'group-array',
           jsonType: 'array',
           isVisible: true,
           name: 'nested',
@@ -215,6 +226,7 @@ describe('buildFieldArray', () => {
           fields: [
             {
               inputType: 'text',
+              type: 'text',
               jsonType: 'string',
               name: 'name',
               required: false,
@@ -265,6 +277,7 @@ describe('buildFieldArray', () => {
 
     expect(field).toEqual({
       'inputType': 'group-array',
+      'type': 'group-array',
       'jsonType': 'array',
       'label': 'My array',
       'description': 'My array description',
@@ -280,6 +293,7 @@ describe('buildFieldArray', () => {
       'fields': [
         {
           inputType: 'text',
+          type: 'text',
           jsonType: 'string',
           name: 'name',
           required: false,

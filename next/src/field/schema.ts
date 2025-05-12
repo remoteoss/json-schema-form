@@ -303,6 +303,7 @@ export function buildFieldSchema(
     // Add required field properties
     name,
     inputType,
+    type: inputType,
     jsonType: type || schema.type,
     required,
     isVisible: true,

@@ -17,6 +17,7 @@ describe('fields', () => {
     expect(fields).toEqual([
       {
         inputType: 'text',
+        type: 'text',
         jsonType: 'string',
         name: 'name',
         label: 'Name',
@@ -41,6 +42,7 @@ describe('fields', () => {
     expect(fields).toEqual([
       {
         inputType: 'number',
+        type: 'number',
         jsonType: 'number',
         name: 'age',
         label: 'Age',
@@ -49,6 +51,7 @@ describe('fields', () => {
       },
       {
         inputType: 'number',
+        type: 'number',
         jsonType: 'number',
         name: 'amount',
         label: 'Amount',
@@ -75,6 +78,7 @@ describe('fields', () => {
 
     expect(field).toEqual({
       inputType: 'fieldset',
+      type: 'fieldset',
       isVisible: true,
       name: 'user',
       label: 'User',
@@ -84,6 +88,7 @@ describe('fields', () => {
       fields: [
         {
           inputType: 'text',
+          type: 'text',
           isVisible: true,
           jsonType: 'string',
           name: 'name',
@@ -92,6 +97,7 @@ describe('fields', () => {
         },
         {
           inputType: 'number',
+          type: 'number',
           isVisible: true,
           jsonType: 'number',
           name: 'age',
@@ -100,6 +106,7 @@ describe('fields', () => {
         },
         {
           inputType: 'text',
+          type: 'text',
           isVisible: true,
           jsonType: 'string',
           name: 'email',
@@ -131,6 +138,7 @@ describe('fields', () => {
     expect(fields).toEqual([
       {
         inputType: 'file',
+        type: 'file',
         jsonType: 'string',
         isVisible: true,
         name: 'file',
@@ -175,6 +183,7 @@ describe('fields', () => {
     expect(fields).toEqual([
       {
         inputType: 'fieldset',
+        type: 'fieldset',
         isVisible: true,
         jsonType: 'object',
         name: 'address',
@@ -183,6 +192,7 @@ describe('fields', () => {
         fields: [
           {
             inputType: 'text',
+            type: 'text',
             isVisible: true,
             jsonType: 'string',
             name: 'street',
@@ -191,6 +201,7 @@ describe('fields', () => {
           },
           {
             inputType: 'text',
+            type: 'text',
             isVisible: true,
             jsonType: 'string',
             name: 'city',
@@ -215,6 +226,7 @@ describe('fields', () => {
     expect(fields).toEqual([
       {
         inputType: 'text',
+        type: 'text',
         jsonType: 'string',
         name: 'user_email',
         required: false,
@@ -246,6 +258,7 @@ describe('fields', () => {
       expect(fields).toEqual([
         {
           inputType: 'radio',
+          type: 'radio',
           jsonType: 'string',
           isVisible: true,
           name: 'status',
@@ -276,6 +289,7 @@ describe('fields', () => {
       expect(fields).toEqual([
         {
           inputType: 'radio',
+          type: 'radio',
           jsonType: undefined,
           isVisible: true,
           name: 'status',
@@ -315,6 +329,7 @@ describe('fields', () => {
       expect(fields).toEqual([
         {
           inputType: 'radio',
+          type: 'radio',
           jsonType: 'string',
           isVisible: true,
           name: 'status',
