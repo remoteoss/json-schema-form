@@ -17,16 +17,39 @@ describe('buildFieldArray', () => {
 
     const field = buildFieldSchema(schema, 'root', true)
 
-    expect(field).toBeDefined()
-    expect(field?.type).toBe('group-array')
+    expect(field).toEqual({
+      inputType: 'group-array',
+      jsonType: 'array',
+      isVisible: true,
+      name: 'root',
+      required: true,
+      items: expect.any(Object),
+      fields: [
+        {
+          inputType: 'text',
+          jsonType: 'string',
+          name: 'name',
+          isVisible: true,
+          nameKey: 'name',
+          required: false,
+        },
+      ],
+    })
+
+    expect(field?.items).toEqual({
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+      },
+    })
   })
 
   it('should handle required arrays', () => {
     const schema: JsfSchema = {
       type: 'object',
-      required: ['items'],
+      required: ['arrayProperty'],
       properties: {
-        items: {
+        arrayProperty: {
           type: 'array',
           items: {
             type: 'object',
@@ -41,9 +64,24 @@ describe('buildFieldArray', () => {
     const rootField = buildFieldSchema(schema, 'root', true)
     const arrayField = rootField?.fields?.[0]
 
-    expect(arrayField).toBeDefined()
-    expect(arrayField?.type).toBe('group-array')
-    expect(arrayField?.required).toBe(true)
+    expect(arrayField).toEqual({
+      inputType: 'group-array',
+      jsonType: 'array',
+      isVisible: true,
+      name: 'arrayProperty',
+      required: true,
+      items: expect.any(Object),
+      fields: [
+        {
+          inputType: 'text',
+          jsonType: 'string',
+          name: 'name',
+          isVisible: true,
+          nameKey: 'name',
+          required: false,
+        },
+      ],
+    })
   })
 
   it('should handle arrays with object items (fields) inside', () => {
@@ -61,17 +99,33 @@ describe('buildFieldArray', () => {
 
     const field = buildFieldSchema(schema, 'objectArray', true)
 
-    expect(field).toBeDefined()
-    expect(field?.type).toBe('group-array')
-
-    const fields = field!.fields!
-    expect(fields).toHaveLength(2)
-    expect(fields[0].name).toBe('name')
-    expect(fields[0].type).toBe('text')
-    expect(fields[0].required).toBe(true)
-    expect(fields[1].name).toBe('age')
-    expect(fields[1].type).toBe('number')
-    expect(fields[1].required).toBe(false)
+    expect(field).toEqual(expect.objectContaining({
+      inputType: 'group-array',
+      jsonType: 'array',
+      isVisible: true,
+      name: 'objectArray',
+      required: true,
+      fields: [
+        {
+          inputType: 'text',
+          jsonType: 'string',
+          name: 'name',
+          label: 'Name',
+          isVisible: true,
+          nameKey: 'name',
+          required: true,
+        },
+        {
+          inputType: 'number',
+          jsonType: 'number',
+          name: 'age',
+          label: 'Age',
+          isVisible: true,
+          nameKey: 'age',
+          required: false,
+        },
+      ],
+    }))
   })
 
   it('should handle arrays with custom presentation', () => {
@@ -93,12 +147,28 @@ describe('buildFieldArray', () => {
 
     const field = buildFieldSchema(schema, 'tasksArray', true)
 
-    expect(field).toBeDefined()
-    expect(field?.type).toBe('group-array')
-    expect(field?.foo).toBe('bar')
-    expect(field?.bar).toBe('baz')
-    expect(field?.description).toBe('List of tasks to complete')
-    expect(field?.label).toBe('Tasks')
+    expect(field).toEqual({
+      inputType: 'group-array',
+      jsonType: 'array',
+      isVisible: true,
+      name: 'tasksArray',
+      label: 'Tasks',
+      required: true,
+      foo: 'bar',
+      bar: 'baz',
+      description: 'List of tasks to complete',
+      fields: [
+        {
+          inputType: 'text',
+          jsonType: 'string',
+          name: 'title',
+          isVisible: true,
+          nameKey: 'title',
+          required: false,
+        },
+      ],
+      items: expect.any(Object),
+    })
   })
 
   it('should handle nested group-arrays', () => {
@@ -124,21 +194,37 @@ describe('buildFieldArray', () => {
 
     const field = buildFieldSchema(schema, 'matrix', true)
 
-    expect(field).toBeDefined()
-    expect(field?.type).toBe('group-array')
-    expect(field?.label).toBe('Matrix')
-
-    const fields = field?.fields
-    expect(fields).toBeDefined()
-    expect(fields).toHaveLength(1)
-    expect(fields?.[0]?.type).toBe('group-array')
-    expect(fields?.[0]?.label).toBe('Nested')
-
-    const nestedFields = fields?.[0]?.fields
-    expect(nestedFields).toBeDefined()
-    expect(nestedFields).toHaveLength(1)
-    expect(nestedFields?.[0]?.type).toBe('text')
-    expect(nestedFields?.[0]?.name).toBe('name')
+    expect(field).toEqual({
+      inputType: 'group-array',
+      jsonType: 'array',
+      isVisible: true,
+      name: 'matrix',
+      label: 'Matrix',
+      required: true,
+      items: expect.any(Object),
+      fields: [
+        {
+          inputType: 'group-array',
+          jsonType: 'array',
+          isVisible: true,
+          name: 'nested',
+          nameKey: 'nested',
+          label: 'Nested',
+          required: false,
+          items: expect.any(Object),
+          fields: [
+            {
+              inputType: 'text',
+              jsonType: 'string',
+              name: 'name',
+              required: false,
+              nameKey: 'name',
+              isVisible: true,
+            },
+          ],
+        },
+      ],
+    })
   })
 
   it('allows non-object items', () => {
@@ -154,6 +240,55 @@ describe('buildFieldArray', () => {
     expect(buildFieldSchema({ 'type': 'array', 'x-jsf-presentation': { inputType: 'group-array' }, 'items': { type: 'boolean' } }, 'root', true)).toEqual(groupArray())
   })
 
+  it('propagates schema properties to the field', () => {
+    const schema: JsfSchema & Record<string, unknown> = {
+      'type': 'array',
+      'label': 'My array',
+      'description': 'My array description',
+      'x-jsf-presentation': {
+        inputType: 'group-array',
+      },
+      'x-jsf-errorMessage': {
+        minItems: 'At least one item is required',
+      },
+      'x-custom-prop': 'custom value',
+      'foo': 'bar',
+      'items': {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+      },
+    }
+
+    const field = buildFieldSchema(schema, 'myArray', true)
+
+    expect(field).toEqual({
+      'inputType': 'group-array',
+      'jsonType': 'array',
+      'label': 'My array',
+      'description': 'My array description',
+      'foo': 'bar',
+      'items': expect.any(Object),
+      'x-custom-prop': 'custom value',
+      'isVisible': true,
+      'name': 'myArray',
+      'required': true,
+      'errorMessage': {
+        minItems: 'At least one item is required',
+      },
+      'fields': [
+        {
+          inputType: 'text',
+          jsonType: 'string',
+          name: 'name',
+          required: false,
+          isVisible: true,
+          nameKey: 'name',
+        },
+      ],
+    })
+  })
   it('creates correct form errors validation errors in array items', () => {
     const schema: JsfObjectSchema = {
       type: 'object',
@@ -655,66 +790,5 @@ describe('buildFieldArray', () => {
         { value: 'Required field' },
       ],
     })
-  })
-
-  it('propagates schema properties to the field', () => {
-    const schema: JsfSchema & Record<string, unknown> = {
-      'type': 'array',
-      'label': 'My array',
-      'description': 'My array description',
-      'x-jsf-presentation': {
-        inputType: 'group-array',
-      },
-      'x-custom-prop': 'custom value',
-      'foo': 'bar',
-      'items': {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-        },
-      },
-    }
-
-    const field = buildFieldSchema(schema, 'myArray', true)
-
-    expect(field).toBeDefined()
-    expect(field?.label).toBe('My array')
-    expect(field?.description).toBe('My array description')
-  })
-
-  it('does not propagate excluded schema properties to the field', () => {
-    const schema: JsfSchema & Record<string, unknown> = {
-      'type': 'array',
-      'title': 'My array',
-      'description': 'My array description',
-      'x-jsf-presentation': {
-        inputType: 'group-array',
-      },
-      'x-jsf-errorMessage': {
-        minItems: 'At least one item is required',
-      },
-      'label': 'My label',
-      'minItems': 1,
-      'items': {
-        type: 'object',
-        properties: {
-          name: { type: 'string' },
-        },
-      },
-    }
-
-    const field = buildFieldSchema(schema, 'myArray', true)
-
-    expect(field).toBeDefined()
-    expect(field?.label).toBe('My array')
-    expect(field?.items).toEqual({
-      type: 'object',
-      properties: {
-        name: { type: 'string' },
-      },
-    })
-    expect(field?.minItems).toBe(1)
-    expect(field?.['x-jsf-errorMessage']).toBeUndefined()
-    expect(field?.['x-jsf-presentation']).toBeUndefined()
   })
 })

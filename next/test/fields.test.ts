@@ -16,7 +16,6 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'text',
         inputType: 'text',
         jsonType: 'string',
         name: 'name',
@@ -41,7 +40,6 @@ describe('fields', () => {
     // Both fields should have the same input type
     expect(fields).toEqual([
       {
-        type: 'number',
         inputType: 'number',
         jsonType: 'number',
         name: 'age',
@@ -50,7 +48,6 @@ describe('fields', () => {
         isVisible: true,
       },
       {
-        type: 'number',
         inputType: 'number',
         jsonType: 'number',
         name: 'amount',
@@ -77,7 +74,6 @@ describe('fields', () => {
     const field = buildFieldSchema(schema, 'user', false)
 
     expect(field).toEqual({
-      type: 'fieldset',
       inputType: 'fieldset',
       isVisible: true,
       name: 'user',
@@ -87,7 +83,6 @@ describe('fields', () => {
       jsonType: 'object',
       fields: [
         {
-          type: 'text',
           inputType: 'text',
           isVisible: true,
           jsonType: 'string',
@@ -96,7 +91,6 @@ describe('fields', () => {
           required: true,
         },
         {
-          type: 'number',
           inputType: 'number',
           isVisible: true,
           jsonType: 'number',
@@ -105,7 +99,6 @@ describe('fields', () => {
           required: false,
         },
         {
-          type: 'text',
           inputType: 'text',
           isVisible: true,
           jsonType: 'string',
@@ -137,7 +130,6 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'file',
         inputType: 'file',
         jsonType: 'string',
         isVisible: true,
@@ -182,7 +174,6 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'fieldset',
         inputType: 'fieldset',
         isVisible: true,
         jsonType: 'object',
@@ -191,7 +182,6 @@ describe('fields', () => {
         required: false,
         fields: [
           {
-            type: 'text',
             inputType: 'text',
             isVisible: true,
             jsonType: 'string',
@@ -200,7 +190,6 @@ describe('fields', () => {
             required: true,
           },
           {
-            type: 'text',
             inputType: 'text',
             isVisible: true,
             jsonType: 'string',
@@ -225,7 +214,6 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'text',
         inputType: 'text',
         jsonType: 'string',
         name: 'user_email',
@@ -257,7 +245,6 @@ describe('fields', () => {
 
       expect(fields).toEqual([
         {
-          type: 'radio',
           inputType: 'radio',
           jsonType: 'string',
           isVisible: true,
@@ -288,7 +275,6 @@ describe('fields', () => {
 
       expect(fields).toEqual([
         {
-          type: 'radio',
           inputType: 'radio',
           jsonType: undefined,
           isVisible: true,
@@ -328,7 +314,6 @@ describe('fields', () => {
 
       expect(fields).toEqual([
         {
-          type: 'radio',
           inputType: 'radio',
           jsonType: 'string',
           isVisible: true,

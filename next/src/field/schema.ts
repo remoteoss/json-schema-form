@@ -301,7 +301,6 @@ export function buildFieldSchema(
       .filter(([key]) => !excludedSchemaProps.includes(key))
       .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {}),
     // Add required field properties
-    type: inputType,
     name,
     inputType,
     jsonType: type || schema.type,
