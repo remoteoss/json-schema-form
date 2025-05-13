@@ -448,20 +448,19 @@ export const mockGroupArrayInput = {
       sex: {
         description:
           'We know sex is non-binary but for insurance and payroll purposes, we need to collect this information.',
-        enum: ['female', 'male'],
         'x-jsf-presentation': {
           inputType: 'radio',
-          options: [
-            {
-              label: 'Male',
-              value: 'male',
-            },
-            {
-              label: 'Female',
-              value: 'female',
-            },
-          ],
         },
+        oneOf: [
+          {
+            const: 'male',
+            title: 'Male',
+          },
+          {
+            const: 'female',
+            title: 'Female',
+          },
+        ],
         title: 'Child Sex',
         type: 'string',
       },
