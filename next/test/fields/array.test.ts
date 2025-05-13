@@ -786,6 +786,7 @@ describe('buildFieldArray', () => {
   // These do not work with the current group-array API where all groups share the same `fields` property which
   // makes it impossible to have different fields for each item in the array.
   // This applies to all kinds of mutations such as conditional rendering, default values, etc. and not just titles.
+  // TODO: Check internal ticket: https://linear.app/remote/issue/RMT-1616/grouparray-hide-conditional-fields
   describe.skip('mutation of array items', () => {
     // This schema describes a list of animals, where each animal has a kind which is either dog or cat and a name.
     // When the kind is dog, the name's title is set to "Dog name" and when the kind is cat, the name's title is set to "Cat name".
