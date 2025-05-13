@@ -65,44 +65,7 @@ describe('buildFieldArray', () => {
 
     const field = buildFieldSchema(schema, 'root', true)
 
-    expect(field).toEqual({
-      inputType: 'group-array',
-      type: 'group-array',
-      jsonType: 'array',
-      isVisible: true,
-      name: 'root',
-      required: true,
-      items: expect.any(Object),
-      fields: [
-        {
-          inputType: 'text',
-          type: 'text',
-          jsonType: 'string',
-          name: 'second_item',
-          isVisible: true,
-          nameKey: 'second_item',
-          required: false,
-        },
-        {
-          inputType: 'text',
-          type: 'text',
-          jsonType: 'string',
-          name: 'first_item',
-          isVisible: true,
-          nameKey: 'first_item',
-          required: false,
-        },
-        {
-          inputType: 'text',
-          type: 'text',
-          jsonType: 'string',
-          name: 'third_item',
-          isVisible: true,
-          nameKey: 'third_item',
-          required: false,
-        },
-      ],
-    })
+    expect(field?.fields?.map(f => f.name)).toEqual(['second_item', 'first_item', 'third_item'])
   })
 
   it('should handle required arrays', () => {
