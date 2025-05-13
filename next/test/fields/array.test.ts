@@ -49,14 +49,16 @@ describe('buildFieldArray', () => {
   it('should handle required arrays', () => {
     const schema: JsfSchema = {
       type: 'object',
-      required: ['arrayProperty'],
+      required: ['addresses'],
+      title: 'Address book',
       properties: {
-        arrayProperty: {
+        addresses: {
           type: 'array',
           items: {
             type: 'object',
             properties: {
               name: { type: 'string' },
+              address: { type: 'string' },
             },
           },
         },
@@ -71,7 +73,7 @@ describe('buildFieldArray', () => {
       type: 'group-array',
       jsonType: 'array',
       isVisible: true,
-      name: 'arrayProperty',
+      name: 'addresses',
       required: true,
       items: expect.any(Object),
       fields: [
@@ -82,6 +84,15 @@ describe('buildFieldArray', () => {
           name: 'name',
           isVisible: true,
           nameKey: 'name',
+          required: false,
+        },
+        {
+          inputType: 'text',
+          type: 'text',
+          jsonType: 'string',
+          name: 'address',
+          isVisible: true,
+          nameKey: 'address',
           required: false,
         },
       ],
