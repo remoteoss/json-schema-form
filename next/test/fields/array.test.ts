@@ -46,6 +46,65 @@ describe('buildFieldArray', () => {
     })
   })
 
+  it('respects x-jsf-order', () => {
+    const schema: JsfSchema = {
+      'type': 'array',
+      'x-jsf-presentation': {
+        inputType: 'group-array',
+      },
+      'items': {
+        'type': 'object',
+        'properties': {
+          first_item: { type: 'string' },
+          second_item: { type: 'string' },
+          third_item: { type: 'string' },
+        },
+        'x-jsf-order': ['second_item', 'first_item', 'third_item'],
+      },
+    }
+
+    const field = buildFieldSchema(schema, 'root', true)
+
+    expect(field).toEqual({
+      inputType: 'group-array',
+      type: 'group-array',
+      jsonType: 'array',
+      isVisible: true,
+      name: 'root',
+      required: true,
+      items: expect.any(Object),
+      fields: [
+        {
+          inputType: 'text',
+          type: 'text',
+          jsonType: 'string',
+          name: 'second_item',
+          isVisible: true,
+          nameKey: 'second_item',
+          required: false,
+        },
+        {
+          inputType: 'text',
+          type: 'text',
+          jsonType: 'string',
+          name: 'first_item',
+          isVisible: true,
+          nameKey: 'first_item',
+          required: false,
+        },
+        {
+          inputType: 'text',
+          type: 'text',
+          jsonType: 'string',
+          name: 'third_item',
+          isVisible: true,
+          nameKey: 'third_item',
+          required: false,
+        },
+      ],
+    })
+  })
+
   it('should handle required arrays', () => {
     const schema: JsfSchema = {
       type: 'object',

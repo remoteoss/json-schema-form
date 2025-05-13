@@ -227,7 +227,9 @@ function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean):
     }
   }
 
-  return fields
+  const orderedFields = setCustomOrder(schema.items, fields)
+
+  return orderedFields
 }
 
 /**
