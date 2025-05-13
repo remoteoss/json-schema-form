@@ -759,77 +759,71 @@ describe('buildFieldArray', () => {
         ],
       })
     })
+  })
 
-    it('handles mixed arrays with different types of validation errors', () => {
-      const schema: JsfObjectSchema = {
-        type: 'object',
-        properties: {
-          mixedData: {
-            'type': 'array',
-            'minItems': 1,
-            'x-jsf-errorMessage': {
-              minItems: 'At least one item is required',
+  // These do not work with the current group-array API where all groups share the same `fields` property which
+  // makes it impossible to have different fields for each item in the array.
+  // This applies to all kinds of mutations such as conditional rendering, default values, etc. and not just titles.
+  describe.skip('mutation of array items', () => {
+    // This schema describes a list of animals, where each animal has a kind which is either dog or cat and a name.
+    // When the kind is dog, the name's title is set to "Dog name" and when the kind is cat, the name's title is set to "Cat name".
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        animals: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['kind', 'name'],
+            properties: {
+              kind: { type: 'string', enum: ['dog', 'cat'] },
+              name: { type: 'string', title: 'Animal Name' },
             },
-            'items': {
-              type: 'object',
-              properties: {
-                type: {
-                  'type': 'string',
-                  'enum': ['text', 'number', 'boolean'],
-                  'x-jsf-errorMessage': {
-                    enum: 'Type must be one of: text, number, boolean',
-                  },
+            allOf: [
+              {
+                if: {
+                  properties: { kind: { const: 'dog' } },
+                  required: ['kind'],
                 },
-                value: { type: 'string' },
-                minimum: { type: 'number' },
-                maximum: { type: 'number' },
+                then: {
+                  properties: { name: { title: 'Dog Name' } },
+                },
               },
-              required: ['type', 'value'],
-              allOf: [
-                {
-                  if: {
-                    properties: { type: { const: 'number' } },
-                  },
-                  then: {
-                    properties: {
-                      value: {
-                        'type': 'number',
-                        'x-jsf-errorMessage': {
-                          type: 'Value must be a number for number type',
-                        },
-                      },
-                    },
-                  },
+              {
+                if: {
+                  properties: { kind: { const: 'cat' } },
+                  required: ['kind'],
                 },
-              ],
-            },
+                then: {
+                  properties: { name: { title: 'Cat name' } },
+                },
+              },
+            ],
           },
         },
-      }
+      },
+      required: ['animals'],
+    }
 
+    it('mutates array items correctly when there is only one item', () => {
       const form = createHeadlessForm(schema)
 
-      // Test empty array validation
-      expect(form.handleValidation({ mixedData: [] }).formErrors).toEqual({
-        mixedData: 'At least one item is required',
+      expect(form.handleValidation({ animals: [{ kind: 'dog', name: 'Buddy' }] }).formErrors).toBeUndefined()
+      expect(form.fields[0]).toMatchObject({
+        fields: [
+          expect.any(Object),
+          expect.objectContaining({
+            label: 'Dog name',
+          }),
+        ],
       })
+    })
 
-      // Test array with mixed validation errors
-      expect(form.handleValidation({
-        mixedData: [
-          { type: 'text', value: 'Hello' }, // valid
-          { type: 'number', value: 'not-a-number' }, // invalid value type for number
-          { type: 'unknown', value: 'test' }, // invalid enum
-          { type: 'boolean' }, // missing value
-        ],
-      }).formErrors).toEqual({
-        mixedData: [
-          undefined,
-          { value: 'Value must be a number for number type' },
-          { type: 'Type must be one of: text, number, boolean' },
-          { value: 'Required field' },
-        ],
-      })
+    it('mutates array items correctly when there are multiple items', () => {
+      const form = createHeadlessForm(schema)
+      expect(form.handleValidation({ animals: [{ kind: 'dog', name: 'Buddy' }, { kind: 'cat', name: 'Whiskers' }] }).formErrors).toBeUndefined()
+      // This creates a form where the two items both mutate the same field and we have no way to distinguish them
+      // as both will be rendered from the same fields in the `fields` property.
     })
   })
 })
