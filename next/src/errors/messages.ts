@@ -20,7 +20,7 @@ export function getErrorMessage(
         return 'Please acknowledge this field'
       }
       return 'Required field'
-    case 'valid':
+    case 'forbidden':
       return 'Not allowed'
     case 'const':
       return `The only accepted value is ${JSON.stringify(schema.const)}.`
