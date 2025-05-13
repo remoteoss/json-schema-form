@@ -104,7 +104,7 @@ describe('schema composition validators', () => {
         }
         const errors = validateSchema('foo', schema)
         expect(errors).toHaveLength(1)
-        expect(errors[0].validation).toBe('valid')
+        expect(errors[0].validation).toBe('forbidden')
       })
 
       it('should fail when all schemas are false', () => {
@@ -113,7 +113,7 @@ describe('schema composition validators', () => {
         }
         const errors = validateSchema('foo', schema)
         expect(errors).toHaveLength(1)
-        expect(errors[0].validation).toBe('valid')
+        expect(errors[0].validation).toBe('forbidden')
       })
     })
   })

@@ -5,7 +5,7 @@ import { errorLike } from '../test-utils'
 describe('boolean schema validation', () => {
   it('returns an error if the value is false', () => {
     const schema = { type: 'object', properties: { name: false } }
-    expect(validateSchema({ name: 'anything' }, schema)).toEqual([errorLike({ path: ['name'], validation: 'valid' })])
+    expect(validateSchema({ name: 'anything' }, schema)).toEqual([errorLike({ path: ['name'], validation: 'forbidden' })])
     expect(validateSchema({}, schema)).toEqual([])
   })
 
