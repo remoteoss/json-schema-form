@@ -21,7 +21,7 @@ export function getErrorMessage(
       }
       return 'Required field'
     case 'valid':
-      return 'Always fails'
+      return 'Not allowed'
     case 'const':
       return `The only accepted value is ${JSON.stringify(schema.const)}.`
     case 'enum':
