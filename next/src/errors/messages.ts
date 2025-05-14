@@ -1,0 +1,139 @@
+import type { SchemaValidationErrorType } from '.'
+import type { JsfSchemaType, NonBooleanJsfSchema, SchemaValue } from '../types'
+import { randexp } from 'randexp'
+import { convertKBToMB } from '../utils'
+import { DATE_FORMAT } from '../validation/custom/date'
+
+export function getErrorMessage(
+  schema: NonBooleanJsfSchema,
+  value: SchemaValue,
+  validation: SchemaValidationErrorType,
+  customErrorMessage?: string,
+): string {
+  const presentation = schema['x-jsf-presentation']
+  switch (validation) {
+    // Core validation
+    case 'type':
+      return getTypeErrorMessage(schema.type)
+    case 'required':
+      if (schema['x-jsf-presentation']?.inputType === 'checkbox') {
+        return 'Please acknowledge this field'
+      }
+      return 'Required field'
+    case 'valid':
+      return 'Always fails'
+    case 'const':
+      return `The only accepted value is ${JSON.stringify(schema.const)}.`
+    case 'enum':
+      return `The option "${valueToString(value)}" is not valid.`
+    // Schema composition
+    case 'anyOf':
+      return `The option "${valueToString(value)}" is not valid.`
+    case 'oneOf':
+      return `The option "${valueToString(value)}" is not valid.`
+    case 'not':
+      return 'The value must not satisfy the provided schema'
+    // String validation
+    case 'minLength':
+      return `Please insert at least ${schema.minLength} characters`
+    case 'maxLength':
+      return `Please insert up to ${schema.maxLength} characters`
+    case 'pattern':
+      return `Must have a valid format. E.g. ${randexp(schema.pattern || '')}`
+    case 'format':
+      if (schema.format === 'email') {
+        return 'Please enter a valid email address'
+      }
+
+      if (schema.format === 'date') {
+        const currentDate = new Date().toISOString().split('T')[0]
+        return `Must be a valid date in ${DATE_FORMAT.toLowerCase()} format. e.g. ${currentDate}`
+      }
+
+      return `Must be a valid ${schema.format} format`
+    // Number validation
+    case 'multipleOf':
+      return `Must be a multiple of ${schema.multipleOf}`
+    case 'maximum':
+      return `Must be smaller or equal to ${schema.maximum}`
+    case 'exclusiveMaximum':
+      return `Must be smaller than ${schema.exclusiveMaximum}`
+    case 'minimum':
+      return `Must be greater or equal to ${schema.minimum}`
+    case 'exclusiveMinimum':
+      return `Must be greater than ${schema.exclusiveMinimum}`
+    // Date validation
+    case 'minDate':
+      return `The date must be ${presentation?.minDate} or after.`
+    case 'maxDate':
+      return `The date must be ${presentation?.maxDate} or before.`
+    // File validation
+    case 'fileStructure':
+      return 'Not a valid file.'
+    case 'maxFileSize': {
+      const limitKB = presentation?.maxFileSize
+      const limitMB = typeof limitKB === 'number' ? convertKBToMB(limitKB) : undefined
+      return `File size too large.${limitMB ? ` The limit is ${limitMB} MB.` : ''}`
+    }
+    case 'accept': {
+      const formats = presentation?.accept
+      return `Unsupported file format.${formats ? ` The acceptable formats are ${formats}.` : ''}`
+    }
+    // Arrays
+    case 'minItems':
+      throw new Error('Array support is not implemented yet')
+    case 'maxItems':
+      throw new Error('Array support is not implemented yet')
+    case 'uniqueItems':
+      throw new Error('Array support is not implemented yet')
+    case 'contains':
+      throw new Error('Array support is not implemented yet')
+    case 'minContains':
+      throw new Error('Array support is not implemented yet')
+    case 'maxContains':
+      throw new Error('Array support is not implemented yet')
+    case 'json-logic':
+      return customErrorMessage || 'The value is not valid'
+  }
+}
+
+/**
+ * Get the appropriate type error message based on the schema type
+ */
+function getTypeErrorMessage(schemaType: JsfSchemaType | JsfSchemaType[] | undefined): string {
+  if (Array.isArray(schemaType)) {
+    // Map 'integer' to 'number' in error messages
+    const formattedTypes = schemaType.map((type) => {
+      if (type === 'integer')
+        return 'number'
+      return type
+    })
+
+    return `The value must be a ${formattedTypes.join(' or ')}`
+  }
+
+  switch (schemaType) {
+    case 'number':
+    case 'integer':
+      return 'The value must be a number'
+    case 'boolean':
+      return 'The value must be a boolean'
+    case 'null':
+      return 'The value must be null'
+    case 'string':
+      return 'The value must be a string'
+    case 'object':
+      return 'The value must be an object'
+    case 'array':
+      return 'The value must be an array'
+    default:
+      return schemaType ? `The value must be ${schemaType}` : 'Invalid value'
+  }
+}
+
+function valueToString(value: SchemaValue): string {
+  if (typeof value === 'string') {
+    return value
+  }
+  return JSON.stringify(value)
+}

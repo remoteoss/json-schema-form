@@ -10,12 +10,12 @@ import { buildFieldSchema } from './schema'
  * @param required - Whether the field is required
  * @returns The field
  */
-export function buildFieldObject(schema: JsfObjectSchema, name: string, required: boolean) {
+export function buildFieldObject(schema: JsfObjectSchema, name: string, required: boolean, strictInputType?: boolean) {
   const fields: Field[] = []
 
   for (const key in schema.properties) {
     const isRequired = schema.required?.includes(key) || false
-    const field = buildFieldSchema(schema.properties[key], key, isRequired)
+    const field = buildFieldSchema(schema.properties[key], key, isRequired, strictInputType)
     if (field) {
       fields.push(field)
     }
@@ -28,7 +28,7 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
     type: schema['x-jsf-presentation']?.inputType || 'fieldset',
     inputType: schema['x-jsf-presentation']?.inputType || 'fieldset',
     jsonType: 'object',
-    name: schema.title || name,
+    name,
     required,
     fields: orderedFields,
     isVisible: true,
@@ -36,6 +36,10 @@ export function buildFieldObject(schema: JsfObjectSchema, name: string, required
 
   if (schema.title !== undefined) {
     field.label = schema.title
+  }
+
+  if (schema.description !== undefined) {
+    field.description = schema.description
   }
 
   if (schema['x-jsf-presentation']?.accept) {

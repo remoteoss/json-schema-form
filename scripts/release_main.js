@@ -85,6 +85,7 @@ async function publish({ newVersion, otp }) {
   try {
     await runExec(cmd);
     console.log(`🎉 Version ${newVersion} published!"`);
+    console.log(`✍️ REMINDER: Please publish the release on Github too.`);
   } catch {
     console.log('🚨 Publish failed! Perhaps the OTP is wrong.');
     await revertCommit({ newVersion, main: true });

@@ -5,8 +5,9 @@
  * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html Schema Composition}
  */
 
-import type { ValidationError } from '../form'
-import type { JsfSchema, SchemaValue } from '../types'
+import type { ValidationError, ValidationErrorPath } from '../errors'
+import type { ValidationOptions } from '../form'
+import type { JsfSchema, JsonLogicContext, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
 /**
@@ -28,14 +29,17 @@ import { validateSchema } from './schema'
 export function validateAllOf(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  options: ValidationOptions,
+  jsonLogicContext: JsonLogicContext | undefined,
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
-  if (!schema.allOf || !Array.isArray(schema.allOf)) {
+  if (!schema.allOf) {
     return []
   }
 
-  for (const subSchema of schema.allOf) {
-    const errors = validateSchema(value, subSchema, false, path)
+  for (let i = 0; i < schema.allOf.length; i++) {
+    const subSchema = schema.allOf[i]
+    const errors = validateSchema(value, subSchema, options, [...path, 'allOf', i], jsonLogicContext)
     if (errors.length > 0) {
       return errors
     }
@@ -63,14 +67,16 @@ export function validateAllOf(
 export function validateAnyOf(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  options: ValidationOptions,
+  jsonLogicContext: JsonLogicContext | undefined,
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
-  if (!schema.anyOf || !Array.isArray(schema.anyOf)) {
+  if (!schema.anyOf) {
     return []
   }
 
   for (const subSchema of schema.anyOf) {
-    const errors = validateSchema(value, subSchema, false, path)
+    const errors = validateSchema(value, subSchema, options, path, jsonLogicContext)
     if (errors.length === 0) {
       return []
     }
@@ -80,7 +86,8 @@ export function validateAnyOf(
     {
       path,
       validation: 'anyOf',
-      message: 'Must match at least one of the provided schemas',
+      schema,
+      value,
     },
   ]
 }
@@ -104,16 +111,18 @@ export function validateAnyOf(
 export function validateOneOf(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  options: ValidationOptions,
+  jsonLogicContext: JsonLogicContext | undefined,
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
-  if (!schema.oneOf || !Array.isArray(schema.oneOf)) {
+  if (!schema.oneOf) {
     return []
   }
 
   let validCount = 0
 
   for (let i = 0; i < schema.oneOf.length; i++) {
-    const errors = validateSchema(value, schema.oneOf[i], false, path)
+    const errors = validateSchema(value, schema.oneOf[i], options, path, jsonLogicContext)
     if (errors.length === 0) {
       validCount++
       if (validCount > 1) {
@@ -127,7 +136,8 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: 'Must match exactly one of the provided schemas',
+        schema,
+        value,
       },
     ]
   }
@@ -137,7 +147,8 @@ export function validateOneOf(
       {
         path,
         validation: 'oneOf',
-        message: 'Must match exactly one schema but matches multiple',
+        schema,
+        value,
       },
     ]
   }
@@ -165,20 +176,18 @@ export function validateOneOf(
 export function validateNot(
   value: SchemaValue,
   schema: JsfSchema,
-  path: string[] = [],
+  options: ValidationOptions,
+  jsonLogicContext: JsonLogicContext | undefined,
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.not === undefined) {
     return []
   }
 
   if (typeof schema.not === 'boolean') {
-    return schema.not
-      ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
-      : []
+    return schema.not ? [{ path, validation: 'not', schema, value }] : []
   }
 
-  const notErrors = validateSchema(value, schema.not, false, path)
-  return notErrors.length === 0
-    ? [{ path, validation: 'not', message: 'The value must not satisfy the provided schema' }]
-    : []
+  const notErrors = validateSchema(value, schema.not, options, path, jsonLogicContext)
+  return notErrors.length === 0 ? [{ path, validation: 'not', schema, value }] : []
 }

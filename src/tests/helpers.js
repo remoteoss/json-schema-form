@@ -17,7 +17,7 @@ export const mockTextInputDeprecated = {
   title: 'Username',
   description: 'Your username (max 10 characters)',
   maxLength: 10,
-  presentation: {
+  'x-jsf-presentation': {
     inputType: 'text',
     maskSecret: 2,
   },
@@ -1284,7 +1284,7 @@ export const schemaForErrorMessageSpecificity = {
       title: 'Weekday',
       description: "This text field has the traditional error message. 'Required field'",
       type: 'string',
-      presentation: { inputType: 'text' },
+      'x-jsf-presentation': { inputType: 'text' },
     },
     day: {
       title: 'Day',
@@ -1293,21 +1293,21 @@ export const schemaForErrorMessageSpecificity = {
         'The remaining fields are numbers and were customized to say "This cannot be empty." instead of "Required field".',
 
       maximum: 31,
-      presentation: { inputType: 'number' },
+      'x-jsf-presentation': { inputType: 'number' },
     },
     month: {
       title: 'Month',
       type: 'number',
       minimum: 1,
       maximum: 12,
-      presentation: { inputType: 'number' },
+      'x-jsf-presentation': { inputType: 'number' },
     },
     year: {
       title: 'Year',
       description:
         "This number field has a custom error message declared in the json schema, which has a higher specificity than the one declared in createHeadlessForm's configuration.",
       type: 'number',
-      presentation: { inputType: 'number' },
+      'x-jsf-presentation': { inputType: 'number' },
       'x-jsf-errorMessage': {
         required: 'The year is mandatory.',
       },

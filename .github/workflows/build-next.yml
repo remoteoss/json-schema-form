@@ -27,12 +27,24 @@ jobs:
           node-version-file: 'next/.nvmrc'
           cache: 'npm'
 
+      - name: Cache v0 dependencies
+        uses: actions/cache@v3
+        id: cache-v0
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-next-v0-${{ hashFiles('package-lock.json') }}
+
+      - name: Install v0 dependencies
+        if: steps.cache-v0.outputs.cache-hit != 'true'
+        run: npm install
+
       - name: Cache PNPM dependencies
         uses: actions/cache@v3
         id: cache-next
         with:
           path: next/node_modules
           key: ${{ runner.os }}-pnpm-next-${{ hashFiles('next/pnpm-lock.yaml') }}
+
       - name: Install dependencies
         if: steps.cache-next.outputs.cache-hit != 'true'
         run: cd next && pnpm install
@@ -54,6 +66,12 @@ jobs:
         with:
           node-version-file: 'next/.nvmrc'
 
+      - name: Get cached v0 dependencies
+        uses: actions/cache@v3
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-npm-next-v0-${{ hashFiles('package-lock.json') }}
+
       - name: Get cached PNPM dependencies
         uses: actions/cache@v3
         with:
@@ -65,3 +83,6 @@ jobs:
 
       - name: Tests
         run: cd next && pnpm test
+
+      - name: v0 Tests
+        run: cd next && pnpm run test:v0 || true

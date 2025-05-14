@@ -68,3 +68,31 @@ export function deepEqual(a: SchemaValue, b: SchemaValue): boolean {
 
   return false
 }
+
+/**
+ * Deep clones an object using structuredClone if available, otherwise falls back to JSON.parse/stringify approach.
+ *
+ * @param obj - The object to clone
+ * @returns deep clone of the original object
+ * @throws If the object contains circular references and structuredClone is not available
+ */
+export function safeDeepClone<T>(obj: T): T {
+  // Check if structuredClone is available
+  if (typeof structuredClone === 'function') {
+    try {
+      return structuredClone(obj)
+    }
+    catch (err) {
+      console.warn('structuredClone failed, falling back to JSON method:', err)
+      // Fall through to JSON method
+    }
+  }
+
+  // Fallback to JSON.parse/stringify approach
+  try {
+    return JSON.parse(JSON.stringify(obj))
+  }
+  catch {
+    throw new Error('Deep clone failed: Object may contain circular references or non-serializable values')
+  }
+}

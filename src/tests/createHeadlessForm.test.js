@@ -2521,7 +2521,7 @@ describe('createHeadlessForm', () => {
           .addInput({
             username: {
               ...mockTextInputDeprecated,
-              presentation: {
+              'x-jsf-presentation': {
                 inputType: 'text',
                 maskSecret: 2,
                 // should override the root level description
@@ -2565,6 +2565,43 @@ describe('createHeadlessForm', () => {
           },
         ],
       });
+    });
+
+    it('pass any "x-" attribute, expect for x-jsf-* keys', () => {
+      const result = createHeadlessForm({
+        properties: {
+          country: {
+            title: 'Country',
+            type: 'string',
+            'x-foo': 123,
+            'x-bar': { something: true },
+            'x-jsf-presentation': {
+              inputType: 'select',
+              direction: 'row',
+            },
+            'x-jsf-errorMessage': {
+              type: 'some error message',
+            },
+            'x-jsf-foo': 'bar',
+          },
+        },
+      });
+
+      expect(result.fields[0]).toMatchObject({
+        name: 'country',
+        label: 'Country',
+        type: 'select',
+        inputType: 'select',
+        direction: 'row',
+        errorMessage: { type: 'some error message' },
+        'x-foo': 123,
+        'x-bar': { something: true },
+      });
+
+      // These ones are excluded:
+      expect(result.fields[0]['x-jsf-presentation']).toBeUndefined();
+      expect(result.fields[0]['x-jsf-errorMessage']).toBeUndefined();
+      expect(result.fields[0]['x-jsf-foo']).toBeUndefined();
     });
 
     it('pass custom attributes as function', () => {

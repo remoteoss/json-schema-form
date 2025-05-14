@@ -1,25 +1,27 @@
-import type { ValidationError } from '../form'
-import type { NonBooleanJsfSchema, SchemaValue } from '../types'
+import type { ValidationError, ValidationErrorPath } from '../errors'
+import type { ValidationOptions } from '../form'
+import type { JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
 export function validateCondition(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  required: boolean,
-  path: string[],
+  options: ValidationOptions,
+  jsonLogicContext: JsonLogicContext | undefined,
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.if === undefined) {
     return []
   }
 
-  const conditionIsTrue = validateSchema(value, schema.if, required, path).length === 0
+  const conditionIsTrue = validateSchema(value, schema.if, options, path, jsonLogicContext).length === 0
 
   if (conditionIsTrue && schema.then !== undefined) {
-    return validateSchema(value, schema.then, required, [...path, 'then'])
+    return validateSchema(value, schema.then, options, [...path, 'then'], jsonLogicContext)
   }
 
   if (!conditionIsTrue && schema.else !== undefined) {
-    return validateSchema(value, schema.else, required, [...path, 'else'])
+    return validateSchema(value, schema.else, options, [...path, 'else'], jsonLogicContext)
   }
 
   return []

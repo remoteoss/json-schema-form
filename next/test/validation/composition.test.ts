@@ -1,6 +1,7 @@
 import type { JsfSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { validateSchema } from '../../src/validation/schema'
+import { errorLike } from '../test-utils'
 
 describe('schema composition validators', () => {
   describe('validateAllOf', () => {
@@ -33,7 +34,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
-        expect(errors[0].path).toEqual(['bar'])
+        expect(errors[0].path).toEqual(['allOf', 0, 'bar'])
       })
 
       it('should fail when missing required property from second schema', () => {
@@ -41,7 +42,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('required')
-        expect(errors[0].path).toEqual(['foo'])
+        expect(errors[0].path).toEqual(['allOf', 1, 'foo'])
       })
 
       it('should fail when property has wrong type', () => {
@@ -49,7 +50,7 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('type')
-        expect(errors[0].path).toEqual(['bar'])
+        expect(errors[0].path).toEqual(['allOf', 0, 'bar'])
       })
     })
 
@@ -149,7 +150,6 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('anyOf')
-        expect(errors[0].message).toBe('Must match at least one of the provided schemas')
       })
     })
 
@@ -256,7 +256,6 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('Must match exactly one of the provided schemas')
       })
 
       it('should fail when value matches multiple schemas', () => {
@@ -264,7 +263,6 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('Must match exactly one schema but matches multiple')
       })
     })
 
@@ -322,7 +320,6 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('oneOf')
-        expect(errors[0].message).toBe('Must match exactly one schema but matches multiple')
       })
     })
 
@@ -370,7 +367,6 @@ describe('schema composition validators', () => {
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(1)
         expect(errors[0].validation).toBe('not')
-        expect(errors[0].message).toBe('The value must not satisfy the provided schema')
       })
     })
 
@@ -388,9 +384,10 @@ describe('schema composition validators', () => {
       it('should fail when base schema fails', () => {
         const value = { other: 'field' }
         const errors = validateSchema(value, schema)
-        expect(errors).toHaveLength(1)
-        expect(errors[0].validation).toBe('required')
-        expect(errors[0].path).toEqual(['type'])
+        expect(errors).toEqual([
+          errorLike({ validation: 'required', path: ['type'] }),
+          errorLike({ validation: 'not', path: [] }),
+        ])
       })
     })
 

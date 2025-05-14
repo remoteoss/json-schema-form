@@ -1,4 +1,4 @@
-import type { ValidationError } from '../form'
+import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { deepEqual } from './util'
 
@@ -17,7 +17,7 @@ import { deepEqual } from './util'
 export function validateConst(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  path: string[] = [],
+  path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (schema.const === undefined) {
     return []
@@ -25,7 +25,7 @@ export function validateConst(
 
   if (!deepEqual(schema.const, value)) {
     return [
-      { path, validation: 'const', message: `The only accepted value is ${JSON.stringify(schema.const)}` },
+      { path, validation: 'const', schema, value },
     ]
   }
 

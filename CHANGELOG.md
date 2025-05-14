@@ -1,3 +1,15 @@
+#### 0.11.13-beta.0 (2025-05-05)
+
+##### Bug Fixes
+
+*  Fields accept any key starting with x-* ([#180](https://github.com/remoteoss/json-schema-form/pull/180)) ([c22aee0a](https://github.com/remoteoss/json-schema-form/commit/c22aee0a211afb0109257bd9e7265a0e91aef118))
+
+#### 0.11.12-beta.0 (2025-04-15)
+
+##### Chores
+
+*  change deprecated 'presentation' to 'x-jsf-presentation' in test helpers ([#159](https://github.com/remoteoss/json-schema-form/pull/159)) ([3f03b16d](https://github.com/remoteoss/json-schema-form/commit/3f03b16dce6acd801ff497a9c547cceb1b6347c5))
+
 #### 0.11.11-beta.0 (2025-02-20)
 
 ##### Bug Fixes
