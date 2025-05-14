@@ -122,6 +122,23 @@ describe('array validation', () => {
     })
   })
 
+  describe('object items', () => {
+    it('returns no errors for empty arrays', () => {
+      const schema = { type: 'array', items: { type: 'object' } }
+      expect(validateSchema([], schema)).toEqual([])
+    })
+
+    it('returns no errors for arrays with objects that match the schema', () => {
+      const schema = { type: 'array', items: { type: 'object' } }
+      expect(validateSchema([{ a: 1 }, { b: 2 }], schema)).toEqual([])
+    })
+
+    it('respects the object\'s required properties', () => {
+      const schema = { type: 'array', items: { type: 'object', required: ['a'] } }
+      expect(validateSchema([{ a: 1 }, { b: 2 }], schema)).toEqual([errorLike({ path: ['items', 1, 'a'], validation: 'required' })])
+    })
+  })
+
   describe('prefixItems', () => {
     const schema = {
       type: 'array',

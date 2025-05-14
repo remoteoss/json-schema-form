@@ -11,7 +11,7 @@ export type SchemaValidationErrorType =
    */
   | 'type'
   | 'required'
-  | 'valid'
+  | 'forbidden'
   | 'const'
   | 'enum'
   /**
