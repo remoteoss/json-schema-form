@@ -791,4 +791,31 @@ describe('validation error messages', () => {
       })
     })
   })
+
+  describe('array validation errors', () => {
+    it('pluralizes minItems and maxItems', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        required: ['tags'],
+        properties: {
+          tags: {
+            type: 'array',
+            minItems: 1,
+            maxItems: 4,
+            items: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+              },
+            },
+          },
+        },
+      }
+      const form = createHeadlessForm(schema)
+
+      const tags = [{ name: 'tag1' }, { name: 'tag2' }, { name: 'tag3' }, { name: 'tag4' }, { name: 'tag5' }]
+      expect(form.handleValidation({ tags: [] }).formErrors).toEqual({ tags: 'Must have at least 1 item' })
+      expect(form.handleValidation({ tags }).formErrors).toEqual({ tags: 'Must have at most 4 items' })
+    })
+  })
 })
