@@ -1,7 +1,7 @@
 import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema } from '../types'
 import type { Field, FieldOption, FieldType } from './type'
 import { setCustomOrder } from '../custom/order'
-
+import { getUiPresentation } from '../utils'
 /**
  * Add checkbox attributes to a field
  * @param inputType - The input type of the field
@@ -72,7 +72,7 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
  * @throws If the input type is missing and strictInputType is true with the exception of the root field
  */
 export function getInputType(type: JsfSchemaType, name: string, schema: NonBooleanJsfSchema, strictInputType?: boolean): FieldType {
-  const presentation = schema['x-jsf-presentation']
+  const presentation = getUiPresentation(schema)
   if (presentation?.inputType) {
     return presentation.inputType as FieldType
   }
@@ -119,7 +119,7 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
     .map((schemaOption) => {
       const title = schemaOption.title
       const value = schemaOption.const
-      const presentation = schemaOption['x-jsf-presentation']
+      const presentation = getUiPresentation(schemaOption)
       const meta = presentation?.meta
 
       const result: {
@@ -137,7 +137,7 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
       }
 
       // Add other properties, without known ones we already handled above
-      const { title: _, const: __, 'x-jsf-presentation': ___, ...rest } = schemaOption
+      const { title: _, const: __, 'x-jsf-presentation': ___, 'x-jsf-ui': ____, ...rest } = schemaOption
 
       return { ...result, ...rest }
     })
@@ -257,6 +257,7 @@ const excludedSchemaProps = [
   'type', // Handled separately
   'x-jsf-errorMessage', // Handled separately
   'x-jsf-presentation', // Handled separately
+  'x-jsf-ui', // Handled separately
   'oneOf', // Transformed to 'options'
   'anyOf', // Transformed to 'options'
   'properties', // Handled separately
@@ -290,7 +291,7 @@ export function buildFieldSchema(
     return null
   }
 
-  const presentation = schema['x-jsf-presentation'] || {}
+  const presentation = getUiPresentation(schema) || {}
   const errorMessage = schema['x-jsf-errorMessage']
 
   // Get input type from presentation or fallback to schema type

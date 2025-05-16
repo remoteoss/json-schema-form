@@ -1,5 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
+import { getUiPresentation } from '../utils'
 import { isObjectValue } from './util'
 
 // Represents a file-like object, either a browser native File or a plain object.
@@ -25,7 +26,7 @@ export function validateFile(
 ): ValidationError[] {
   // Early exit conditions
   // 1. Check if schema indicates a potential file input
-  const presentation = schema['x-jsf-presentation']
+  const presentation = getUiPresentation(schema)
   const isExplicitFileInput = presentation?.inputType === 'file'
   const hasFileKeywords
     = typeof presentation?.maxFileSize === 'number' || typeof presentation?.accept === 'string'

@@ -1,7 +1,7 @@
 import type { SchemaValidationErrorType } from '.'
 import type { JsfSchemaType, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { randexp } from 'randexp'
-import { convertKBToMB } from '../utils'
+import { convertKBToMB, getUiPresentation } from '../utils'
 import { DATE_FORMAT } from '../validation/custom/date'
 
 export function getErrorMessage(
@@ -10,13 +10,13 @@ export function getErrorMessage(
   validation: SchemaValidationErrorType,
   customErrorMessage?: string,
 ): string {
-  const presentation = schema['x-jsf-presentation']
+  const presentation = getUiPresentation(schema)
   switch (validation) {
     // Core validation
     case 'type':
       return getTypeErrorMessage(schema.type)
     case 'required':
-      if (schema['x-jsf-presentation']?.inputType === 'checkbox') {
+      if (presentation?.inputType === 'checkbox') {
         return 'Please acknowledge this field'
       }
       return 'Required field'
