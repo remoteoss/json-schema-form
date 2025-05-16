@@ -1,5 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfSchema, JsfSchemaType, JsonLogicContext, JsonLogicRootSchema, SchemaValue } from '../types'
+import { getUiPresentation } from '../utils'
 import { validateArray } from './array'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
@@ -225,7 +226,7 @@ export function validateSchema(
   }
 
   // Check if it is a file input (needed early for null check)
-  const presentation = schema['x-jsf-presentation']
+  const presentation = getUiPresentation(schema)
   const isExplicitFileInput = presentation?.inputType === 'file'
 
   let typeValidationErrors: ValidationError[] = []

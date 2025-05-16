@@ -1,7 +1,7 @@
 import type { SchemaValidationErrorType } from '.'
 import type { JsfSchemaType, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { randexp } from 'randexp'
-import { convertKBToMB } from '../utils'
+import { convertKBToMB, getUiPresentation } from '../utils'
 import { DATE_FORMAT } from '../validation/custom/date'
 
 /**
@@ -10,7 +10,8 @@ import { DATE_FORMAT } from '../validation/custom/date'
  * @returns True if the schema is a checkbox, false otherwise
  */
 function isCheckbox(schema: NonBooleanJsfSchema): boolean {
-  return schema['x-jsf-presentation']?.inputType === 'checkbox'
+  const presentation = getUiPresentation(schema)
+  return presentation?.inputType === 'checkbox'
 }
 
 // Both required and const error messages are the same for checkboxes
@@ -22,7 +23,7 @@ export function getErrorMessage(
   validation: SchemaValidationErrorType,
   customErrorMessage?: string,
 ): string {
-  const presentation = schema['x-jsf-presentation']
+  const presentation = getUiPresentation(schema)
   switch (validation) {
     // Core validation
     case 'type':

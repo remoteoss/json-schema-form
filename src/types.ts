@@ -72,6 +72,8 @@ export type JsfSchema = JSONSchema & {
   'x-jsf-order'?: string[]
   /** Defines the presentation of the field in the form.  */
   'x-jsf-presentation'?: JsfPresentation
+  /** Alias to x-jsf-presentation - easier to type. */
+  'x-jsf-ui'?: JsfPresentation
   /** Defines the error message of the field in the form. */
   'x-jsf-errorMessage'?: Record<string, string>
   /** Defines all JSON Logic rules for the schema (both validations and computed values). */

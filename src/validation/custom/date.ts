@@ -71,11 +71,11 @@ export function validateDate(
   const isEmpty = isEmptyString || isUndefined
   const errors: ValidationError[] = []
 
-  if (!isString || isEmpty || schema['x-jsf-presentation'] === undefined) {
+  if (!isString || isEmpty || schema['x-jsf-presentation'] === undefined || schema['x-jsf-ui'] === undefined) {
     return errors
   }
 
-  const { minDate, maxDate } = schema['x-jsf-presentation']
+  const { minDate, maxDate } = schema['x-jsf-presentation'] || schema['x-jsf-ui']
 
   if (minDate && !validateMinDate(value, minDate)) {
     errors.push({ path, validation: 'minDate', schema, value })

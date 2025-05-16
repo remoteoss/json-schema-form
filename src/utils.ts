@@ -1,4 +1,5 @@
 import type { Field } from './field/type'
+import type { JsfPresentation, JsfSchema } from './types'
 
 type DiskSizeUnit = 'Bytes' | 'KB' | 'MB'
 
@@ -51,6 +52,10 @@ export function convertKBToMB(kb: number): number {
   }
   const mb = kb / 1024 // KB to MB
   return Number.parseFloat(mb.toFixed(2)) // Keep 2 decimal places
+}
+
+export function getUiPresentation(schema: JsfSchema): JsfPresentation | undefined {
+  return schema['x-jsf-presentation'] || schema['x-jsf-ui']
 }
 
 // When merging schemas, we should skip merging the if/then/else properties as we could be creating wrong conditions

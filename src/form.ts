@@ -225,7 +225,7 @@ export interface CreateHeadlessFormOptions {
    */
   legacyOptions?: LegacyOptions
   /**
-   * When enabled, ['x-jsf-presentation'].inputType is required for all properties.
+   * When enabled, ['x-jsf-presentation'|'x-jsf-ui'].inputType is required for all properties.
    * @default false
    */
   strictInputType?: boolean
