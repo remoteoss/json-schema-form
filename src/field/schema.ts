@@ -81,9 +81,10 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
       if (format === 'data-url') {
         return 'file'
       }
-      if (oneOf) {
-        return 'radio'
-      }
+      // For the talk, i want it to keep as plain text field.
+      // if (oneOf) {
+      //   return 'radio'
+      // }
       return 'text'
     }
     case 'number':
