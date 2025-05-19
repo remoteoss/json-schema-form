@@ -1,3 +1,9 @@
+#### 1.0.0-beta.5 (2025-05-19)
+
+##### Bug Fixes
+
+- export types correctly ([#186](https://github.com/remoteoss/json-schema-form/pull/186))
+
 #### 1.0.0-beta.4 (2025-05-14)
 
 ##### Chores
