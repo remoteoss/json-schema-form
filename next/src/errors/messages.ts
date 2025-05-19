@@ -80,10 +80,14 @@ export function getErrorMessage(
       return `Unsupported file format.${formats ? ` The acceptable formats are ${formats}.` : ''}`
     }
     // Arrays
-    case 'minItems':
-      return `Must have at least ${schema.minItems} items`
-    case 'maxItems':
-      return `Must have at most ${schema.maxItems} items`
+    case 'minItems': {
+      const itemOrItems = schema.minItems === 1 ? 'item' : 'items'
+      return `Must have at least ${schema.minItems} ${itemOrItems}`
+    }
+    case 'maxItems': {
+      const itemOrItems = schema.maxItems === 1 ? 'item' : 'items'
+      return `Must have at most ${schema.maxItems} ${itemOrItems}`
+    }
     case 'uniqueItems':
       return 'Items must be unique'
     case 'contains':
