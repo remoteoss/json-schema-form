@@ -195,7 +195,7 @@ export function validateSchema(
 
   // Handle boolean schemas
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'valid', schema, value }]
+    return schema ? [] : [{ path, validation: 'forbidden', schema, value }]
   }
 
   // Check if it is a file input (needed early for null check)

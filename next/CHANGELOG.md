@@ -1,3 +1,13 @@
+#### 1.0.0-beta.4 (2025-05-14)
+
+##### Chores
+
+- Type JSONSchema enum as unknown for better type safety ([#184](https://github.com/remoteoss/json-schema-form/pull/184)) ([e745444c](https://github.com/remoteoss/json-schema-form/commit/e745444c112337c22def693a924eae49f575c14d))
+
+##### New Features
+
+- group-array field support ([#177](https://github.com/remoteoss/json-schema-form/pull/177)) ([e32f69b7](https://github.com/remoteoss/json-schema-form/commit/e32f69b771ab245583c3f4e167ab67b8f36b9a3f))
+
 #### 1.0.0-beta.3 (2025-04-23)
 
 ##### Chores

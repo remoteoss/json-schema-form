@@ -16,8 +16,8 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'text',
         inputType: 'text',
+        type: 'text',
         jsonType: 'string',
         name: 'name',
         label: 'Name',
@@ -41,8 +41,8 @@ describe('fields', () => {
     // Both fields should have the same input type
     expect(fields).toEqual([
       {
-        type: 'number',
         inputType: 'number',
+        type: 'number',
         jsonType: 'number',
         name: 'age',
         label: 'Age',
@@ -50,8 +50,8 @@ describe('fields', () => {
         isVisible: true,
       },
       {
-        type: 'number',
         inputType: 'number',
+        type: 'number',
         jsonType: 'number',
         name: 'amount',
         label: 'Amount',
@@ -59,19 +59,6 @@ describe('fields', () => {
         isVisible: true,
       },
     ])
-  })
-
-  it('should throw an error if the type equals "array" (group-array)', () => {
-    const schema = {
-      type: 'object',
-      properties: {
-        name: { type: 'array' },
-      },
-    }
-
-    expect(() => buildFieldSchema(schema, 'root', true)).toThrow(
-      'Array type is not yet supported',
-    )
   })
 
   it('should build an object field with multiple properties', () => {
@@ -90,8 +77,8 @@ describe('fields', () => {
     const field = buildFieldSchema(schema, 'user', false)
 
     expect(field).toEqual({
-      type: 'fieldset',
       inputType: 'fieldset',
+      type: 'fieldset',
       isVisible: true,
       name: 'user',
       label: 'User',
@@ -100,8 +87,8 @@ describe('fields', () => {
       jsonType: 'object',
       fields: [
         {
-          type: 'text',
           inputType: 'text',
+          type: 'text',
           isVisible: true,
           jsonType: 'string',
           name: 'name',
@@ -109,8 +96,8 @@ describe('fields', () => {
           required: true,
         },
         {
-          type: 'number',
           inputType: 'number',
+          type: 'number',
           isVisible: true,
           jsonType: 'number',
           name: 'age',
@@ -118,8 +105,8 @@ describe('fields', () => {
           required: false,
         },
         {
-          type: 'text',
           inputType: 'text',
+          type: 'text',
           isVisible: true,
           jsonType: 'string',
           name: 'email',
@@ -150,8 +137,8 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'file',
         inputType: 'file',
+        type: 'file',
         jsonType: 'string',
         isVisible: true,
         name: 'file',
@@ -195,8 +182,8 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'fieldset',
         inputType: 'fieldset',
+        type: 'fieldset',
         isVisible: true,
         jsonType: 'object',
         name: 'address',
@@ -204,8 +191,8 @@ describe('fields', () => {
         required: false,
         fields: [
           {
-            type: 'text',
             inputType: 'text',
+            type: 'text',
             isVisible: true,
             jsonType: 'string',
             name: 'street',
@@ -213,8 +200,8 @@ describe('fields', () => {
             required: true,
           },
           {
-            type: 'text',
             inputType: 'text',
+            type: 'text',
             isVisible: true,
             jsonType: 'string',
             name: 'city',
@@ -238,8 +225,8 @@ describe('fields', () => {
 
     expect(fields).toEqual([
       {
-        type: 'text',
         inputType: 'text',
+        type: 'text',
         jsonType: 'string',
         name: 'user_email',
         required: false,
@@ -270,8 +257,8 @@ describe('fields', () => {
 
       expect(fields).toEqual([
         {
-          type: 'radio',
           inputType: 'radio',
+          type: 'radio',
           jsonType: 'string',
           isVisible: true,
           name: 'status',
@@ -301,8 +288,8 @@ describe('fields', () => {
 
       expect(fields).toEqual([
         {
-          type: 'radio',
           inputType: 'radio',
+          type: 'radio',
           jsonType: undefined,
           isVisible: true,
           name: 'status',
@@ -341,8 +328,8 @@ describe('fields', () => {
 
       expect(fields).toEqual([
         {
-          type: 'radio',
           inputType: 'radio',
+          type: 'radio',
           jsonType: 'string',
           isVisible: true,
           name: 'status',
@@ -376,8 +363,7 @@ describe('fields', () => {
         .toThrow(/Strict error: Missing inputType to field "Test"/)
     })
 
-    // Skipping this test until we have group-array support
-    it.skip('defaults to group-array for schema with no type but items.properties', () => {
+    it('defaults to group-array for schema with no type but items.properties', () => {
       const schema = {
         items: {
           properties: {

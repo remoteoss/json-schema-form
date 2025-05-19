@@ -1,3 +1,9 @@
+#### 0.11.14-beta.0 (2025-05-14)
+
+##### Chores
+
+*  Reminder to publish GitHub release ([#183](https://github.com/remoteoss/json-schema-form/pull/183)) ([adfa8c14](https://github.com/remoteoss/json-schema-form/commit/adfa8c14ca118b1012642f39c8388cf2ba1614c9))
+
 #### 0.11.13-beta.0 (2025-05-05)
 
 ##### Bug Fixes

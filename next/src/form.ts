@@ -3,7 +3,7 @@ import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
-import { buildFieldObject } from './field/object'
+import { buildFieldSchema } from './field/schema'
 import { mutateFields } from './mutations'
 import { validateSchema } from './validation/schema'
 
@@ -20,9 +20,10 @@ interface FormResult {
  * Recursive type for form error messages
  * - String for leaf error messages
  * - Nested object for nested fields
+ * - Arrays for group-array fields
  */
 export interface FormErrors {
-  [key: string]: string | FormErrors
+  [key: string]: string | FormErrors | Array<null | FormErrors>
 }
 
 export interface ValidationResult {
@@ -30,21 +31,21 @@ export interface ValidationResult {
 }
 
 /**
- * Remove composition keywords and their indices as well as conditional keywords from the path
- * @param path - The path to clean
- * @returns The cleaned path
- * @example
- * ```ts
- * cleanErrorPath(['some_object','allOf', 0, 'then', 'field'])
- * // ['some_object', 'field']
- * ```
+ * @param path - The path to transform
+ * @returns The transformed path
+ * Transforms a validation error path in two ways:
+ * 1. Removes composition keywords (allOf, anyOf, oneOf) and conditional keywords (then, else)
+ * 2. Converts array paths by removing "items" keywords but keeping indices
+ *
+ * Example: ['some_object','allOf', 0, 'then', 'items', 3, 'field'] -> ['some_object', 3, 'field']
  */
-function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
-  const result: ValidationErrorPath = []
+function transformErrorPath(path: ValidationErrorPath): Array<string | number> {
+  const result: Array<string | number> = []
 
   for (let i = 0; i < path.length; i++) {
     const segment = path[i]
 
+    // Skip composition keywords and their indices
     if (['allOf', 'anyOf', 'oneOf'].includes(segment as string)) {
       if (i + 1 < path.length && typeof path[i + 1] === 'number') {
         i++
@@ -52,17 +53,27 @@ function cleanErrorPath(path: ValidationErrorPath): ValidationErrorPath {
       continue
     }
 
+    // Skip conditional keywords
     if (segment === 'then' || segment === 'else') {
       continue
     }
 
-    result.push(segment)
+    // Skip 'items' but keep the array index that follows
+    if (segment === 'items' && typeof path[i + 1] === 'number') {
+      i++
+      result.push(path[i] as number)
+    }
+    else {
+      result.push(segment as string)
+    }
   }
 
   return result
 }
 
 /**
+ * @param errors - The validation errors
+ * @returns The form errors
  * Transform validation errors into an object with the field names as keys and the error messages as values.
  * For nested fields, creates a nested object structure rather than using dot notation.
  * When multiple errors exist for the same field, the last error message is used.
@@ -82,45 +93,55 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
     return null
   }
 
-  // Use a more functional approach with reduce
-  return errors.reduce<FormErrors>((result, error) => {
+  const result: FormErrors = {}
+
+  for (const error of errors) {
     const { path } = error
 
     // Handle schema-level errors (empty path)
     if (path.length === 0) {
       result[''] = error.message
-      return result
+      continue
     }
 
-    // Clean the path to remove intermediate composition structures
-    const cleanedPath = cleanErrorPath(path)
-
-    // For all paths, recursively build the nested structure
+    const segments = transformErrorPath(path)
     let current = result
 
-    // Process all segments except the last one (which will hold the message)
-    cleanedPath.slice(0, -1).forEach((segment) => {
-      // If this segment doesn't exist yet or is currently a string (from a previous error),
-      // initialize it as an object
-      if (!(segment in current) || typeof current[segment] === 'string') {
-        current[segment] = {}
+    for (let i = 0; i < segments.length - 1; i++) {
+      const segment = segments[i]
+
+      if (typeof segment === 'number') {
+        if (!Array.isArray(current)) {
+          throw new TypeError(`Expected an array at path: ${segments.slice(0, i).join('.')}`)
+        }
+
+        if (!current[segment]) {
+          current[segment] = {}
+        }
+
+        current = current[segment] as FormErrors
       }
+      else {
+        if (typeof segments[i + 1] === 'number') {
+          if (!(segment in current)) {
+            current[segment] = []
+          }
+        }
+        else if (!(segment in current) || typeof current[segment] === 'string') {
+          current[segment] = {}
+        }
 
-      current = current[segment] as FormErrors
-    })
+        current = current[segment] as FormErrors
+      }
+    }
 
-    // Set the message at the final level
-    if (cleanedPath.length > 0) {
-      const lastSegment = cleanedPath[cleanedPath.length - 1]
+    if (segments.length > 0) {
+      const lastSegment = segments[segments.length - 1]
       current[lastSegment] = error.message
     }
-    else {
-      // Fallback for unexpected path structures
-      result[''] = error.message
-    }
+  }
 
-    return result
-  }, {})
+  return result
 }
 
 interface ValidationErrorWithMessage extends ValidationError {
@@ -211,7 +232,7 @@ export interface CreateHeadlessFormOptions {
 
 function buildFields(params: { schema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
   const { schema, strictInputType } = params
-  const fields = buildFieldObject(schema, 'root', true, strictInputType).fields || []
+  const fields = buildFieldSchema(schema, 'root', true, strictInputType, 'object')?.fields || []
   return fields
 }
 
@@ -259,7 +280,7 @@ function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
   fields.length = 0
 
   // Get new fields from schema
-  const newFields = buildFieldObject(schema, 'root', true).fields || []
+  const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
 
   // Push all new fields into existing array
   fields.push(...newFields)
