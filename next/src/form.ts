@@ -278,7 +278,6 @@ export function createHeadlessForm(
  * Updates fields in place based on a schema, recursively if needed
  * @param fields - The fields array to mutate
  * @param schema - The schema to use for updating fields
- * @param jsonLogicContext - JSON Logic context
  */
 function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
   // Clear existing fields array
