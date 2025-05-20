@@ -20,6 +20,42 @@ function addCheckboxAttributes(inputType: string, field: Field, schema: NonBoole
 }
 
 /**
+ * Add options attribute to a field
+ * @param field - The field to add the options to
+ * @param schema - The schema of the field
+ * @description
+ * This adds the options attribute to based on the schema's oneOf, anyOf, or enum if we don't already have options on the field.
+ */
+function addOptions(field: Field, schema: NonBooleanJsfSchema) {
+  if (field.options === undefined) {
+    const options = getFieldOptions(schema)
+    if (options) {
+      field.options = options
+      if (schema.type === 'array') {
+        field.multiple = true
+      }
+    }
+  }
+}
+
+/**
+ * Add fields attribute to a field
+ * @param field - The field to add the fields to
+ * @param schema - The schema of the field
+ * @description
+ * This adds the fields attribute to based on the schema's items.
+ * Since options and fields are mutually exclusive, we only add fields if no options were provided.
+ */
+function addFields(field: Field, schema: NonBooleanJsfSchema, strictInputType?: boolean) {
+  if (field.options === undefined) {
+    const fields = getFields(schema, strictInputType)
+    if (fields) {
+      field.fields = fields
+    }
+  }
+}
+
+/**
  * Get the presentation input type for a field from a schema type (ported from v0)
  * @param type - The schema type
  * @param schema - The non boolean schema of the field
@@ -332,25 +368,8 @@ export function buildFieldSchema(
     })
   }
 
-  // Generate options from schema if no options were provided via x-jsf-presentation
-  if (field.options === undefined) {
-    const options = getFieldOptions(schema)
-    if (options) {
-      field.options = options
-      if (schema.type === 'array') {
-        field.multiple = true
-      }
-    }
-  }
-
-  // Options and fields are mutually exclusive, so we only add fields if no options were provided
-  if (field.options === undefined) {
-    // We did not find options, so we might have an array to generate fields from
-    const fields = getFields(schema, strictInputType)
-    if (fields) {
-      field.fields = fields
-    }
-  }
+  addOptions(field, schema)
+  addFields(field, schema)
 
   return field
 }
