@@ -1,5 +1,6 @@
+import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
+import type { JsfSchema, JsonLogicContext, JsonLogicRules, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
 import { validateSchema } from './schema'
@@ -102,8 +103,8 @@ export function validateJsonLogicComputedAttributes(
   // add the new computed attributes to the schema
   Object.entries(computedAttributes).forEach(([schemaKey, value]) => {
     if (schemaKey === 'x-jsf-errorMessage') {
-      const computedErrorMessages = computeErrorMessages(
-        value as JsfSchema['x-jsf-errorMessage'],
+      const computedErrorMessages = computePropertyAttributes(
+        value as Record<string, string>,
         jsonLogicContext,
       )
       if (computedErrorMessages) {
@@ -168,29 +169,51 @@ function interpolate(message: string, jsonLogicContext: JsonLogicContext | undef
 }
 
 /**
- * Computes the error messages for a given schema, running the handlebars expressions through the JSON Logic context
+ * Calculates the computed attributes for a given schema,
+ * running the handlebars expressions through the JSON Logic context
  *
- * @param value The error message to compute
+ * @param value The computed attributes to compute
  * @param jsonLogicContext The JSON Logic context
- * @returns The computed error messages
+ * @returns The computed computed attributes
  */
-function computeErrorMessages(
-  value: JsfSchema['x-jsf-errorMessage'],
+function computePropertyAttributes(
+  value: Record<string, string>,
   jsonLogicContext: JsonLogicContext | undefined,
-): JsfSchema['x-jsf-errorMessage'] | undefined {
+): Record<string, string> | undefined {
   if (!value) {
     return undefined
   }
 
-  const computedErrorMessages: JsfSchema['x-jsf-errorMessage'] = {}
+  const computedObjectValues: Record<string, string> = {}
 
-  Object.entries(value).forEach(([key, message]) => {
-    let computedMessage = message
-    if (containsHandlebars(message)) {
-      computedMessage = interpolate(message, jsonLogicContext)
+  Object.entries(value).forEach(([key, value]) => {
+    let computedMessage = value
+    // If the message contains handlebars, interpolate it
+    if (containsHandlebars(value)) {
+      computedMessage = interpolate(value, jsonLogicContext)
     }
-    computedErrorMessages[key] = computedMessage
+    else {
+      // Check if the object value is the name of a computed value and if so, calculate it
+      const rule = jsonLogicContext?.schema?.computedValues?.[value]?.rule
+      if (rule) {
+        computedMessage = jsonLogic.apply(rule, replaceUndefinedAndNullValuesWithNaN(jsonLogicContext.value as ObjectValue))
+      }
+    }
+    computedObjectValues[key] = computedMessage
   })
 
-  return computedErrorMessages
+  return computedObjectValues
+}
+
+export function computePropertyValues(
+  rule: RulesLogic,
+  values: SchemaValue,
+): any {
+  if (!rule) {
+    return undefined
+  }
+
+  const result: any = jsonLogic.apply(rule, replaceUndefinedAndNullValuesWithNaN(values as ObjectValue))
+
+  return result
 }

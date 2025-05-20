@@ -4,7 +4,7 @@ import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
-import { mutateFields } from './mutations'
+import { applyComputedAttrsToSchema, mutateFields } from './mutations'
 import { validateSchema } from './validation/schema'
 
 export { ValidationOptions } from './validation/schema'
@@ -242,22 +242,25 @@ export function createHeadlessForm(
 ): FormResult {
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
-  const fields = buildFields({ schema, strictInputType })
+  // Make a (new) version with all the computed attrs computed and applied
+  const updatedSchema = applyComputedAttrsToSchema(schema, initialValues)
+  const fields = buildFields({ schema: updatedSchema, strictInputType })
 
   // Making sure field properties are correct for the initial values
-  mutateFields(fields, initialValues, schema)
+  mutateFields(fields, initialValues, updatedSchema, options.validationOptions)
 
   // TODO: check if we need this isError variable exposed
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const result = validate(value, schema, options.validationOptions)
+    const updatedSchema = applyComputedAttrsToSchema(schema, value)
+    const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
-    buildFieldsInPlace(fields, schema)
+    buildFieldsInPlace(fields, updatedSchema)
 
     // Updating field properties based on the new form value
-    mutateFields(fields, value, schema, options.validationOptions)
+    mutateFields(fields, value, updatedSchema, options.validationOptions)
 
     return result
   }
@@ -274,6 +277,7 @@ export function createHeadlessForm(
  * Updates fields in place based on a schema, recursively if needed
  * @param fields - The fields array to mutate
  * @param schema - The schema to use for updating fields
+ * @param jsonLogicContext - JSON Logic context
  */
 function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
   // Clear existing fields array
