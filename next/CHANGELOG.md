@@ -1,3 +1,9 @@
+#### 1.0.0-beta.6 (2025-05-20)
+
+##### Bug Fixes
+
+- fixes a bug where a fields required status was not updated through conditional schemas ([#188](https://github.com/remoteoss/json-schema-form/pull/188)) ([345ed303](https://github.com/remoteoss/json-schema-form/commit/345ed303ab27f555b26bef87aa8ac134b3c6e361))
+
 #### 1.0.0-beta.5 (2025-05-19)
 
 ##### Bug Fixes
