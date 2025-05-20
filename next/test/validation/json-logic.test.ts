@@ -1,4 +1,4 @@
-import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema } from '../../src/types'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema } from '../../src/types'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import jsonLogic from 'json-logic-js'
 import * as JsonLogicValidation from '../../src/validation/json-logic'
@@ -349,5 +349,118 @@ describe('validateJsonLogicRules', () => {
       // json-logic validation should not have been called as there are no json-logic rules present in the schema
       expect(jsonLogic.apply).not.toHaveBeenCalled()
     })
+  })
+})
+
+describe('applyComputedAttrsToSchema', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('returns original schema when no computed values exist', () => {
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        foo: { type: 'string' },
+      },
+    }
+
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, {})
+    expect(result).toBe(schema)
+  })
+
+  it('applies computed values to schema properties', () => {
+    const schema: JsfObjectSchema = {
+      'type': 'object',
+      'properties': {
+        person: {
+          type: 'object',
+          properties: {
+            age: {
+              'type': 'number',
+              'x-jsf-logic-computedAttrs': {
+                minimum: 'computedMin',
+              },
+            },
+          },
+        },
+      },
+      'x-jsf-logic': {
+        computedValues: {
+          computedMin: {
+            rule: { '==': [{ var: 'person.age' }, 21] },
+          },
+        },
+      },
+    };
+
+    (jsonLogic.apply as jest.Mock).mockReturnValue(21)
+
+    const result: JsfObjectSchema = JsonLogicValidation.applyComputedAttrsToSchema(schema, { person: { age: 21 } })
+
+    expect(result).not.toBe(schema)
+    const ageProperties = result.properties?.person?.properties?.age as JsfObjectSchema
+    expect(ageProperties?.minimum).toBe(21)
+    expect(ageProperties?.['x-jsf-logic-computedAttrs']).toBeUndefined()
+  })
+
+  it('handles handlebars template strings in computed values', () => {
+    const schema: JsfObjectSchema = {
+      'type': 'object',
+      'properties': {
+        age: {
+          'type': 'number',
+          'x-jsf-logic-computedAttrs': {
+            description: 'Minimum allowed is {{computedMin}}',
+          },
+        },
+      },
+      'x-jsf-logic': {
+        computedValues: {
+          computedMin: {
+            rule: { '+': [19, 2] },
+          },
+        },
+      },
+    };
+
+    (jsonLogic.apply as jest.Mock).mockReturnValue(21)
+
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, { age: 30 })
+
+    const ageProperties = result.properties?.age as JsfObjectSchema
+
+    expect(ageProperties?.description).toBe('Minimum allowed is 21')
+  })
+
+  it('handles object-type computed attributes', () => {
+    const schema: JsfObjectSchema = {
+      'type': 'object',
+      'properties': {
+        age: {
+          'type': 'number',
+          'x-jsf-logic-computedAttrs': {
+            'minimum': 'computedMin',
+            'x-jsf-errorMessage': {
+              minimum: 'This is a custom message {{computedMin}}',
+            },
+          },
+        },
+      },
+      'x-jsf-logic': {
+        computedValues: {
+          computedMin: {
+            rule: { '+': [{ var: 'age' }, 2] },
+          },
+        },
+      },
+    };
+
+    (jsonLogic.apply as jest.Mock).mockReturnValue(21)
+
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, { age: 19 })
+
+    const ageProperties = result.properties?.age as JsfObjectSchema
+    expect(ageProperties?.minimum).toBe(21)
   })
 })
