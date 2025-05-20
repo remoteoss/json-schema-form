@@ -206,15 +206,17 @@ function computePropertyAttributes(
 }
 
 export function computePropertyValues(
+  name: string,
   rule: RulesLogic,
   values: SchemaValue,
 ): any {
   if (!rule) {
-    return undefined
+    throw new Error(
+      `[json-schema-form] json-logic error: Computed value "${name}" doesn't exist`,
+    )
   }
 
   const result: any = jsonLogic.apply(rule, replaceUndefinedAndNullValuesWithNaN(values as ObjectValue))
-
   return result
 }
 
@@ -235,7 +237,7 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, values: Sche
     const computedValues: Record<string, string> = {}
 
     Object.entries(computedValuesDefinition).forEach(([name, definition]) => {
-      const computedValue = computePropertyValues(definition.rule, values)
+      const computedValue = computePropertyValues(name, definition.rule, values)
       computedValues[name] = computedValue
     })
 
@@ -278,18 +280,31 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
  * @param computedValues - The computed values to apply
  */
 function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, computedValues: Record<string, string>, computedAttrs: JsfSchema['x-jsf-logic-computedAttrs']) {
+  function evalStringOrTemplate(message: string) {
+    // If it's a string, we can apply it directly by referencing the computed value by key
+    if (!containsHandlebars(message)) {
+      return computedValues[message]
+    }
+
+    // If it's a template, we need to interpolate it, replacing the handlebars with the computed value
+    return message.replace(/\{\{(.*?)\}\}/g, (_, computation) => {
+      const computationName = computation.trim()
+      return computedValues[computationName] || `{{${computationName}}}`
+    })
+  }
+
   for (const key in computedAttrs) {
     const attributeName = key as keyof NonBooleanJsfSchema
     const computationName = computedAttrs[key]
-    // const computedValue = computedValues[key]
-    // If the computation points to a string, it's a computed value and we can apply it directly
     if (typeof computationName === 'string') {
-      const computedValue = computedValues[computationName]
-      propertySchema[attributeName] = computedValue
+      propertySchema[attributeName] = evalStringOrTemplate(computationName)
     }
     else {
+      if (!propertySchema[attributeName]) {
+        propertySchema[attributeName] = {}
+      }
       Object.entries(computationName).forEach(([key, value]) => {
-        propertySchema[attributeName][key] = computedValues[value]
+        propertySchema[attributeName][key] = evalStringOrTemplate(value)
       })
     }
   }
