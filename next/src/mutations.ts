@@ -1,9 +1,11 @@
+import type { JSONSchema } from 'json-schema-typed'
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
+import { computePropertyValues } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
-import { isObjectValue } from './validation/util'
+import { isObjectValue, safeDeepClone } from './validation/util'
 
 /**
  * Updates field properties based on JSON schema conditional rules
@@ -156,4 +158,81 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
 
   // Apply rules to the branch
   applySchemaRules(fields, values, branch as JsfObjectSchema, options)
+}
+
+/**
+ * Applies any computed attributes to a schema, based on the provided values. When there are values to apply,
+ * it creates a deep clone of the schema and applies the computed values to the clone,otherwise it returns the original schema.
+ *
+ * @param schema - The schema to apply computed attributes to
+ * @param values - The current form values
+ * @returns The schema with computed attributes applied
+ */
+export function applyComputedAttrsToSchema(schema: JsfObjectSchema, values: SchemaValue) {
+  // make a version with all the computed attrs computed and applied
+  // check if the schema has a 'x-jsf-logic' property with a 'computedValues' property
+  if (schema['x-jsf-logic']?.computedValues) {
+    // apply the computed values to the schema
+    const computedValuesDefinition = schema['x-jsf-logic'].computedValues
+    const computedValues: Record<string, string> = {}
+
+    Object.entries(computedValuesDefinition).forEach(([name, definition]) => {
+      const computedValue = computePropertyValues(definition.rule, values)
+      computedValues[name] = computedValue
+    })
+
+    const schemaCopy = safeDeepClone(schema)
+
+    cycleThroughPropertiesAndApplyValues(schemaCopy, computedValues)
+
+    return schemaCopy
+  }
+  else {
+    return schema
+  }
+}
+
+/**
+ * Cycles through the properties of a schema and applies the computed values to it
+ * @param schemaCopy - The schema to apply computed values to
+ * @param computedValues - The computed values to apply
+ */
+function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, computedValues: Record<string, string>) {
+  for (const propertyName in schemaCopy.properties) {
+    const computedAttrs = schemaCopy.properties[propertyName]['x-jsf-logic-computedAttrs']
+    if (computedAttrs) {
+      const propertySchema = schemaCopy.properties[propertyName] as JsfObjectSchema
+      cycleThroughAttrsAndApplyValues(propertySchema, computedValues, computedAttrs)
+
+      if (propertySchema.type === 'object' && propertySchema.properties) {
+        Object.entries(propertySchema.properties).forEach(([_, property]) => {
+          cycleThroughPropertiesAndApplyValues(property as JsfObjectSchema, computedValues)
+        })
+      }
+      delete propertySchema['x-jsf-logic-computedAttrs']
+    }
+  }
+}
+
+/**
+ * Cycles through the attributes of a schema and applies the computed values to it
+ * @param propertySchema - The schema to apply computed values to
+ * @param computedValues - The computed values to apply
+ */
+function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, computedValues: Record<string, string>, computedAttrs: JsfSchema['x-jsf-logic-computedAttrs']) {
+  for (const key in computedAttrs) {
+    const attributeName = key as keyof NonBooleanJsfSchema
+    const computationName = computedAttrs[key]
+    // const computedValue = computedValues[key]
+    // If the computation points to a string, it's a computed value and we can apply it directly
+    if (typeof computationName === 'string') {
+      const computedValue = computedValues[computationName]
+      propertySchema[attributeName] = computedValue
+    }
+    else {
+      Object.entries(computationName).forEach(([key, value]) => {
+        propertySchema[attributeName][key] = computedValues[value]
+      })
+    }
+  }
 }
