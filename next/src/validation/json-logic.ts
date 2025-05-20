@@ -93,7 +93,7 @@ export function computePropertyValues(
  * @param values - The current form values
  * @returns The schema with computed attributes applied
  */
-export function applyComputedAttrsToSchema(schema: JsfObjectSchema, values: SchemaValue) {
+export function applyComputedAttrsToSchema(schema: JsfObjectSchema, values: SchemaValue): JsfObjectSchema {
   // If the schema has any computed attributes, we need to:
   // - clone the original schema
   // - calculate all the computed values
@@ -127,17 +127,16 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, values: Sche
 function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, computedValues: Record<string, string>) {
   for (const propertyName in schemaCopy.properties) {
     const computedAttrs = schemaCopy.properties[propertyName]['x-jsf-logic-computedAttrs']
+    const propertySchema = schemaCopy.properties[propertyName] as JsfObjectSchema
     if (computedAttrs) {
-      const propertySchema = schemaCopy.properties[propertyName] as JsfObjectSchema
       cycleThroughAttrsAndApplyValues(propertySchema, computedValues, computedAttrs)
-
-      if (propertySchema.type === 'object' && propertySchema.properties) {
-        Object.entries(propertySchema.properties).forEach(([_, property]) => {
-          cycleThroughPropertiesAndApplyValues(property as JsfObjectSchema, computedValues)
-        })
-      }
-      delete propertySchema['x-jsf-logic-computedAttrs']
     }
+
+    if (propertySchema.type === 'object' && propertySchema.properties) {
+      cycleThroughPropertiesAndApplyValues(propertySchema, computedValues)
+    }
+
+    delete propertySchema['x-jsf-logic-computedAttrs']
   }
 }
 
