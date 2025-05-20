@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import jsonLogic from 'json-logic-js'
 import * as JsonLogicValidation from '../../src/validation/json-logic'
 import * as SchemaValidation from '../../src/validation/schema'
-import { validateSchema } from '../../src/validation/schema'
 import { errorLike } from '../test-utils'
 
 const validateJsonLogicRules = JsonLogicValidation.validateJsonLogicRules

@@ -1,11 +1,9 @@
-import type { JSONSchema } from 'json-schema-typed'
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
-import { computePropertyValues } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
-import { isObjectValue, safeDeepClone } from './validation/util'
+import { isObjectValue } from './validation/util'
 
 /**
  * Updates field properties based on JSON schema conditional rules

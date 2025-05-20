@@ -1,9 +1,7 @@
 import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
-import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
-import { validateSchema } from './schema'
 import { safeDeepClone } from './util'
 
 /**
