@@ -332,15 +332,19 @@ export function buildFieldSchema(
     })
   }
 
-  // Handle options
-  const options = getFieldOptions(schema)
-  if (options) {
-    field.options = options
-    if (schema.type === 'array') {
-      field.multiple = true
+  // Generate options from schema if no options were provided via x-jsf-presentation
+  if (field.options === undefined) {
+    const options = getFieldOptions(schema)
+    if (options) {
+      field.options = options
+      if (schema.type === 'array') {
+        field.multiple = true
+      }
     }
   }
-  else {
+
+  // Options and fields are mutually exclusive, so we only add fields if no options were provided
+  if (field.options === undefined) {
     // We did not find options, so we might have an array to generate fields from
     const fields = getFields(schema, strictInputType)
     if (fields) {
