@@ -154,6 +154,15 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
     }
   }
 
+  // Go through the `required` array and mark all fields included in the array as required
+  if (Array.isArray(branch.required)) {
+    fields.forEach((field) => {
+      if (branch.required!.includes(field.name)) {
+        field.required = true
+      }
+    })
+  }
+
   // Apply rules to the branch
   applySchemaRules(fields, values, branch as JsfObjectSchema, options)
 }

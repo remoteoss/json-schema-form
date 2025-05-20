@@ -350,4 +350,97 @@ describe('field mutation', () => {
       })
     })
   })
+
+  it('correctly updates required on fields', () => {
+    const schema: JsfObjectSchema = {
+      'additionalProperties': false,
+      'allOf': [
+        {
+          else: {
+            properties: {
+              dependent_details: false,
+            },
+          },
+          if: {
+            properties: {
+              has_dependents: {
+                const: 'yes',
+              },
+            },
+            required: [
+              'has_dependents',
+            ],
+          },
+          then: {
+            required: [
+              'dependent_details',
+            ],
+          },
+        },
+      ],
+      'properties': {
+        dependent_details: {
+          'items': {
+            'properties': {
+              first_name: {
+                'maxLength': 255,
+                'title': 'First name',
+                'type': 'string',
+                'x-jsf-presentation': {
+                  inputType: 'text',
+                },
+              },
+            },
+            'required': [
+              'first_name',
+            ],
+            'type': 'object',
+            'x-jsf-order': [
+              'first_name',
+            ],
+          },
+          'title': 'Dependent',
+          'type': 'array',
+          'x-jsf-presentation': {
+            addFieldText: 'Add new section for dependent',
+            inputType: 'group-array',
+          },
+        },
+        has_dependents: {
+          'oneOf': [
+            {
+              const: 'yes',
+              title: 'Yes',
+            },
+            {
+              const: 'no',
+              title: 'No',
+            },
+          ],
+          'title': 'Do you have dependents to claim?',
+          'type': 'string',
+          'x-jsf-presentation': {
+            direction: 'row',
+            inputType: 'radio',
+          },
+        },
+      },
+      'required': [
+        'has_dependents',
+      ],
+      'type': 'object',
+      'x-jsf-order': [
+        'has_dependents',
+        'dependent_details',
+      ],
+    }
+
+    const form = createHeadlessForm(schema)
+
+    expect(form.fields[1].required).toBe(false)
+
+    form.handleValidation({ has_dependents: 'yes' })
+
+    expect(form.fields[1].required).toBe(true)
+  })
 })
