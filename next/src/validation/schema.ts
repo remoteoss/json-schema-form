@@ -7,7 +7,7 @@ import { validateConst } from './const'
 import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
 import { validateFile } from './file'
-import { validateJsonLogicComputedAttributes, validateJsonLogicRules } from './json-logic'
+import { validateJsonLogicRules } from './json-logic'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -251,7 +251,6 @@ export function validateSchema(
     // Custom validations
     ...validateDate(value, schema, options, path),
     ...validateJsonLogicSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext),
-    ...validateJsonLogicComputedAttributes(value, schema, options, jsonLogicContext, path),
     ...validateJsonLogicRules(schema, jsonLogicContext, path),
   ]
 }
