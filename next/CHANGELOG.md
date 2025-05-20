@@ -1,3 +1,9 @@
+#### 1.0.0-beta.7 (2025-05-20)
+
+##### Bug Fixes
+
+- don't override `options` property provided via `x-jsf-presentation` ([#189](https://github.com/remoteoss/json-schema-form/pull/189)) ([5e81ca8e](https://github.com/remoteoss/json-schema-form/commit/5e81ca8e407b06eef1c1f7fb699d06c2a5bc5862))
+
 #### 1.0.0-beta.6 (2025-05-20)
 
 ##### Bug Fixes
