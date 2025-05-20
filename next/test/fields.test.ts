@@ -235,6 +235,45 @@ describe('fields', () => {
     ])
   })
 
+  it('creates options from an enum inside items (deprecated)', () => {
+    const schema: JsfSchema = {
+      type: 'object',
+      properties: {
+        currency: {
+          'type': 'array',
+          'items': {
+            type: 'string',
+            enum: ['usd', 'eur', 'gbp'],
+          },
+          'x-jsf-presentation': {
+            options: [
+              {
+                label: 'USD',
+                value: 'usd',
+              },
+              {
+                label: 'EUR',
+                value: 'eur',
+              },
+              {
+                label: 'GBP',
+                value: 'gbp',
+              },
+            ],
+          },
+        },
+      },
+    }
+
+    const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+    expect(fields[0].options).toEqual([
+      { label: 'USD', value: 'usd' },
+      { label: 'EUR', value: 'eur' },
+      { label: 'GBP', value: 'gbp' },
+    ])
+  })
+
   describe('radio field', () => {
     it('builds a radio field with options', () => {
       const schema: JsfSchema = {
