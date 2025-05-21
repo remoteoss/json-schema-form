@@ -1,7 +1,7 @@
 import type { ValidationError, ValidationErrorPath } from '../../errors'
 import type { JsfPresentation, NonBooleanJsfSchema, SchemaValue } from '../../types'
-import { getUiPresentation } from '../../utils'
 import type { ValidationOptions } from '../schema'
+import { getUiPresentation } from '../../utils'
 
 export const DATE_FORMAT = 'yyyy-MM-dd'
 type DateComparisonResult = 'LESSER' | 'GREATER' | 'EQUAL'

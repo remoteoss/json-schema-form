@@ -13,6 +13,7 @@ import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
 import { isObjectValue } from './util'
+
 export interface ValidationOptions {
   /**
    * A null value will be treated as undefined.
