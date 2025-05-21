@@ -39,8 +39,8 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
         return 'date'
       if (format === 'data-url')
         return 'file'
-      // if (oneOf)
-      //   return 'radio'
+      if (oneOf)
+        return 'radio'
       return 'text'
     }
     case 'number':
