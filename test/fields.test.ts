@@ -210,6 +210,37 @@ describe('fields', () => {
     ])
   })
 
+  it('should handle custom x-jsf-presentation properties - alias x-jsf-ui', () => {
+    const schema: JsfSchema = {
+      type: 'object',
+      properties: {
+        file: {
+          'type': 'string',
+          'title': 'Some field',
+          'x-jsf-ui': {
+            inputType: 'text',
+            foo: 123,
+          },
+        },
+      },
+    }
+
+    const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+    expect(fields).toEqual([
+      {
+        inputType: 'text',
+        type: 'text',
+        jsonType: 'string',
+        isVisible: true,
+        name: 'file',
+        label: 'Some field',
+        required: false,
+        foo: 123,
+      },
+    ])
+  })
+
   it('should handle boolean schema', () => {
     const schema = {
       type: 'object',
