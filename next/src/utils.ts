@@ -1,4 +1,5 @@
 import type { Field } from './field/type'
+import type { JsfPresentation, JsfSchema } from './types'
 
 type DiskSizeUnit = 'Bytes' | 'KB' | 'MB'
 
@@ -50,4 +51,8 @@ export function convertKBToMB(kb: number): number {
     return 0
   const mb = kb / 1024 // KB to MB
   return Number.parseFloat(mb.toFixed(2)) // Keep 2 decimal places
+}
+
+export function getUiPresentation(schema: JsfSchema): JsfPresentation | undefined {
+  return schema['x-jsf-presentation'] || schema['x-jsf-ui']
 }
