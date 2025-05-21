@@ -1,6 +1,7 @@
 import type { ValidationError, ValidationErrorPath } from '../../errors'
-import type { NonBooleanJsfSchema, SchemaValue } from '../../types'
+import type { JsfPresentation, NonBooleanJsfSchema, SchemaValue } from '../../types'
 import type { LegacyOptions } from '../schema'
+import { getUiPresentation } from '../../utils'
 
 export const DATE_FORMAT = 'yyyy-MM-dd'
 type DateComparisonResult = 'LESSER' | 'GREATER' | 'EQUAL'
@@ -71,11 +72,13 @@ export function validateDate(
   const isEmpty = isEmptyString || isUndefined
   const errors: ValidationError[] = []
 
-  if (!isString || isEmpty || schema['x-jsf-presentation'] === undefined || schema['x-jsf-ui'] === undefined) {
+  if (!isString || isEmpty || getUiPresentation(schema) === undefined) {
     return errors
   }
 
-  const { minDate, maxDate } = schema['x-jsf-presentation'] || schema['x-jsf-ui']
+  // TODO: Why do we need to cast to JsfPresentation,
+  // even though we know it's not undefined (from the if above)?
+  const { minDate, maxDate } = getUiPresentation(schema) as JsfPresentation
 
   if (minDate && !validateMinDate(value, minDate)) {
     errors.push({ path, validation: 'minDate', schema, value })
