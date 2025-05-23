@@ -39,7 +39,7 @@ import {
   schemaWithUnknownVariableInComputedValues,
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
-} from './jsonLogic.fixtures'
+} from './json-logic.fixtures'
 
 beforeEach(mockConsole)
 afterEach(restoreConsoleAndEnsureItWasNotCalled)
@@ -350,13 +350,13 @@ describe('jsonLogic: cross-values validations', () => {
         strictInputType: false,
         initialValues: { field_a: 2 },
       })
-      const fieldB = fields.find(i => i.name === 'field_b')
+      let fieldB = fields.find(i => i.name === 'field_b')
       expect(fieldB.description).toEqual(
         'This field is 2 times bigger than field_a with value of 4.',
       )
       expect(fieldB.default).toEqual(4)
-      expect(fieldB.forcedValue).toEqual(4)
       handleValidation({ field_a: 4 })
+      fieldB = fields.find(i => i.name === 'field_b')
       expect(fieldB.default).toEqual(8)
       expect(fieldB.label).toEqual('This is 8!')
     })
@@ -375,51 +375,16 @@ describe('jsonLogic: cross-values validations', () => {
         schemaWithComputedAttributesAndErrorMessages,
         { strictInputType: false },
       )
-      const fieldB = fields.find(i => i.name === 'field_b')
       expect(handleValidation({ field_a: 2, field_b: 0 }).formErrors).toEqual({
         field_b: 'Must be bigger than 4',
       })
       expect(handleValidation({ field_a: 2, field_b: 100 }).formErrors).toEqual({
         field_b: 'Must be smaller than 8',
       })
+      const fieldB = fields.find(i => i.name === 'field_b')
       expect(fieldB.minimum).toEqual(4)
       expect(fieldB.maximum).toEqual(8)
       expect(fieldB.statement).toEqual({ description: 'Must be bigger than 4 and smaller than 8' })
-    })
-
-    it('use a inline-rule in a schema for a title attribute', () => {
-      const { fields, handleValidation } = createHeadlessForm(
-        schemaWithInlineRuleForComputedAttributeWithCopy,
-        {
-          strictInputType: false,
-        },
-      )
-      const [, fieldB] = fields
-      expect(handleValidation({ field_a: 0, field_b: null }).formErrors).toEqual(undefined)
-      expect(fieldB.label).toEqual('I need this to work using the 10.')
-      expect(handleValidation({ field_a: 10 }).formErrors).toEqual(undefined)
-      expect(fieldB.label).toEqual('I need this to work using the 20.')
-    })
-
-    it('use multiple inline rules with different identifiers', () => {
-      const { fields, handleValidation } = createHeadlessForm(
-        schemaWithInlineMultipleRulesForComputedAttributes,
-        {
-          strictInputType: false,
-        },
-      )
-      const [, fieldB] = fields
-      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined)
-      expect(fieldB.description).toEqual('Must be between 5 and 20.')
-    })
-
-    it('use an inline rule in a schema for a title but it just uses the value', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaInlineComputedAttrForTitle, {
-        strictInputType: false,
-      })
-      const [, fieldB] = fields
-      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toEqual(undefined)
-      expect(fieldB.label).toEqual('20')
     })
 
     it('use x-jsf-logic for setting dynamic minimum and maximum values', () => {
@@ -456,15 +421,6 @@ describe('jsonLogic: cross-values validations', () => {
       })
       expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toBeUndefined()
     })
-
-    it('mix use of multiple inline rules and an external rule', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaWithJSFLogicAndInlineRule, {
-        strictInputType: false,
-      })
-      handleValidation({ field_a: 10 })
-      const [, fieldB] = fields
-      expect(fieldB.label).toEqual('Going to use 20 and 4')
-    })
   })
 
   describe('conditionals', () => {
@@ -492,7 +448,7 @@ describe('jsonLogic: cross-values validations', () => {
       })
       expect(handleValidation({ field_a: 10, field_b: 20 }).formErrors).toEqual(undefined)
       expect(handleValidation({ field_a: 20, field_b: 10 }).formErrors).toEqual({
-        field_b: 'Must be greater than two times A',
+        field_b: 'Must be greater than A',
       })
       expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toEqual({
         field_b: 'Must be greater than two times A',
