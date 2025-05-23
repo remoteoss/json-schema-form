@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, JsfSchemaType, JsonLogicContext, JsonLogicRootSchema, JsonLogicRules, SchemaValue } from '../types'
+import type { JsfSchema, JsfSchemaType, JsonLogicContext, JsonLogicRootSchema, SchemaValue } from '../types'
 import { validateArray } from './array'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
@@ -7,7 +7,7 @@ import { validateConst } from './const'
 import { validateDate } from './custom/date'
 import { validateEnum } from './enum'
 import { validateFile } from './file'
-import { validateJsonLogicComputedAttributes, validateJsonLogicRules } from './json-logic'
+import { getJsonLogicContextFromSchema, validateJsonLogicRules } from './json-logic'
 import { validateNumber } from './number'
 import { validateObject } from './object'
 import { validateString } from './string'
@@ -167,21 +167,15 @@ export function validateSchema(
   let jsonLogicContext = rootJsonLogicContext
   let jsonLogicRootSchema: JsonLogicRootSchema | undefined
 
-  // If we have a root jsonLogicContext, we shoud use that.
+  // If we have a root jsonLogicContext, we should use that.
   // If not, it probably means the current schema is the root schema (or that there's no json-logic node in the current schema)
   if (!rootJsonLogicContext && schema['x-jsf-logic']) {
     // - We should set the jsonLogicContext's schema as the schema in the 'x-jsf-logic' property
-    const { validations, computedValues, ...rest } = schema['x-jsf-logic']
-    const jsonLogicRules: JsonLogicRules = {
-      validations,
-      computedValues,
-    }
-    jsonLogicContext = {
-      schema: jsonLogicRules,
-      value,
-    }
+    jsonLogicContext = getJsonLogicContextFromSchema(schema['x-jsf-logic'], value)
+
     // - We need to validate any schema that's in the 'x-jsf-logic' property, like if/then/else/allOf/etc.
     // This is done below in the validateJsonLogicSchema call.
+    const { validations, computedValues, ...rest } = schema['x-jsf-logic']
     jsonLogicRootSchema = rest
   }
 
@@ -251,7 +245,6 @@ export function validateSchema(
     // Custom validations
     ...validateDate(value, schema, options, path),
     ...validateJsonLogicSchema(value, jsonLogicRootSchema, options, path, jsonLogicContext),
-    ...validateJsonLogicComputedAttributes(value, schema, options, jsonLogicContext, path),
     ...validateJsonLogicRules(schema, jsonLogicContext, path),
   ]
 }
