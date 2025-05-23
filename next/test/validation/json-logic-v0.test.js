@@ -315,7 +315,7 @@ describe('jsonLogic: cross-values validations', () => {
         field_b: 'Required field',
       })
       expect(handleValidation({ field_a: 1, field_b: 2 }).formErrors).toEqual({
-        field_a: 'A must be bigger than B',
+        field_a: 'A must be even',
       })
       expect(handleValidation({ field_a: 3, field_b: 2 }).formErrors).toEqual({
         field_a: 'A must be even',
@@ -439,7 +439,7 @@ describe('jsonLogic: cross-values validations', () => {
       })
       expect(handleValidation({ field_a: 10, field_b: 20 }).formErrors).toEqual(undefined)
       expect(handleValidation({ field_a: 20, field_b: 10 }).formErrors).toEqual({
-        field_b: 'Must be greater than A',
+        field_b: 'Must be greater than two times A',
       })
       expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toEqual({
         field_b: 'Must be greater than two times A',

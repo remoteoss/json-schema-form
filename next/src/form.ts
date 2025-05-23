@@ -138,9 +138,7 @@ function validationErrorsToFormErrors(errors: ValidationErrorWithMessage[]): For
 
     if (segments.length > 0) {
       const lastSegment = segments[segments.length - 1]
-      if (!current[lastSegment]) {
-        current[lastSegment] = error.message
-      }
+      current[lastSegment] = error.message
     }
   }
 
