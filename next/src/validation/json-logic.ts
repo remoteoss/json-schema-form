@@ -121,7 +121,7 @@ export function computePropertyValues(
  * it creates a deep clone of the schema and applies the computed values to the clone,otherwise it returns the original schema.
  *
  * @param schema - The schema to apply computed attributes to
- * @param computedValues - The computed values to apply
+ * @param computedValuesDefinition - The computed values to apply
  * @param values - The current form values
  * @returns The schema with computed attributes applied
  */

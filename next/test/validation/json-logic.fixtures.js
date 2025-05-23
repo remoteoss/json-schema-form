@@ -469,66 +469,6 @@ export const schemaWithBadOperation = {
   },
 }
 
-export const schemaWithInlineRuleForComputedAttributeWithCopy = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      'type': 'number',
-      'x-jsf-logic-computedAttrs': {
-        title: {
-          value: 'I need this to work using the {{rule}}.',
-          rule: {
-            '+': [{ var: 'field_a' }, 10],
-          },
-        },
-      },
-    },
-  },
-}
-
-export const schemaWithInlineMultipleRulesForComputedAttributes = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      'type': 'number',
-      'x-jsf-logic-computedAttrs': {
-        description: {
-          value: 'Must be between {{half_a}} and {{double_a}}.',
-          half_a: {
-            '/': [{ var: 'field_a' }, 2],
-          },
-          double_a: {
-            '*': [{ var: 'field_a' }, 2],
-          },
-        },
-      },
-    },
-  },
-}
-
-export const schemaInlineComputedAttrForTitle = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      'type': 'number',
-      'x-jsf-logic-computedAttrs': {
-        title: {
-          value: '{{rule}}',
-          rule: {
-            '+': [{ var: 'field_a' }, 10],
-          },
-        },
-      },
-    },
-  },
-}
-
 export const schemaValidationForMaximumAndMinimumValues = {
   'properties': {
     field_a: {

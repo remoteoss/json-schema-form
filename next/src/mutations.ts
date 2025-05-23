@@ -2,7 +2,7 @@ import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
-import { applyComputedAttrsToSchema, computePropertyValues, getJsonLogicContextFromSchema } from './validation/json-logic'
+import { applyComputedAttrsToSchema, getJsonLogicContextFromSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
 

@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, JsfSchemaType, JsonLogicContext, JsonLogicRootSchema, JsonLogicRules, SchemaValue } from '../types'
+import type { JsfSchema, JsfSchemaType, JsonLogicContext, JsonLogicRootSchema, SchemaValue } from '../types'
 import { validateArray } from './array'
 import { validateAllOf, validateAnyOf, validateNot, validateOneOf } from './composition'
 import { validateCondition } from './conditions'
