@@ -1,24 +1,24 @@
 export function createSchemaWithRulesOnFieldA(rules) {
   return {
-    properties: {
+    'properties': {
       field_a: {
-        type: 'number',
+        'type': 'number',
         'x-jsf-logic-validations': Object.keys(rules),
       },
       field_b: {
         type: 'number',
       },
     },
-    required: ['field_a', 'field_b'],
+    'required': ['field_a', 'field_b'],
     'x-jsf-logic': { validations: rules },
-  };
+  }
 }
 
 export function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
   return {
-    properties: {
+    'properties': {
       field_a: {
-        type: 'number',
+        'type': 'number',
         'x-jsf-logic-validations': Object.keys(rules),
       },
       field_b: {
@@ -29,17 +29,17 @@ export function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
       },
     },
     'x-jsf-logic': { validations: rules },
-    required: ['field_a', 'field_b', 'field_c'],
-  };
+    'required': ['field_a', 'field_b', 'field_c'],
+  }
 }
 
 export const schemaWithNonRequiredField = {
-  properties: {
+  'properties': {
     field_a: {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-validations': ['a_greater_than_field_b'],
     },
   },
@@ -53,14 +53,14 @@ export const schemaWithNonRequiredField = {
       },
     },
   },
-  required: [],
-};
+  'required': [],
+}
 
 export const schemaWithNativeAndJSONLogicChecks = {
-  properties: {
+  'properties': {
     field_a: {
-      type: 'number',
-      minimum: 100,
+      'type': 'number',
+      'minimum': 100,
       'x-jsf-logic-validations': ['a_multiple_of_ten'],
     },
   },
@@ -74,13 +74,13 @@ export const schemaWithNativeAndJSONLogicChecks = {
       },
     },
   },
-  required: ['field_a'],
-};
+  'required': ['field_a'],
+}
 
 export const schemaWithMissingRule = {
-  properties: {
+  'properties': {
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-validations': ['a_greater_than_ten'],
     },
   },
@@ -92,11 +92,11 @@ export const schemaWithMissingRule = {
       },
     },
   },
-  required: [],
-};
+  'required': [],
+}
 
 export const schemaWithUnknownVariableInValidations = {
-  properties: {
+  'properties': {
     // field_a: { type: 'number' }, this missing causes test to fail.
   },
   'x-jsf-logic': {
@@ -107,10 +107,10 @@ export const schemaWithUnknownVariableInValidations = {
       },
     },
   },
-};
+}
 
 export const schemaWithUnknownVariableInComputedValues = {
-  properties: {
+  'properties': {
     // field_a: { type: 'number' }, this missing causes test to fail.
   },
   'x-jsf-logic': {
@@ -120,12 +120,12 @@ export const schemaWithUnknownVariableInComputedValues = {
       },
     },
   },
-};
+}
 
 export const schemaWithMissingComputedValue = {
-  properties: {
+  'properties': {
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: '{{a_plus_ten}}',
       },
@@ -138,20 +138,20 @@ export const schemaWithMissingComputedValue = {
       },
     },
   },
-  required: [],
-};
+  'required': [],
+}
 
 export const multiRuleSchema = {
-  properties: {
+  'properties': {
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-validations': ['a_bigger_than_b', 'is_even_number'],
     },
     field_b: {
       type: 'number',
     },
   },
-  required: ['field_a', 'field_b'],
+  'required': ['field_a', 'field_b'],
   'x-jsf-logic': {
     validations: {
       a_bigger_than_b: {
@@ -168,20 +168,20 @@ export const multiRuleSchema = {
       },
     },
   },
-};
+}
 
 export const schemaWithTwoRules = {
-  properties: {
+  'properties': {
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-validations': ['a_bigger_than_b'],
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-validations': ['is_even_number'],
     },
   },
-  required: ['field_a', 'field_b'],
+  'required': ['field_a', 'field_b'],
   'x-jsf-logic': {
     validations: {
       a_bigger_than_b: {
@@ -198,15 +198,15 @@ export const schemaWithTwoRules = {
       },
     },
   },
-};
+}
 
 export const schemaWithComputedAttributes = {
-  properties: {
+  'properties': {
     field_a: {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: 'This is {{a_times_two}}!',
         const: 'a_times_two',
@@ -215,7 +215,7 @@ export const schemaWithComputedAttributes = {
       },
     },
   },
-  required: ['field_a', 'field_b'],
+  'required': ['field_a', 'field_b'],
   'x-jsf-logic': {
     computedValues: {
       a_times_two: {
@@ -225,15 +225,15 @@ export const schemaWithComputedAttributes = {
       },
     },
   },
-};
+}
 
 export const badSchemaThatWillNotSetAForcedValue = {
-  properties: {
+  'properties': {
     field_a: {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         const: 'a_times_three',
         default: 'a_times_two',
@@ -254,7 +254,7 @@ export const badSchemaThatWillNotSetAForcedValue = {
       },
     },
   },
-};
+}
 
 export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
   properties: {
@@ -262,7 +262,7 @@ export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: {
           rule: {
@@ -272,25 +272,25 @@ export const schemaWithInlineRuleForComputedAttributeWithoutCopy = {
       },
     },
   },
-};
+}
 
 export const schemaWithComputedAttributeThatDoesntExist = {
   properties: {
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         minimum: 'iDontExist',
       },
     },
   },
   // x-jsf-logic: { computedValues: { iDontExist: { rule: 10 }} this missing causes test to fail.
-};
+}
 
 export const schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar = {
   properties: {
     // iDontExist: { type: 'number' } this missing causes test to fail.
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: {
           rule: {
@@ -300,41 +300,41 @@ export const schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar = 
       },
     },
   },
-};
+}
 
 export const schemaWithComputedAttributeThatDoesntExistTitle = {
   properties: {
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: `this doesn't exist {{iDontExist}}`,
       },
     },
   },
-};
+}
 
 export const schemaWithComputedAttributeThatDoesntExistDescription = {
   properties: {
     // iDontExist: { type: 'number'}, this missing causes test to fail
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         description: `this doesn't exist {{iDontExist}}`,
       },
     },
   },
-};
+}
 
 export const schemaWithComputedAttributesAndErrorMessages = {
-  properties: {
+  'properties': {
     field_a: {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
-        minimum: 'a_times_two',
-        maximum: 'a_times_four',
+        'minimum': 'a_times_two',
+        'maximum': 'a_times_four',
         'x-jsf-errorMessage': {
           minimum: 'Must be bigger than {{a_times_two}}',
           maximum: 'Must be smaller than {{a_times_four}}',
@@ -347,7 +347,7 @@ export const schemaWithComputedAttributesAndErrorMessages = {
       },
     },
   },
-  required: ['field_a', 'field_b'],
+  'required': ['field_a', 'field_b'],
   'x-jsf-logic': {
     computedValues: {
       a_times_two: {
@@ -362,10 +362,10 @@ export const schemaWithComputedAttributesAndErrorMessages = {
       },
     },
   },
-};
+}
 
 export const schemaWithDeepVarThatDoesNotExist = {
-  properties: {
+  'properties': {
     field_a: {
       type: 'number',
     },
@@ -380,14 +380,14 @@ export const schemaWithDeepVarThatDoesNotExist = {
       },
     },
   },
-  required: [],
-};
+  'required': [],
+}
 
 export const schemaWithDeepVarThatDoesNotExistOnFieldset = {
   properties: {
     field_a: {
-      type: 'object',
-      properties: {
+      'type': 'object',
+      'properties': {
         child: {
           type: 'number',
         },
@@ -405,35 +405,35 @@ export const schemaWithDeepVarThatDoesNotExistOnFieldset = {
     },
   },
   required: [],
-};
+}
 
 export const schemaWithValidationThatDoesNotExistOnProperty = {
   properties: {
     field_a: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-validations': ['iDontExist'],
     },
   },
-};
+}
 
 export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
-  properties: {
+  'properties': {
     field_a: {
-      type: 'object',
+      'type': 'object',
       'x-jsf-presentation': {
         inputType: 'fieldset',
       },
-      properties: {
+      'properties': {
         child: {
-          type: 'number',
+          'type': 'number',
           'x-jsf-logic-validations': ['child_greater_than_10'],
         },
         other_child: {
-          type: 'number',
+          'type': 'number',
           'x-jsf-logic-validations': ['greater_than_child'],
         },
       },
-      required: ['child', 'other_child'],
+      'required': ['child', 'other_child'],
     },
   },
   // the issue here is that this should be nested inside `field_a` in order to not fail.
@@ -453,11 +453,11 @@ export const schemaWithPropertyThatDoesNotExistInThatLevelButDoesInFieldset = {
       },
     },
   },
-  required: ['field_a'],
-};
+  'required': ['field_a'],
+}
 
 export const schemaWithBadOperation = {
-  properties: {},
+  'properties': {},
   'x-jsf-logic': {
     validations: {
       badOperator: {
@@ -467,7 +467,7 @@ export const schemaWithBadOperation = {
       },
     },
   },
-};
+}
 
 export const schemaWithInlineRuleForComputedAttributeWithCopy = {
   properties: {
@@ -475,7 +475,7 @@ export const schemaWithInlineRuleForComputedAttributeWithCopy = {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: {
           value: 'I need this to work using the {{rule}}.',
@@ -486,7 +486,7 @@ export const schemaWithInlineRuleForComputedAttributeWithCopy = {
       },
     },
   },
-};
+}
 
 export const schemaWithInlineMultipleRulesForComputedAttributes = {
   properties: {
@@ -494,7 +494,7 @@ export const schemaWithInlineMultipleRulesForComputedAttributes = {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         description: {
           value: 'Must be between {{half_a}} and {{double_a}}.',
@@ -508,7 +508,7 @@ export const schemaWithInlineMultipleRulesForComputedAttributes = {
       },
     },
   },
-};
+}
 
 export const schemaInlineComputedAttrForTitle = {
   properties: {
@@ -516,7 +516,7 @@ export const schemaInlineComputedAttrForTitle = {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: {
           value: '{{rule}}',
@@ -527,38 +527,147 @@ export const schemaInlineComputedAttrForTitle = {
       },
     },
   },
-};
+}
 
-export const schemaInlineComputedAttrForMaximumMinimumValues = {
-  properties: {
+export const schemaValidationForMaximumAndMinimumValues = {
+  'properties': {
     field_a: {
       type: 'number',
     },
     field_b: {
-      type: 'number',
-      'x-jsf-logic-computedAttrs': {
-        maximum: {
-          rule: {
-            '+': [{ var: 'field_a' }, 10],
-          },
+      'type': 'number',
+      'x-jsf-logic-validations': [
+        'max_a',
+        'min_a',
+      ],
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      max_a: {
+        errorMessage: 'Field B must be smaller than or equal to {{field_a}} + 2',
+        rule: {
+          '>=': [
+            {
+              '+': [
+                {
+                  var: 'field_a',
+                },
+                2,
+              ],
+            },
+            {
+              var: 'field_b',
+            },
+          ],
         },
-        minimum: {
-          rule: {
-            '-': [{ var: 'field_a' }, 10],
-          },
+      },
+      min_a: {
+        errorMessage: 'Field B must be greater than or equal to {{field_a}} - 2',
+        rule: {
+          '<=': [
+            {
+              '-': [
+                {
+                  var: 'field_a',
+                },
+                2,
+              ],
+            },
+            {
+              var: 'field_b',
+            },
+          ],
         },
       },
     },
   },
-};
+}
 
-export const schemaWithJSFLogicAndInlineRule = {
-  properties: {
+export const schemaValidationForMaximumAndMinimumValuesWithDynamicErrorMessage = {
+  'properties': {
     field_a: {
       type: 'number',
     },
     field_b: {
+      'type': 'number',
+      'x-jsf-logic-validations': [
+        'max_a',
+        'min_a',
+      ],
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      field_a_plus_2: {
+        rule: {
+          '+': [
+            {
+              var: 'field_a',
+            },
+            2,
+          ],
+        },
+      },
+      field_a_minus_2: {
+        rule: {
+          '-': [
+            {
+              var: 'field_a',
+            },
+            2,
+          ],
+        },
+      },
+    },
+    validations: {
+      max_a: {
+        errorMessage: 'Field B must be smaller than or equal to {{field_a_plus_2}}',
+        rule: {
+          '>=': [
+            {
+              '+': [
+                {
+                  var: 'field_a',
+                },
+                2,
+              ],
+            },
+            {
+              var: 'field_b',
+            },
+          ],
+        },
+      },
+      min_a: {
+        errorMessage: 'Field B must be greater than or equal to {{field_a_minus_2}}',
+        rule: {
+          '<=': [
+            {
+              '-': [
+                {
+                  var: 'field_a',
+                },
+                2,
+              ],
+            },
+            {
+              var: 'field_b',
+            },
+          ],
+        },
+      },
+    },
+  },
+}
+
+export const schemaWithJSFLogicAndInlineRule = {
+  'properties': {
+    field_a: {
       type: 'number',
+    },
+    field_b: {
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         title: {
           value: 'Going to use {{rule}} and {{not_inline}}',
@@ -578,319 +687,10 @@ export const schemaWithJSFLogicAndInlineRule = {
       },
     },
   },
-};
-
-export const schemaWithGreaterThanChecksForThreeFields = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-    },
-    field_c: {
-      type: 'number',
-    },
-  },
-  required: ['field_a', 'field_b'],
-  'x-jsf-logic': {
-    validations: {
-      require_c: {
-        rule: {
-          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
-        },
-      },
-    },
-    allOf: [
-      {
-        if: {
-          validations: {
-            require_c: {
-              const: true,
-            },
-          },
-        },
-        then: {
-          required: ['field_c'],
-        },
-        else: {
-          properties: {
-            field_c: false,
-          },
-        },
-      },
-    ],
-  },
-};
-
-export const schemaWithPropertiesCheckAndValidationsInAIf = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-    },
-    field_c: {
-      type: 'number',
-    },
-  },
-  required: ['field_a', 'field_b'],
-  'x-jsf-logic': {
-    validations: {
-      require_c: {
-        rule: {
-          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
-        },
-      },
-    },
-    allOf: [
-      {
-        if: {
-          validations: {
-            require_c: {
-              const: true,
-            },
-          },
-          properties: {
-            field_a: {
-              const: 10,
-            },
-          },
-        },
-        then: {
-          required: ['field_c'],
-        },
-        else: {
-          properties: {
-            field_c: false,
-          },
-        },
-      },
-    ],
-  },
-};
-
-export const schemaWithChecksAndThenValidationsOnThen = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-    },
-    field_c: {
-      type: 'number',
-    },
-  },
-  required: ['field_a', 'field_b'],
-  'x-jsf-logic': {
-    validations: {
-      c_must_be_large: {
-        errorMessage: 'Needs more numbers',
-        rule: {
-          '>': [{ var: 'field_c' }, 200],
-        },
-      },
-      require_c: {
-        rule: {
-          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
-        },
-      },
-    },
-    allOf: [
-      {
-        if: {
-          validations: {
-            require_c: {
-              const: true,
-            },
-          },
-        },
-        then: {
-          required: ['field_c'],
-          properties: {
-            field_c: {
-              description: 'I am a description!',
-              'x-jsf-logic-validations': ['c_must_be_large'],
-            },
-          },
-        },
-        else: {
-          properties: {
-            field_c: false,
-          },
-        },
-      },
-    ],
-  },
-};
-
-export const schemaWithComputedValueChecksInIf = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-    },
-    field_c: {
-      type: 'number',
-    },
-  },
-  required: ['field_a', 'field_b'],
-  'x-jsf-logic': {
-    computedValues: {
-      require_c: {
-        rule: {
-          and: [{ '>': [{ var: 'field_a' }, { var: 'field_b' }] }],
-        },
-      },
-    },
-    allOf: [
-      {
-        if: {
-          computedValues: {
-            require_c: {
-              const: true,
-            },
-          },
-        },
-        then: {
-          required: ['field_c'],
-        },
-        else: {
-          properties: {
-            field_c: false,
-          },
-        },
-      },
-    ],
-  },
-};
-
-export const schemaWithMultipleComputedValueChecks = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-    },
-    field_c: {
-      type: 'number',
-    },
-  },
-  required: ['field_a', 'field_b'],
-  'x-jsf-logic': {
-    validations: {
-      double_b: {
-        errorMessage: 'Must be two times B',
-        rule: {
-          '>': [{ var: 'field_c' }, { '*': [{ var: 'field_b' }, 2] }],
-        },
-      },
-    },
-    computedValues: {
-      a_times_two: {
-        rule: {
-          '*': [{ var: 'field_a' }, 2],
-        },
-      },
-      mod_by_five: {
-        rule: {
-          '%': [{ var: 'field_b' }, 5],
-        },
-      },
-    },
-    allOf: [
-      {
-        if: {
-          computedValues: {
-            a_times_two: {
-              const: 20,
-            },
-            mod_by_five: {
-              const: 3,
-            },
-          },
-        },
-        then: {
-          required: ['field_c'],
-          properties: {
-            field_c: {
-              'x-jsf-logic-validations': ['double_b'],
-              title: 'Adding a title.',
-            },
-          },
-        },
-        else: {
-          properties: {
-            field_c: false,
-          },
-        },
-      },
-    ],
-  },
-};
-
-export const schemaWithIfStatementWithComputedValuesAndValidationChecks = {
-  properties: {
-    field_a: {
-      type: 'number',
-    },
-    field_b: {
-      type: 'number',
-    },
-    field_c: {
-      type: 'number',
-    },
-  },
-  required: ['field_a', 'field_b'],
-  'x-jsf-logic': {
-    validations: {
-      greater_than_b: {
-        rule: {
-          '>': [{ var: 'field_a' }, { var: 'field_b' }],
-        },
-      },
-    },
-    computedValues: {
-      a_times_two: {
-        rule: {
-          '*': [{ var: 'field_a' }, 2],
-        },
-      },
-    },
-    allOf: [
-      {
-        if: {
-          computedValues: {
-            a_times_two: {
-              const: 20,
-            },
-          },
-          validations: {
-            greater_than_b: {
-              const: true,
-            },
-          },
-        },
-        then: {
-          required: ['field_c'],
-        },
-        else: {
-          properties: {
-            field_c: false,
-          },
-        },
-      },
-    ],
-  },
-};
+}
 
 export const schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement = {
-  properties: {
+  'properties': {
     field_a: {
       type: 'number',
     },
@@ -915,7 +715,7 @@ export const schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement
       },
     },
   },
-  allOf: [
+  'allOf': [
     {
       if: {
         properties: {
@@ -936,16 +736,16 @@ export const schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement
       },
     },
   ],
-};
+}
 
 export const schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally = {
-  required: ['field_a', 'field_b'],
-  properties: {
+  'required': ['field_a', 'field_b'],
+  'properties': {
     field_a: {
       type: 'number',
     },
     field_b: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-validations': ['greater_than_field_a'],
     },
   },
@@ -965,7 +765,7 @@ export const schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally = {
       },
     },
   },
-  allOf: [
+  'allOf': [
     {
       if: {
         properties: {
@@ -983,12 +783,12 @@ export const schemaWithTwoValidationsWhereOneOfThemIsAppliedConditionally = {
       },
     },
   ],
-};
+}
 
 export const schemaWithReduceAccumulator = {
-  properties: {
+  'properties': {
     work_days: {
-      items: {
+      'items': {
         anyOf: [
           { const: 'monday', title: 'Monday' },
           { const: 'tuesday', title: 'Tuesday' },
@@ -999,8 +799,8 @@ export const schemaWithReduceAccumulator = {
           { const: 'sunday', title: 'Sunday' },
         ],
       },
-      type: 'array',
-      uniqueItems: true,
+      'type': 'array',
+      'uniqueItems': true,
       'x-jsf-presentation': {
         inputType: 'select',
       },
@@ -1009,7 +809,7 @@ export const schemaWithReduceAccumulator = {
       type: 'number',
     },
     working_hours_per_week: {
-      type: 'number',
+      'type': 'number',
       'x-jsf-logic-computedAttrs': {
         const: 'computed_work_hours_per_week',
         defaultValue: 'computed_work_hours_per_week',
@@ -1031,4 +831,4 @@ export const schemaWithReduceAccumulator = {
       },
     },
   },
-};
+}

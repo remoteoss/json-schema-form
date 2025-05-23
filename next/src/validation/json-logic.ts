@@ -80,7 +80,21 @@ export function validateJsonLogicRules(
 
     // If the condition is false, we return a validation error
     if (result === false) {
-      return [{ path, validation: 'json-logic', customErrorMessage: validationData.errorMessage, schema, value: formValue } as ValidationError]
+      let errorMessage = validationData.errorMessage
+      if (errorMessage && containsHandlebars(errorMessage)) {
+        errorMessage = errorMessage.replace(/\{\{(.*?)\}\}/g, (_, handlebarsVar) => {
+          const varName = handlebarsVar.trim()
+          const jsonLogicComputation = jsonLogicContext.schema.computedValues?.[varName]
+          if (jsonLogicComputation) {
+            return jsonLogic.apply(jsonLogicComputation.rule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+          }
+          else {
+            return jsonLogic.apply({ var: varName }, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+          }
+        })
+      }
+
+      return [{ path, validation: 'json-logic', customErrorMessage: errorMessage, schema, value: formValue } as ValidationError]
     }
 
     return []

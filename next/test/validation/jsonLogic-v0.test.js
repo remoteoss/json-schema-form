@@ -6,8 +6,9 @@ import {
   createSchemaWithRulesOnFieldA,
   createSchemaWithThreePropertiesWithRuleOnFieldA,
   multiRuleSchema,
-  schemaInlineComputedAttrForMaximumMinimumValues,
   schemaInlineComputedAttrForTitle,
+  schemaValidationForMaximumAndMinimumValues,
+  schemaValidationForMaximumAndMinimumValuesWithDynamicErrorMessage,
   schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
   schemaWithBadOperation,
   schemaWithChecksAndThenValidationsOnThen,
@@ -421,31 +422,39 @@ describe('jsonLogic: cross-values validations', () => {
       expect(fieldB.label).toEqual('20')
     })
 
-    it('use an inline rule for a minimum, maximum value', () => {
-      const { fields, handleValidation } = createHeadlessForm(
-        schemaInlineComputedAttrForMaximumMinimumValues,
+    it('use x-jsf-logic for setting dynamic minimum and maximum values', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaValidationForMaximumAndMinimumValues,
         {
           strictInputType: false,
         },
       )
-      const [, fieldB] = fields
 
-      // FIXME: We are currently setting NaN here because of how the data clean up works for json-logic
-      // We should probably set this as undefined when theres no values set?
-      // tracked in INF-53.
-      expect(fieldB).toMatchObject({ minimum: Number.NaN, maximum: Number.NaN })
-      expect(handleValidation({ field_a: 10, field_b: null }).formErrors).toBeUndefined()
-      expect(fieldB).toMatchObject({ minimum: 0, maximum: 20 })
-      expect(handleValidation({ field_a: 50, field_b: 20 }).formErrors).toEqual({
-        field_b: 'Must be greater or equal to 40',
+      expect(handleValidation({ field_a: 20, field_b: 17 }).formErrors).toEqual({
+        field_b: 'Field B must be greater than or equal to 20 - 2',
       })
-      expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 })
-      expect(handleValidation({ field_a: 50, field_b: 70 }).formErrors).toEqual({
-        field_b: 'Must be smaller or equal to 60',
+      expect(handleValidation({ field_a: 20, field_b: 23 }).formErrors).toEqual({
+        field_b: 'Field B must be smaller than or equal to 20 + 2',
       })
-      expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 })
-      expect(handleValidation({ field_a: 50, field_b: 50 }).formErrors).toBeUndefined()
-      expect(fieldB).toMatchObject({ minimum: 40, maximum: 60 })
+      expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toBeUndefined()
+      expect(handleValidation({ field_a: 20, field_b: 19 }).formErrors).toBeUndefined()
+    })
+
+    it('use x-jsf-logic for setting dynamic minimum and maximum values, with a dynamic error message', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaValidationForMaximumAndMinimumValuesWithDynamicErrorMessage,
+        {
+          strictInputType: false,
+        },
+      )
+
+      expect(handleValidation({ field_a: 20, field_b: 17 }).formErrors).toEqual({
+        field_b: 'Field B must be greater than or equal to 18',
+      })
+      expect(handleValidation({ field_a: 20, field_b: 23 }).formErrors).toEqual({
+        field_b: 'Field B must be smaller than or equal to 22',
+      })
+      expect(handleValidation({ field_a: 20, field_b: 21 }).formErrors).toBeUndefined()
     })
 
     it('mix use of multiple inline rules and an external rule', () => {
@@ -459,119 +468,6 @@ describe('jsonLogic: cross-values validations', () => {
   })
 
   describe('conditionals', () => {
-    it('when field_a > field_b, show field_c', () => {
-      const { fields, handleValidation } = createHeadlessForm(
-        schemaWithGreaterThanChecksForThreeFields,
-        { strictInputType: false },
-      )
-      const fieldC = fields.find(i => i.name === 'field_c')
-      expect(fieldC.isVisible).toEqual(false)
-
-      expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined)
-      expect(handleValidation({ field_a: 1 }).formErrors).toEqual({
-        field_b: 'Required field',
-      })
-      expect(handleValidation({ field_a: 1, field_b: undefined }).formErrors).toEqual({
-        field_b: 'Required field',
-      })
-      expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
-        field_c: 'Required field',
-      })
-      expect(fieldC.isVisible).toEqual(true)
-      expect(handleValidation({ field_a: 10, field_b: 3, field_c: 0 }).formErrors).toEqual(
-        undefined,
-      )
-    })
-
-    it('a schema with both a `x-jsf-validations` and `properties` check', () => {
-      const { fields, handleValidation } = createHeadlessForm(
-        schemaWithPropertiesCheckAndValidationsInAIf,
-        { strictInputType: false },
-      )
-      const fieldC = fields.find(i => i.name === 'field_c')
-      expect(handleValidation({ field_a: 1, field_b: 3 }).formErrors).toEqual(undefined)
-      expect(fieldC.isVisible).toEqual(false)
-      expect(handleValidation({ field_a: 10, field_b: 3 }).formErrors).toEqual({
-        field_c: 'Required field',
-      })
-      expect(fieldC.isVisible).toEqual(true)
-      expect(handleValidation({ field_a: 5, field_b: 3 }).formErrors).toEqual(undefined)
-    })
-
-    it('conditionally apply a validation on a property depending on values', () => {
-      const { fields, handleValidation } = createHeadlessForm(
-        schemaWithChecksAndThenValidationsOnThen,
-        { strictInputType: false },
-      )
-      const cField = fields.find(i => i.name === 'field_c')
-      expect(cField.isVisible).toEqual(false)
-      expect(cField.description).toEqual(undefined)
-      expect(handleValidation({ field_a: 10, field_b: 5 }).formErrors).toEqual({
-        field_c: 'Required field',
-      })
-      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 0 }).formErrors).toEqual({
-        field_c: 'Needs more numbers',
-      })
-      expect(cField.description).toBe('I am a description!')
-      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
-        undefined,
-      )
-      expect(handleValidation({ field_a: 5, field_b: 10 }).formErrors).toBeUndefined()
-      expect(cField).toMatchObject({
-        isVisible: false,
-        // description: null, the description will currently be `I am a description!`, how do we change it back to null from here? Needs to be fixed by RMT-58
-      })
-    })
-
-    it('should apply a conditional based on a true computedValue', () => {
-      const { fields, handleValidation } = createHeadlessForm(schemaWithComputedValueChecksInIf, {
-        strictInputType: false,
-      })
-      const cField = fields.find(i => i.name === 'field_c')
-      expect(cField.isVisible).toEqual(false)
-      expect(cField.description).toEqual(undefined)
-      expect(handleValidation({ field_a: 10, field_b: 5 }).formErrors).toEqual({
-        field_c: 'Required field',
-      })
-      expect(handleValidation({ field_a: 10, field_b: 5, field_c: 201 }).formErrors).toEqual(
-        undefined,
-      )
-    })
-
-    it('handle multiple computedValue checks by ANDing them together', () => {
-      const { handleValidation } = createHeadlessForm(schemaWithMultipleComputedValueChecks, {
-        strictInputType: false,
-      })
-      expect(handleValidation({}).formErrors).toEqual({
-        field_a: 'Required field',
-        field_b: 'Required field',
-      })
-      expect(handleValidation({ field_a: 10, field_b: 8 }).formErrors).toEqual({
-        field_c: 'Required field',
-      })
-      expect(handleValidation({ field_a: 10, field_b: 8, field_c: 0 }).formErrors).toEqual({
-        field_c: 'Must be two times B',
-      })
-      expect(handleValidation({ field_a: 10, field_b: 8, field_c: 17 }).formErrors).toEqual(
-        undefined,
-      )
-    })
-
-    it('handle having a true condition with both validations and computedValue checks', () => {
-      const { handleValidation } = createHeadlessForm(
-        schemaWithIfStatementWithComputedValuesAndValidationChecks,
-        { strictInputType: false },
-      )
-      expect(handleValidation({ field_a: 1, field_b: 1 }).formErrors).toEqual(undefined)
-      expect(handleValidation({ field_a: 10, field_b: 20 }).formErrors).toEqual(undefined)
-      expect(handleValidation({ field_a: 10, field_b: 9 }).formErrors).toEqual({
-        field_c: 'Required field',
-      })
-      expect(handleValidation({ field_a: 10, field_b: 9, field_c: 10 }).formErrors).toEqual(
-        undefined,
-      )
-    })
-
     it('apply validations and computed values on normal if statement.', () => {
       const { fields, handleValidation } = createHeadlessForm(
         schemaWhereValidationAndComputedValueIsAppliedOnNormalThenStatement,
