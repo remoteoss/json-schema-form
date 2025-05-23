@@ -116,6 +116,7 @@ describe('jsonLogic: cross-values validations', () => {
     })
   })
 
+  // TODO: These suites are skipped for now because v1 does not throw as many errors as v0.
   describe.skip('incorrectly written schemas', () => {
     afterEach(() => console.error.mockClear())
 
