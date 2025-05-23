@@ -244,7 +244,7 @@ export function createHeadlessForm(
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
   // Make a (new) version with all the computed attrs computed and applied
-  const updatedSchema = applyComputedAttrsToSchema(schema, initialValues)
+  const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, initialValues)
   const fields = buildFields({ schema: updatedSchema, strictInputType })
 
   // Making sure field properties are correct for the initial values
@@ -254,7 +254,7 @@ export function createHeadlessForm(
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const updatedSchema = applyComputedAttrsToSchema(schema, value)
+    const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, value)
     const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place

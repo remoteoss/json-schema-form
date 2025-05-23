@@ -364,7 +364,7 @@ describe('applyComputedAttrsToSchema', () => {
       },
     }
 
-    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, {})
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, {})
     expect(result).toBe(schema)
   })
 
@@ -395,7 +395,7 @@ describe('applyComputedAttrsToSchema', () => {
 
     (jsonLogic.apply as jest.Mock).mockReturnValue(21)
 
-    const result: JsfObjectSchema = JsonLogicValidation.applyComputedAttrsToSchema(schema, { person: { age: 21 } })
+    const result: JsfObjectSchema = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, { person: { age: 21 } })
 
     expect(result).not.toBe(schema)
     const ageProperties = result.properties?.person?.properties?.age as JsfObjectSchema
@@ -425,7 +425,7 @@ describe('applyComputedAttrsToSchema', () => {
 
     (jsonLogic.apply as jest.Mock).mockReturnValue(21)
 
-    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, { age: 30 })
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, { age: 30 })
 
     const ageProperties = result.properties?.age as JsfObjectSchema
 
@@ -457,7 +457,7 @@ describe('applyComputedAttrsToSchema', () => {
 
     (jsonLogic.apply as jest.Mock).mockReturnValue(21)
 
-    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, { age: 19 })
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, { age: 19 })
 
     const ageProperties = result.properties?.age as JsfObjectSchema
     expect(ageProperties?.minimum).toBe(21)

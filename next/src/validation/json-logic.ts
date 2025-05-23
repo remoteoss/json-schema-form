@@ -1,8 +1,27 @@
 import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import jsonLogic from 'json-logic-js'
 import { safeDeepClone } from './util'
+
+/**
+ * Builds a json-logic context based on a schema and the current value
+ * @param schema - The schema to build the context from
+ * @param value - The current value of the form
+ * @returns The json-logic context
+ */
+export function getJsonLogicContextFromSchema(schema: JsonLogicSchema, value: SchemaValue): JsonLogicContext {
+  const { validations, computedValues } = schema
+  const jsonLogicRules: JsonLogicRules = {
+    validations,
+    computedValues,
+  }
+  const jsonLogicContext = {
+    schema: jsonLogicRules,
+    value,
+  }
+  return jsonLogicContext
+}
 
 /**
  * Checks if a string contains handlebars syntax ({{...}})
@@ -88,17 +107,17 @@ export function computePropertyValues(
  * it creates a deep clone of the schema and applies the computed values to the clone,otherwise it returns the original schema.
  *
  * @param schema - The schema to apply computed attributes to
+ * @param computedValues - The computed values to apply
  * @param values - The current form values
  * @returns The schema with computed attributes applied
  */
-export function applyComputedAttrsToSchema(schema: JsfObjectSchema, values: SchemaValue): JsfObjectSchema {
+export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue): JsfObjectSchema {
   // If the schema has any computed attributes, we need to:
   // - clone the original schema
   // - calculate all the computed values
   // - apply the computed values to the cloned schema
   // Otherwise, we return the original schema
-  if (schema['x-jsf-logic']?.computedValues) {
-    const computedValuesDefinition = schema['x-jsf-logic'].computedValues
+  if (computedValuesDefinition) {
     const computedValues: Record<string, string> = {}
 
     Object.entries(computedValuesDefinition).forEach(([name, definition]) => {
@@ -123,9 +142,8 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, values: Sche
  * @param computedValues - The computed values to apply
  */
 function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, computedValues: Record<string, string>) {
-  for (const propertyName in schemaCopy.properties) {
-    const computedAttrs = schemaCopy.properties[propertyName]['x-jsf-logic-computedAttrs']
-    const propertySchema = schemaCopy.properties[propertyName] as JsfObjectSchema
+  function processProperty(propertySchema: JsfObjectSchema) {
+    const computedAttrs = propertySchema['x-jsf-logic-computedAttrs']
     if (computedAttrs) {
       cycleThroughAttrsAndApplyValues(propertySchema, computedValues, computedAttrs)
     }
@@ -135,6 +153,17 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
     }
 
     delete propertySchema['x-jsf-logic-computedAttrs']
+  }
+
+  // If this is a full property schema, we need to cycle through the properties and apply the computed values
+  // Otherwise, just process the property
+  if (schemaCopy.properties) {
+    for (const propertyName in schemaCopy.properties) {
+      processProperty(schemaCopy.properties[propertyName] as JsfObjectSchema)
+    }
+  }
+  else {
+    processProperty(schemaCopy)
   }
 }
 

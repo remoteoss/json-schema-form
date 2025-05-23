@@ -1,7 +1,8 @@
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
+import { applyComputedAttrsToSchema, computePropertyValues, getJsonLogicContextFromSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 import { isObjectValue } from './validation/util'
 
@@ -22,8 +23,12 @@ export function mutateFields(
     return
   }
 
-  // Apply rules to current level of fields
-  applySchemaRules(fields, values, schema, options)
+  // We should get the json-logic context from the schema in case we need to mutate fields using computed values
+  const jsonLogicSchema = schema['x-jsf-logic']
+  const jsonLogicContext = jsonLogicSchema ? getJsonLogicContextFromSchema(jsonLogicSchema, values) : undefined
+
+  // Apply schema rules to current level of fields
+  applySchemaRules(fields, values, schema, options, jsonLogicContext)
 
   // Process nested object fields that have conditional logic
   for (const fieldName in schema.properties) {
@@ -31,7 +36,7 @@ export function mutateFields(
     const field = fields.find(field => field.name === fieldName)
 
     if (field?.fields) {
-      applySchemaRules(field.fields, values[fieldName], fieldSchema as JsfObjectSchema, options)
+      applySchemaRules(field.fields, values[fieldName], fieldSchema as JsfObjectSchema, options, jsonLogicContext)
     }
   }
 }
@@ -77,13 +82,14 @@ function evaluateConditional(
  * @param values - The current form values
  * @param schema - The JSON schema containing the rules
  * @param options - Validation options
- *
+ * @param jsonLogicContext - JSON Logic context
  */
 function applySchemaRules(
   fields: Field[],
   values: SchemaValue,
   schema: JsfObjectSchema,
   options: ValidationOptions = {},
+  jsonLogicContext: JsonLogicContext | undefined,
 ) {
   if (!isObjectValue(values)) {
     return
@@ -108,11 +114,11 @@ function applySchemaRules(
   for (const { rule, matches } of conditionalRules) {
     // If the rule matches, process the then branch
     if (matches && rule.then) {
-      processBranch(fields, values, rule.then, options)
+      processBranch(fields, values, rule.then, options, jsonLogicContext)
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
-      processBranch(fields, values, rule.else, options)
+      processBranch(fields, values, rule.else, options, jsonLogicContext)
     }
   }
 }
@@ -123,14 +129,20 @@ function applySchemaRules(
  * @param values - The current form values
  * @param branch - The branch (schema representing and then/else) to process
  * @param options - Validation options
+ * @param jsonLogicContext - JSON Logic context
  */
-function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}) {
+function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
   if (branch.properties) {
     // Cycle through each property in the schema and search for any property that needs
     // to be updated in the fields collection.
-    // Note: False schemas mean the field should be hidden in the form (isVisible = false)
     for (const fieldName in branch.properties) {
-      const fieldSchema = branch.properties[fieldName]
+      let fieldSchema = branch.properties[fieldName]
+
+      // If the field schema has computed attributes, we need to apply them to the field schema
+      if (fieldSchema['x-jsf-logic-computedAttrs']) {
+        fieldSchema = applyComputedAttrsToSchema(fieldSchema as JsfObjectSchema, jsonLogicContext?.schema.computedValues, values)
+      }
+
       const field = fields.find(e => e.name === fieldName)
       if (field) {
         // If the field has a false schema, it should be removed from the form (hidden)
@@ -139,7 +151,7 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
         }
         // If the field has inner fields, we need to process them
         else if (field?.fields) {
-          processBranch(field.fields, values, fieldSchema)
+          processBranch(field.fields, values, fieldSchema, options, jsonLogicContext)
         }
         // If the field has properties being declared on this branch, we need to update the field
         // with the new properties
@@ -164,5 +176,5 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
   }
 
   // Apply rules to the branch
-  applySchemaRules(fields, values, branch as JsfObjectSchema, options)
+  applySchemaRules(fields, values, branch as JsfObjectSchema, options, jsonLogicContext)
 }
