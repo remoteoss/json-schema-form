@@ -187,6 +187,11 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
  * @param computedValues - The computed values to apply
  */
 function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, computedValues: Record<string, string>, computedAttrs: JsfSchema['x-jsf-logic-computedAttrs']) {
+  /**
+   * Evaluates a string or a handlebars template, using the computed values mapping, and returns the computed value
+   * @param message - The string or template to evaluate
+   * @returns The computed value
+   */
   function evalStringOrTemplate(message: string) {
     // If it's a string, we can apply it directly by referencing the computed value by key
     if (!containsHandlebars(message)) {
@@ -200,19 +205,40 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, comput
     })
   }
 
+  /**
+   * Recursively applies the computed values to a nested schema
+   * @param propertySchema - The schema to apply computed values to
+   * @param attrName - The name of the attribute to apply the computed values to
+   * @param computationName - The name of the computed value to apply
+   * @param computedValues - The computed values to apply
+   */
+  function applyNestedComputedValues(propertySchema: JsfObjectSchema, attrName: string, computationName: string | object, computedValues: Record<string, string>) {
+    const attributeName = attrName as keyof NonBooleanJsfSchema
+    if (!propertySchema[attributeName]) {
+      // Making sure the attribute object is created if it does not exist in the original schema
+      propertySchema[attributeName] = {}
+    }
+
+    Object.entries(computationName).forEach(([key, compName]) => {
+      if (typeof compName === 'string') {
+        propertySchema[attributeName][key] = evalStringOrTemplate(compName)
+      }
+      else {
+        applyNestedComputedValues(propertySchema[attributeName], key, compName, computedValues)
+      }
+    })
+  }
+
   for (const key in computedAttrs) {
     const attributeName = key as keyof NonBooleanJsfSchema
     const computationName = computedAttrs[key]
+    // If the computed value is a string, we can apply it directly by referencing the computed value by key
     if (typeof computationName === 'string') {
       propertySchema[attributeName] = evalStringOrTemplate(computationName)
     }
     else {
-      if (!propertySchema[attributeName]) {
-        propertySchema[attributeName] = {}
-      }
-      Object.entries(computationName).forEach(([key, value]) => {
-        propertySchema[attributeName][key] = evalStringOrTemplate(value)
-      })
+      // Otherwise, it's a nested object, so we need to apply the computed values to the nested object
+      applyNestedComputedValues(propertySchema, attributeName, computationName, computedValues)
     }
   }
 }
