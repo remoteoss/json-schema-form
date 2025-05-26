@@ -138,7 +138,7 @@ function processBranch(fields: Field[], values: SchemaValue, branch: JsfSchema, 
     for (const fieldName in branch.properties) {
       let fieldSchema = branch.properties[fieldName]
 
-      // If the field schema has computed attributes, we need to apply them to the field schema
+      // If the field schema has computed attributes, we need to apply them
       if (fieldSchema['x-jsf-logic-computedAttrs']) {
         fieldSchema = applyComputedAttrsToSchema(fieldSchema as JsfObjectSchema, jsonLogicContext?.schema.computedValues, values)
       }
