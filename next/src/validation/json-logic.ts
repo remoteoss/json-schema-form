@@ -80,16 +80,22 @@ export function validateJsonLogicRules(
 
     // If the condition is false, we return a validation error
     if (result === false) {
+      // We default to consider the error message as a string
+      // However, if it contains handlebars, we need to evaluate it using the computed values
       let errorMessage = validationData.errorMessage
+
       if (errorMessage && containsHandlebars(errorMessage)) {
         errorMessage = errorMessage.replace(/\{\{(.*?)\}\}/g, (_, handlebarsVar) => {
-          const varName = handlebarsVar.trim()
-          const jsonLogicComputation = jsonLogicContext.schema.computedValues?.[varName]
+          const computationName = handlebarsVar.trim()
+          const jsonLogicComputation = jsonLogicContext.schema.computedValues?.[computationName]
+
+          // If the handlebars variable matches the name of a computation, we run it
           if (jsonLogicComputation) {
             return jsonLogic.apply(jsonLogicComputation.rule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
           }
           else {
-            return jsonLogic.apply({ var: varName }, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+            // Otherwise, it's probably referring to a variable in the form, so we use it instead
+            return jsonLogic.apply({ var: computationName }, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
           }
         })
       }
