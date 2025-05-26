@@ -138,7 +138,7 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
   // - apply the computed values to the cloned schema
   // Otherwise, we return the original schema
   if (computedValuesDefinition) {
-    const computedValues: Record<string, string> = {}
+    const computedValues: Record<string, any> = {}
 
     Object.entries(computedValuesDefinition).forEach(([name, definition]) => {
       const computedValue = computePropertyValues(name, definition.rule, values)
@@ -172,6 +172,7 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
       cycleThroughPropertiesAndApplyValues(propertySchema, computedValues)
     }
 
+    // deleting x-jsf-logic-computedAttrs to keep the schema clean
     delete propertySchema['x-jsf-logic-computedAttrs']
   }
 
