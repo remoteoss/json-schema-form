@@ -210,8 +210,18 @@ export function validateSchema(
   if (schema.required && isObjectValue(value)) {
     const missingKeys = schema.required.filter((key: string) => {
       const fieldValue = value[key]
-      // Field is considered missing if it's undefined OR
-      // if it's null AND treatNullAsUndefined option is true
+      // Field is considered missing if:
+      // - it's undefined OR
+      // - it's null AND treatNullAsUndefined option is true
+      // - it's an array/object and it's empty
+      if (Array.isArray(fieldValue)) {
+        return fieldValue.length === 0
+      }
+
+      if (isObjectValue(fieldValue)) {
+        return Object.keys(fieldValue).length === 0
+      }
+
       return fieldValue === undefined || (fieldValue === null && options.treatNullAsUndefined)
     })
 
