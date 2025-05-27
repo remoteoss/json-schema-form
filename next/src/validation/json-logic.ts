@@ -1,9 +1,27 @@
+import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
-import type { ValidationOptions } from './schema'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import jsonLogic from 'json-logic-js'
-import { validateSchema } from './schema'
 import { safeDeepClone } from './util'
+
+/**
+ * Builds a json-logic context based on a schema and the current value
+ * @param schema - The schema to build the context from
+ * @param value - The current value of the form
+ * @returns The json-logic context
+ */
+export function getJsonLogicContextFromSchema(schema: JsonLogicSchema, value: SchemaValue): JsonLogicContext {
+  const { validations, computedValues } = schema
+  const jsonLogicRules: JsonLogicRules = {
+    validations,
+    computedValues,
+  }
+  const jsonLogicContext = {
+    schema: jsonLogicRules,
+    value,
+  }
+  return jsonLogicContext
+}
 
 /**
  * Checks if a string contains handlebars syntax ({{...}})
@@ -62,135 +80,172 @@ export function validateJsonLogicRules(
 
     // If the condition is false, we return a validation error
     if (result === false) {
-      return [{ path, validation: 'json-logic', customErrorMessage: validationData.errorMessage, schema, value: formValue } as ValidationError]
+      // We default to consider the error message as a string
+      // However, if it contains handlebars, we need to evaluate it using the computed values
+      let errorMessage = validationData.errorMessage
+
+      if (errorMessage && containsHandlebars(errorMessage)) {
+        errorMessage = errorMessage.replace(/\{\{(.*?)\}\}/g, (_, handlebarsVar) => {
+          const computationName = handlebarsVar.trim()
+          const jsonLogicComputation = jsonLogicContext.schema.computedValues?.[computationName]
+
+          // If the handlebars variable matches the name of a computation, we run it
+          if (jsonLogicComputation) {
+            return jsonLogic.apply(jsonLogicComputation.rule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+          }
+          else {
+            // Otherwise, it's probably referring to a variable in the form, so we use it instead
+            return jsonLogic.apply({ var: computationName }, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
+          }
+        })
+      }
+
+      return [{ path, validation: 'json-logic', customErrorMessage: errorMessage, schema, value: formValue } as ValidationError]
     }
 
     return []
   }).flat()
 }
 
-/**
- * Validates the JSON Logic computed attributes for a given schema.
- *
- * @param {SchemaValue} values - Current form values.
- * @param {NonBooleanJsfSchema} schema - JSON Schema to validate.
- * @param {ValidationOptions} options - Validation options.
- * @param {JsonLogicContext | undefined} jsonLogicContext - JSON Logic context.
- * @param {ValidationErrorPath} path - Current validation error path.
- * @throws {Error} If a computed attribute has missing rule.
- */
-export function validateJsonLogicComputedAttributes(
+export function computePropertyValues(
+  name: string,
+  rule: RulesLogic,
   values: SchemaValue,
-  schema: NonBooleanJsfSchema,
-  options: ValidationOptions = {},
-  jsonLogicContext: JsonLogicContext | undefined,
-  path: ValidationErrorPath = [],
-): ValidationError[] {
-  const computedAttributes = schema['x-jsf-logic-computedAttrs']
-
-  // if the current schema has no computed attributes, we skip the validation
-  if (!computedAttributes || Object.keys(computedAttributes).length === 0) {
-    return []
+): any {
+  if (!rule) {
+    throw new Error(
+      `[json-schema-form] json-logic error: Computed value "${name}" doesn't exist`,
+    )
   }
 
-  // Create a copy of the schema
-  const schemaCopy: NonBooleanJsfSchema = safeDeepClone(schema)
+  const result: any = jsonLogic.apply(rule, replaceUndefinedAndNullValuesWithNaN(values as ObjectValue))
+  return result
+}
 
-  // Remove the computed attributes from the schema
-  delete schemaCopy['x-jsf-logic-computedAttrs']
+/**
+ * Applies any computed attributes to a schema, based on the provided values. When there are values to apply,
+ * it creates a deep clone of the schema and applies the computed values to the clone,otherwise it returns the original schema.
+ *
+ * @param schema - The schema to apply computed attributes to
+ * @param computedValuesDefinition - The computed values to apply
+ * @param values - The current form values
+ * @returns The schema with computed attributes applied
+ */
+export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue): JsfObjectSchema {
+  // If the schema has any computed attributes, we need to:
+  // - clone the original schema
+  // - calculate all the computed values
+  // - apply the computed values to the cloned schema
+  // Otherwise, we return the original schema
+  if (computedValuesDefinition) {
+    const computedValues: Record<string, any> = {}
 
-  // add the new computed attributes to the schema
-  Object.entries(computedAttributes).forEach(([schemaKey, value]) => {
-    if (schemaKey === 'x-jsf-errorMessage') {
-      const computedErrorMessages = computeErrorMessages(
-        value as JsfSchema['x-jsf-errorMessage'],
-        jsonLogicContext,
-      )
-      if (computedErrorMessages) {
-        schemaCopy['x-jsf-errorMessage'] = computedErrorMessages
+    Object.entries(computedValuesDefinition).forEach(([name, definition]) => {
+      const computedValue = computePropertyValues(name, definition.rule, values)
+      computedValues[name] = computedValue
+    })
+
+    const schemaCopy = safeDeepClone(schema)
+
+    cycleThroughPropertiesAndApplyValues(schemaCopy, computedValues)
+
+    return schemaCopy
+  }
+  else {
+    return schema
+  }
+}
+
+/**
+ * Cycles through the properties of a schema and applies the computed values to it
+ * @param schemaCopy - The schema to apply computed values to
+ * @param computedValues - The computed values to apply
+ */
+function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, computedValues: Record<string, string>) {
+  function processProperty(propertySchema: JsfObjectSchema) {
+    const computedAttrs = propertySchema['x-jsf-logic-computedAttrs']
+    if (computedAttrs) {
+      cycleThroughAttrsAndApplyValues(propertySchema, computedValues, computedAttrs)
+    }
+
+    if (propertySchema.type === 'object' && propertySchema.properties) {
+      cycleThroughPropertiesAndApplyValues(propertySchema, computedValues)
+    }
+
+    // deleting x-jsf-logic-computedAttrs to keep the schema clean
+    delete propertySchema['x-jsf-logic-computedAttrs']
+  }
+
+  // If this is a full property schema, we need to cycle through the properties and apply the computed values
+  // Otherwise, just process the property
+  if (schemaCopy.properties) {
+    for (const propertyName in schemaCopy.properties) {
+      processProperty(schemaCopy.properties[propertyName] as JsfObjectSchema)
+    }
+  }
+  else {
+    processProperty(schemaCopy)
+  }
+}
+
+/**
+ * Cycles through the attributes of a schema and applies the computed values to it
+ * @param propertySchema - The schema to apply computed values to
+ * @param computedValues - The computed values to apply
+ */
+function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, computedValues: Record<string, string>, computedAttrs: JsfSchema['x-jsf-logic-computedAttrs']) {
+  /**
+   * Evaluates a string or a handlebars template, using the computed values mapping, and returns the computed value
+   * @param message - The string or template to evaluate
+   * @returns The computed value
+   */
+  function evalStringOrTemplate(message: string) {
+    // If it's a string, we can apply it directly by referencing the computed value by key
+    if (!containsHandlebars(message)) {
+      return computedValues[message]
+    }
+
+    // If it's a template, we need to interpolate it, replacing the handlebars with the computed value
+    return message.replace(/\{\{(.*?)\}\}/g, (_, computation) => {
+      const computationName = computation.trim()
+      return computedValues[computationName] || `{{${computationName}}}`
+    })
+  }
+
+  /**
+   * Recursively applies the computed values to a nested schema
+   * @param propertySchema - The schema to apply computed values to
+   * @param attrName - The name of the attribute to apply the computed values to
+   * @param computationName - The name of the computed value to apply
+   * @param computedValues - The computed values to apply
+   */
+  function applyNestedComputedValues(propertySchema: JsfObjectSchema, attrName: string, computationName: string | object, computedValues: Record<string, string>) {
+    const attributeName = attrName as keyof NonBooleanJsfSchema
+    if (!propertySchema[attributeName]) {
+      // Making sure the attribute object is created if it does not exist in the original schema
+      propertySchema[attributeName] = {}
+    }
+
+    Object.entries(computationName).forEach(([key, compName]) => {
+      if (typeof compName === 'string') {
+        propertySchema[attributeName][key] = evalStringOrTemplate(compName)
       }
+      else {
+        applyNestedComputedValues(propertySchema[attributeName], key, compName, computedValues)
+      }
+    })
+  }
+
+  for (const key in computedAttrs) {
+    const attributeName = key as keyof NonBooleanJsfSchema
+    const computationName = computedAttrs[key]
+    // If the computed value is a string, we can apply it directly by referencing the computed value by key
+    if (typeof computationName === 'string') {
+      propertySchema[attributeName] = evalStringOrTemplate(computationName)
     }
     else {
-      const validationName = value as string
-      const computedAttributeRule = jsonLogicContext?.schema?.computedValues?.[validationName]?.rule
-
-      const formValue = jsonLogicContext?.value
-
-      // if the computation name does not reference any valid rule, we throw an error
-      if (!computedAttributeRule) {
-        throw new Error(`[json-schema-form] json-logic error: Computed value "${validationName}" has missing rule.`)
-      }
-
-      const result: any = jsonLogic.apply(computedAttributeRule, replaceUndefinedAndNullValuesWithNaN(formValue as ObjectValue))
-
-      // If running the apply function returns null, some variables are probably missing
-      if (result === null) {
-        return
-      }
-
-      schemaCopy[schemaKey as keyof NonBooleanJsfSchema] = result
+      // Otherwise, it's a nested object, so we need to apply the computed values to the nested object
+      applyNestedComputedValues(propertySchema, attributeName, computationName, computedValues)
     }
-  })
-
-  // Validate the modified schema
-  return validateSchema(values, schemaCopy, options, path, jsonLogicContext)
-}
-
-/**
- * Interpolates handlebars expressions in a message with computed values
- * @param message The message containing handlebars expressions
- * @param jsonLogicContext JSON Logic context containing computations
- * @returns Interpolated message with computed values
- */
-function interpolate(message: string, jsonLogicContext: JsonLogicContext | undefined): string {
-  if (!jsonLogicContext?.schema?.computedValues) {
-    console.warn('No computed values found in the JSON Logic context')
-    return message
   }
-
-  return message.replace(/\{\{(.*?)\}\}/g, (_, computation) => {
-    const computationName = computation.trim()
-    const computedRule = jsonLogicContext.schema.computedValues?.[computationName]?.rule
-
-    if (!computedRule) {
-      throw new Error(
-        `[json-schema-form] json-logic error: Computed value "${computationName}" doesn't exist`,
-      )
-    }
-
-    const result = jsonLogic.apply(
-      computedRule,
-      replaceUndefinedAndNullValuesWithNaN(jsonLogicContext.value as ObjectValue),
-    )
-
-    return result?.toString() ?? `{{${computationName}}}`
-  })
-}
-
-/**
- * Computes the error messages for a given schema, running the handlebars expressions through the JSON Logic context
- *
- * @param value The error message to compute
- * @param jsonLogicContext The JSON Logic context
- * @returns The computed error messages
- */
-function computeErrorMessages(
-  value: JsfSchema['x-jsf-errorMessage'],
-  jsonLogicContext: JsonLogicContext | undefined,
-): JsfSchema['x-jsf-errorMessage'] | undefined {
-  if (!value) {
-    return undefined
-  }
-
-  const computedErrorMessages: JsfSchema['x-jsf-errorMessage'] = {}
-
-  Object.entries(value).forEach(([key, message]) => {
-    let computedMessage = message
-    if (containsHandlebars(message)) {
-      computedMessage = interpolate(message, jsonLogicContext)
-    }
-    computedErrorMessages[key] = computedMessage
-  })
-
-  return computedErrorMessages
 }
