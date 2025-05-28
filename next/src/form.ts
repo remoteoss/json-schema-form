@@ -4,7 +4,7 @@ import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
-import { mutateFields } from './mutations'
+import { mutateFields, updateFieldProperties } from './mutations'
 import { deepMerge } from './utils'
 import { applyComputedAttrsToSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
@@ -266,34 +266,5 @@ export function createHeadlessForm(
     isError,
     error: null,
     handleValidation,
-  }
-}
-
-/**
- * Updates fields in place based on a schema, recursively if needed
- * @param fields - The fields array to mutate
- * @param schema - The schema to use for updating fields
- */
-function updateFieldProperties(fields: Field[], schema: JsfObjectSchema): void {
-  // Clear existing fields array
-  // fields.length = 0
-
-  // Get new fields from schema
-  const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
-
-  // cycle through the original fields and merge the new fields with the original fields
-  for (const field of fields) {
-    const newField = newFields.find(f => f.name === field.name)
-    if (newField) {
-      deepMerge(field, newField)
-
-      const fieldSchema = schema.properties?.[field.name]
-
-      if (fieldSchema && typeof fieldSchema === 'object') {
-        if (field.fields && fieldSchema.type === 'object') {
-          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema)
-        }
-      }
-    }
   }
 }

@@ -1,11 +1,7 @@
 import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
-import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
-import { deepMerge } from '../utils'
-import { validateSchema } from './schema'
-import { isObjectValue, safeDeepClone } from './util'
 
 /**
  * Builds a json-logic context based on a schema and the current value
@@ -135,15 +131,6 @@ export function computePropertyValues(
  * @returns The schema with computed attributes applied
  */
 export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue): JsfObjectSchema {
-  // If the schema has any computed attributes, we need to:
-  // - clone the original schema
-  // - calculate all the computed values
-  // - apply the computed values to the cloned schema
-  // Otherwise, we return the original schema
-  const schemaCopy = safeDeepClone(schema)
-
-  magic(schemaCopy, values, {}, undefined)
-
   if (computedValuesDefinition) {
     const computedValues: Record<string, any> = {}
 
@@ -152,87 +139,10 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
       computedValues[name] = computedValue
     })
 
-    cycleThroughPropertiesAndApplyValues(schemaCopy, computedValues)
+    cycleThroughPropertiesAndApplyValues(schema, computedValues)
   }
 
-  return schemaCopy
-}
-
-function magic(schema: JsfObjectSchema, values: SchemaValue, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
-  applySchemaRules(schema, values, options, jsonLogicContext)
-}
-
-function evaluateConditional(
-  values: ObjectValue,
-  schema: JsfObjectSchema,
-  rule: NonBooleanJsfSchema,
-  options: ValidationOptions = {},
-) {
-  const ifErrors = validateSchema(values, rule.if!, options)
-  const matches = ifErrors.length === 0
-
-  // Prevent fields from being shown when required fields have type errors
-  let hasTypeErrors = false
-  if (matches && rule.if?.required) {
-    const requiredFields = rule.if.required
-    hasTypeErrors = requiredFields.some((fieldName) => {
-      if (!schema.properties || !schema.properties[fieldName]) {
-        return false
-      }
-      const fieldSchema = schema.properties[fieldName]
-      const fieldValue = values[fieldName]
-      const fieldErrors = validateSchema(fieldValue, fieldSchema, options)
-      return fieldErrors.some(error => error.validation === 'type')
-    })
-  }
-
-  return { rule, matches: matches && !hasTypeErrors }
-}
-
-function applySchemaRules(
-  schema: JsfObjectSchema,
-  values: SchemaValue,
-  options: ValidationOptions = {},
-  jsonLogicContext: JsonLogicContext | undefined,
-) {
-  if (!isObjectValue(values)) {
-    return
-  }
-
-  const conditionalRules: { rule: NonBooleanJsfSchema, matches: boolean }[] = []
-
-  // If the schema has an if property, evaluate it and add it to the conditional rules array
-  if (schema.if) {
-    conditionalRules.push(evaluateConditional(values, schema, schema, options))
-  }
-
-  // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
-  (schema.allOf ?? [])
-    .filter((rule: JsfSchema) => typeof rule.if !== 'undefined')
-    .forEach((rule) => {
-      const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options)
-      conditionalRules.push(result)
-    })
-
-  // Process the conditional rules
-  for (const { rule, matches } of conditionalRules) {
-    // If the rule matches, process the then branch
-    if (matches && rule.then) {
-      processBranch(schema, values, rule.then, options, jsonLogicContext)
-    }
-    // If the rule doesn't match, process the else branch
-    else if (!matches && rule.else) {
-      processBranch(schema, values, rule.else, options, jsonLogicContext)
-    }
-  }
-}
-
-function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
-  applySchemaRules(branch as JsfObjectSchema, values, options, jsonLogicContext)
-  deepMerge(schema, branch as JsfObjectSchema)
-
-  // Apply rules to the branch
-  // applySchemaRules(schema, values, options, jsonLogicContext)
+  return schema
 }
 
 /**
