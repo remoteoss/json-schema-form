@@ -5,6 +5,7 @@ import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { mutateFields } from './mutations'
+import { deepMerge } from './utils'
 import { applyComputedAttrsToSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 
@@ -247,22 +248,15 @@ export function createHeadlessForm(
   const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, initialValues)
   const fields = buildFields({ schema: updatedSchema, strictInputType })
 
-  // Making sure field properties are correct for the initial values
-  mutateFields(fields, initialValues, updatedSchema, options.validationOptions)
-
   // TODO: check if we need this isError variable exposed
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
     const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, value)
-    console.log('updatedSchema', updatedSchema)
     const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
-    buildFieldsInPlace(fields, updatedSchema)
-
-    // Updating field properties based on the new form value
-    // mutateFields(fields, value, updatedSchema, options.validationOptions)
+    updateFieldProperties(fields, updatedSchema)
 
     return result
   }
@@ -280,22 +274,26 @@ export function createHeadlessForm(
  * @param fields - The fields array to mutate
  * @param schema - The schema to use for updating fields
  */
-function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
+function updateFieldProperties(fields: Field[], schema: JsfObjectSchema): void {
   // Clear existing fields array
-  fields.length = 0
+  // fields.length = 0
 
   // Get new fields from schema
   const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
 
-  // Push all new fields into existing array
-  fields.push(...newFields)
-
-  // Recursively update any nested fields
+  // cycle through the original fields and merge the new fields with the original fields
   for (const field of fields) {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error
-    if (field.fields && schema.properties?.[field.name]?.type === 'object') {
-      buildFieldsInPlace(field.fields, schema.properties[field.name] as JsfObjectSchema)
+    const newField = newFields.find(f => f.name === field.name)
+    if (newField) {
+      deepMerge(field, newField)
+
+      const fieldSchema = schema.properties?.[field.name]
+
+      if (fieldSchema && typeof fieldSchema === 'object') {
+        if (field.fields && fieldSchema.type === 'object') {
+          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema)
+        }
+      }
     }
   }
 }

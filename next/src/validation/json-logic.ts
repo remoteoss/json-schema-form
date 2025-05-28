@@ -3,6 +3,7 @@ import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import type { ValidationOptions } from './schema'
 import jsonLogic from 'json-logic-js'
+import { deepMerge } from '../utils'
 import { validateSchema } from './schema'
 import { isObjectValue, safeDeepClone } from './util'
 
@@ -159,40 +160,6 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
 
 function magic(schema: JsfObjectSchema, values: SchemaValue, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
   applySchemaRules(schema, values, options, jsonLogicContext)
-}
-
-function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void {
-  // Handle null/undefined
-  if (!obj1 || !obj2)
-    return
-
-  // Handle arrays
-  if (Array.isArray(obj1) && Array.isArray(obj2)) {
-    obj1.push(...obj2)
-    return
-  }
-
-  // Handle non-objects
-  if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
-    return
-
-  // Merge all properties from obj2 into obj1
-  for (const [key, value] of Object.entries(obj2)) {
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
-      // If both objects have this key and it's an object, merge recursively
-      if (obj1[key] && typeof obj1[key] === 'object' && !Array.isArray(obj1[key])) {
-        deepMerge(obj1[key], value)
-      }
-      else {
-        // Otherwise just assign
-        obj1[key as keyof T] = value
-      }
-    }
-    else {
-      // For non-objects (including arrays), just assign
-      obj1[key as keyof T] = value
-    }
-  }
 }
 
 function evaluateConditional(

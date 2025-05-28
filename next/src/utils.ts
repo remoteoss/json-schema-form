@@ -51,3 +51,42 @@ export function convertKBToMB(kb: number): number {
   const mb = kb / 1024 // KB to MB
   return Number.parseFloat(mb.toFixed(2)) // Keep 2 decimal places
 }
+
+/**
+ * Merges two objects recursively, regardless of the depth of the objects
+ * @param obj1 - The first object to merge
+ * @param obj2 - The second object to merge
+ */
+export function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void {
+  // Handle null/undefined
+  if (!obj1 || !obj2)
+    return
+
+  // Handle arrays
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    obj1.push(...obj2)
+    return
+  }
+
+  // Handle non-objects
+  if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
+    return
+
+  // Merge all properties from obj2 into obj1
+  for (const [key, value] of Object.entries(obj2)) {
+    if (value && typeof value === 'object' && !Array.isArray(value)) {
+      // If both objects have this key and it's an object, merge recursively
+      if (obj1[key] && typeof obj1[key] === 'object' && !Array.isArray(obj1[key])) {
+        deepMerge(obj1[key], value)
+      }
+      else {
+        // Otherwise just assign
+        obj1[key as keyof T] = value
+      }
+    }
+    else {
+      // For non-objects (including arrays), just assign
+      obj1[key as keyof T] = value
+    }
+  }
+}
