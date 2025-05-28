@@ -12,7 +12,7 @@
 
 ### Why JSON Schemas for forms?
 
-JSON Schemas are the SSoT (Single Source of Truth) that allows you to share form data _structure_ and _validations_ between server (backend) and the client (frontend), regardless of the language used.
+JSON Schemas are the SSoT (Single Source of Truth) that allows you to share form's data _structure_ and _validations_ between the server (backend) and the client (frontend), regardless of the language used.
 
 You can use it beyond UI Forms, like lists, tables, and any other UI that needs structured JSON data.
 
