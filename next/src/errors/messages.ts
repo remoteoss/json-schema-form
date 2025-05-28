@@ -4,6 +4,20 @@ import { randexp } from 'randexp'
 import { convertKBToMB } from '../utils'
 import { DATE_FORMAT } from '../validation/custom/date'
 
+/**
+ * Check if the schema is a checkbox
+ * @param schema - The schema to check
+ * @returns True if the schema is a checkbox, false otherwise
+ */
+function isCheckbox(schema: NonBooleanJsfSchema): boolean {
+  return schema['x-jsf-presentation']?.inputType === 'checkbox'
+}
+
+const CHECKBOX_ERROR_MESSAGES = {
+  required: 'Please acknowledge this field',
+  const: 'Please acknowledge this field',
+}
+
 export function getErrorMessage(
   schema: NonBooleanJsfSchema,
   value: SchemaValue,
@@ -16,13 +30,17 @@ export function getErrorMessage(
     case 'type':
       return getTypeErrorMessage(schema.type)
     case 'required':
-      if (schema['x-jsf-presentation']?.inputType === 'checkbox') {
-        return 'Please acknowledge this field'
+      if (isCheckbox(schema)) {
+        return CHECKBOX_ERROR_MESSAGES.required
       }
       return 'Required field'
     case 'forbidden':
       return 'Not allowed'
     case 'const':
+      // Boolean checkboxes that are required will come as a "const" validation error as the "empty" value is false
+      if (isCheckbox(schema) && value === false) {
+        return CHECKBOX_ERROR_MESSAGES.const
+      }
       return `The only accepted value is ${JSON.stringify(schema.const)}.`
     case 'enum':
       return `The option "${valueToString(value)}" is not valid.`

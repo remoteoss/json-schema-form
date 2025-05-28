@@ -344,7 +344,7 @@ export function buildFieldSchema(
     type: inputType,
     jsonType: type || schema.type,
     required,
-    isVisible: true,
+    isVisible: inputType !== 'hidden',
     ...(errorMessage && { errorMessage }),
   }
 

@@ -205,7 +205,7 @@ export const schemaInputTypeHidden = {
     a_hidden_select_multiple: {
       ...schemaInputTypeCountriesMultiple.properties.nationality,
       title: 'Select multi hidden',
-      default: ['Albania, Algeria'],
+      default: ['Albania', 'Algeria'],
       'x-jsf-presentation': { inputType: 'hidden' },
       type: 'array',
     },

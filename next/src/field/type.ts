@@ -27,6 +27,7 @@ export interface Field {
   options?: unknown[]
   const?: unknown
   checkboxValue?: unknown
+  default?: unknown
 
   // Allow additional properties from x-jsf-presentation (e.g. meta from oneOf/anyOf)
   [key: string]: unknown
@@ -44,4 +45,4 @@ export interface FieldOption {
   [key: string]: unknown
 }
 
-export type FieldType = 'text' | 'number' | 'select' | 'file' | 'radio' | 'group-array' | 'email' | 'date' | 'checkbox' | 'fieldset' | 'money' | 'country' | 'textarea'
+export type FieldType = 'text' | 'number' | 'select' | 'file' | 'radio' | 'group-array' | 'email' | 'date' | 'checkbox' | 'fieldset' | 'money' | 'country' | 'textarea' | 'hidden'
