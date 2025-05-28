@@ -255,13 +255,14 @@ export function createHeadlessForm(
 
   const handleValidation = (value: SchemaValue) => {
     const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, value)
+    console.log('updatedSchema', updatedSchema)
     const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
     buildFieldsInPlace(fields, updatedSchema)
 
     // Updating field properties based on the new form value
-    mutateFields(fields, value, updatedSchema, options.validationOptions)
+    // mutateFields(fields, value, updatedSchema, options.validationOptions)
 
     return result
   }

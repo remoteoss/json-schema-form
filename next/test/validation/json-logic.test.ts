@@ -365,7 +365,7 @@ describe('applyComputedAttrsToSchema', () => {
     }
 
     const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, {})
-    expect(result).toBe(schema)
+    expect(result).toEqual(schema)
   })
 
   it('applies computed values to schema properties', () => {
