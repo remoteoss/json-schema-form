@@ -85,13 +85,6 @@ function applySchemaRules(
   options: ValidationOptions = {},
   jsonLogicContext: JsonLogicContext | undefined,
 ) {
-  if (Array.isArray(values)) {
-    for (const value of values) {
-      applySchemaRules(schema, value, options, jsonLogicContext)
-    }
-    return
-  }
-
   if (!isObjectValue(values)) {
     return
   }
