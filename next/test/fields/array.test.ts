@@ -787,7 +787,7 @@ describe('buildFieldArray', () => {
   // makes it impossible to have different fields for each item in the array.
   // This applies to all kinds of mutations such as conditional rendering, default values, etc. and not just titles.
   // TODO: Check internal ticket: https://linear.app/remote/issue/RMT-1616/grouparray-hide-conditional-fields
-  describe.skip('mutation of array items', () => {
+  describe('mutation of array items', () => {
     // This schema describes a list of animals, where each animal has a kind which is either dog or cat and a name.
     // When the kind is dog, the name's title is set to "Dog name" and when the kind is cat, the name's title is set to "Cat name".
     const schema: JsfObjectSchema = {
@@ -828,18 +828,15 @@ describe('buildFieldArray', () => {
       required: ['animals'],
     }
 
-    it('mutates array items correctly when there is only one item', () => {
+    fit('mutates array items correctly when there is only one item', () => {
       const form = createHeadlessForm(schema)
 
-      expect(form.handleValidation({ animals: [{ kind: 'dog', name: 'Buddy' }] }).formErrors).toBeUndefined()
-      expect(form.fields[0]).toMatchObject({
-        fields: [
-          expect.any(Object),
-          expect.objectContaining({
-            label: 'Dog name',
-          }),
-        ],
-      })
+      expect(form.handleValidation({ animals: [{ kind: 'dog', name: 'Buddy' }, { kind: 'cat', name: 'moustache' }] }).formErrors).toBeUndefined()
+      const firstField = form.fields[0]?.fields?.[1]
+      const secondField = form.fields[0]?.fields?.[2]
+
+      expect(firstField?.label).toBe('Dog name')
+      expect(secondField?.label).toBe('Cat name')
     })
 
     it('mutates array items correctly when there are multiple items', () => {

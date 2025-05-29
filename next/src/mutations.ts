@@ -3,6 +3,7 @@ import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema,
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
 import { deepMerge } from './utils'
+import { validateCondition } from './validation/conditions'
 import { applyComputedAttrsToSchema, getJsonLogicContextFromSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 import { isObjectValue, safeDeepClone } from './validation/util'
@@ -51,12 +52,11 @@ function evaluateConditional(
   rule: NonBooleanJsfSchema,
   options: ValidationOptions = {},
 ) {
-  const ifErrors = validateSchema(values, rule.if!, options)
-  const matches = ifErrors.length === 0
+  const conditionIsTrue = validateSchema(values, rule.if!, options).length === 0
 
   // Prevent fields from being shown when required fields have type errors
   let hasTypeErrors = false
-  if (matches && rule.if?.required) {
+  if (conditionIsTrue && rule.if?.required) {
     const requiredFields = rule.if.required
     hasTypeErrors = requiredFields.some((fieldName) => {
       if (!schema.properties || !schema.properties[fieldName]) {
@@ -69,7 +69,7 @@ function evaluateConditional(
     })
   }
 
-  return { rule, matches: matches && !hasTypeErrors }
+  return { rule, matches: conditionIsTrue && !hasTypeErrors }
 }
 
 /**
@@ -85,6 +85,13 @@ function applySchemaRules(
   options: ValidationOptions = {},
   jsonLogicContext: JsonLogicContext | undefined,
 ) {
+  if (Array.isArray(values)) {
+    for (const value of values) {
+      applySchemaRules(schema, value, options, jsonLogicContext)
+    }
+    return
+  }
+
   if (!isObjectValue(values)) {
     return
   }
@@ -113,6 +120,20 @@ function applySchemaRules(
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
       processBranch(schema, values, rule.else, options, jsonLogicContext)
+    }
+  }
+
+  if (schema.properties) {
+    for (const [key, property] of Object.entries(schema.properties)) {
+      if (typeof property === 'object') {
+        const propertySchema = property as JsfObjectSchema
+        if (propertySchema.type === 'object') {
+          applySchemaRules(propertySchema, values[key] as ObjectValue, options, jsonLogicContext)
+        }
+        if (propertySchema.items) {
+          applySchemaRules(propertySchema.items as JsfObjectSchema, values[key], options, jsonLogicContext)
+        }
+      }
     }
   }
 }
