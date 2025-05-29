@@ -1,5 +1,5 @@
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
 import { deepMerge } from './utils'
@@ -8,18 +8,31 @@ import { validateSchema } from './validation/schema'
 import { isObjectValue, safeDeepClone } from './validation/util'
 
 /**
- * Mutates a schema to take into account the computed values and the conditional rules
- * @param schema
- * @param computedValuesDefinition - The computed values definition
- * @param values - The current form values
- * @returns The mutated schema
+ * Creates a new version of the schema with all the computed attrs applied, as well as the
+ * final version of each property (taking into account conditional rules)
+ * @param params - The parameters for the function
+ * @param params.schema - The original schema
+ * @param params.values - The current form values
+ * @param params.options - Validation options
+ * @returns The new schema
  */
-export function mutateSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined): JsfObjectSchema {
+export function calculateFinalSchema({
+  schema,
+  values,
+  options = {},
+}: {
+  schema: JsfObjectSchema
+  values: SchemaValue
+  options?: ValidationOptions
+}): JsfObjectSchema {
+  const jsonLogicContext = schema['x-jsf-logic'] ? getJsonLogicContextFromSchema(schema['x-jsf-logic'], values) : undefined
   const schemaCopy = safeDeepClone(schema)
 
   applySchemaRules(schemaCopy, values, options, jsonLogicContext)
 
-  applyComputedAttrsToSchema(schemaCopy, computedValuesDefinition, values)
+  if (jsonLogicContext?.schema.computedValues) {
+    applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values)
+  }
 
   return schemaCopy
 }
@@ -61,9 +74,8 @@ function evaluateConditional(
 
 /**
  * Applies JSON Schema conditional rules to determine updated field properties
- * @param fields - The fields to apply rules to
- * @param values - The current form values
  * @param schema - The JSON schema containing the rules
+ * @param values - The current form values
  * @param options - Validation options
  * @param jsonLogicContext - JSON Logic context
  */
@@ -107,7 +119,7 @@ function applySchemaRules(
 
 /**
  * Processes a branch of a conditional rule, updating the properties of fields based on the branch's schema
- * @param fields - The fields to process
+ * @param schema - The JSON schema containing the rules
  * @param values - The current form values
  * @param branch - The branch (schema representing and then/else) to process
  * @param options - Validation options

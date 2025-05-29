@@ -53,7 +53,7 @@ export function convertKBToMB(kb: number): number {
 }
 
 /**
- * Merges two objects recursively, regardless of the depth of the objects
+ * Merges two objects recursively
  * @param obj1 - The first object to merge
  * @param obj2 - The second object to merge
  */
