@@ -4,8 +4,7 @@ import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
-import { mutateFields, updateFieldProperties } from './mutations'
-import { deepMerge } from './utils'
+import { mutateSchema, updateFieldProperties } from './mutations'
 import { applyComputedAttrsToSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 
@@ -245,14 +244,14 @@ export function createHeadlessForm(
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
   // Make a (new) version with all the computed attrs computed and applied
-  const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, initialValues)
+  const updatedSchema = mutateSchema(schema, schema['x-jsf-logic']?.computedValues, initialValues, options.validationOptions, undefined)
   const fields = buildFields({ schema: updatedSchema, strictInputType })
 
   // TODO: check if we need this isError variable exposed
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, value)
+    const updatedSchema = mutateSchema(schema, schema['x-jsf-logic']?.computedValues, value, options.validationOptions, undefined)
     const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place

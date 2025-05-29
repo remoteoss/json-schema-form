@@ -123,7 +123,7 @@ export function computePropertyValues(
 
 /**
  * Applies any computed attributes to a schema, based on the provided values. When there are values to apply,
- * it creates a deep clone of the schema and applies the computed values to the clone,otherwise it returns the original schema.
+ * Note: this function mutates the schema in place.
  *
  * @param schema - The schema to apply computed attributes to
  * @param computedValuesDefinition - The computed values to apply

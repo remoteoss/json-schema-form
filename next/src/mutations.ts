@@ -17,9 +17,9 @@ import { isObjectValue, safeDeepClone } from './validation/util'
 export function mutateSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined): JsfObjectSchema {
   const schemaCopy = safeDeepClone(schema)
 
-  applySchemaRules(schema, values, options, jsonLogicContext)
+  applySchemaRules(schemaCopy, values, options, jsonLogicContext)
 
-  applyComputedAttrsToSchema(schema, computedValuesDefinition, values)
+  applyComputedAttrsToSchema(schemaCopy, computedValuesDefinition, values)
 
   return schemaCopy
 }
@@ -114,8 +114,10 @@ function applySchemaRules(
  * @param jsonLogicContext - JSON Logic context
  */
 function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
-  applySchemaRules(branch as JsfObjectSchema, values, options, jsonLogicContext)
-  deepMerge(schema, branch as JsfObjectSchema)
+  const branchSchema = branch as JsfObjectSchema
+
+  applySchemaRules(branchSchema, values, options, jsonLogicContext)
+  deepMerge(schema, branchSchema)
 }
 
 /**
@@ -124,15 +126,13 @@ function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: Jsf
  * @param schema - The schema to use for updating fields
  */
 export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema): void {
-  // Clear existing fields array
-  // fields.length = 0
-
   // Get new fields from schema
   const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
 
   // cycle through the original fields and merge the new fields with the original fields
   for (const field of fields) {
     const newField = newFields.find(f => f.name === field.name)
+
     if (newField) {
       deepMerge(field, newField)
 
