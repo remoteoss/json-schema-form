@@ -79,13 +79,20 @@ export function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void
       if (obj1[key] && typeof obj1[key] === 'object' && !Array.isArray(obj1[key])) {
         deepMerge(obj1[key], value)
       }
-      else {
+      else if (obj1[key] !== value) {
         // Otherwise just assign
         obj1[key as keyof T] = value
       }
     }
-    else {
-      // For non-objects (including arrays), just assign
+    else if (Array.isArray(value)) {
+      // cycle through the array and merge values if they're different (take objects into account)
+      for (const item of value) {
+        if (item && typeof item === 'object') {
+          deepMerge(obj1[key], item)
+        }
+      }
+    }
+    else if (obj1[key] !== value) {
       obj1[key as keyof T] = value
     }
   }
