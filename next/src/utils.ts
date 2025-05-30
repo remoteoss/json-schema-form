@@ -63,12 +63,6 @@ export function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void
     return
   }
 
-  // Handle arrays
-  if (Array.isArray(obj1) && Array.isArray(obj2)) {
-    obj1.push(...obj2)
-    return
-  }
-
   // Handle non-objects
   if (typeof obj1 !== 'object' || typeof obj2 !== 'object')
     return
@@ -91,7 +85,7 @@ export function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void
       // If the destiny value exists and it's an array, cycle through the incoming values and merge if they're different (take objects into account)
       for (const item of value) {
         if (item && typeof item === 'object') {
-          deepMerge(originalArray, item)
+          deepMerge(originalArray, value)
         }
         // "required" is a special case, it only allows for new elements to be added to the array
         else if (key === 'required') {
