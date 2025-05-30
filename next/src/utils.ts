@@ -92,7 +92,14 @@ export function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void
         if (item && typeof item === 'object') {
           deepMerge(originalArray, item)
         }
-        // If the value is not an object, just assign it
+        // "required" is a special case, it only allows for new elements to be added to the array
+        else if (key === 'required') {
+          // Add any new elements to the array
+          if (!originalArray.find((originalItem: any) => originalItem === item)) {
+            originalArray.push(item)
+          }
+        }
+        // Otherwise, just assign it
         else {
           obj1[key as keyof T] = value as T[keyof T]
         }
