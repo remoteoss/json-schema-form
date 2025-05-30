@@ -554,7 +554,7 @@ describe('fields', () => {
     })
 
     // Skipping these tests until we have group-array support
-    describe.skip('array type inputs', () => {
+    describe('array type inputs', () => {
       it('uses group-array when items has properties', () => {
         const schema = {
           type: 'array',

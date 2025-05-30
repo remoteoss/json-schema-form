@@ -724,7 +724,7 @@ export const schemaWithReduceAccumulator = {
       'type': 'number',
       'x-jsf-logic-computedAttrs': {
         const: 'computed_work_hours_per_week',
-        defaultValue: 'computed_work_hours_per_week',
+        default: 'computed_work_hours_per_week',
         title: '{{computed_work_hours_per_week}} hours per week',
       },
     },

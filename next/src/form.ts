@@ -4,8 +4,7 @@ import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
-import { mutateFields } from './mutations'
-import { applyComputedAttrsToSchema } from './validation/json-logic'
+import { calculateFinalSchema, updateFieldProperties } from './mutations'
 import { validateSchema } from './validation/schema'
 
 export { ValidationOptions } from './validation/schema'
@@ -154,15 +153,38 @@ interface ValidationErrorWithMessage extends ValidationError {
  * @param errors - The validation errors
  * @returns The validation errors with error messages added
  */
-function addErrorMessages(errors: ValidationError[]): ValidationErrorWithMessage[] {
+function addErrorMessages(errors: ValidationError[], rootSchema: JsfSchema): ValidationErrorWithMessage[] {
   return errors.map((error) => {
     const { schema, value, validation, customErrorMessage } = error
 
+    const completePropertySchema = getCompletePropertySchema(error.path, rootSchema, schema)
+
     return {
       ...error,
-      message: getErrorMessage(schema, value, validation, customErrorMessage),
+      message: getErrorMessage(completePropertySchema, value, validation, customErrorMessage),
     }
   })
+}
+
+/**
+ * Get the complete property schema from the root schema and the property schema
+ * @param path - The path to the property
+ * @param rootSchema - The root schema
+ * @param propertySchema - The property schema
+ * @returns The complete property schema
+ */
+function getCompletePropertySchema(path: ValidationErrorPath, rootSchema: JsfSchema, propertySchema: JsfSchema): JsfSchema {
+  // Property name is the last segment of the path
+  const propertyName = path[path.length - 1]
+
+  // Fetch the main property schema from the root schema
+  const mainSchema = rootSchema.properties?.[propertyName] as object
+
+  // Return the complete property schema
+  return {
+    ...(mainSchema || {}),
+    ...(propertySchema as object),
+  }
 }
 
 /**
@@ -203,7 +225,7 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
-  const errorsWithMessages = addErrorMessages(errors)
+  const errorsWithMessages = addErrorMessages(errors, schema)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
   const formErrors = validationErrorsToFormErrors(processedErrors)
@@ -243,25 +265,29 @@ export function createHeadlessForm(
 ): FormResult {
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
-  // Make a (new) version with all the computed attrs computed and applied
-  const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, initialValues)
-  const fields = buildFields({ schema: updatedSchema, strictInputType })
+  // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
+  const updatedSchema = calculateFinalSchema({
+    schema,
+    values: initialValues,
+    options: options.validationOptions,
+  })
 
-  // Making sure field properties are correct for the initial values
-  mutateFields(fields, initialValues, updatedSchema, options.validationOptions)
+  const fields = buildFields({ schema: updatedSchema, strictInputType })
 
   // TODO: check if we need this isError variable exposed
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, value)
+    const updatedSchema = calculateFinalSchema({
+      schema,
+      values: value,
+      options: options.validationOptions,
+    })
+
     const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
-    buildFieldsInPlace(fields, updatedSchema)
-
-    // Updating field properties based on the new form value
-    mutateFields(fields, value, updatedSchema, options.validationOptions)
+    updateFieldProperties(fields, updatedSchema)
 
     return result
   }
@@ -271,30 +297,5 @@ export function createHeadlessForm(
     isError,
     error: null,
     handleValidation,
-  }
-}
-
-/**
- * Updates fields in place based on a schema, recursively if needed
- * @param fields - The fields array to mutate
- * @param schema - The schema to use for updating fields
- */
-function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
-  // Clear existing fields array
-  fields.length = 0
-
-  // Get new fields from schema
-  const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
-
-  // Push all new fields into existing array
-  fields.push(...newFields)
-
-  // Recursively update any nested fields
-  for (const field of fields) {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error
-    if (field.fields && schema.properties?.[field.name]?.type === 'object') {
-      buildFieldsInPlace(field.fields, schema.properties[field.name] as JsfObjectSchema)
-    }
   }
 }

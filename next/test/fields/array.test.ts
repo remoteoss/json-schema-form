@@ -832,14 +832,9 @@ describe('buildFieldArray', () => {
       const form = createHeadlessForm(schema)
 
       expect(form.handleValidation({ animals: [{ kind: 'dog', name: 'Buddy' }] }).formErrors).toBeUndefined()
-      expect(form.fields[0]).toMatchObject({
-        fields: [
-          expect.any(Object),
-          expect.objectContaining({
-            label: 'Dog name',
-          }),
-        ],
-      })
+      const firstField = form.fields[0]?.fields?.[1]
+
+      expect(firstField?.label).toBe('Dog Name')
     })
 
     it('mutates array items correctly when there are multiple items', () => {
