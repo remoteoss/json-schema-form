@@ -2,7 +2,7 @@ import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
-import { deepMerge } from './utils'
+import { deepMergeSchemas } from './utils'
 import { applyComputedAttrsToSchema, getJsonLogicContextFromSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 import { isObjectValue, safeDeepClone } from './validation/util'
@@ -142,7 +142,7 @@ function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: Jsf
   const branchSchema = branch as JsfObjectSchema
 
   applySchemaRules(branchSchema, values, options, jsonLogicContext)
-  deepMerge(schema, branchSchema)
+  deepMergeSchemas(schema, branchSchema)
 }
 
 /**
@@ -162,7 +162,7 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema):
       // Properties might have been removed with the most recent schema (due to most recent form values)
       // so we need to remove them from the original field
       removeNonExistentProperties(field, newField)
-      deepMerge(field, newField)
+      deepMergeSchemas(field, newField)
 
       const fieldSchema = schema.properties?.[field.name]
 

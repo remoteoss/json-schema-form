@@ -153,15 +153,38 @@ interface ValidationErrorWithMessage extends ValidationError {
  * @param errors - The validation errors
  * @returns The validation errors with error messages added
  */
-function addErrorMessages(errors: ValidationError[]): ValidationErrorWithMessage[] {
+function addErrorMessages(errors: ValidationError[], rootSchema: JsfSchema): ValidationErrorWithMessage[] {
   return errors.map((error) => {
     const { schema, value, validation, customErrorMessage } = error
 
+    const completePropertySchema = getCompletePropertySchema(error.path, rootSchema, schema)
+
     return {
       ...error,
-      message: getErrorMessage(schema, value, validation, customErrorMessage),
+      message: getErrorMessage(completePropertySchema, value, validation, customErrorMessage),
     }
   })
+}
+
+/**
+ * Get the complete property schema from the root schema and the property schema
+ * @param path - The path to the property
+ * @param rootSchema - The root schema
+ * @param propertySchema - The property schema
+ * @returns The complete property schema
+ */
+function getCompletePropertySchema(path: ValidationErrorPath, rootSchema: JsfSchema, propertySchema: JsfSchema): JsfSchema {
+  // Property name is the last segment of the path
+  const propertyName = path[path.length - 1]
+
+  // Fetch the main property schema from the root schema
+  const mainSchema = rootSchema.properties?.[propertyName] as object
+
+  // Return the complete property schema
+  return {
+    ...(mainSchema || {}),
+    ...(propertySchema as object),
+  }
 }
 
 /**
@@ -202,7 +225,7 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
-  const errorsWithMessages = addErrorMessages(errors)
+  const errorsWithMessages = addErrorMessages(errors, schema)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
   const formErrors = validationErrorsToFormErrors(processedErrors)
