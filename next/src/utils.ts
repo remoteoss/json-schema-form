@@ -53,14 +53,15 @@ export function convertKBToMB(kb: number): number {
 }
 
 /**
- * Merges two objects recursively
+ * Merges obj1 with obj2 recursively
  * @param obj1 - The first object to merge
  * @param obj2 - The second object to merge
  */
 export function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void {
   // Handle null/undefined
-  if (!obj1 || !obj2)
+  if (!obj1 || !obj2) {
     return
+  }
 
   // Handle arrays
   if (Array.isArray(obj1) && Array.isArray(obj2)) {

@@ -159,6 +159,7 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema):
     const newField = newFields.find(f => f.name === field.name)
 
     if (newField) {
+      removeNonExistentProperties(field, newField)
       deepMerge(field, newField)
 
       const fieldSchema = schema.properties?.[field.name]
@@ -168,6 +169,24 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema):
           updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema)
         }
       }
+    }
+  }
+}
+
+/**
+ * Recursively removes properties that don't exist in newObj
+ * @param obj - The object to remove properties from
+ * @param newObj - The object to compare with
+ */
+function removeNonExistentProperties(obj: Field, newObj: Field) {
+  for (const [key] of Object.entries(obj)) {
+    if (!newObj[key]) {
+      delete obj[key]
+    }
+    else if (obj[key] && typeof obj[key] === 'object' && !Array.isArray(obj[key])
+      && newObj[key] && typeof newObj[key] === 'object' && !Array.isArray(newObj[key])) {
+      // Recursively process nested objects
+      removeNonExistentProperties(obj[key] as Field, newObj[key] as Field)
     }
   }
 }
