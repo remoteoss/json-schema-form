@@ -3,7 +3,6 @@ import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema,
 import type { ValidationOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
 import { deepMerge } from './utils'
-import { validateCondition } from './validation/conditions'
 import { applyComputedAttrsToSchema, getJsonLogicContextFromSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 import { isObjectValue, safeDeepClone } from './validation/util'
