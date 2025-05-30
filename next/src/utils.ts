@@ -81,15 +81,19 @@ export function deepMerge<T extends Record<string, any>>(obj1: T, obj2: T): void
       }
       // If the value is different, assign it
       else if (obj1[key] !== value) {
-        // Otherwise just assign
         obj1[key as keyof T] = value
       }
     }
-    else if (Array.isArray(value)) {
-      // cycle through the array and merge values if they're different (take objects into account)
+    // If the value is an array, cycle through it and merge values if they're different (take objects into account)
+    else if (obj1[key] && Array.isArray(value)) {
+      const originalArray = obj1[key]
+      // If the destiny value exists and it's an array, cycle through the incoming values and merge if they're different (take objects into account)
       for (const item of value) {
         if (item && typeof item === 'object') {
-          deepMerge(obj1[key], item)
+          deepMerge(originalArray, item)
+        }
+        else if (!originalArray.find((item: any) => item === value)) {
+          originalArray.push(item)
         }
       }
     }
