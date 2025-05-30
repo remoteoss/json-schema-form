@@ -146,7 +146,7 @@ function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: Jsf
 }
 
 /**
- * Updates fields in place based on a schema, recursively if needed
+ * Updates fields (in place) based on a schema, recursively if needed
  * @param fields - The fields array to mutate
  * @param schema - The schema to use for updating fields
  */
@@ -159,6 +159,8 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema):
     const newField = newFields.find(f => f.name === field.name)
 
     if (newField) {
+      // Properties might have been removed with the most recent schema (due to most recent form values)
+      // so we need to remove them from the original field
       removeNonExistentProperties(field, newField)
       deepMerge(field, newField)
 
