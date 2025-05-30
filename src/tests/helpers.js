@@ -1401,11 +1401,11 @@ export const schemaDynamicValidationConst = {
       oneOf: [
         {
           title: 'Yes',
-          value: 'yes',
+          const: 'yes',
         },
         {
           title: 'No',
-          value: 'no',
+          const: 'no',
         },
       ],
       'x-jsf-presentation': {
@@ -1418,11 +1418,11 @@ export const schemaDynamicValidationConst = {
       oneOf: [
         {
           title: 'Yes',
-          value: 'yes',
+          const: 'yes',
         },
         {
           title: 'No',
-          value: 'no',
+          const: 'no',
         },
       ],
       'x-jsf-presentation': {
