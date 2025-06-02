@@ -53,7 +53,11 @@ export function convertKBToMB(kb: number): number {
 }
 
 // Keys to skip when merging schema objects
-const KEYS_TO_SKIP = ['if', 'then', 'else', 'allOf', 'anyOf', 'oneOf']
+const KEYS_TO_SKIP = ['if', 'then', 'else']
+
+function isObject(value: any): boolean {
+  return value && typeof value === 'object' && !Array.isArray(value)
+}
 
 /**
  * Merges obj1 with obj2 recursively
@@ -77,12 +81,13 @@ export function deepMergeSchemas<T extends Record<string, any>>(obj1: T, obj2: T
       continue
     }
 
-    if (value && typeof value === 'object' && !Array.isArray(value)) {
+    // If the value is an object, merge recursively
+    if (isObject(value)) {
       // If both objects have this key and it's an object, merge recursively
-      if (obj1[key] && typeof obj1[key] === 'object' && !Array.isArray(obj1[key])) {
+      if (isObject(obj1[key])) {
         deepMergeSchemas(obj1[key], value)
       }
-      // If the value is different, assign it
+      // Otherwise, if the value is different, assign it
       else if (obj1[key] !== value) {
         obj1[key as keyof T] = value
       }
