@@ -80,7 +80,7 @@ function evaluateConditional(
  */
 function applySchemaRules(
   schema: JsfObjectSchema,
-  values: SchemaValue,
+  values: SchemaValue = {},
   options: ValidationOptions = {},
   jsonLogicContext: JsonLogicContext | undefined,
 ) {
