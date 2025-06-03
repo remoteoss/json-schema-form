@@ -1392,91 +1392,83 @@ export const schemaWithOrderKeyword = JSONSchemaBuilder()
   .build();
 
 export const schemaDynamicValidationConst = {
-  type: "object",
-  additionalProperties: false,
   properties: {
-    a_fieldset: {
-      title: "Fieldset title",
-      description: "Fieldset description",
-      'x-jsf-presentation': {
-        inputType: "fieldset"
-      },
-      properties: {
-        username: {
-          title: "Username",
-          description: "Your username (max 10 characters)",
-          maxLength: 10,
-          'x-jsf-presentation': {
-            inputType: "text",
-            maskSecret: 2
-          },
-          type: "string"
-        },
-        tabs: {
-          title: "Tabs",
-          description: "How many open tabs do you have?",
-          'x-jsf-presentation': {
-            inputType: "number"
-          },
-          minimum: 1,
-          maximum: 10,
-          type: "number"
-        }
-      },
-      required: [
-        "username"
-      ],
-      type: "object"
-    },
-    validate_fieldset: {
-      title: "Fieldset validation",
-      type: "string",
-      description: "Select what fieldset fields are required",
+    a_fieldset: mockFieldset,
+    a_group_array: simpleGroupArrayInput,
+    validate_tabs: {
+      title: 'Should "Tabs" value be required?',
+      description: 'Toggle this radio for changing the validation of the fieldset bellow',
       oneOf: [
         {
-          const: "all",
-          title: "All"
+          title: 'Yes',
+          value: 'yes',
         },
         {
-          const: "username",
-          title: "Username"
-        }
+          title: 'No',
+          value: 'no',
+        },
       ],
       'x-jsf-presentation': {
-        inputType: "select",
-        placeholder: "Select..."
-      }
-    }
+        inputType: 'radio',
+      },
+    },
+    mandatory_group_array: {
+      title: 'Add required group array field',
+      description: 'Toggle this radio for displaying a mandatory group array field',
+      oneOf: [
+        {
+          title: 'Yes',
+          value: 'yes',
+        },
+        {
+          title: 'No',
+          value: 'no',
+        },
+      ],
+      'x-jsf-presentation': {
+        inputType: 'radio',
+      },
+    },
   },
-  'x-jsf-order': [
-    "validate_fieldset",
-    "a_fieldset"
-  ],
-  required: [
-    "a_fieldset",
-    "validate_fieldset"
+  allOf: [
+    {
+      if: {
+        properties: {
+          mandatory_group_array: {
+            const: 'yes',
+          },
+        },
+        required: ['mandatory_group_array'],
+      },
+      then: {
+        required: ['a_group_array'],
+      },
+      else: {
+        properties: {
+          a_group_array: false,
+        },
+      },
+    },
   ],
   if: {
     properties: {
-      validate_fieldset: {
-        pattern: "^all$"
-      }
+      validate_tabs: {
+        const: 'yes',
+      },
     },
-    required: [
-      "validate_fieldset"
-    ]
+    required: ['validate_tabs'],
   },
   then: {
     properties: {
       a_fieldset: {
-        required: [
-          "username",
-          "tabs"
-        ]
-      }
-    }
-  }
+        required: ['username', 'tabs'],
+      },
+    },
+  },
+  required: ['a_fieldset', 'validate_tabs', 'mandatory_group_array'],
+  'x-jsf-order': ['validate_tabs', 'a_fieldset', 'mandatory_group_array', 'a_group_array'],
 };
+;
 
 export const schemaDynamicValidationMinimumMaximum = JSONSchemaBuilder()
   .addInput({
