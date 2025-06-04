@@ -19,7 +19,7 @@ export function validateConst(
   schema: NonBooleanJsfSchema,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
-  const constValue = typeof schema.const !== 'undefined' ? schema.const : schema.value
+  const constValue = schema.const
 
   if (constValue === undefined) {
     return []
