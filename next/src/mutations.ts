@@ -108,10 +108,14 @@ function applySchemaRules(
     // If the rule matches, process the then branch
     if (matches && rule.then) {
       processBranch(schema, values, rule.then, options, jsonLogicContext)
+      // Delete the then branch to avoid processing it again when validating the schema
+      delete rule.then
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
       processBranch(schema, values, rule.else, options, jsonLogicContext)
+      // Delete the else branch to avoid processing it again when validating the schema
+      delete rule.else
     }
   }
 

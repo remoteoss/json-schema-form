@@ -349,8 +349,10 @@ export function buildFieldSchema({
 }: BuildFieldSchemaParams): Field | null {
   // If schema is boolean false, return a field with isVisible=false
   if (schema === false) {
-    // If the schema is false, we use the original schema to get the input type
+    // If the schema is false (hidden field), we use the original schema to get the input type
     const inputType = getInputType(type, name, originalSchema, strictInputType)
+    const inputHasInnerFields = ['fieldset', 'group-array'].includes(inputType)
+
     return {
       type: inputType,
       name,
@@ -358,6 +360,7 @@ export function buildFieldSchema({
       jsonType: 'boolean',
       required,
       isVisible: false,
+      ...(inputHasInnerFields && { fields: [] }),
     }
   }
 

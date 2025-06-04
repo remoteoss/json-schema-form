@@ -52,7 +52,7 @@ export function convertKBToMB(kb: number): number {
   return Number.parseFloat(mb.toFixed(2)) // Keep 2 decimal places
 }
 
-// Keys to skip when merging schema objects
+// When merging schemas, we should skip merging the if/then/else properties as we could be creating wrong conditions
 const KEYS_TO_SKIP = ['if', 'then', 'else']
 
 function isObject(value: any): boolean {

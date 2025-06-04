@@ -99,6 +99,7 @@ describe('fields', () => {
         inputType: 'fieldset',
         type: 'fieldset',
         jsonType: 'boolean',
+        fields: [],
         name: 'root',
         required: true,
         isVisible: false,
