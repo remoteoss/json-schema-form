@@ -210,8 +210,8 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
 /**
  * Get the fields for an object schema
  * @param schema - The schema of the field
- * @param strictInputType - Whether to strictly enforce the input type
  * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
+ * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema or an empty array if the schema does not define any properties
  */
 function getObjectFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
@@ -233,8 +233,8 @@ function getObjectFields(schema: NonBooleanJsfSchema, originalSchema: NonBoolean
 /**
  * Get the fields for an array schema
  * @param schema - The schema of the field
- * @param strictInputType - Whether to strictly enforce the input type
  * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
+ * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema or an empty array if the schema does not define any items
  */
 function getArrayFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] {
@@ -271,8 +271,8 @@ function getArrayFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJ
 /**
  * Get the fields for a schema from either `items` or `properties`
  * @param schema - The schema of the field
- * @param strictInputType - Whether to strictly enforce the input type
  * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
+ * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema
  */
 function getFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
