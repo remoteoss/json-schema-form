@@ -330,12 +330,13 @@ interface BuildFieldSchemaParams {
 
 /**
  * Build a field from any schema
- * @param schema - The schema of the field
- * @param name - The name of the field
- * @param required - Whether the field is required
- * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
- * @param strictInputType - Whether to strictly enforce the input type
- * @param type - The schema type
+ * @param params - The parameters for building the field
+ * @param params.schema - The schema of the field
+ * @param params.name - The name of the field
+ * @param params.required - Whether the field is required
+ * @param params.originalSchema - The original schema (needed for calculating the original input type conditionally hidden fields)
+ * @param params.strictInputType - Whether to strictly enforce the input type
+ * @param params.type - The schema type
  * @returns The field
  */
 export function buildFieldSchema({
