@@ -202,7 +202,7 @@ function validate(value: SchemaValue, schema: JsfSchema, options: ValidationOpti
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
-  const errorsWithMessages = addErrorMessages(errors, schema)
+  const errorsWithMessages = addErrorMessages(errors)
   const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
 
   const formErrors = validationErrorsToFormErrors(processedErrors)
