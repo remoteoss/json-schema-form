@@ -42,7 +42,7 @@ function addOptions(field: Field, schema: NonBooleanJsfSchema) {
  * Add fields attribute to a field
  * @param field - The field to add the fields to
  * @param schema - The schema of the field
- * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param strictInputType - Whether to strictly enforce the input type
  * @description
  * This adds the fields attribute to based on the schema's items.
@@ -212,7 +212,7 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
 /**
  * Get the fields for an object schema
  * @param schema - The schema of the field
- * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema or an empty array if the schema does not define any properties
  */
@@ -241,7 +241,7 @@ function getObjectFields(schema: NonBooleanJsfSchema, originalSchema: NonBoolean
 /**
  * Get the fields for an array schema
  * @param schema - The schema of the field
- * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema or an empty array if the schema does not define any items
  */
@@ -291,7 +291,7 @@ function getArrayFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJ
 /**
  * Get the fields for a schema from either `items` or `properties`
  * @param schema - The schema of the field
- * @param originalSchema - The original schema (needed for calculating the original input type, for hidden fields)
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema
  */
@@ -334,7 +334,7 @@ interface BuildFieldSchemaParams {
  * @param params.schema - The schema of the field
  * @param params.name - The name of the field
  * @param params.required - Whether the field is required
- * @param params.originalSchema - The original schema (needed for calculating the original input type conditionally hidden fields)
+ * @param params.originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param params.strictInputType - Whether to strictly enforce the input type
  * @param params.type - The schema type
  * @returns The field
