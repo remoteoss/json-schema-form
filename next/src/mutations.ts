@@ -150,9 +150,9 @@ function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: Jsf
  * @param fields - The fields array to mutate
  * @param schema - The schema to use for updating fields
  */
-export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema): void {
+export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema, originalSchema: JsfSchema): void {
   // Get new fields from schema
-  const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
+  const newFields = buildFieldSchema(schema, 'root', true, originalSchema, false, 'object')?.fields || []
 
   // cycle through the original fields and merge the new fields with the original fields
   for (const field of fields) {
@@ -168,7 +168,7 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema):
 
       if (fieldSchema && typeof fieldSchema === 'object') {
         if (field.fields && fieldSchema.type === 'object') {
-          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema)
+          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema, originalSchema)
         }
       }
     }

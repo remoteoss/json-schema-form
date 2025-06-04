@@ -1,9 +1,13 @@
-import type { JsfSchema, NonBooleanJsfSchema } from '../src/types'
+import type { JsfSchema, JsfSchemaType, NonBooleanJsfSchema } from '../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { TypeName } from 'json-schema-typed'
-import { buildFieldSchema } from '../src/field/schema'
+import { buildFieldSchema as buildField } from '../src/field/schema'
 
 describe('fields', () => {
+  function buildFieldSchema(schema: JsfSchema, name: string, required: boolean = false, strictInputType?: boolean, type?: JsfSchemaType) {
+    return buildField(schema, name, required, schema, strictInputType, type)
+  }
+
   it('should build a field from a schema', () => {
     const schema = {
       type: 'object',
@@ -59,6 +63,32 @@ describe('fields', () => {
         isVisible: true,
       },
     ])
+  })
+
+  it('should use the original schema to fetch the input type if the schema is false', () => {
+    const schema: JsfSchema = false
+    const originalSchema: JsfSchema = {
+      type: 'object',
+      title: 'root',
+      properties: {
+        age: { 'type': 'number', 'title': 'Age', 'x-jsf-presentation': { inputType: 'number' } },
+        amount: { type: 'number', title: 'Amount' },
+      },
+    }
+
+    const field = buildField(schema, 'root', true, originalSchema)
+
+    // Both fields should have the same input type
+    expect(field).toEqual(
+      {
+        inputType: 'fieldset',
+        type: 'fieldset',
+        jsonType: 'boolean',
+        name: 'root',
+        required: true,
+        isVisible: false,
+      },
+    )
   })
 
   it('should build an object field with multiple properties', () => {

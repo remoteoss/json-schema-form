@@ -253,9 +253,9 @@ export interface CreateHeadlessFormOptions {
   strictInputType?: boolean
 }
 
-function buildFields(params: { schema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
-  const { schema, strictInputType } = params
-  const fields = buildFieldSchema(schema, 'root', true, strictInputType, 'object')?.fields || []
+function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
+  const { schema, originalSchema, strictInputType } = params
+  const fields = buildFieldSchema(schema, 'root', true, originalSchema, strictInputType, 'object')?.fields || []
   return fields
 }
 
@@ -272,7 +272,7 @@ export function createHeadlessForm(
     options: options.validationOptions,
   })
 
-  const fields = buildFields({ schema: updatedSchema, strictInputType })
+  const fields = buildFields({ schema: updatedSchema, originalSchema: schema, strictInputType })
 
   // TODO: check if we need this isError variable exposed
   const isError = false
@@ -287,7 +287,7 @@ export function createHeadlessForm(
     const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
-    updateFieldProperties(fields, updatedSchema)
+    updateFieldProperties(fields, updatedSchema, schema)
 
     return result
   }
