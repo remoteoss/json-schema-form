@@ -1468,8 +1468,6 @@ export const schemaDynamicValidationConst = {
   required: ['a_fieldset', 'validate_tabs', 'mandatory_group_array'],
   'x-jsf-order': ['validate_tabs', 'a_fieldset', 'mandatory_group_array', 'a_group_array'],
 };
-;
-
 export const schemaDynamicValidationMinimumMaximum = JSONSchemaBuilder()
   .addInput({
     a_number: mockNumberInput,
