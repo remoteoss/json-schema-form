@@ -13,10 +13,8 @@ function isCheckbox(schema: NonBooleanJsfSchema): boolean {
   return schema['x-jsf-presentation']?.inputType === 'checkbox'
 }
 
-const CHECKBOX_ERROR_MESSAGES = {
-  required: 'Please acknowledge this field',
-  const: 'Please acknowledge this field',
-}
+// Both required and const error messages are the same for checkboxes
+const CHECKBOX_ACK_ERROR_MESSAGE = 'Please acknowledge this field'
 
 export function getErrorMessage(
   schema: NonBooleanJsfSchema,
@@ -31,7 +29,7 @@ export function getErrorMessage(
       return getTypeErrorMessage(schema.type)
     case 'required':
       if (isCheckbox(schema)) {
-        return CHECKBOX_ERROR_MESSAGES.required
+        return CHECKBOX_ACK_ERROR_MESSAGE
       }
       return 'Required field'
     case 'forbidden':
@@ -39,7 +37,7 @@ export function getErrorMessage(
     case 'const':
       // Boolean checkboxes that are required will come as a "const" validation error as the "empty" value is false
       if (isCheckbox(schema) && value === false) {
-        return CHECKBOX_ERROR_MESSAGES.const
+        return CHECKBOX_ACK_ERROR_MESSAGE
       }
       return `The only accepted value is ${JSON.stringify(schema.const)}.`
     case 'enum':
