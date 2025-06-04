@@ -62,7 +62,6 @@ export type JsfSchema = JSONSchema & {
   'if'?: JsfSchema
   'then'?: JsfSchema
   'else'?: JsfSchema
-  'const'?: SchemaValue
   // Note: if we don't have this property here, when inspecting any recursive
   // schema (like an if inside another schema), the required property won't be
   // present in the type
