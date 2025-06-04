@@ -21,6 +21,12 @@ export interface ValidationOptions {
    * @default false
    */
   treatNullAsUndefined?: boolean
+
+  /**
+   * If true, providing a value for a schema that is `false`
+   * @default false
+   */
+  allowForbiddenValues?: boolean
 }
 
 /**
@@ -189,7 +195,12 @@ export function validateSchema(
 
   // Handle boolean schemas
   if (typeof schema === 'boolean') {
-    return schema ? [] : [{ path, validation: 'forbidden', schema, value }]
+    // When the boolean schema is false, we will return an error, but only when forbidden values are not explicitly
+    // allowed per the allowForbiddenValues option.
+    if (!schema && !options.allowForbiddenValues) {
+      return [{ path, validation: 'forbidden', schema, value }]
+    }
+    return []
   }
 
   // Check if it is a file input (needed early for null check)
