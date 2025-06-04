@@ -1543,6 +1543,7 @@ export const schemaDynamicValidationContains = JSONSchemaBuilder()
       },
       'x-jsf-presentation': {
         inputType: 'select',
+        multiple: true,
         options: [
           {
             label: 'All',
