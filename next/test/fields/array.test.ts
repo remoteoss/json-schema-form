@@ -5,7 +5,14 @@ import { buildFieldSchema as buildField } from '../../src/field/schema'
 
 describe('buildFieldArray', () => {
   function buildFieldSchema(schema: JsfSchema, name: string, required: boolean = false, strictInputType?: boolean, type?: JsfSchemaType) {
-    return buildField(schema, name, required, schema, strictInputType, type)
+    return buildField({
+      schema,
+      name,
+      required,
+      type,
+      originalSchema: schema,
+      strictInputType,
+    })
   }
   it('should build a field from an array schema', () => {
     const schema: JsfSchema = {

@@ -5,7 +5,14 @@ import { buildFieldSchema as buildField } from '../src/field/schema'
 
 describe('fields', () => {
   function buildFieldSchema(schema: JsfSchema, name: string, required: boolean = false, strictInputType?: boolean, type?: JsfSchemaType) {
-    return buildField(schema, name, required, schema, strictInputType, type)
+    return buildField({
+      schema,
+      name,
+      required,
+      type,
+      originalSchema: schema,
+      strictInputType,
+    })
   }
 
   it('should build a field from a schema', () => {
@@ -76,7 +83,12 @@ describe('fields', () => {
       },
     }
 
-    const field = buildField(schema, 'root', true, originalSchema)
+    const field = buildField({
+      schema,
+      name: 'root',
+      required: true,
+      originalSchema,
+    })
 
     // Both fields should have the same input type
     expect(field).toEqual(

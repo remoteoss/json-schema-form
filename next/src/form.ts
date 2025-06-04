@@ -255,7 +255,13 @@ export interface CreateHeadlessFormOptions {
 
 function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
   const { schema, originalSchema, strictInputType } = params
-  const fields = buildFieldSchema(schema, 'root', true, originalSchema, strictInputType, 'object')?.fields || []
+  const fields = buildFieldSchema({
+    schema,
+    name: 'root',
+    required: true,
+    originalSchema,
+    strictInputType,
+  })?.fields || []
   return fields
 }
 

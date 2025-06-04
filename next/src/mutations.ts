@@ -152,7 +152,13 @@ function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: Jsf
  */
 export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema, originalSchema: JsfSchema): void {
   // Get new fields from schema
-  const newFields = buildFieldSchema(schema, 'root', true, originalSchema, false, 'object')?.fields || []
+  const newFields = buildFieldSchema({
+    schema,
+    name: 'root',
+    required: true,
+    originalSchema,
+    strictInputType: false,
+  })?.fields || []
 
   // cycle through the original fields and merge the new fields with the original fields
   for (const field of fields) {
