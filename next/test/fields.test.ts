@@ -4,6 +4,9 @@ import { TypeName } from 'json-schema-typed'
 import { buildFieldSchema as buildField } from '../src/field/schema'
 
 describe('fields', () => {
+  /**
+   *  Auxiliary test function to build a field from a schema (consider the schema and original schema as the same)
+   */
   function buildFieldSchema(schema: JsfSchema, name: string, required: boolean = false, strictInputType?: boolean, type?: JsfSchemaType) {
     return buildField({
       schema,

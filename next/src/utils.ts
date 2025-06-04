@@ -65,40 +65,43 @@ function isObject(value: any): boolean {
  * @param schema2 - The second schema to merge
  */
 export function deepMergeSchemas<T extends Record<string, any>>(schema1: T, schema2: T): void {
-  // Handle null/undefined
+  // Handle null/undefined values
   if (!schema1 || !schema2) {
     return
   }
 
   // Handle non-objects
-  if (typeof schema1 !== 'object' || typeof schema2 !== 'object')
+  if (typeof schema1 !== 'object' || typeof schema2 !== 'object') {
     return
+  }
 
-  // Merge all properties from obj2 into obj1
-  for (const [key, value] of Object.entries(schema2)) {
-    // let's skip merging conditionals such as if, oneOf, then ,else, allOf, anyOf, etc.
+  // Merge all properties from schema2 into schema1
+  for (const [key, schema2Value] of Object.entries(schema2)) {
+    // let's skip merging some properties
     if (KEYS_TO_SKIP.includes(key)) {
       continue
     }
 
-    // If the value is an object, merge recursively
-    if (isObject(value)) {
-      // If both objects have this key and it's an object, merge recursively
-      if (isObject(schema1[key])) {
-        deepMergeSchemas(schema1[key], value)
+    const schema1Value = schema1[key]
+
+    // If the value is an object:
+    if (isObject(schema2Value)) {
+      // If both schemas have this key and it's an object, merge recursively
+      if (isObject(schema1Value)) {
+        deepMergeSchemas(schema1Value, schema2Value)
       }
-      // Otherwise, if the value is different, assign it
-      else if (schema1[key] !== value) {
-        schema1[key as keyof T] = value
+      // Otherwise, if the value is different, just assign it
+      else if (schema1Value !== schema2Value) {
+        schema1[key as keyof T] = schema2Value
       }
     }
     // If the value is an array, cycle through it and merge values if they're different (take objects into account)
-    else if (schema1[key] && Array.isArray(value)) {
-      const originalArray = schema1[key]
+    else if (schema1Value && Array.isArray(schema2Value)) {
+      const originalArray = schema1Value
       // If the destiny value exists and it's an array, cycle through the incoming values and merge if they're different (take objects into account)
-      for (const item of value) {
+      for (const item of schema2Value) {
         if (item && typeof item === 'object') {
-          deepMergeSchemas(originalArray, value)
+          deepMergeSchemas(originalArray, schema2Value)
         }
         // "required" is a special case, it only allows for new elements to be added to the array
         else if (key === 'required') {
@@ -109,12 +112,13 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1: T, sche
         }
         // Otherwise, just assign it
         else {
-          schema1[key as keyof T] = value as T[keyof T]
+          schema1[key as keyof T] = schema2Value as T[keyof T]
         }
       }
     }
-    else if (schema1[key] !== value) {
-      schema1[key as keyof T] = value
+    // Finally, if the value is different, just assign it
+    else if (schema1[key] !== schema2Value) {
+      schema1[key as keyof T] = schema2Value
     }
   }
 }
