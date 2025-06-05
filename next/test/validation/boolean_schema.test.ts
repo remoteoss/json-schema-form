@@ -14,4 +14,10 @@ describe('boolean schema validation', () => {
     expect(validateSchema({ name: 'anything' }, schema)).toEqual([])
     expect(validateSchema({}, schema)).toEqual([])
   })
+
+  it('does not return an error if the value is false and allowForbiddenValues is true', () => {
+    const schema = { type: 'object', properties: { name: false } }
+    expect(validateSchema({ name: 'anything' }, schema, { allowForbiddenValues: true })).toEqual([])
+    expect(validateSchema({}, schema, { allowForbiddenValues: true })).toEqual([])
+  })
 })
