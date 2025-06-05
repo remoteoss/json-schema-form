@@ -1,3 +1,19 @@
+#### 1.0.0-beta.8 (2025-06-05)
+
+##### Chores
+
+* refactor field building approach + fix some issues with v0 backward compatibility ([#193](https://github.com/remoteoss/json-schema-form/pull/193)) ([6f2e7d74](https://github.com/remoteoss/json-schema-form/commit/6f2e7d7463e03d0287b9c51e2bc3dc48bb4f457f))
+* **README:**  Better explain JSF, mention the Playground and next version v1 ([#192](https://github.com/remoteoss/json-schema-form/pull/192)) ([4efb07e3](https://github.com/remoteoss/json-schema-form/commit/4efb07e3cd27a2e0a79b704e57e12432c80310f2))
+
+##### New Features
+
+* add allowForbiddenValues validation option ([#194](https://github.com/remoteoss/json-schema-form/pull/194)) ([bb59dac6](https://github.com/remoteoss/json-schema-form/commit/bb59dac677c9f1a2ceecd6eba6786a6e1b443fe8))
+* allowing x-jsf-logic to affect field attributes ([#179](https://github.com/remoteoss/json-schema-form/pull/179)) ([2d80c2d7](https://github.com/remoteoss/json-schema-form/commit/2d80c2d7e0cb0efc7ccce9c17f669b5498cd5616))
+
+##### Bug Fixes
+
+* check for emptiness of required array/object properties values ([#191](https://github.com/remoteoss/json-schema-form/pull/191)) ([d59eb3ad](https://github.com/remoteoss/json-schema-form/commit/d59eb3ad08c6d158061b885525d465e392ca2816))
+
 #### 1.0.0-beta.7 (2025-05-20)
 
 ##### Bug Fixes
