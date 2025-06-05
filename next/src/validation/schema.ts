@@ -23,7 +23,7 @@ export interface ValidationOptions {
   treatNullAsUndefined?: boolean
 
   /**
-   * If true, providing a value for a schema that is `false`
+   * If true, providing a value for a schema that is `false` won't create an error
    * @default false
    */
   allowForbiddenValues?: boolean
