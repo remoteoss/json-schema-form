@@ -1,4 +1,4 @@
-import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema } from '../types'
+import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema, SchemaValue } from '../types'
 import type { Field, FieldOption, FieldType } from './type'
 import { setCustomOrder } from '../custom/order'
 
@@ -42,13 +42,15 @@ function addOptions(field: Field, schema: NonBooleanJsfSchema) {
  * Add fields attribute to a field
  * @param field - The field to add the fields to
  * @param schema - The schema of the field
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
+ * @param strictInputType - Whether to strictly enforce the input type
  * @description
  * This adds the fields attribute to based on the schema's items.
  * Since options and fields are mutually exclusive, we only add fields if no options were provided.
  */
-function addFields(field: Field, schema: NonBooleanJsfSchema, strictInputType?: boolean) {
+function addFields(field: Field, schema: NonBooleanJsfSchema, originalSchema: JsfSchema, strictInputType?: boolean) {
   if (field.options === undefined) {
-    const fields = getFields(schema, strictInputType)
+    const fields = getFields(schema, originalSchema, strictInputType)
     if (fields) {
       field.fields = fields
     }
@@ -129,8 +131,6 @@ You can fix the json schema or skip this error by calling createHeadlessForm(sch
     if (schema.properties) {
       return 'select'
     }
-
-    // Otherwise, assume "string" as the fallback type and get input from it
   }
 
   // Get input type from schema (fallback type is "string")
@@ -201,7 +201,7 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
   if (schema.enum) {
     const enumAsOneOf: JsfSchema['oneOf'] = schema.enum?.map(value => ({
       title: typeof value === 'string' ? value : JSON.stringify(value),
-      const: value,
+      const: value as SchemaValue,
     })) || []
     return convertToOptions(enumAsOneOf)
   }
@@ -212,15 +212,22 @@ function getFieldOptions(schema: NonBooleanJsfSchema) {
 /**
  * Get the fields for an object schema
  * @param schema - The schema of the field
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema or an empty array if the schema does not define any properties
  */
-function getObjectFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
+function getObjectFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
   const fields: Field[] = []
 
   for (const key in schema.properties) {
     const isRequired = schema.required?.includes(key) || false
-    const field = buildFieldSchema(schema.properties[key], key, isRequired, strictInputType)
+    const field = buildFieldSchema({
+      schema: schema.properties[key],
+      name: key,
+      required: isRequired,
+      originalSchema: originalSchema.properties?.[key] || schema.properties[key],
+      strictInputType,
+    })
     if (field) {
       fields.push(field)
     }
@@ -234,10 +241,11 @@ function getObjectFields(schema: NonBooleanJsfSchema, strictInputType?: boolean)
 /**
  * Get the fields for an array schema
  * @param schema - The schema of the field
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema or an empty array if the schema does not define any items
  */
-function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] {
+function getArrayFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] {
   const fields: Field[] = []
 
   if (typeof schema.items !== 'object' || schema.items === null) {
@@ -249,7 +257,13 @@ function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean):
 
     for (const key in objectSchema.properties) {
       const isFieldRequired = objectSchema.required?.includes(key) || false
-      const field = buildFieldSchema(objectSchema.properties[key], key, isFieldRequired, strictInputType)
+      const field = buildFieldSchema({
+        schema: objectSchema.properties[key],
+        name: key,
+        required: isFieldRequired,
+        originalSchema,
+        strictInputType,
+      })
       if (field) {
         field.nameKey = key
         fields.push(field)
@@ -257,7 +271,13 @@ function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean):
     }
   }
   else {
-    const field = buildFieldSchema(schema.items, 'item', false, strictInputType)
+    const field = buildFieldSchema({
+      schema: schema.items,
+      name: 'item',
+      required: false,
+      originalSchema,
+      strictInputType,
+    })
     if (field) {
       fields.push(field)
     }
@@ -271,15 +291,16 @@ function getArrayFields(schema: NonBooleanJsfSchema, strictInputType?: boolean):
 /**
  * Get the fields for a schema from either `items` or `properties`
  * @param schema - The schema of the field
+ * @param originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
  * @param strictInputType - Whether to strictly enforce the input type
  * @returns The fields for the schema
  */
-function getFields(schema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
+function getFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJsfSchema, strictInputType?: boolean): Field[] | null {
   if (typeof schema.properties === 'object' && schema.properties !== null) {
-    return getObjectFields(schema, strictInputType)
+    return getObjectFields(schema, originalSchema, strictInputType)
   }
   else if (typeof schema.items === 'object' && schema.items !== null) {
-    return getArrayFields(schema, strictInputType)
+    return getArrayFields(schema, originalSchema, strictInputType)
   }
 
   return null
@@ -298,19 +319,40 @@ const excludedSchemaProps = [
   'properties', // Handled separately
 ]
 
+interface BuildFieldSchemaParams {
+  schema: JsfSchema
+  name: string
+  required?: boolean
+  originalSchema: NonBooleanJsfSchema
+  strictInputType?: boolean
+  type?: JsfSchemaType
+}
+
 /**
  * Build a field from any schema
+ * @param params - The parameters for building the field
+ * @param params.schema - The schema of the field
+ * @param params.name - The name of the field
+ * @param params.required - Whether the field is required
+ * @param params.originalSchema - The original schema (needed for calculating the original input type on conditionally hidden fields)
+ * @param params.strictInputType - Whether to strictly enforce the input type
+ * @param params.type - The schema type
+ * @returns The field
  */
-export function buildFieldSchema(
-  schema: JsfSchema,
-  name: string,
-  required: boolean = false,
-  strictInputType: boolean = false,
-  type: JsfSchemaType = undefined,
-): Field | null {
+export function buildFieldSchema({
+  schema,
+  name,
+  required = false,
+  originalSchema,
+  strictInputType = false,
+  type = undefined,
+}: BuildFieldSchemaParams): Field | null {
   // If schema is boolean false, return a field with isVisible=false
   if (schema === false) {
-    const inputType = getInputType(type, name, schema, strictInputType)
+    // If the schema is false (hidden field), we use the original schema to get the input type
+    const inputType = getInputType(type, name, originalSchema, strictInputType)
+    const inputHasInnerFields = ['fieldset', 'group-array'].includes(inputType)
+
     return {
       type: inputType,
       name,
@@ -318,6 +360,7 @@ export function buildFieldSchema(
       jsonType: 'boolean',
       required,
       isVisible: false,
+      ...(inputHasInnerFields && { fields: [] }),
     }
   }
 
@@ -369,7 +412,7 @@ export function buildFieldSchema(
   }
 
   addOptions(field, schema)
-  addFields(field, schema)
+  addFields(field, schema, originalSchema)
 
   return field
 }

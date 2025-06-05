@@ -1,9 +1,19 @@
-import type { JsfObjectSchema, JsfSchema } from '../../src/types'
+import type { JsfObjectSchema, JsfSchema, JsfSchemaType } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
-import { buildFieldSchema } from '../../src/field/schema'
+import { buildFieldSchema as buildField } from '../../src/field/schema'
 
 describe('buildFieldArray', () => {
+  function buildFieldSchema(schema: JsfSchema, name: string, required: boolean = false, strictInputType?: boolean, type?: JsfSchemaType) {
+    return buildField({
+      schema,
+      name,
+      required,
+      type,
+      originalSchema: schema,
+      strictInputType,
+    })
+  }
   it('should build a field from an array schema', () => {
     const schema: JsfSchema = {
       type: 'array',
@@ -832,14 +842,9 @@ describe('buildFieldArray', () => {
       const form = createHeadlessForm(schema)
 
       expect(form.handleValidation({ animals: [{ kind: 'dog', name: 'Buddy' }] }).formErrors).toBeUndefined()
-      expect(form.fields[0]).toMatchObject({
-        fields: [
-          expect.any(Object),
-          expect.objectContaining({
-            label: 'Dog name',
-          }),
-        ],
-      })
+      const firstField = form.fields[0]?.fields?.[1]
+
+      expect(firstField?.label).toBe('Dog Name')
     })
 
     it('mutates array items correctly when there are multiple items', () => {

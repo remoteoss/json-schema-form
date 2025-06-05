@@ -4,8 +4,7 @@ import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
-import { mutateFields } from './mutations'
-import { applyComputedAttrsToSchema } from './validation/json-logic'
+import { calculateFinalSchema, updateFieldProperties } from './mutations'
 import { validateSchema } from './validation/schema'
 
 export { ValidationOptions } from './validation/schema'
@@ -231,9 +230,15 @@ export interface CreateHeadlessFormOptions {
   strictInputType?: boolean
 }
 
-function buildFields(params: { schema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
-  const { schema, strictInputType } = params
-  const fields = buildFieldSchema(schema, 'root', true, strictInputType, 'object')?.fields || []
+function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
+  const { schema, originalSchema, strictInputType } = params
+  const fields = buildFieldSchema({
+    schema,
+    name: 'root',
+    required: true,
+    originalSchema,
+    strictInputType,
+  })?.fields || []
   return fields
 }
 
@@ -243,25 +248,29 @@ export function createHeadlessForm(
 ): FormResult {
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
-  // Make a (new) version with all the computed attrs computed and applied
-  const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, initialValues)
-  const fields = buildFields({ schema: updatedSchema, strictInputType })
+  // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
+  const updatedSchema = calculateFinalSchema({
+    schema,
+    values: initialValues,
+    options: options.validationOptions,
+  })
 
-  // Making sure field properties are correct for the initial values
-  mutateFields(fields, initialValues, updatedSchema, options.validationOptions)
+  const fields = buildFields({ schema: updatedSchema, originalSchema: schema, strictInputType })
 
   // TODO: check if we need this isError variable exposed
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const updatedSchema = applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, value)
+    const updatedSchema = calculateFinalSchema({
+      schema,
+      values: value,
+      options: options.validationOptions,
+    })
+
     const result = validate(value, updatedSchema, options.validationOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
-    buildFieldsInPlace(fields, updatedSchema)
-
-    // Updating field properties based on the new form value
-    mutateFields(fields, value, updatedSchema, options.validationOptions)
+    updateFieldProperties(fields, updatedSchema, schema)
 
     return result
   }
@@ -271,30 +280,5 @@ export function createHeadlessForm(
     isError,
     error: null,
     handleValidation,
-  }
-}
-
-/**
- * Updates fields in place based on a schema, recursively if needed
- * @param fields - The fields array to mutate
- * @param schema - The schema to use for updating fields
- */
-function buildFieldsInPlace(fields: Field[], schema: JsfObjectSchema): void {
-  // Clear existing fields array
-  fields.length = 0
-
-  // Get new fields from schema
-  const newFields = buildFieldSchema(schema, 'root', true, false, 'object')?.fields || []
-
-  // Push all new fields into existing array
-  fields.push(...newFields)
-
-  // Recursively update any nested fields
-  for (const field of fields) {
-    // eslint-disable-next-line ts/ban-ts-comment
-    // @ts-expect-error
-    if (field.fields && schema.properties?.[field.name]?.type === 'object') {
-      buildFieldsInPlace(field.fields, schema.properties[field.name] as JsfObjectSchema)
-    }
   }
 }

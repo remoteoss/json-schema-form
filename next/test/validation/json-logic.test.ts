@@ -365,7 +365,7 @@ describe('applyComputedAttrsToSchema', () => {
     }
 
     const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, {})
-    expect(result).toBe(schema)
+    expect(result).toEqual(schema)
   })
 
   it('applies computed values to schema properties', () => {
@@ -395,9 +395,11 @@ describe('applyComputedAttrsToSchema', () => {
 
     (jsonLogic.apply as jest.Mock).mockReturnValue(21)
 
+    const initialSchema = JSON.parse(JSON.stringify(schema))
+
     const result: JsfObjectSchema = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, { person: { age: 21 } })
 
-    expect(result).not.toBe(schema)
+    expect(result).not.toEqual(initialSchema)
     const ageProperties = result.properties?.person?.properties?.age as JsfObjectSchema
     expect(ageProperties?.minimum).toBe(21)
     expect(ageProperties?.['x-jsf-logic-computedAttrs']).toBeUndefined()

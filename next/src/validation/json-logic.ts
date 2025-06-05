@@ -2,7 +2,6 @@ import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import jsonLogic from 'json-logic-js'
-import { safeDeepClone } from './util'
 
 /**
  * Builds a json-logic context based on a schema and the current value
@@ -124,7 +123,7 @@ export function computePropertyValues(
 
 /**
  * Applies any computed attributes to a schema, based on the provided values. When there are values to apply,
- * it creates a deep clone of the schema and applies the computed values to the clone,otherwise it returns the original schema.
+ * Note: this function mutates the schema in place.
  *
  * @param schema - The schema to apply computed attributes to
  * @param computedValuesDefinition - The computed values to apply
@@ -132,11 +131,6 @@ export function computePropertyValues(
  * @returns The schema with computed attributes applied
  */
 export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue): JsfObjectSchema {
-  // If the schema has any computed attributes, we need to:
-  // - clone the original schema
-  // - calculate all the computed values
-  // - apply the computed values to the cloned schema
-  // Otherwise, we return the original schema
   if (computedValuesDefinition) {
     const computedValues: Record<string, any> = {}
 
@@ -145,15 +139,10 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
       computedValues[name] = computedValue
     })
 
-    const schemaCopy = safeDeepClone(schema)
-
-    cycleThroughPropertiesAndApplyValues(schemaCopy, computedValues)
-
-    return schemaCopy
+    cycleThroughPropertiesAndApplyValues(schema, computedValues)
   }
-  else {
-    return schema
-  }
+
+  return schema
 }
 
 /**
