@@ -35,6 +35,7 @@ import {
   schemaWithValidationThatDoesNotExistOnProperty,
   badSchemaThatWillNotSetAForcedValue,
   schemaWithReduceAccumulator,
+  schemaWithComputedPresentationAttributes,
 } from './jsonLogic.fixtures';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
 import { createHeadlessForm } from '@/createHeadlessForm';
@@ -383,6 +384,17 @@ describe('jsonLogic: cross-values validations', () => {
       expect(fieldB.minimum).toEqual(4);
       expect(fieldB.maximum).toEqual(8);
       expect(fieldB.statement).toEqual({ description: 'Must be bigger than 4 and smaller than 8' });
+    });
+
+    it('presentation attributes work', () => {
+      const { fields, handleValidation } = createHeadlessForm(
+        schemaWithComputedPresentationAttributes,
+        { strictInputType: false }
+      );
+      const fieldB = fields.find((i) => i.name === 'amount');
+      expect(handleValidation({ currency: 'UGX' }).formErrors).toEqual(undefined);
+      expect(fieldB.inputType).toEqual('money');
+      expect(fieldB.currency).toEqual('UGX');
     });
 
     it('Use a inline-rule in a schema for a title attribute', () => {

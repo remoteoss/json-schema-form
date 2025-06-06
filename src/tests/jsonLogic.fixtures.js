@@ -364,6 +364,55 @@ export const schemaWithComputedAttributesAndErrorMessages = {
   },
 };
 
+export const schemaWithComputedPresentationAttributes = {
+  properties: {
+    amount: {
+      description: 'Total amount to be reimbursed, including taxes.',
+      minimum: 0,
+      title: 'Total amount',
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        'x-jsf-presentation': {
+          currency: 'currency_selected',
+        },
+      },
+      'x-jsf-presentation': {
+        currency: '---',
+        inputType: 'money',
+      },
+    },
+    currency: {
+      default: 'USD',
+      description: 'Currency in which the expense was paid.',
+      oneOf: [
+        {
+          const: 'UGX',
+          title: 'UGX - Ugandan Shilling',
+        },
+        {
+          const: 'USD',
+          title: 'USD - United States Dollar',
+        },
+      ],
+      title: 'Currency',
+      type: 'string',
+      'x-jsf-presentation': {
+        inputType: 'select',
+      },
+    },
+  },
+  type: 'object',
+  'x-jsf-logic': {
+    computedValues: {
+      currency_selected: {
+        rule: {
+          var: 'currency',
+        },
+      },
+    },
+  },
+};
+
 export const schemaWithDeepVarThatDoesNotExist = {
   properties: {
     field_a: {
