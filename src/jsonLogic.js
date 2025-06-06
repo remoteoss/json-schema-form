@@ -233,11 +233,21 @@ function replaceHandlebarsTemplates({
 export function calculateComputedAttributes(fieldParams, { parentID = 'root' } = {}) {
   return ({ logic, isRequired, config, formValues }) => {
     const { name, computedAttributes } = fieldParams;
-    const attributes = Object.fromEntries(
+    let attributes = Object.fromEntries(
       Object.entries(computedAttributes)
         .map(handleComputedAttribute(logic, formValues, parentID, name))
         .filter(([, value]) => value !== null)
     );
+
+    const { 'x-jsf-presentation': presentation, ...rest } = attributes;
+
+    // Computed presentation attributes should be spread over the original attributes
+    if (presentation) {
+      attributes = {
+        ...rest,
+        ...presentation,
+      };
+    }
 
     return {
       ...attributes,
@@ -274,16 +284,25 @@ function handleComputedAttribute(logic, formValues, parentID, name) {
           handleNestedObjectForComputedValues(value, formValues, parentID, logic, name),
         ];
       case 'x-jsf-presentation': {
-        if (value.statement) {
-          return [
-            'statement',
-            handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
-          ];
-        }
-        return [
-          key,
-          handleNestedObjectForComputedValues(value.statement, formValues, parentID, logic, name),
-        ];
+        const values = {};
+
+        Object.entries(value).forEach(([presentationKey, presentationValue]) => {
+          if (typeof presentationValue === 'object') {
+            values[presentationKey] = handleNestedObjectForComputedValues(
+              presentationValue,
+              formValues,
+              parentID,
+              logic,
+              name
+            );
+          } else {
+            values[presentationKey] = logic
+              .getScope(parentID)
+              .applyComputedValueInField(presentationValue, formValues, name);
+          }
+        });
+
+        return [key, values];
       }
       case 'const':
       default: {
