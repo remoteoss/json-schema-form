@@ -1,3 +1,9 @@
+#### 0.11.15-beta.0 (2025-06-06)
+
+##### Bug Fixes
+
+* **v0:**  Handle computed presentational attributes correctly ([#195](https://github.com/remoteoss/json-schema-form/pull/195)) ([19c7ff5b](https://github.com/remoteoss/json-schema-form/commit/19c7ff5b4c5cc90bd1025a3ad3032076e4e25b65))
+
 #### 0.11.14-beta.0 (2025-05-14)
 
 ##### Chores
