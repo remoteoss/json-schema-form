@@ -1,6 +1,7 @@
-import { createHeadlessForm } from '@/createHeadlessForm'
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
+
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from '../test-utils'
+
 import {
   badSchemaThatWillNotSetAForcedValue,
   createSchemaWithRulesOnFieldA,
@@ -15,6 +16,7 @@ import {
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
   schemaWithComputedAttributeThatDoesntExistTitle,
+  schemaWithCustomValidationFunction,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithDeepVarThatDoesNotExistOnFieldset,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
@@ -30,6 +32,7 @@ import {
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
 } from './json-logic.fixtures'
+import { createHeadlessForm } from '@/createHeadlessForm'
 
 beforeEach(mockConsole)
 afterEach(restoreConsoleAndEnsureItWasNotCalled)
@@ -444,6 +447,25 @@ describe('jsonLogic: cross-values validations', () => {
         field_b: 'Must be greater than two times A',
       })
       expect(handleValidation({ field_a: 20, field_b: 41 }).formErrors).toEqual()
+    })
+  })
+
+  describe('custom operators', () => {
+    it('custom function', () => {
+      const { handleValidation } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, validationOptions: { customJsonLogicOps: { is_hello: a => a === 'hello world' } } })
+      expect(handleValidation({ field_a: 'hello world' }).formErrors).toEqual(undefined)
+      const { formErrors } = handleValidation({ field_a: 'wrong text' })
+      expect(formErrors?.field_a).toEqual('Invalid hello world')
+    })
+
+    it('custom function are form specific', () => {
+      const { handleValidation } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, validationOptions: { customJsonLogicOps: { is_hello: a => a === 'hello world' } } })
+      expect(handleValidation({ field_a: 'hello world' }).formErrors).toEqual(undefined)
+      const { formErrors } = handleValidation({ field_a: 'wrong text' })
+      expect(formErrors?.field_a).toEqual('Invalid hello world')
+
+      const { handleValidation: handleValidation2 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, validationOptions: { customJsonLogicOps: { is_hello: a => a === 'hello world!' } } })
+      expect(handleValidation2({ field_a: 'hello world!' }).formErrors).toEqual(undefined)
     })
   })
 })

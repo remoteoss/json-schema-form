@@ -744,3 +744,22 @@ export const schemaWithReduceAccumulator = {
     },
   },
 }
+
+export const schemaWithCustomValidationFunction = {
+  'properties': {
+    field_a: {
+      'type': 'string',
+      'x-jsf-logic-validations': ['hello_world'],
+    },
+  },
+  'x-jsf-logic': {
+    validations: {
+      hello_world: {
+        errorMessage: 'Invalid hello world',
+        rule: {
+          is_hello: { var: 'field_a' },
+        },
+      },
+    },
+  },
+}

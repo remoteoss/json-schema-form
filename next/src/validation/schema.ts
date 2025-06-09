@@ -27,6 +27,12 @@ export interface ValidationOptions {
    * @default false
    */
   allowForbiddenValues?: boolean
+
+  /**
+   * Custom jsonLogic operations to register (only applies once at setup)
+   * Format: { [operationName]: (...args: any[]) => any }
+   */
+  customJsonLogicOps?: Record<string, (...args: any[]) => any>
 }
 
 /**
