@@ -1,7 +1,7 @@
 import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
-import jsonLogic from 'json-logic-js';
+import jsonLogic from 'json-logic-js'
 
 /**
  * Register user defined functions to be used in JSON Logic rules.

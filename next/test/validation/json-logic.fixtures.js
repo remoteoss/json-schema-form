@@ -751,16 +751,13 @@ export const schemaWithCustomValidationFunction = {
       'type': 'string',
       'x-jsf-logic-validations': ['hello_world'],
     },
-    field_b: {
-      type: 'string',
-    },
   },
   'x-jsf-logic': {
     validations: {
       hello_world: {
         errorMessage: 'Invalid hello world',
         rule: {
-          '!': { is_hello: [{ var: 'field_a' }, { var: 'field_b' }] },
+          is_hello: { var: 'field_a' },
         },
       },
     },
