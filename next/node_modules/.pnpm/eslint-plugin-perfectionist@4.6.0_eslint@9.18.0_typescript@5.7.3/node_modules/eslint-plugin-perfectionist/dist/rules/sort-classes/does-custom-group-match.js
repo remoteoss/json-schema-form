@@ -1,0 +1,61 @@
+'use strict'
+Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' })
+const matches = require('../../utils/matches.js')
+let doesCustomGroupMatch = props => {
+  if ('anyOf' in props.customGroup) {
+    return props.customGroup.anyOf.some(subgroup =>
+      doesCustomGroupMatch({ ...props, customGroup: subgroup }),
+    )
+  }
+  if (
+    props.customGroup.selector &&
+    !props.selectors.includes(props.customGroup.selector)
+  ) {
+    return false
+  }
+  if (props.customGroup.modifiers) {
+    for (let modifier of props.customGroup.modifiers) {
+      if (!props.modifiers.includes(modifier)) {
+        return false
+      }
+    }
+  }
+  if (
+    'elementNamePattern' in props.customGroup &&
+    props.customGroup.elementNamePattern
+  ) {
+    let matchesElementNamePattern = matches.matches(
+      props.elementName,
+      props.customGroup.elementNamePattern,
+    )
+    if (!matchesElementNamePattern) {
+      return false
+    }
+  }
+  if (
+    'elementValuePattern' in props.customGroup &&
+    props.customGroup.elementValuePattern
+  ) {
+    let matchesElementValuePattern = matches.matches(
+      props.elementValue ?? '',
+      props.customGroup.elementValuePattern,
+    )
+    if (!matchesElementValuePattern) {
+      return false
+    }
+  }
+  if (
+    'decoratorNamePattern' in props.customGroup &&
+    props.customGroup.decoratorNamePattern
+  ) {
+    let decoratorPattern = props.customGroup.decoratorNamePattern
+    let matchesDecoratorNamePattern = props.decorators.some(decorator =>
+      matches.matches(decorator, decoratorPattern),
+    )
+    if (!matchesDecoratorNamePattern) {
+      return false
+    }
+  }
+  return true
+}
+exports.doesCustomGroupMatch = doesCustomGroupMatch
