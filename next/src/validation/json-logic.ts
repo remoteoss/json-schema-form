@@ -1,7 +1,17 @@
 import type { RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
-import jsonLogic from 'json-logic-js'
+import jsonLogic from 'json-logic-js';
+
+/**
+ * Register user defined functions to be used in JSON Logic rules.
+ * @param customJsonLogicOps An object containing custom JSON Logic operations to register
+ */
+export function registerCustomFunctionsToJsonLogic(customJsonLogicOps: Record<string, (...args: any[]) => any>) {
+  for (const [name, func] of Object.entries(customJsonLogicOps)) {
+    jsonLogic.add_operation(name, func)
+  }
+}
 
 /**
  * Builds a json-logic context based on a schema and the current value
