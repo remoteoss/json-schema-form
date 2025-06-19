@@ -571,6 +571,44 @@ describe('createHeadlessForm', () => {
         });
       });
 
+      it('support "select" field type from anyOf', () => {
+        const schema = {
+          type: 'object',
+          properties: {
+            browser: {
+              type: 'string',
+              anyOf: [
+                { title: 'Chrome', const: 'chr' },
+                { title: 'Firefox', const: 'ff' },
+                { title: 'Add new option', pattern: '.*' },
+              ],
+              'x-jsf-presentation': {
+                inputType: 'select',
+              },
+            },
+          },
+        };
+
+        const { fields } = createHeadlessForm(schema);
+        const fieldSelect = fields[0];
+        expect(fieldSelect).toMatchObject({
+          options: [
+            {
+              value: 'chr',
+              label: 'Chrome',
+            },
+            {
+              value: 'ff',
+              label: 'Firefox',
+            },
+            {
+              label: 'Add new option',
+              pattern: '.*',
+            },
+          ],
+        });
+      });
+
       it('supports "select" field type with multiple options @deprecated', () => {
         const result = createHeadlessForm(schemaInputTypeSelectMultipleDeprecated);
         expect(result).toMatchObject({
