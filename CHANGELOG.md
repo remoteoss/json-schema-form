@@ -1,3 +1,9 @@
+#### 0.12.0-beta.0 (2025-06-25)
+
+##### New Features
+
+*  allow select fields to be made from anyOf ([#197](https://github.com/remoteoss/json-schema-form/pull/197)) ([d5da6ae8](https://github.com/remoteoss/json-schema-form/commit/d5da6ae8816a28c8b0011fc699bf351078d6f437))
+
 #### 0.11.15-beta.0 (2025-06-06)
 
 ##### Bug Fixes
