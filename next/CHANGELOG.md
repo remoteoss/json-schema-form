@@ -1,3 +1,9 @@
+#### 1.0.0-beta.9 (2025-06-30)
+
+##### Bug Fixes
+
+* don't fail validation when oneOf array is empty ([#198](https://github.com/remoteoss/json-schema-form/pull/198)) ([03bfb787](https://github.com/remoteoss/json-schema-form/commit/03bfb7874f0075ab5c0594b07cfe2acafecf7e99))
+
 #### 1.0.0-beta.8 (2025-06-05)
 
 ##### Chores
