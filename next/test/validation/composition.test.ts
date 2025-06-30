@@ -323,6 +323,24 @@ describe('schema composition validators', () => {
       })
     })
 
+    describe('with empty oneOf array', () => {
+      const schema: JsfSchema = {
+        oneOf: [],
+        type: 'number',
+      }
+
+      it('should validate when the value is a number', () => {
+        const errors = validateSchema(123, schema)
+        expect(errors).toHaveLength(0)
+      })
+
+      it('should fail when the value is a string', () => {
+        const errors = validateSchema('foo', schema)
+        expect(errors).toHaveLength(1)
+        expect(errors[0].validation).toBe('type')
+      })
+    })
+
     describe('with required properties', () => {
       const schema: JsfSchema = {
         type: 'object',

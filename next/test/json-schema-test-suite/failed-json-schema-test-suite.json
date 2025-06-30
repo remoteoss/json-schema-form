@@ -376,10 +376,7 @@
       "non-number is invalid"
     ],
     "required properties whose names are Javascript object property names": [
-      "none of the properties mentioned",
-      "__proto__ present",
-      "toString present",
-      "constructor present"
+      "__proto__ present"
     ],
     "unevaluatedItems false": [
       "with unevaluated items"
