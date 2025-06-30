@@ -96,6 +96,7 @@ export function validateAnyOf(
  * Validate a value against the `oneOf` keyword in a schema.
  * The value must validate successfully against EXACTLY ONE schema in the oneOf array.
  * Returns an error if no schemas validate or if multiple schemas validate.
+ * No error is returned if the oneOf array is empty.
  *
  * @example
  * ```json
@@ -116,6 +117,10 @@ export function validateOneOf(
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   if (!schema.oneOf) {
+    return []
+  }
+
+  if (schema.oneOf.length === 0) {
     return []
   }
 
