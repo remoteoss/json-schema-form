@@ -242,10 +242,22 @@ function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjec
   return fields
 }
 
+/**
+ * Ensures that no forbidden options are given
+ * @param options - The options to validate
+ * @throws An error if any forbidden options are found
+ */
+function validateOptions(options: CreateHeadlessFormOptions) {
+  if (Object.prototype.hasOwnProperty.call(options, 'modifyConfig')) {
+    throw new Error('modifyConfig has been removed from json-schema-form v1')
+  }
+}
+
 export function createHeadlessForm(
   schema: JsfObjectSchema,
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
+  validateOptions(options)
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
