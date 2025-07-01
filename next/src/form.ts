@@ -249,7 +249,7 @@ function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjec
  */
 function validateOptions(options: CreateHeadlessFormOptions) {
   if (Object.prototype.hasOwnProperty.call(options, 'modifyConfig')) {
-    throw new Error('modifyConfig has been removed from json-schema-form v1')
+    throw new Error('`modifyConfig` is a deprecated option and it\'s not supported on json-schema-form v1')
   }
 }
 
