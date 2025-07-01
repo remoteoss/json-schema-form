@@ -1,3 +1,9 @@
+#### 1.0.0-beta.10 (2025-07-01)
+
+##### Chores
+
+* throw error when deprecated modifyConfig option is passed to createHeadlessForm ([#199](https://github.com/remoteoss/json-schema-form/pull/199)) ([5be36cda](https://github.com/remoteoss/json-schema-form/commit/5be36cdaf602b11c543e1a63046a3979a7e68038))
+
 #### 1.0.0-beta.9 (2025-06-30)
 
 ##### Bug Fixes
