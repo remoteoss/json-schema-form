@@ -6,6 +6,7 @@ import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
 import { validateSchema } from './validation/schema'
+import { registerCustomFunctionsToJsonLogic } from './validation/json-logic'
 
 export { ValidationOptions } from './validation/schema'
 
@@ -266,6 +267,10 @@ export function createHeadlessForm(
     values: initialValues,
     options: options.validationOptions,
   })
+
+  if (options.validationOptions?.customJsonLogicOps) {
+    registerCustomFunctionsToJsonLogic(options.validationOptions.customJsonLogicOps)
+  }
 
   const fields = buildFields({ schema: updatedSchema, originalSchema: schema, strictInputType })
 

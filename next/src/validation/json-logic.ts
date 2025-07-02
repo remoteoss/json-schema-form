@@ -4,6 +4,16 @@ import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, Json
 import jsonLogic from 'json-logic-js'
 
 /**
+ * Register user defined functions to be used in JSON Logic rules.
+ * @param customJsonLogicOps An object containing custom JSON Logic operations to register
+ */
+export function registerCustomFunctionsToJsonLogic(customJsonLogicOps: Record<string, (...args: any[]) => any>) {
+  for (const [name, func] of Object.entries(customJsonLogicOps)) {
+    jsonLogic.add_operation(name, func)
+  }
+}
+
+/**
  * Builds a json-logic context based on a schema and the current value
  * @param schema - The schema to build the context from
  * @param value - The current value of the form
