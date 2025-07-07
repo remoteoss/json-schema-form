@@ -44,6 +44,21 @@ function shortToFullPath(path: string) {
 }
 
 /**
+ * Standardizes the attributes of a field, using the x-jsf-errorMessage and x-jsf-presentation shorthands
+ * @param {JsfSchema} attrs - The attributes of a field
+ * @returns {JsfSchema} The standardized attributes
+ */
+function standardizeAttrs(attrs: JsfSchema & { errorMessage?: JsfSchema['x-jsf-errorMessage'], presentation?: JsfSchema['x-jsf-presentation'] }) {
+  const { errorMessage, presentation, properties, ...rest } = attrs as Record<string, unknown>
+
+  return {
+    ...rest,
+    ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
+    ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
+  } as JsfSchema
+}
+
+/**
  * Customizer function for the mergeWith function
  * @param _ - The target array
  * @param newVal - The array to merge
@@ -70,7 +85,7 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
 
   const inThen
     = intersection(thenCondition?.required || [], fieldsToPick)
-      || intersection(Object.keys(thenCondition?.properties || {}), fieldsToPick)
+    || intersection(Object.keys(thenCondition?.properties || {}), fieldsToPick)
 
   if (inThen.length > 0) {
     return true
@@ -78,7 +93,7 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
 
   const inElse
     = intersection(elseCondition?.required || [], fieldsToPick)
-      || intersection(Object.keys(elseCondition?.properties || {}), fieldsToPick)
+    || intersection(Object.keys(elseCondition?.properties || {}), fieldsToPick)
 
   if (inElse.length > 0) {
     return true
@@ -105,7 +120,9 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
   fieldsToModify.forEach(([shortPath, mutation]) => {
     const fieldPath = shortToFullPath(shortPath)
 
-    if (!get(schema.properties, fieldPath)) {
+    const fieldAttrs = get(schema.properties, fieldPath) as JsfSchema
+
+    if (!fieldAttrs) {
       // Do not override/edit a field that does not exist.
       // That's the job of config.create() method.
       warnings.push({
@@ -115,20 +132,12 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
       return
     }
 
-    const fieldAttrs = get(schema.properties, fieldPath)
-    if (!fieldAttrs) {
-      return { warnings: null }
-    }
-
     const fieldChanges = typeof mutation === 'function' ? mutation(fieldAttrs) : mutation
 
-    const { properties, ...rest } = fieldChanges
-
     mergeWith(
-      get(schema.properties, fieldPath),
+      fieldAttrs,
       {
-        ...(fieldAttrs as object),
-        ...rest,
+        ...standardizeAttrs(fieldChanges) as object,
       },
       mergeReplaceArray,
     )
