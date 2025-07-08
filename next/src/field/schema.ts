@@ -71,14 +71,18 @@ function getInputTypeFromSchema(type: JsfSchemaType, schema: NonBooleanJsfSchema
   switch (type) {
     case 'string': {
       const { oneOf, format } = schema
-      if (format === 'email')
+      if (format === 'email') {
         return 'email'
-      if (format === 'date')
+      }
+      if (format === 'date') {
         return 'date'
-      if (format === 'data-url')
+      }
+      if (format === 'data-url') {
         return 'file'
-      if (oneOf)
+      }
+      if (oneOf) {
         return 'radio'
+      }
       return 'text'
     }
     case 'number':

@@ -15,8 +15,9 @@ function sort(fields: Field[], order: string[]): Field[] {
 
     // The else actually only happens when both are Infinity,
     // i.e., not specified in the order array
-    if (indexA !== indexB)
+    if (indexA !== indexB) {
       return indexA - indexB
+    }
 
     // If not specified, maintain original relative order
     return fields.indexOf(a) - fields.indexOf(b)
@@ -33,11 +34,13 @@ export function setCustomOrder(schema: JsfSchema, fields: Field[]): Field[] {
   // but it's only because our typing is likely not right.
   // See internal discussion:
   // - https://remote-com.slack.com/archives/C02HTN0LY02/p1738745237733389?thread_ts=1738741631.346809&cid=C02HTN0LY02
-  if (typeof schema === 'boolean')
-    throw new Error('Schema must be an object')
+  if (typeof schema === 'boolean') {
+    throw new TypeError('Schema must be an object')
+  }
 
-  if (schema['x-jsf-order'] !== undefined)
+  if (schema['x-jsf-order'] !== undefined) {
     return sort(fields, schema['x-jsf-order'])
+  }
 
   return fields
 }

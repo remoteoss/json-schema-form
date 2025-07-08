@@ -124,8 +124,9 @@ function getTypeErrorMessage(schemaType: JsfSchemaType | JsfSchemaType[] | undef
   if (Array.isArray(schemaType)) {
     // Map 'integer' to 'number' in error messages
     const formattedTypes = schemaType.map((type) => {
-      if (type === 'integer')
+      if (type === 'integer') {
         return 'number'
+      }
       return type
     })
 

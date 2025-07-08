@@ -396,7 +396,7 @@ function findMissingFields(conditional: JsfSchema | undefined, { fields, path }:
       missingFields[fieldName] = { path }
     }
 
-    // TODO support nested fields (eg if properties.adddress.properties.door_number)
+    // TODO support nested fields (eg if properties.address.properties.door_number)
   })
 
   return missingFields
