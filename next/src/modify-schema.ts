@@ -6,12 +6,17 @@ import merge from 'lodash/merge'
 import mergeWith from 'lodash/mergeWith'
 import set from 'lodash/set'
 
-type FieldOutput = Partial<JsfSchema> | Record<string, unknown>
+type FieldOutput = Partial<JsfSchema>
+
+type FieldModification = Partial<JsfSchema> & {
+  presentation?: JsfSchema['x-jsf-presentation']
+  errorMessage?: JsfSchema['x-jsf-errorMessage']
+}
 
 interface ModifyConfig {
-  fields?: Record<string, FieldOutput | ((attrs: JsfSchema) => FieldOutput)>
-  allFields?: (name: string, attrs: JsfSchema) => FieldOutput
-  create?: Record<string, FieldOutput>
+  fields?: Record<string, FieldModification | ((attrs: JsfSchema) => FieldOutput)>
+  allFields?: (name: string, attrs: JsfSchema) => FieldModification
+  create?: Record<string, FieldModification>
   pick?: string[]
   orderRoot?: string[] | ((originalOrder: string[]) => string[])
   muteLogging?: boolean
@@ -48,7 +53,7 @@ function shortToFullPath(path: string) {
  * @param {JsfSchema} attrs - The attributes of a field
  * @returns {JsfSchema} The standardized attributes
  */
-function standardizeAttrs(attrs: JsfSchema & { errorMessage?: JsfSchema['x-jsf-errorMessage'], presentation?: JsfSchema['x-jsf-presentation'] }) {
+function standardizeAttrs(attrs: FieldModification) {
   const { errorMessage, presentation, properties, ...rest } = attrs as Record<string, unknown>
 
   return {
@@ -85,7 +90,7 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
 
   const inThen
     = intersection(thenCondition?.required || [], fieldsToPick)
-      || intersection(Object.keys(thenCondition?.properties || {}), fieldsToPick)
+    || intersection(Object.keys(thenCondition?.properties || {}), fieldsToPick)
 
   if (inThen.length > 0) {
     return true
@@ -93,7 +98,7 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
 
   const inElse
     = intersection(elseCondition?.required || [], fieldsToPick)
-      || intersection(Object.keys(elseCondition?.properties || {}), fieldsToPick)
+    || intersection(Object.keys(elseCondition?.properties || {}), fieldsToPick)
 
   if (inElse.length > 0) {
     return true
@@ -163,11 +168,14 @@ function rewriteAllFields(schema: JsfSchema, configCallback: ModifyConfig['allFi
   if (typeof schema === 'object' && schema.properties) {
     Object.entries(schema.properties).forEach(([fieldName, fieldAttrs]) => {
       const fullName = parentName ? `${parentName}.${fieldName}` : fieldName
+      const callbackResult = configCallback(fullName, fieldAttrs)
+      const resultWithStandardizedAttrs = standardizeAttrs(callbackResult)
+
       mergeWith(
         get(schema.properties, fieldName),
         {
           ...(fieldAttrs as object),
-          ...configCallback(fullName, fieldAttrs),
+          ...(resultWithStandardizedAttrs as object),
         },
         mergeReplaceArray,
       )
