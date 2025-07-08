@@ -202,7 +202,10 @@ describe('modifySchema', () => {
             const options = (fieldAttrs.oneOf as { title?: string }[]).map(({ title }) => title).join(' or ') || ''
             return {
               title: 'Pet owner',
-              description: `Do you own a pet? ${options}?`, // "Do you own a pet? Yes or No?"
+              description: `Do you own a pet? ${options}?`, // "Do you own a pet? Yes or No?",
+              presentation: {
+                inputType: 'select',
+              },
             }
           },
         },
@@ -214,8 +217,11 @@ describe('modifySchema', () => {
             title: 'Your pet name',
           },
           has_pet: {
-            title: 'Pet owner',
-            description: 'Do you own a pet? Yes or No?',
+            'title': 'Pet owner',
+            'description': 'Do you own a pet? Yes or No?',
+            'x-jsf-presentation': { // new presentation should be renamed to 'x-jsf-presentation'
+              inputType: 'select',
+            },
           },
         },
       })
@@ -307,7 +313,7 @@ describe('modifySchema', () => {
 
     it('replace all fields', () => {
       const result = modifySchema(schemaPet, {
-        allFields: (_, fieldAttrs) => {
+        allFields: (fieldName, fieldAttrs) => {
           let inputType, percentage
           const presentation = fieldAttrs['x-jsf-presentation']
 
@@ -322,8 +328,20 @@ describe('modifySchema', () => {
             }
           }
 
+          if (fieldName === 'has_pet') {
+            return {
+              title: 'abc',
+              presentation: {
+                inputType: 'text',
+              },
+              errorMessage: {
+                required: 'Custom error message for required field',
+              },
+            }
+          }
+
           return {
-            dataFoo: 'abc',
+            title: 'abc',
           }
         },
       })
@@ -331,13 +349,20 @@ describe('modifySchema', () => {
       expect(result.schema).toMatchObject({
         properties: {
           has_pet: {
-            dataFoo: 'abc',
+            'x-jsf-presentation': {
+              // Assert that presentation and errorMessage shorthands are replaced
+              inputType: 'text',
+            },
+            'x-jsf-errorMessage': {
+              required: 'Custom error message for required field',
+            },
+            'title': 'abc',
           },
           pet_name: {
-            dataFoo: 'abc',
+            title: 'abc',
           },
           pet_age: {
-            dataFoo: 'abc',
+            title: 'abc',
           },
           pet_fat: {
             styleDecimals: 2,
@@ -346,7 +371,7 @@ describe('modifySchema', () => {
             // assert recursivity
             properties: {
               street: {
-                dataFoo: 'abc',
+                title: 'abc',
               },
             },
           },
@@ -745,6 +770,7 @@ describe('modifySchema', () => {
             type: 'string',
           },
           address: {
+            // @ts-expect-error someAttr is not a known property of the spec, so it should be ignored
             someAttr: 'foo',
           },
         },
@@ -781,6 +807,7 @@ describe('modifySchema', () => {
           },
           // Pointer as object
           'address': {
+            // @ts-expect-error someAttr is not a known property of the spec, so it should be ignored
             someAttr: 'foo',
             properties: {
               district: {
