@@ -6,7 +6,6 @@ import jsonLogic from 'json-logic-js'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
-import { registerCustomFunctionsToJsonLogic } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 
 export { ValidationOptions } from './validation/schema'
