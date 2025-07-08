@@ -9,7 +9,13 @@ import set from 'lodash/set'
 type FieldOutput = Partial<JsfSchema>
 
 type FieldModification = Partial<JsfSchema> & {
+  /**
+   * @deprecated Use `x-jsf-presentation` instead
+   */
   presentation?: JsfSchema['x-jsf-presentation']
+  /**
+   * @deprecated Use `x-jsf-errorMessage` instead
+   */
   errorMessage?: JsfSchema['x-jsf-errorMessage']
 }
 
