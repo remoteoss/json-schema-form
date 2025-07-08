@@ -6,12 +6,23 @@ import merge from 'lodash/merge'
 import mergeWith from 'lodash/mergeWith'
 import set from 'lodash/set'
 
-type FieldOutput = Partial<JsfSchema> | Record<string, unknown>
+type FieldOutput = Partial<JsfSchema>
+
+type FieldModification = Partial<JsfSchema> & {
+  /**
+   * @deprecated Use `x-jsf-presentation` instead
+   */
+  presentation?: JsfSchema['x-jsf-presentation']
+  /**
+   * @deprecated Use `x-jsf-errorMessage` instead
+   */
+  errorMessage?: JsfSchema['x-jsf-errorMessage']
+}
 
 interface ModifyConfig {
-  fields?: Record<string, FieldOutput | ((attrs: JsfSchema) => FieldOutput)>
-  allFields?: (name: string, attrs: JsfSchema) => FieldOutput
-  create?: Record<string, FieldOutput>
+  fields?: Record<string, FieldModification | ((attrs: JsfSchema) => FieldOutput)>
+  allFields?: (name: string, attrs: JsfSchema) => FieldModification
+  create?: Record<string, FieldModification>
   pick?: string[]
   orderRoot?: string[] | ((originalOrder: string[]) => string[])
   muteLogging?: boolean
@@ -41,6 +52,21 @@ interface ModifyResult {
  */
 function shortToFullPath(path: string) {
   return path.replace('.', '.properties.')
+}
+
+/**
+ * Standardizes the attributes of a field, using the x-jsf-errorMessage and x-jsf-presentation shorthands
+ * @param {JsfSchema} attrs - The attributes of a field
+ * @returns {JsfSchema} The standardized attributes
+ */
+function standardizeAttrs(attrs: FieldModification) {
+  const { errorMessage, presentation, properties, ...rest } = attrs as Record<string, unknown>
+
+  return {
+    ...rest,
+    ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
+    ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
+  } as JsfSchema
 }
 
 /**
@@ -105,7 +131,9 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
   fieldsToModify.forEach(([shortPath, mutation]) => {
     const fieldPath = shortToFullPath(shortPath)
 
-    if (!get(schema.properties, fieldPath)) {
+    const fieldAttrs = get(schema.properties, fieldPath) as JsfSchema
+
+    if (!fieldAttrs) {
       // Do not override/edit a field that does not exist.
       // That's the job of config.create() method.
       warnings.push({
@@ -115,20 +143,12 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
       return
     }
 
-    const fieldAttrs = get(schema.properties, fieldPath)
-    if (!fieldAttrs) {
-      return { warnings: null }
-    }
-
     const fieldChanges = typeof mutation === 'function' ? mutation(fieldAttrs) : mutation
 
-    const { properties, ...rest } = fieldChanges
-
     mergeWith(
-      get(schema.properties, fieldPath),
+      fieldAttrs,
       {
-        ...(fieldAttrs as object),
-        ...rest,
+        ...standardizeAttrs(fieldChanges) as object,
       },
       mergeReplaceArray,
     )
@@ -154,11 +174,14 @@ function rewriteAllFields(schema: JsfSchema, configCallback: ModifyConfig['allFi
   if (typeof schema === 'object' && schema.properties) {
     Object.entries(schema.properties).forEach(([fieldName, fieldAttrs]) => {
       const fullName = parentName ? `${parentName}.${fieldName}` : fieldName
+      const callbackResult = configCallback(fullName, fieldAttrs)
+      const resultWithStandardizedAttrs = standardizeAttrs(callbackResult)
+
       mergeWith(
         get(schema.properties, fieldName),
         {
           ...(fieldAttrs as object),
-          ...configCallback(fullName, fieldAttrs),
+          ...(resultWithStandardizedAttrs as object),
         },
         mergeReplaceArray,
       )
