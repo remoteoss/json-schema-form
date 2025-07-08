@@ -2,11 +2,12 @@ import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { ValidationOptions } from './validation/schema'
+import jsonLogic from 'json-logic-js'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
-import { validateSchema } from './validation/schema'
 import { registerCustomFunctionsToJsonLogic } from './validation/json-logic'
+import { validateSchema } from './validation/schema'
 
 export { ValidationOptions } from './validation/schema'
 
@@ -261,6 +262,21 @@ export function createHeadlessForm(
   validateOptions(options)
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
+  const customJsonLogicOps = options?.validationOptions?.customJsonLogicOps
+
+  if (customJsonLogicOps) {
+    if (typeof customJsonLogicOps !== 'object' || customJsonLogicOps === null) {
+      throw new TypeError('validationOptions.customJsonLogicOps must be an object.')
+    }
+
+    for (const [name, func] of Object.entries(customJsonLogicOps)) {
+      if (typeof func !== 'function') {
+        throw new TypeError(
+          `Custom JSON Logic operator '${name}' must be a function, but received type '${typeof func}'.`,
+        )
+      }
+    }
+  }
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
   const updatedSchema = calculateFinalSchema({
     schema,
@@ -268,28 +284,40 @@ export function createHeadlessForm(
     options: options.validationOptions,
   })
 
-  if (options.validationOptions?.customJsonLogicOps) {
-    registerCustomFunctionsToJsonLogic(options.validationOptions.customJsonLogicOps)
-  }
-
   const fields = buildFields({ schema: updatedSchema, originalSchema: schema, strictInputType })
 
   // TODO: check if we need this isError variable exposed
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const updatedSchema = calculateFinalSchema({
-      schema,
-      values: value,
-      options: options.validationOptions,
-    })
+    const customJsonLogicOps = options?.validationOptions?.customJsonLogicOps
 
-    const result = validate(value, updatedSchema, options.validationOptions)
+    try {
+      if (customJsonLogicOps) {
+        for (const [name, func] of Object.entries(customJsonLogicOps)) {
+          jsonLogic.add_operation(name, func)
+        }
+      }
 
-    // Fields properties might have changed, so we need to reset the fields by updating them in place
-    updateFieldProperties(fields, updatedSchema, schema)
+      const updatedSchema = calculateFinalSchema({
+        schema,
+        values: value,
+        options: options.validationOptions,
+      })
 
-    return result
+      const result = validate(value, updatedSchema, options.validationOptions)
+
+      updateFieldProperties(fields, updatedSchema, schema)
+
+      return result
+    }
+    finally {
+      if (customJsonLogicOps) {
+        for (const name of Object.keys(customJsonLogicOps)) {
+          jsonLogic.rm_operation(name)
+        }
+      }
+    }
   }
 
   return {

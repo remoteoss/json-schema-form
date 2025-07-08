@@ -1,3 +1,4 @@
+
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
 
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from '../test-utils'
@@ -466,6 +467,21 @@ describe('jsonLogic: cross-values validations', () => {
 
       const { handleValidation: handleValidation2 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, validationOptions: { customJsonLogicOps: { is_hello: a => a === 'hello world!' } } })
       expect(handleValidation2({ field_a: 'hello world!' }).formErrors).toEqual(undefined)
+
+      const { handleValidation: handleValidation3 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false })
+      const actionThatWillThrow = () => {
+        handleValidation3({ field_a: 'hello world!' })
+      }
+
+      expect(actionThatWillThrow).toThrow('Unrecognized operation is_hello')
+    })
+
+    it('validation on custom functions', () => {
+      const actionThatWillThrow = () => {
+        createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, validationOptions: { customJsonLogicOps: { is_hello: 'not a funcion' } } })
+      }
+
+      expect(actionThatWillThrow).toThrow('Custom JSON Logic operator \'is_hello\' must be a function, but received type \'string\'.')
     })
   })
 })
