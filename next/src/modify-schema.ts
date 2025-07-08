@@ -85,7 +85,7 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
 
   const inThen
     = intersection(thenCondition?.required || [], fieldsToPick)
-    || intersection(Object.keys(thenCondition?.properties || {}), fieldsToPick)
+      || intersection(Object.keys(thenCondition?.properties || {}), fieldsToPick)
 
   if (inThen.length > 0) {
     return true
@@ -93,7 +93,7 @@ function isConditionalReferencingAnyPickedField(condition: JsfSchema, fieldsToPi
 
   const inElse
     = intersection(elseCondition?.required || [], fieldsToPick)
-    || intersection(Object.keys(elseCondition?.properties || {}), fieldsToPick)
+      || intersection(Object.keys(elseCondition?.properties || {}), fieldsToPick)
 
   if (inElse.length > 0) {
     return true
