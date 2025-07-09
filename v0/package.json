@@ -32,7 +32,6 @@
     "format:prettier": "prettier --write \"src/**/*.{js,ts}\"",
     "prettier:check": "prettier --check \"src/**/*.{js,ts}\"",
     "check:pr-version": "node scripts/pr_dev_version",
-    "check:pr-next-version": "node scripts/pr_next_dev_version",
     "release:local": "node scripts/release_local",
     "release:dev:patch": "node scripts/release_dev patch",
     "release:dev:minor": "node scripts/release_dev minor",
