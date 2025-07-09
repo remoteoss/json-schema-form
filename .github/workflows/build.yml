@@ -19,11 +19,11 @@ jobs:
         uses: actions/cache@v3
         id: cache-primes
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          path: v0/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('v0/package-lock.json') }}
       - name: Install dependencies
         if: steps.cache-primes.outputs.cache-hit != 'true'
-        run: npm ci
+        run: cd v0 && npm ci
 
   test:
     runs-on: ubuntu-latest
@@ -38,11 +38,11 @@ jobs:
       - name: Get cached NPM dependencies
         uses: actions/cache@v3
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }} # (1)
+          path: v0/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('v0/package-lock.json') }}
 
       - name: Tests
-        run: npm run test
+        run: cd v0 && npm run test
 
   lint:
     runs-on: ubuntu-latest
@@ -57,11 +57,11 @@ jobs:
       - name: Get cached NPM dependencies
         uses: actions/cache@v3
         with:
-          path: node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }} # (1)
+          path: v0/node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('v0/package-lock.json') }}
 
       - name: Lint
-        run: npm run lint
-      - run: npm run prettier:check
-      - run: npm run check:pr-version
-      - run: npm run check:pr-next-version
+        run: cd v0 && npm run lint
+      - run: cd v0 && npm run prettier:check
+      - run: cd v0 && npm run check:pr-version
+      - run: cd v0 && npm run check:pr-next-version

@@ -39,8 +39,8 @@
     "lint": "eslint --max-warnings 0 .",
     "typecheck": "tsc --noEmit",
     "check": "pnpm run lint && pnpm run typecheck",
-    "release:dev": "cd .. && npm run release:v1:dev",
-    "release:beta": "cd .. && npm run release:v1:beta"
+    "release:dev": "node ../scripts/release_v1 dev",
+    "release:beta": "node ../scripts/release_v1 beta"
   },
   "dependencies": {
     "json-logic-js": "^2.0.5"
