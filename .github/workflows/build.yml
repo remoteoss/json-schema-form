@@ -13,7 +13,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: 'v0/.nvmrc'
-          cache: 'npm'
       - name: Cache NPM dependencies
         # From: https://dev.to/drakulavich/aggressive-dependency-caching-in-github-actions-3c64
         uses: actions/cache@v3
@@ -33,7 +32,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: 'v0/.nvmrc'
-          cache: 'npm'
 
       - name: Get cached NPM dependencies
         uses: actions/cache@v3
@@ -52,7 +50,6 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version-file: 'v0/.nvmrc'
-          cache: 'npm'
 
       - name: Get cached NPM dependencies
         uses: actions/cache@v3
