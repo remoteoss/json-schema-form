@@ -46,8 +46,9 @@ export function getField(fields: Field[], name: string, ...subNames: string[]) {
 
 // Helper function to convert KB to MB
 export function convertKBToMB(kb: number): number {
-  if (kb === 0)
+  if (kb === 0) {
     return 0
+  }
   const mb = kb / 1024 // KB to MB
   return Number.parseFloat(mb.toFixed(2)) // Keep 2 decimal places
 }
