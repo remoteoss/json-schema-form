@@ -6,6 +6,7 @@ describe('modifySchema', () => {
   function fail() {
     throw new Error('It should not reach this point of the code')
   }
+
   const schemaPet: JsfSchema = {
     'type': 'object',
     'additionalProperties': false,
@@ -115,7 +116,7 @@ describe('modifySchema', () => {
   })
 
   beforeAll(() => {
-    jest.spyOn(console, 'warn').mockImplementation(() => {})
+    jest.spyOn(console, 'warn').mockImplementation(() => { })
   })
 
   afterAll(() => {
@@ -201,7 +202,10 @@ describe('modifySchema', () => {
             const options = (fieldAttrs.oneOf as { title?: string }[]).map(({ title }) => title).join(' or ') || ''
             return {
               title: 'Pet owner',
-              description: `Do you own a pet? ${options}?`, // "Do you own a pet? Yes or No?"
+              description: `Do you own a pet? ${options}?`, // "Do you own a pet? Yes or No?",
+              presentation: {
+                inputType: 'select',
+              },
             }
           },
         },
@@ -213,8 +217,11 @@ describe('modifySchema', () => {
             title: 'Your pet name',
           },
           has_pet: {
-            title: 'Pet owner',
-            description: 'Do you own a pet? Yes or No?',
+            'title': 'Pet owner',
+            'description': 'Do you own a pet? Yes or No?',
+            'x-jsf-presentation': { // new presentation should be renamed to 'x-jsf-presentation'
+              inputType: 'select',
+            },
           },
         },
       })
@@ -223,7 +230,7 @@ describe('modifySchema', () => {
     it('replace nested field', () => {
       const result = modifySchema(schemaAddress, {
         fields: {
-        // You can use dot notation
+          // You can use dot notation
           'address.street': {
             title: 'Street name',
           },
@@ -267,10 +274,10 @@ describe('modifySchema', () => {
     })
 
     it('replace fields that dont exist gets ignored', () => {
-    // IMPORTANT NOTE on this behavior:
-    // Context: At Remote we have a lot of global customization that run equally across multiple different JSON Schemas.
-    // With this, we avoid applying customizations to non-existing fields. (aka create fields)
-    // That's why we have the "create" config, specific to create new fields.
+      // IMPORTANT NOTE on this behavior:
+      // Context: At Remote we have a lot of global customization that run equally across multiple different JSON Schemas.
+      // With this, we avoid applying customizations to non-existing fields. (aka create fields)
+      // That's why we have the "create" config, specific to create new fields.
       const result = modifySchema(schemaPet, {
         fields: {
           'unknown_field': {
@@ -306,7 +313,7 @@ describe('modifySchema', () => {
 
     it('replace all fields', () => {
       const result = modifySchema(schemaPet, {
-        allFields: (_, fieldAttrs) => {
+        allFields: (fieldName, fieldAttrs) => {
           let inputType, percentage
           const presentation = fieldAttrs['x-jsf-presentation']
 
@@ -321,8 +328,20 @@ describe('modifySchema', () => {
             }
           }
 
+          if (fieldName === 'has_pet') {
+            return {
+              title: 'abc',
+              presentation: {
+                inputType: 'text',
+              },
+              errorMessage: {
+                required: 'Custom error message for required field',
+              },
+            }
+          }
+
           return {
-            dataFoo: 'abc',
+            title: 'abc',
           }
         },
       })
@@ -330,22 +349,29 @@ describe('modifySchema', () => {
       expect(result.schema).toMatchObject({
         properties: {
           has_pet: {
-            dataFoo: 'abc',
+            'x-jsf-presentation': {
+              // Assert that presentation and errorMessage shorthands are replaced
+              inputType: 'text',
+            },
+            'x-jsf-errorMessage': {
+              required: 'Custom error message for required field',
+            },
+            'title': 'abc',
           },
           pet_name: {
-            dataFoo: 'abc',
+            title: 'abc',
           },
           pet_age: {
-            dataFoo: 'abc',
+            title: 'abc',
           },
           pet_fat: {
             styleDecimals: 2,
           },
           pet_address: {
-          // assert recursivity
+            // assert recursivity
             properties: {
               street: {
-                dataFoo: 'abc',
+                title: 'abc',
               },
             },
           },
@@ -517,6 +543,58 @@ describe('modifySchema', () => {
         },
       })
     })
+
+    it('support for presentation and errorMessage shorthands', () => {
+      const result = modifySchema(invoiceSchema, {
+        fields: {
+          'title': {
+            errorMessage: {
+              maxLength: 'Must be shorter.',
+            },
+            presentation: {
+              dataFoo: 123,
+            },
+          },
+          'taxes.country': {
+            errorMessage: {
+              required: 'The country is required.',
+            },
+            presentation: {
+              flags: true,
+            },
+          },
+        },
+      })
+
+      // Assert all the other properties are kept
+      expect(result.schema).toMatchObject(invoiceSchema)
+
+      // Assert that the shorthands are converted to full x-jsf-* attributes
+      expect(result.schema).toMatchObject({
+        properties: {
+          title: {
+            'x-jsf-errorMessage': {
+              maxLength: 'Must be shorter.',
+            },
+            'x-jsf-presentation': {
+              dataFoo: 123,
+            },
+          },
+          taxes: {
+            properties: {
+              country: {
+                'x-jsf-errorMessage': {
+                  required: 'The country is required.',
+                },
+                'x-jsf-presentation': {
+                  flags: true,
+                },
+              },
+            },
+          },
+        },
+      })
+    })
   })
 
   const schemaTickets = {
@@ -545,7 +623,7 @@ describe('modifySchema', () => {
     'x-jsf-order': ['age', 'quantity', 'has_premium', 'premium_id', 'reason'],
     'allOf': [
       {
-      // Empty conditional to sanity test empty cases
+        // Empty conditional to sanity test empty cases
         if: {},
         then: {},
         else: {},
@@ -586,7 +664,7 @@ describe('modifySchema', () => {
     it('reorder fields - basic usage', () => {
       const baseExample = {
         'properties': {
-        /* does not matter */
+          /* does not matter */
         },
         'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
       }
@@ -603,7 +681,7 @@ describe('modifySchema', () => {
         {
           type: 'ORDER_MISSING_FIELDS',
           message:
-          'Some fields got forgotten in the new order. They were automatically appended: field_a, field_d',
+            'Some fields got forgotten in the new order. They were automatically appended: field_a, field_d',
         },
       ])
     })
@@ -611,7 +689,7 @@ describe('modifySchema', () => {
     it('reorder fields - basic usage fallback', () => {
       const baseExample = {
         properties: {
-        /* does not matter */
+          /* does not matter */
         },
       }
       const result = modifySchema(baseExample, {
@@ -629,7 +707,7 @@ describe('modifySchema', () => {
     it('reorder fields -  as callback based on original order', () => {
       const baseExample = {
         'properties': {
-        /* does not matter */
+          /* does not matter */
         },
         'x-jsf-order': ['field_a', 'field_b', 'field_c', 'field_d'],
       }
@@ -643,21 +721,21 @@ describe('modifySchema', () => {
     })
 
     it('reorder fields in fieldsets (through config.fields)', () => {
-    // NOTE: A better API is needed but we decided to not implement it yet
-    // as we didn't agreed on the best DX. Check PR #78 for proposed APIs.
-    // Until then this is the workaround.
-    // Note the warning "ORDER_MISSING_FIELDS" won't be added.
+      // NOTE: A better API is needed but we decided to not implement it yet
+      // as we didn't agreed on the best DX. Check PR #78 for proposed APIs.
+      // Until then this is the workaround.
+      // Note the warning "ORDER_MISSING_FIELDS" won't be added.
 
       const baseExample = {
         'properties': {
           address: {
             'properties': {
-            /* does not matter */
+              /* does not matter */
             },
             'x-jsf-order': ['first_line', 'zipcode', 'city'],
           },
           age: {
-          /* ... */
+            /* ... */
           },
         },
         'x-jsf-order': ['address', 'age'],
@@ -675,7 +753,7 @@ describe('modifySchema', () => {
       expect(result.schema).toMatchObject({
         properties: {
           address: {
-          // Note how first_line was NOT appended
+            // Note how first_line was NOT appended
             'x-jsf-order': ['city', 'zipcode'],
           },
         },
@@ -692,6 +770,7 @@ describe('modifySchema', () => {
             type: 'string',
           },
           address: {
+            // @ts-expect-error someAttr is not a known property of the spec, so it should be ignored
             someAttr: 'foo',
           },
         },
@@ -722,12 +801,13 @@ describe('modifySchema', () => {
     it('create nested field', () => {
       const result = modifySchema(schemaAddress, {
         create: {
-        // Pointer as string
+          // Pointer as string
           'address.state': {
             title: 'State',
           },
           // Pointer as object
           'address': {
+            // @ts-expect-error someAttr is not a known property of the spec, so it should be ignored
             someAttr: 'foo',
             properties: {
               district: {
@@ -850,7 +930,7 @@ describe('modifySchema', () => {
         {
           type: 'PICK_MISSED_FIELD',
           message:
-          'The picked fields are in conditionals that refeer other fields. They added automatically: "premium_id", "reason". Check "meta" for more details.',
+            'The picked fields are in conditionals that refeer other fields. They added automatically: "premium_id", "reason". Check "meta" for more details.',
           meta: { premium_id: { path: 'allOf[1].then' }, reason: { path: 'allOf[2].then' } },
         },
       ])
@@ -879,7 +959,7 @@ describe('modifySchema', () => {
         {
           type: 'PICK_MISSED_FIELD',
           message:
-          'The picked fields are in conditionals that refeer other fields. They added automatically: "has_premium". Check "meta" for more details.',
+            'The picked fields are in conditionals that refeer other fields. They added automatically: "has_premium". Check "meta" for more details.',
           meta: { has_premium: { path: 'allOf[1].if' } },
         },
       ])
@@ -908,10 +988,10 @@ describe('modifySchema', () => {
     it.todo('ignore conditionals with unpicked fields')
 
     it.todo('pick nested fields (fieldsets)')
-  /* Use cases:
-      - conditionals inside fieldstes. eg properties.family.allOf[0].if...
-      - conditional in the root pointing to nested fields: eg if properties.family.properties.simblings is 0 then hide properties.playTogether ...
-      - variations of each one of these similar to the existing tests.
-      */
+    /* Use cases:
+        - conditionals inside fieldstes. eg properties.family.allOf[0].if...
+        - conditional in the root pointing to nested fields: eg if properties.family.properties.simblings is 0 then hide properties.playTogether ...
+        - variations of each one of these similar to the existing tests.
+        */
   })
 })

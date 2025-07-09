@@ -44,8 +44,9 @@ describe('custom order', () => {
     expect(mainKeys).toEqual(['name', 'address'])
 
     const addressField = form.fields.find(field => field.name === 'address')
-    if (addressField === undefined)
+    if (addressField === undefined) {
       throw new Error('Address field not found')
+    }
 
     // This already throws if "fields" is undefined
     const addressKeys = addressField.fields?.map(field => field.name)

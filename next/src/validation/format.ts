@@ -73,21 +73,24 @@ const formatValidationFunctions: Record<Format, (value: string) => boolean> = {
     return value.length <= 254 && PATTERNS.IDN_EMAIL.test(value)
   },
   [Format.Hostname]: (value) => {
-    if (value.length > 255)
+    if (value.length > 255) {
       return false
+    }
     const labels = value.split('.')
     return labels.every(label => PATTERNS.HOSTNAME.test(label))
   },
   [Format.IDNHostname]: (value) => {
-    if (value.length > 255)
+    if (value.length > 255) {
       return false
+    }
     const labels = value.split('.')
     return labels.every(label => label.length <= 63 && PATTERNS.IDN_HOSTNAME.test(label))
   },
   [Format.IPv4]: (value) => {
     const parts = value.split('.')
-    if (parts.length !== 4)
+    if (parts.length !== 4) {
       return false
+    }
     return parts.every((part) => {
       const num = Number.parseInt(part, 10)
       return num >= 0 && num <= 255 && part === num.toString()
@@ -95,13 +98,15 @@ const formatValidationFunctions: Record<Format, (value: string) => boolean> = {
   },
   [Format.IPv6]: (value) => {
     const parts = value.split(':')
-    if (parts.length > 8)
+    if (parts.length > 8) {
       return false
+    }
     let hasDoubleColon = false
     return parts.every((part) => {
       if (part === '') {
-        if (hasDoubleColon)
+        if (hasDoubleColon) {
           return false
+        }
         hasDoubleColon = true
         return true
       }
