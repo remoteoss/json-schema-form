@@ -1,8 +1,8 @@
+import { createHeadlessForm } from '@/createHeadlessForm'
 
 import { afterEach, beforeEach, describe, expect, it } from '@jest/globals'
 
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from '../test-utils'
-
 import {
   badSchemaThatWillNotSetAForcedValue,
   createSchemaWithRulesOnFieldA,
@@ -33,7 +33,6 @@ import {
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
 } from './json-logic.fixtures'
-import { createHeadlessForm } from '@/createHeadlessForm'
 
 beforeEach(mockConsole)
 afterEach(restoreConsoleAndEnsureItWasNotCalled)
