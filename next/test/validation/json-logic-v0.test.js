@@ -470,7 +470,7 @@ describe('jsonLogic: cross-values validations', () => {
 
       const { handleValidation: handleValidation3 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false })
       const actionThatWillThrow = () => {
-        handleValidation3({ field_a: 'hello world!' })
+        handleValidation3({ field_a: 'hello world' })
       }
 
       expect(actionThatWillThrow).toThrow('Unrecognized operation is_hello')
