@@ -61,4 +61,3 @@ jobs:
         run: cd v0 && npm run lint
       - run: cd v0 && npm run prettier:check
       - run: cd v0 && npm run check:pr-version
-      - run: cd v0 && npm run check:pr-next-version
