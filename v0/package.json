@@ -27,7 +27,7 @@
     "test:watch": "jest --watchAll",
     "lint": "eslint \"src/**/*.{js,ts}\"",
     "format": "npm run format:prettier && npm run format:eslint",
-    "prepare": "husky install",
+    "prepare": "cd .. && husky install",
     "format:eslint": "eslint --fix \"v0/src/**/*.{js,ts}\"",
     "format:prettier": "prettier --write \"v0/src/**/*.{js,ts}\"",
     "prettier:check": "prettier --check \"v0/src/**/*.{js,ts}\"",
