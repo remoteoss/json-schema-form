@@ -1,7 +1,7 @@
 import antfu from '@antfu/eslint-config'
 
 export default antfu({
-  ignores: ['test/v0-baseline-test-results.json'],
+  ignores: ['test/v0-baseline-test-results.json', 'v0/**', 'scripts/**'],
   rules: {
     curly: ['error', 'all'],
   },
