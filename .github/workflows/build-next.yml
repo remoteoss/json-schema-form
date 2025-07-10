@@ -1,9 +1,10 @@
 name: Pull Request (v-next)
 on:
   pull_request:
-    paths:
-      - 'next/**' # Only run if files in next/ directory change
-      - '.github/workflows/build-next.yml' # Also run if this workflow file changes
+    paths-ignore:
+      - 'v0/**'  # Skip if ONLY v0/ directory files change
+      - '.github/workflows/build.yml' # Skip if ONLY build.yml file changes
+
 
 jobs:
   dependencies:
@@ -24,18 +25,18 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version-file: 'next/.nvmrc'
+          node-version-file: '.nvmrc'
 
       - name: Cache PNPM dependencies
         uses: actions/cache@v3
         id: cache-next
         with:
-          path: next/node_modules
-          key: ${{ runner.os }}-pnpm-next-${{ hashFiles('next/pnpm-lock.yaml') }}
+          path: node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install dependencies
         if: steps.cache-next.outputs.cache-hit != 'true'
-        run: cd next && pnpm install
+        run: pnpm install
 
   test:
     runs-on: ubuntu-latest
@@ -52,7 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: 'next/.nvmrc'
+          node-version-file: '.nvmrc'
 
       - name: Get cached v0 dependencies
         uses: actions/cache@v3
@@ -63,14 +64,14 @@ jobs:
       - name: Get cached PNPM dependencies
         uses: actions/cache@v3
         with:
-          path: next/node_modules
-          key: ${{ runner.os }}-pnpm-next-${{ hashFiles('next/pnpm-lock.yaml') }}
+          path: node_modules
+          key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Run lint and type checks
-        run: cd next && pnpm check
+        run: pnpm check
 
       - name: Tests
-        run: cd next && pnpm test
+        run: pnpm test
 
       - name: v0 Tests
-        run: cd next && pnpm run test:v0 || true
+        run: cd v0 && npm run test

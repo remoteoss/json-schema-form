@@ -39,6 +39,8 @@ Check the 🕹️ **[JSF Playground](https://json-schema-form.vercel.app/?path=/
 
 Read [CONTRIBUTING](CONTRIBUTING.md) to get started.
 
-We are working on the [next version v1.0](/next). A rewrite in TypeScript with major bugfixes and missing features. It aims to support the latest JSON Schema dialect 2020-12.
+## Migrating
+
+If you're using `v0` and wish to migrate to `v1`, read [MIGRATING](MIGRATING.md) to get started.
 
 _Backed by [Remote.com](https://remote.com/)_
