@@ -6,43 +6,21 @@ If you have questions about the library, found a bug or want to suggest a featur
 
 ## Documentation
 
-Documentation website is available [here](https://json-schema-form.vercel.app/). Please note that its source code is not in the repo yet. Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high.
+You can visit the [docs website](https://json-schema-form.vercel.app/), however its source is not in the repo yet. Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high.
 
 ## Setup
 
-1. Clone the repository including submodules with the `--recursive` option
-
-   ```bash
-   git clone https://github.com/remoteoss/json-schema-form.git --recursive
-   ```
-
-   If you already cloned the repository without the submodules,
-   you can initialize and update them with:
-
-   ```bash
-   git submodule update --init
-   ```
-
-3. Install dependencies. You **must use [`pnpm`](https://pnpm.io/)**
-
-   ```bash
-   pnpm install
-   ```
-
-### Node.js Version
-
-This project requires Node.js LTS v22.13.1.
-We recommend using the exact version specified in `.nvmrc`:
-
-Navigate to the "next" folder and run:
+- Install the dependencies:
 
 ```bash
-nvm use
+npm ci
 ```
 
-Without the correct Node.js version,
-tests and other development tasks will likely fail.
+- Run the tests:
 
+```
+npm test
+```
 
 ## Development workflow
 
@@ -52,50 +30,41 @@ Submit your branch pointing to `main`.
 
 Please, always add tests to your bug fixes and new features.
 
-## Unit Testing
+### Testing the PR in your project
 
-To run the test suite (including the ones from the [Official JSON-schema suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite)), run:
+#### Local release
 
-```bash
-npm test
-```
+The simplest way to test your PR in your project is by installing it locally as a "tarball" version.
 
-Or run the tests in watch mode:
-
-```bash
-npm test:watch
-```
-
-You can also run a single test file with:
-```bash
-npm test:file path/to/file
-```
-
-
-### Testing the PR changes in your "consumer" project
-
-#### Local build
-
-The simplest way to test your local changes is to run the `dev` script — this re-generates a `dist` folder whenever a file is changed. 
-
-Once you have a `dist` folder being created, can use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/) to test the
-
-```bash
-# in json-schema-form repo:
-$ npm link
-
-# cd to your project
-$ npm  link @remoteoss/json-schema-form
-
-# Run npm unlink --no-save @remoteoss/json-schema-form to remove the local symlink
+1. Run `npm run release:local`, which will create the tarball. It will output a suggest npm command to re-install the package in your project. Example:
 
 ```
+  npm un @remoteoss/json-schema-form && npm i -S /Users/kim/Documents/my-repos/json-schema-form/local-0.1.0-beta.0.tgz
+```
+
+2. Then go to your project and run the command above.
+
+You can re-run this `release:local` as many times as you need. Remember to re-install the package each time a new tarball is created.
+
+3. In alternative you can use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/);
+
+- `cd json-schema-form`
+- Run `npm link`
+- Run `npm build`
+- `cd you-project`
+- Run `npm link @remoteoss/json-schema-form`
+
+You need to run `npm build` in the `json-schema-form` directory to ensure the latest changes are in your project.
+
+Run `npm unlink --no-save @remoteoss/json-schema-form` to remove the local symlink;
+
+With `yarn unlink @remoteoss/json-schema-form` you will need to run `yarn install --force` to re-install the package that was unlinked;
 
 #### Public release
 
 If you need a public release (for example, to run it on your project CI), you can publish a `dev` release.
 
-Note that only core maintainers can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
+Note that only core maintainers (Remoters) can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
 
 1.  Locally run the script `npm run release:dev:patch` or `npm run release:dev:minor` depending on your changes.
     1. You'll be shown what's the new version and prompt you if it's correct. Eg
@@ -109,7 +78,6 @@ Note that only core maintainers can publish public releases. If needed, ask us i
     3. Done! 🎉
 
 Every `dev` release is [tagged as `dev`](https://docs.npmjs.com/cli/v9/commands/npm-publish#tag), which means it won't be automatically installed in your project by default.
-
 You must specify the exact version, for example:
 
 ```bash
