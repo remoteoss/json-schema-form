@@ -1,4 +1,4 @@
-name: Pull Request (v-next)
+name: Pull Request
 on:
   pull_request:
     paths-ignore:
@@ -28,13 +28,13 @@ jobs:
 
       - name: Cache PNPM dependencies
         uses: actions/cache@v3
-        id: cache-next
+        id: cache-jsf
         with:
           path: node_modules
           key: ${{ runner.os }}-pnpm-${{ hashFiles('pnpm-lock.yaml') }}
 
       - name: Install dependencies
-        if: steps.cache-next.outputs.cache-hit != 'true'
+        if: steps.cache-jsf.outputs.cache-hit != 'true'
         run: pnpm install
 
   test:
@@ -53,12 +53,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-
-      - name: Get cached v0 dependencies
-        uses: actions/cache@v3
-        with:
-          path: node_modules
-          key: ${{ runner.os }}-npm-next-v0-${{ hashFiles('package-lock.json') }}
 
       - name: Get cached PNPM dependencies
         uses: actions/cache@v3
