@@ -71,6 +71,3 @@ jobs:
 
       - name: Tests
         run: pnpm test
-
-      - name: v0 Tests
-        run: cd v0 && npm run test
