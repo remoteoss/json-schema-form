@@ -2,8 +2,8 @@ name: Pull Request (v0)
 on:
   pull_request:
     paths-ignore:
-      - 'next/**'  # Skip if ONLY next/ directory files change
-      - '.github/workflows/build-next.yml'
+      - next/** # Skip if ONLY next/ directory files change
+      - .github/workflows/build-next.yml
 
 jobs:
   dependencies:
@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version-file: 'v0/.nvmrc'
+          node-version-file: v0/.nvmrc
       - name: Cache NPM dependencies
         # From: https://dev.to/drakulavich/aggressive-dependency-caching-in-github-actions-3c64
         uses: actions/cache@v3
@@ -31,7 +31,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version-file: 'v0/.nvmrc'
+          node-version-file: v0/.nvmrc
 
       - name: Get cached NPM dependencies
         uses: actions/cache@v3
@@ -49,7 +49,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
-          node-version-file: 'v0/.nvmrc'
+          node-version-file: v0/.nvmrc
 
       - name: Get cached NPM dependencies
         uses: actions/cache@v3
