@@ -6,7 +6,7 @@ If you have questions about the library, found a bug or want to suggest a featur
 
 ## Documentation
 
-You can visit the [docs website](https://json-schema-form.vercel.app/), however its source is not in the repo yet. Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high.
+Documentation website is available [here](https://json-schema-form.vercel.app/). Please note that its source code is not in the repo yet. Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high.
 
 ## Setup
 
@@ -29,6 +29,21 @@ You can visit the [docs website](https://json-schema-form.vercel.app/), however 
    pnpm install
    ```
 
+### Node.js Version
+
+This project requires Node.js LTS v22.13.1.
+We recommend using the exact version specified in `.nvmrc`:
+
+Navigate to the "next" folder and run:
+
+```bash
+nvm use
+```
+
+Without the correct Node.js version,
+tests and other development tasks will likely fail.
+
+
 ## Development workflow
 
 ### Creating a new branch
@@ -36,6 +51,26 @@ You can visit the [docs website](https://json-schema-form.vercel.app/), however 
 Submit your branch pointing to `main`.
 
 Please, always add tests to your bug fixes and new features.
+
+## Unit Testing
+
+To run the test suite (including the ones from the [Official JSON-schema suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite)), run:
+
+```bash
+npm test
+```
+
+Or run the tests in watch mode:
+
+```bash
+npm test:watch
+```
+
+You can also run a single test file with:
+```bash
+npm test:file path/to/file
+```
+
 
 ### Testing the PR changes in your "consumer" project
 
