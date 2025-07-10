@@ -2,8 +2,8 @@ name: Pull Request (v-next)
 on:
   pull_request:
     paths-ignore:
-      - 'v0/**'  # Skip if ONLY v0/ directory files change
-      - '.github/workflows/build.yml' # Skip if ONLY build.yml file changes
+      - v0/** # Skip if ONLY v0/ directory files change
+      - .github/workflows/build.yml # Skip if ONLY build.yml file changes
 
 
 jobs:
@@ -25,7 +25,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Cache PNPM dependencies
         uses: actions/cache@v3
@@ -53,7 +53,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: .nvmrc
 
       - name: Get cached v0 dependencies
         uses: actions/cache@v3
