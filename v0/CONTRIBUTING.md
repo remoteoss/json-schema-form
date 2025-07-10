@@ -10,24 +10,17 @@ You can visit the [docs website](https://json-schema-form.vercel.app/), however 
 
 ## Setup
 
-1. Clone the repository including submodules with the `--recursive` option
+- Install the dependencies:
 
-   ```bash
-   git clone https://github.com/remoteoss/json-schema-form.git --recursive
-   ```
+```bash
+npm ci
+```
 
-   If you already cloned the repository without the submodules,
-   you can initialize and update them with:
+- Run the tests:
 
-   ```bash
-   git submodule update --init
-   ```
-
-3. Install dependencies. You **must use [`pnpm`](https://pnpm.io/)**
-
-   ```bash
-   pnpm install
-   ```
+```
+npm test
+```
 
 ## Development workflow
 
@@ -37,30 +30,41 @@ Submit your branch pointing to `main`.
 
 Please, always add tests to your bug fixes and new features.
 
-### Testing the PR changes in your "consumer" project
+### Testing the PR in your project
 
-#### Local build
+#### Local release
 
-The simplest way to test your local changes is to run the `dev` script — this re-generates a `dist` folder whenever a file is changed. 
+The simplest way to test your PR in your project is by installing it locally as a "tarball" version.
 
-Once you have a `dist` folder being created, can use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/) to test the
-
-```bash
-# in json-schema-form repo:
-$ npm link
-
-# cd to your project
-$ npm  link @remoteoss/json-schema-form
-
-# Run npm unlink --no-save @remoteoss/json-schema-form to remove the local symlink
+1. Run `npm run release:local`, which will create the tarball. It will output a suggest npm command to re-install the package in your project. Example:
 
 ```
+  npm un @remoteoss/json-schema-form && npm i -S /Users/kim/Documents/my-repos/json-schema-form/local-0.1.0-beta.0.tgz
+```
+
+2. Then go to your project and run the command above.
+
+You can re-run this `release:local` as many times as you need. Remember to re-install the package each time a new tarball is created.
+
+3. In alternative you can use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/);
+
+- `cd json-schema-form`
+- Run `npm link`
+- Run `npm build`
+- `cd you-project`
+- Run `npm link @remoteoss/json-schema-form`
+
+You need to run `npm build` in the `json-schema-form` directory to ensure the latest changes are in your project.
+
+Run `npm unlink --no-save @remoteoss/json-schema-form` to remove the local symlink;
+
+With `yarn unlink @remoteoss/json-schema-form` you will need to run `yarn install --force` to re-install the package that was unlinked;
 
 #### Public release
 
 If you need a public release (for example, to run it on your project CI), you can publish a `dev` release.
 
-Note that only core maintainers can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
+Note that only core maintainers (Remoters) can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
 
 1.  Locally run the script `npm run release:dev:patch` or `npm run release:dev:minor` depending on your changes.
     1. You'll be shown what's the new version and prompt you if it's correct. Eg
@@ -74,7 +78,6 @@ Note that only core maintainers can publish public releases. If needed, ask us i
     3. Done! 🎉
 
 Every `dev` release is [tagged as `dev`](https://docs.npmjs.com/cli/v9/commands/npm-publish#tag), which means it won't be automatically installed in your project by default.
-
 You must specify the exact version, for example:
 
 ```bash
