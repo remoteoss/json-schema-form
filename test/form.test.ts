@@ -15,10 +15,10 @@ describe('createHeadlessForm', () => {
       },
     }
 
-    it('should throw error when modifyConfig option is provided', () => {
+    it('should throw error when customProperties option is provided', () => {
       expect(() => {
-        createHeadlessForm(basicSchema, { modifyConfig: {} } as any)
-      }).toThrow('`modifyConfig` is a deprecated option and it\'s not supported on json-schema-form v1')
+        createHeadlessForm(basicSchema, { customProperties: {} } as any)
+      }).toThrow('`customProperties` is a deprecated option and it\'s not supported on json-schema-form v1')
     })
 
     it('should not throw error when modifyConfig option is not provided', () => {
