@@ -33,9 +33,7 @@ v1 removes several heavy dependencies:
 # Only json-logic-js remains
 ```
 
-### 3. **API Changes**
-
-#### New TypeScript Exports
+### 3. **New TypeScript Exports**
 
 ```diff
 + import {
@@ -85,8 +83,8 @@ const { formErrors } = handleValidation(values)
 // v0 - Mixed property names
 {
   name: 'username',
-- type: 'text',        // Deprecated
-+ inputType: 'text',   // Consistent naming
+- type: 'text',        // Soon to be deprecated (still supported)
++ inputType: 'text',   // Future-proof property
   jsonType: 'string',
   required: true
 }
@@ -94,24 +92,27 @@ const { formErrors } = handleValidation(values)
 
 ### 6. **modify() Function Changes**
 
-The `modify` function API remains mostly compatible, but with improved TypeScript support:
+#### **Property shorthands for presentation and error message were removed**
 
-```typescript
-// v0
-const { schema, warnings } = modify(originalSchema, {
-  fields: { ... },
-  create: { ... },
-  pick: [...],
-  orderRoot: [...]
-})
+The `modify` function API remains mostly compatible, but we removed the support for the `presentation` `errorMessage` property shorthands — `x-jsf-presentation` and `x-jsf-errorMessage` should be used instead.
 
-// v1 - Same API, better types
-const { schema, warnings } = modify(originalSchema, {
-  fields: { ... },
-  create: { ... },
-  pick: [...],
-  orderRoot: [...]
-})
+
+
+```diff
+// Example:
+const { schema, warnings } = modify(schemaPet, {
+  fields: {
+    age: {
+-     presentation: {
++     'x-jsf-presentation': {
+        unit: "months"
+      }
+-     errorMessage: {
++     'x-jsf-errorMessage': {
+        required: "Important field"
+      }
+    }
+});
 ```
 
 ## Migration Steps
@@ -132,24 +133,32 @@ Replace any deprecated config options (if necessary):
 
 ```diff
 // Before
-const form = createHeadlessForm(schema, {
+- const form = createHeadlessForm(schema, {
 - customProperties: {
 -   username: {
--     placeholder: 'Enter username'
+-     presentation: {
+-      placeholder: "Enter username"
+-     },
+-     errorMessage: {
+-       required: "Important field"
+-     }
 -   }
 - }
-})
+- })
 
-// After - Use schema modifications instead
-const modifiedSchema = modify(schema, {
-  fields: {
-    username: {
-      'x-jsf-presentation': {
-        placeholder: 'Enter username'
-      }
-    }
-  }
-})
+// After - Use schema modifications instead, without any property shorthands
++ const modifiedSchema = modify(schema, {
++   fields: {
++     username: {
++       "x-jsf-presentation": {
++         placeholder: 'Enter username'
++       },
++       "x-jsf-errorMessage": {
++        required: "Important field"
++       }
++     }
++   }
++ })
 
 const form = createHeadlessForm(modifiedSchema.schema)
 ```
