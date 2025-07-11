@@ -16,12 +16,12 @@ jobs:
       - name: Cache NPM dependencies
         # From: https://dev.to/drakulavich/aggressive-dependency-caching-in-github-actions-3c64
         uses: actions/cache@v3
-        id: cache-primes
+        id: cache-v0
         with:
           path: v0/node_modules
           key: ${{ runner.os }}-node-${{ hashFiles('v0/package-lock.json') }}
       - name: Install dependencies
-        if: steps.cache-primes.outputs.cache-hit != 'true'
+        if: steps.cache-v0.outputs.cache-hit != 'true'
         run: cd v0 && npm ci
 
   test:
