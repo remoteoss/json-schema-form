@@ -194,6 +194,30 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
 }
 
 /**
+ * Register custom used defined JSON Logic operations to the jsonLogic instance
+ * @param customJsonLogicOps - The custom JSON Logic operations
+ */
+function addCustomJsonLogicOperations(customJsonLogicOps: Record<string, (...args: any[]) => any> | undefined) {
+  if (customJsonLogicOps) {
+    for (const [name, func] of Object.entries(customJsonLogicOps)) {
+      jsonLogic.add_operation(name, func)
+    }
+  }
+}
+
+/**
+ * Remove custom JSON Logic operations from the jsonLogic instance
+ * @param customJsonLogicOps - The custom JSON Logic operations
+ */
+function removeJsonLogicCustomOperations(customJsonLogicOps: Record<string, (...args: any[]) => any> | undefined) {
+  if (customJsonLogicOps) {
+    for (const name of Object.keys(customJsonLogicOps)) {
+      jsonLogic.rm_operation(name)
+    }
+  }
+}
+
+/**
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
@@ -252,15 +276,7 @@ function validateOptions(options: CreateHeadlessFormOptions) {
   if (Object.prototype.hasOwnProperty.call(options, 'modifyConfig')) {
     throw new Error('`modifyConfig` is a deprecated option and it\'s not supported on json-schema-form v1')
   }
-}
 
-export function createHeadlessForm(
-  schema: JsfObjectSchema,
-  options: CreateHeadlessFormOptions = {},
-): FormResult {
-  validateOptions(options)
-  const initialValues = options.initialValues || {}
-  const strictInputType = options.strictInputType || false
   const customJsonLogicOps = options?.validationOptions?.customJsonLogicOps
 
   if (customJsonLogicOps) {
@@ -276,6 +292,16 @@ export function createHeadlessForm(
       }
     }
   }
+}
+
+export function createHeadlessForm(
+  schema: JsfObjectSchema,
+  options: CreateHeadlessFormOptions = {},
+): FormResult {
+  validateOptions(options)
+  const initialValues = options.initialValues || {}
+  const strictInputType = options.strictInputType || false
+
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
   const updatedSchema = calculateFinalSchema({
     schema,
@@ -287,16 +313,11 @@ export function createHeadlessForm(
 
   // TODO: check if we need this isError variable exposed
   const isError = false
+  const customJsonLogicOps = options?.validationOptions?.customJsonLogicOps
 
   const handleValidation = (value: SchemaValue) => {
-    const customJsonLogicOps = options?.validationOptions?.customJsonLogicOps
-
     try {
-      if (customJsonLogicOps) {
-        for (const [name, func] of Object.entries(customJsonLogicOps)) {
-          jsonLogic.add_operation(name, func)
-        }
-      }
+      addCustomJsonLogicOperations(customJsonLogicOps)
 
       const updatedSchema = calculateFinalSchema({
         schema,
@@ -311,11 +332,7 @@ export function createHeadlessForm(
       return result
     }
     finally {
-      if (customJsonLogicOps) {
-        for (const name of Object.keys(customJsonLogicOps)) {
-          jsonLogic.rm_operation(name)
-        }
-      }
+      removeJsonLogicCustomOperations(customJsonLogicOps)
     }
   }
 
