@@ -1,6 +1,5 @@
-const readline = require('node:readline/promises');
-
-const { exec } = require('child-process-promise');
+import readline from 'node:readline/promises';
+import { exec } from 'child-process-promise';
 
 async function checkGitStatus() {
   const result = await runExec('git status --porcelain', {
@@ -113,7 +112,7 @@ async function runExec(cmd, { silent } = {}) {
   }
 }
 
-module.exports = {
+export {
   checkNpmAuth,
   checkGitStatus,
   askForText,
