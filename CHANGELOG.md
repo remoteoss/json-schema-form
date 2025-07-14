@@ -1,3 +1,22 @@
+#### 1.0.0-beta.11 (2025-07-14)
+
+##### Chores
+
+*  improve migration doc ([#207](https://github.com/remoteoss/json-schema-form/pull/207)) ([bbd1158f](https://github.com/remoteoss/json-schema-form/commit/bbd1158fd62df10f82c0e8fbcd04383125ab0f8e))
+*  rename github actions ([#206](https://github.com/remoteoss/json-schema-form/pull/206)) ([71e3b776](https://github.com/remoteoss/json-schema-form/commit/71e3b77654dcf331c7359db0f4d0535d125205bf))
+*  move next codebase to root and added migration guide ([#204](https://github.com/remoteoss/json-schema-form/pull/204)) ([dc41922d](https://github.com/remoteoss/json-schema-form/commit/dc41922d1b3003bb3e78653c3446b199a77fd8c7))
+*  move v0 code to separate folder ([8314149e](https://github.com/remoteoss/json-schema-form/commit/8314149ecfeac8d7d6c1a5e0fc08fdcdc9013250))
+*  adjust eslint rules for if statements and fix new errors ([#201](https://github.com/remoteoss/json-schema-form/pull/201)) ([738378f7](https://github.com/remoteoss/json-schema-form/commit/738378f78b1fd85c195ff616fea75e2f40f44091))
+
+##### New Features
+
+* **v1:**  add support for shorthands on modifySchema ([3432b75d](https://github.com/remoteoss/json-schema-form/commit/3432b75dcbe53a25c7e0cc676362be2095b77dda))
+
+##### Bug Fixes
+
+*  adapt v1 scripts to use correct paths ([#209](https://github.com/remoteoss/json-schema-form/pull/209)) ([b5a97265](https://github.com/remoteoss/json-schema-form/commit/b5a972658312641f2082559b566267000de4e812))
+*  fix v1 script paths ([#208](https://github.com/remoteoss/json-schema-form/pull/208)) ([29e734e2](https://github.com/remoteoss/json-schema-form/commit/29e734e2995cc3131fae6a9da6b56c2effd671f8))
+
 #### 1.0.0-beta.10 (2025-07-01)
 
 ##### Chores
