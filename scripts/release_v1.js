@@ -57,9 +57,15 @@ async function checkGitBranchAndStatus() {
 }
 
 async function getNewVersion() {
+  async function getVersionsFromGitTags() {
+    const result = await runExec(`git tag --list --sort=-version:refname`, { silent: true });
+    const tags = result.stdout.toString().trim().split('\n').filter(tag => tag.startsWith(tagPrefix));
+    return tags
+  }
+
   const releaseType = process.argv[2];
-  if (!['dev', 'beta'].includes(releaseType)) {
-    console.error('🟠 Invalid release type. Use dev or beta');
+  if (!['dev', 'beta', 'official'].includes(releaseType)) {
+    console.error('🟠 Invalid release type. Use dev, beta or official');
     process.exit(1);
   }
 
@@ -71,17 +77,29 @@ async function getNewVersion() {
     return `1.0.0-dev.${timestamp}`;
   }
 
-  // For beta releases
-  console.log('Creating new beta version...');
-  if (currentVersion.includes('-beta.')) {
-    return semver.inc(currentVersion, 'prerelease', 'beta');
+  if (releaseType === 'beta') {
+    // For beta releases
+    console.log('Creating new beta version...');
+    if (currentVersion.includes('-beta.')) {
+      return semver.inc(currentVersion, 'prerelease', 'beta');
+    } else {
+      // get latest beta version from git tags
+      const tags = await getVersionsFromGitTags();
+      const latestBetaTag = tags.find(tag => tag.includes('-beta.'));
+      // If no beta version found, use current version with -beta.0 as the starting point
+      const latestBetaVersion = latestBetaTag ? latestBetaTag.replace('v', '') : `${currentVersion}-beta.0`;
+      return semver.inc(latestBetaVersion, 'prerelease', 'beta');
+    }
   }
 
-  console.error(
-    `🟠 Cannot create beta version: Current version "${currentVersion}" is not a beta version.\n` +
-      '   The package.json version should be in the format "1.0.0-beta.X"'
-  );
-  process.exit(1);
+  if (releaseType === 'official') {
+    // get latest official version from git tags
+    const tags = await getVersionsFromGitTags();
+    const latestOfficialTag = tags.find(tag => !tag.includes('-beta.') && !tag.includes('-dev.'));
+    // If no official version found, use v1.0.0 as the starting point
+    const latestOfficialVersion = latestOfficialTag ? latestOfficialTag.replace('v', '') : '1.0.0';
+    return semver.inc(latestOfficialVersion, 'prerelease', 'beta');
+  }
 }
 
 async function bumpVersion({ newVersion }) {
