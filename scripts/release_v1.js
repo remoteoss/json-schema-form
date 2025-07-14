@@ -1,8 +1,9 @@
-const path = require('path');
+import path from 'path';
+import semver from 'semver';
+import { fileURLToPath } from 'url';
+import { readFileSync } from 'fs';
 
-const semver = require('semver');
-
-const {
+import {
   askForConfirmation,
   askForText,
   checkGitStatus,
@@ -11,10 +12,11 @@ const {
   revertCommit,
   revertChanges,
   getDateYYYYMMDDHHMMSS,
-} = require('./release.helpers');
+} from './release.helpers.js';
 
-const packageJsonPath = path.resolve(__dirname, '../next/package.json');
-const packageJson = require(packageJsonPath);
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const packageJsonPath = path.resolve(__dirname, '../package.json');
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
 
 async function checkGitBranchAndStatus() {
   const releaseType = process.argv[2];
@@ -83,19 +85,19 @@ async function getNewVersion() {
 }
 
 async function bumpVersion({ newVersion }) {
-  const cmd = `cd next && npm version --no-git-tag-version ${newVersion}`;
+  const cmd = `npm version --no-git-tag-version ${newVersion}`;
   await runExec(cmd);
 }
 
 async function build() {
-  console.log('Building next version...');
-  const cmd = 'cd next && npm run build';
+  console.log('Building version...');
+  const cmd = 'npm run build';
   await runExec(cmd);
 }
 
 async function updateChangelog() {
   console.log('Updating changelog...');
-  const cmd = 'cd next && npx generate-changelog';
+  const cmd = 'npx generate-changelog';
   await runExec(cmd);
 }
 
@@ -106,7 +108,7 @@ async function gitCommit({ newVersion, releaseType }) {
   let cmd;
   if (releaseType === 'beta') {
     // For beta, we commit package.json changes and changelog
-    cmd = `git add next/package.json next/CHANGELOG.md && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
+    cmd = `git add package.json CHANGELOG.md && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
   } else {
     // For dev, we only create a tag
     cmd = `git tag ${prefix}-${newVersion} && git push origin --tags`;
@@ -122,12 +124,12 @@ async function publish({ newVersion, releaseType, otp }) {
 
   try {
     // Publish with the dev/beta version
-    const cmd = `cd next && npm publish --access=public --tag=${npmTag} --otp=${otp}`;
+    const cmd = `npm publish --access=public --tag=${npmTag} --otp=${otp}`;
     await runExec(cmd);
 
     // For dev releases, revert package.json back to original version
     if (releaseType === 'dev') {
-      const revertCmd = `cd next && npm version --no-git-tag-version ${originalVersion}`;
+      const revertCmd = `npm version --no-git-tag-version ${originalVersion}`;
       await runExec(revertCmd);
     }
 
