@@ -40,8 +40,8 @@
     "typecheck": "tsc --noEmit",
     "check": "pnpm run lint && pnpm run typecheck",
     "check:pr-next-version": "node ../scripts/pr_next_dev_version",
-    "release:dev": "node ../scripts/release_v1 dev",
-    "release:beta": "node ../scripts/release_v1 beta"
+    "release:dev": "node ./scripts/release_v1 dev",
+    "release:beta": "node ./scripts/release_v1 beta"
   },
   "dependencies": {
     "json-logic-js": "^2.0.5"
