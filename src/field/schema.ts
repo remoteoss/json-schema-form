@@ -373,7 +373,12 @@ export function buildFieldSchema({
     return null
   }
 
-  const presentation = schema['x-jsf-presentation'] || {}
+  const presentation = {
+    // We need to use the original schema's presentation as a basis as there are some properties that can't be
+    // serialized (so they were not cloned)
+    ...(originalSchema['x-jsf-presentation'] || {}),
+    ...(schema['x-jsf-presentation'] || {}),
+  }
   const errorMessage = schema['x-jsf-errorMessage']
 
   // Get input type from presentation or fallback to schema type

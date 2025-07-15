@@ -71,6 +71,7 @@ export function deepEqual(a: SchemaValue, b: SchemaValue): boolean {
 
 /**
  * Deep clones an object using structuredClone if available, otherwise falls back to JSON.parse/stringify approach.
+ * Please note: some properties might not be serializable (e.g. functions), so they will be lost in the clone.
  *
  * @param obj - The object to clone
  * @returns deep clone of the original object
