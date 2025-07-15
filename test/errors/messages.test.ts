@@ -467,7 +467,7 @@ describe('validation error messages', () => {
 
         expect(result.formErrors).toBeUndefined()
 
-        form = createHeadlessForm(schema, { validationOptions: { treatNullAsUndefined: true } })
+        form = createHeadlessForm(schema, { v0Support: { treatNullAsUndefined: true } })
 
         result = form.handleValidation({
           dateWithoutConstraints: null,

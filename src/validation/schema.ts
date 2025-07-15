@@ -13,7 +13,7 @@ import { validateObject } from './object'
 import { validateString } from './string'
 import { isObjectValue } from './util'
 
-export interface ValidationOptions {
+export interface V0Support {
   /**
    * A null value will be treated as undefined.
    * When true, providing a value to a schema that is `false`,
@@ -139,7 +139,7 @@ function validateType(
  * @param jsonLogicContext - The json-logic context
  * @returns An array of validation errors
  */
-function validateJsonLogicSchema(value: SchemaValue, schema: JsfSchema | undefined, options: ValidationOptions = {}, path: ValidationErrorPath = [], jsonLogicContext?: JsonLogicContext): ValidationError[] {
+function validateJsonLogicSchema(value: SchemaValue, schema: JsfSchema | undefined, options: V0Support = {}, path: ValidationErrorPath = [], jsonLogicContext?: JsonLogicContext): ValidationError[] {
   if (!schema) {
     return []
   }
@@ -179,7 +179,7 @@ function validateJsonLogicSchema(value: SchemaValue, schema: JsfSchema | undefin
 export function validateSchema(
   value: SchemaValue,
   schema: JsfSchema,
-  options: ValidationOptions = {},
+  options: V0Support = {},
   path: ValidationErrorPath = [],
   rootJsonLogicContext?: JsonLogicContext,
 ): ValidationError[] {

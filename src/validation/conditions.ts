@@ -1,12 +1,12 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { ValidationOptions } from '../form'
+import type { V0Support } from '../form'
 import type { JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
 export function validateCondition(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  options: ValidationOptions,
+  options: V0Support,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {

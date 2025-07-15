@@ -1,6 +1,6 @@
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
-import type { ValidationOptions } from './validation/schema'
+import type { V0Support } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
 import { deepMergeSchemas } from './utils'
 import { applyComputedAttrsToSchema, getJsonLogicContextFromSchema } from './validation/json-logic'
@@ -23,7 +23,7 @@ export function calculateFinalSchema({
 }: {
   schema: JsfObjectSchema
   values: SchemaValue
-  options?: ValidationOptions
+  options?: V0Support
 }): JsfObjectSchema {
   const jsonLogicContext = schema['x-jsf-logic'] ? getJsonLogicContextFromSchema(schema['x-jsf-logic'], values) : undefined
   const schemaCopy = safeDeepClone(schema)
@@ -49,7 +49,7 @@ function evaluateConditional(
   values: ObjectValue,
   schema: JsfObjectSchema,
   rule: NonBooleanJsfSchema,
-  options: ValidationOptions = {},
+  options: V0Support = {},
 ) {
   const conditionIsTrue = validateSchema(values, rule.if!, options).length === 0
 
@@ -81,7 +81,7 @@ function evaluateConditional(
 function applySchemaRules(
   schema: JsfObjectSchema,
   values: SchemaValue = {},
-  options: ValidationOptions = {},
+  options: V0Support = {},
   jsonLogicContext: JsonLogicContext | undefined,
 ) {
   if (!isObjectValue(values)) {
@@ -142,7 +142,7 @@ function applySchemaRules(
  * @param options - Validation options
  * @param jsonLogicContext - JSON Logic context
  */
-function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: ValidationOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
+function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: V0Support = {}, jsonLogicContext: JsonLogicContext | undefined) {
   const branchSchema = branch as JsfObjectSchema
 
   applySchemaRules(branchSchema, values, options, jsonLogicContext)
