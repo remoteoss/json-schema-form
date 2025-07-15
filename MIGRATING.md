@@ -96,8 +96,6 @@ const { formErrors } = handleValidation(values)
 
 The `modify` function API remains mostly compatible, but we removed the support for the `presentation` `errorMessage` property shorthands — `x-jsf-presentation` and `x-jsf-errorMessage` should be used instead.
 
-
-
 ```diff
 // Example:
 const { schema, warnings } = modify(schemaPet, {
@@ -238,17 +236,6 @@ if (formErrors?.address?.street) {
 }
 ```
 
-### 3. **Enhanced Validation Options**
-
-```typescript
-const form = createHeadlessForm(schema, {
-  validationOptions: {
-    allowForbiddenValues: true,
-    // Additional validation controls
-  }
-})
-```
-
 ## Common Migration Issues
 
 ### 1. **ESM Import Errors**
@@ -260,6 +247,44 @@ If you get import errors, ensure your project supports ESM:
 {
   "type": "module"
 }
+```
+
+### 2. **Validation backward compatibility with v0**
+
+Some validation behaviors *were wrong* in `v0`, we fixed them in v1.
+If you still need them, you need to enable them in the `validationOptions` config.
+
+```typescript
+const form = createHeadlessForm(schema, {
+  validationOptions: {
+    /**
+     * A null value will be treated as undefined.
+     * When true, providing a value to a schema that is `false`,
+     * the validation will succeed instead of returning a type error.
+     * This was a bug in v0, we fixed it in v1. If you need the same wrong behavior, set this to true.
+     * @default false
+     * @example
+     * ```ts
+     * Schema: { "properties": { "name": { "type": "string" } } }
+     * Value: { "name": null } // Validation succeeds, even though the type is not 'null'
+     * ```
+     */
+    treatNullAsUndefined: true,
+    /**
+     * A value against a schema "false" will be allowed.
+     * When true, providing a value to a non-required field that is not of type 'null' or ['null']
+     * the validation will succeed instead of returning a type error.
+     * This was a bug in v0, we fixed it in v1. If you need the same wrong behavior, set this to true.
+     * @default false
+     * @example
+     * ```ts
+     * Schema: { "properties": { "age": false } }
+     * Value: { age: 10 } // Validation succeeds, even though the value is forbidden;
+     * ```
+     */
+    allowForbiddenValues: true,
+  }
+})
 ```
 
 ## Testing Your Migration

@@ -16,15 +16,28 @@ import { isObjectValue } from './util'
 export interface ValidationOptions {
   /**
    * A null value will be treated as undefined.
-   * That means that when validating a null value, against a non-required field that is not of type 'null' or ['null']
+   * When true, providing a value to a schema that is `false`,
    * the validation will succeed instead of returning a type error.
+   * This was a bug in v0, we fixed it in v1. If you need the same wrong behavior, set this to true.
    * @default false
+   * @example
+   * ```ts
+   * Schema: { "properties": { "name": { "type": "string" } } }
+   * Value: { "name": null } // Validation succeeds, even though the type is not 'null'
+   * ```
    */
   treatNullAsUndefined?: boolean
-
   /**
-   * If true, providing a value for a schema that is `false` won't create an error
+   * A value against a schema "false" will be allowed.
+   * When true, providing a value to a non-required field that is not of type 'null' or ['null']
+   * the validation will succeed instead of returning a type error.
+   * This was a bug in v0, we fixed it in v1. If you need the same wrong behavior, set this to true.
    * @default false
+   * @example
+   * ```ts
+   * Schema: { "properties": { "age": false } }
+   * Value: { age: 10 } // Validation succeeds, even though the value is forbidden;
+   * ```
    */
   allowForbiddenValues?: boolean
 }
