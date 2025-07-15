@@ -1,6 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
-import { validateSchema, type ValidationOptions } from './schema'
+import { type LegacyOptions, validateSchema } from './schema'
 import { deepEqual } from './util'
 
 /**
@@ -18,7 +18,7 @@ import { deepEqual } from './util'
 export function validateArray(
   value: SchemaValue,
   schema: JsfSchema,
-  options: ValidationOptions,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
@@ -82,7 +82,7 @@ function validateLength(
 function validateItems(
   schema: NonBooleanJsfSchema,
   values: SchemaValue[],
-  options: ValidationOptions,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
@@ -123,7 +123,7 @@ function validateItems(
 function validatePrefixItems(
   schema: NonBooleanJsfSchema,
   values: SchemaValue[],
-  options: ValidationOptions,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {
@@ -164,7 +164,7 @@ function validatePrefixItems(
 function validateContains(
   value: SchemaValue[],
   schema: NonBooleanJsfSchema,
-  options: ValidationOptions,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath,
 ): ValidationError[] {

@@ -1,6 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../../types'
-import type { ValidationOptions } from '../schema'
+import type { LegacyOptions } from '../schema'
 
 export const DATE_FORMAT = 'yyyy-MM-dd'
 type DateComparisonResult = 'LESSER' | 'GREATER' | 'EQUAL'
@@ -62,7 +62,7 @@ function validateMaxDate(value: string, maxDate: string): boolean {
 export function validateDate(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  options: ValidationOptions,
+  options: LegacyOptions,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   const isString = typeof value === 'string'

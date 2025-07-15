@@ -3,7 +3,7 @@ export {
   createHeadlessForm,
   type CreateHeadlessFormOptions,
   type FormErrors,
-  type ValidationOptions,
+  type LegacyOptions,
   type ValidationResult,
 } from './form'
 export { modifySchema as modify } from './modify-schema'

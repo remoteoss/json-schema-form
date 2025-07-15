@@ -31,7 +31,7 @@ describe('createHeadlessForm', () => {
       expect(() => {
         createHeadlessForm(basicSchema, {
           initialValues: { name: 'test' },
-          validationOptions: {},
+          legacyOptions: {},
           strictInputType: true,
         })
       }).not.toThrow()
