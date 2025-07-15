@@ -1,6 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
-import { validateSchema, type V0Support } from './schema'
+import { type V0Support, validateSchema } from './schema'
 import { deepEqual } from './util'
 
 /**
