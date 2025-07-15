@@ -18,7 +18,7 @@ export interface ValidationOptions {
    * A null value will be treated as undefined.
    * When true, providing a value to a schema that is `false`,
    * the validation will succeed instead of returning a type error.
-   * This was a bug in v0, we fixed it in v1. If you need the same behavior, set this to true.
+   * This was a bug in v0, we fixed it in v1. If you need the same wrong behavior, set this to true.
    * @default false
    * @example
    * ```ts
@@ -31,7 +31,7 @@ export interface ValidationOptions {
    * A value against a schema "false" will be allowed.
    * When true, providing a value to a non-required field that is not of type 'null' or ['null']
    * the validation will succeed instead of returning a type error.
-   * This was a bug in v0, we fixed it in v1. If you need the same behavior, set this to true.
+   * This was a bug in v0, we fixed it in v1. If you need the same wrong behavior, set this to true.
    * @default false
    * @example
    * ```ts
