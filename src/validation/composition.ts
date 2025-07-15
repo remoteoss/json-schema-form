@@ -6,7 +6,7 @@
  */
 
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { V0Support } from '../form'
+import type { LegacyOptions } from '../form'
 import type { JsfSchema, JsonLogicContext, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 
@@ -29,7 +29,7 @@ import { validateSchema } from './schema'
 export function validateAllOf(
   value: SchemaValue,
   schema: JsfSchema,
-  options: V0Support,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
@@ -67,7 +67,7 @@ export function validateAllOf(
 export function validateAnyOf(
   value: SchemaValue,
   schema: JsfSchema,
-  options: V0Support,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
@@ -112,7 +112,7 @@ export function validateAnyOf(
 export function validateOneOf(
   value: SchemaValue,
   schema: JsfSchema,
-  options: V0Support,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
@@ -181,7 +181,7 @@ export function validateOneOf(
 export function validateNot(
   value: SchemaValue,
   schema: JsfSchema,
-  options: V0Support,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {

@@ -1,13 +1,13 @@
 import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
-import type { V0Support } from './validation/schema'
+import type { LegacyOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
 import { validateSchema } from './validation/schema'
 
-export { V0Support } from './validation/schema'
+export { LegacyOptions } from './validation/schema'
 
 interface FormResult {
   fields: Field[]
@@ -198,7 +198,7 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
  * @param schema - The schema to validate against
  * @returns The validation result
  */
-function validate(value: SchemaValue, schema: JsfSchema, options: V0Support = {}): ValidationResult {
+function validate(value: SchemaValue, schema: JsfSchema, options: LegacyOptions = {}): ValidationResult {
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
@@ -222,7 +222,7 @@ export interface CreateHeadlessFormOptions {
   /**
    * Backward compatibility config with v0
    */
-  v0Support?: V0Support
+  legacyOptions?: LegacyOptions
   /**
    * When enabled, ['x-jsf-presentation'].inputType is required for all properties.
    * @default false
@@ -264,7 +264,7 @@ export function createHeadlessForm(
   const updatedSchema = calculateFinalSchema({
     schema,
     values: initialValues,
-    options: options.v0Support,
+    options: options.legacyOptions,
   })
 
   const fields = buildFields({ schema: updatedSchema, originalSchema: schema, strictInputType })
@@ -276,10 +276,10 @@ export function createHeadlessForm(
     const updatedSchema = calculateFinalSchema({
       schema,
       values: value,
-      options: options.v0Support,
+      options: options.legacyOptions,
     })
 
-    const result = validate(value, updatedSchema, options.v0Support)
+    const result = validate(value, updatedSchema, options.legacyOptions)
 
     // Fields properties might have changed, so we need to reset the fields by updating them in place
     updateFieldProperties(fields, updatedSchema, schema)

@@ -40,7 +40,7 @@ v1 removes several heavy dependencies:
 +   Field,
 +   FieldType,
 +   FormErrors,
-+   V0Support,
++   LegacyOptions,
 +   ValidationResult
 + } from '@remoteoss/json-schema-form'
 ```
@@ -56,7 +56,7 @@ v1 removes several heavy dependencies:
 
 + createHeadlessForm(schema, {
 +   initialValues: { ... },
-+   v0Support: { ... },
++   legacyOptions: { ... },
 +   strictInputType: boolean
 + })
 ```
@@ -252,11 +252,11 @@ If you get import errors, ensure your project supports ESM:
 ### 2. **Validation backward compatibility with v0**
 
 Some validation behaviors *were wrong* in `v0`, we fixed them in v1.
-If you still need them, you need to enable them in the `v0Support` config.
+If you still need them, you need to enable them in the `legacyOptions` config.
 
 ```typescript
 const form = createHeadlessForm(schema, {
-  v0Support: {
+  legacyOptions: {
     /**
      * A null value will be treated as undefined.
      * When true, providing a value to a schema that is `false`,

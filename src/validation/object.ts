@@ -1,5 +1,5 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { V0Support } from '../form'
+import type { LegacyOptions } from '../form'
 import type { JsonLogicContext, NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateSchema } from './schema'
 import { isObjectValue } from './util'
@@ -19,7 +19,7 @@ import { isObjectValue } from './util'
 export function validateObject(
   value: SchemaValue,
   schema: NonBooleanJsfSchema,
-  options: V0Support,
+  options: LegacyOptions,
   jsonLogicContext: JsonLogicContext | undefined,
   path: ValidationErrorPath = [],
 ): ValidationError[] {
