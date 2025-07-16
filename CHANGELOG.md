@@ -1,3 +1,15 @@
+#### 1.0.0-beta.12 (2025-07-16)
+
+##### Chores
+
+*  prepare release script for official releases ([#210](https://github.com/remoteoss/json-schema-form/pull/210)) ([74a569e7](https://github.com/remoteoss/json-schema-form/commit/74a569e7bcc4853a1a53f1242895b38aaa39ec45))
+*  Explain ValidationOptions are a backward-compatibility with v0 mistakes ([#211](https://github.com/remoteoss/json-schema-form/pull/211)) ([f361513d](https://github.com/remoteoss/json-schema-form/commit/f361513d11e1ea5bbd67dc6ceeb2670a1022b270))
+
+##### Bug Fixes
+
+*  properly handle function as custom field properties ([#213](https://github.com/remoteoss/json-schema-form/pull/213)) ([a2e8f4d0](https://github.com/remoteoss/json-schema-form/commit/a2e8f4d0c71fb98e6210062f4c27ed6169a41bc2))
+*  rename validationOptions to legacyOptions ([#212](https://github.com/remoteoss/json-schema-form/pull/212)) ([3cd3c3c2](https://github.com/remoteoss/json-schema-form/commit/3cd3c3c217dbdfee9f27d4f148214cac3510a06c))
+
 #### 1.0.0-beta.11 (2025-07-14)
 
 ##### Chores
