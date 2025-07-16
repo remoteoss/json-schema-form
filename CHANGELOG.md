@@ -1,5 +1,9 @@
 #### 1.0.0
 
+##### Migrating from v0
+
+The migration guide can be found [here](https://github.com/remoteoss/json-schema-form/blob/main/MIGRATING.md)
+
 ##### Bug Fixes
 
 *  Improve release scripts [#214](https://github.com/remoteoss/json-schema-form/pull/214))
