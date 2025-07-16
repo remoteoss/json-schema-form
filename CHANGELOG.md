@@ -1,3 +1,9 @@
+#### 1.0.0
+
+##### Bug Fixes
+
+*  Improve release scripts [#214](https://github.com/remoteoss/json-schema-form/pull/214))
+
 #### 1.0.0-beta.12 (2025-07-16)
 
 ##### Chores
