@@ -132,12 +132,11 @@ async function updateChangelog() {
 
 async function gitCommit({ newVersion, releaseType }) {
   console.log('Committing published version...');
-  const prefix = `v1-${releaseType}`;
 
   let cmd;
   if (releaseType === 'beta' || releaseType === 'official') {
-    // For beta, we commit package.json changes and changelog
-    cmd = `git add package.json CHANGELOG.md && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
+    // For beta and official releases, we commit package.json changes and changelog
+    cmd = `git add package.json CHANGELOG.md && git commit -m "Release ${newVersion}" && git tag ${newVersion} && git push && git push origin --tags`;
   } else {
     // For dev, we only create a tag
     cmd = `git tag ${prefix}-${newVersion} && git push origin --tags`;
@@ -179,7 +178,7 @@ async function publish({ newVersion, releaseType, otp }) {
 
 async function init() {
   const releaseType = process.argv[2];
-  // await checkGitBranchAndStatus();
+  await checkGitBranchAndStatus();
   const newVersion = await getNewVersion();
 
   console.log(':: Current version:', packageJson.version);
