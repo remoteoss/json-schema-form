@@ -217,6 +217,8 @@ describe('buildFieldArray', () => {
           isVisible: true,
           nameKey: 'title',
           required: false,
+          foo: 'bar',
+          bar: 'baz',
         },
       ],
       items: expect.any(Object),

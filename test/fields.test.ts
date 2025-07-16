@@ -163,7 +163,10 @@ describe('fields', () => {
     })
   })
 
-  it('should handle custom x-jsf-presentation properties', () => {
+  it('should handle custom x-jsf-presentation properties, including functions', () => {
+    const customComponent = () => {
+      return null
+    }
     const schema: JsfSchema = {
       type: 'object',
       properties: {
@@ -174,6 +177,7 @@ describe('fields', () => {
             inputType: 'file',
             accept: '.pdf,.doc',
             maxFileSize: 5000000,
+            Component: customComponent,
           },
         },
       },
@@ -192,6 +196,7 @@ describe('fields', () => {
         required: false,
         accept: '.pdf,.doc',
         maxFileSize: 5000000,
+        Component: customComponent,
       },
     ])
   })

@@ -1,5 +1,5 @@
 import type { JsfObjectSchema } from '../src/types'
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it, jest } from '@jest/globals'
 import { createHeadlessForm } from '../src'
 
 describe('createHeadlessForm', () => {
@@ -16,9 +16,10 @@ describe('createHeadlessForm', () => {
     }
 
     it('should throw error when customProperties option is provided', () => {
-      expect(() => {
-        createHeadlessForm(basicSchema, { customProperties: {} } as any)
-      }).toThrow('`customProperties` is a deprecated option and it\'s not supported on json-schema-form v1')
+      // spy on console.error
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+      createHeadlessForm(basicSchema, { customProperties: {} } as any)
+      expect(consoleErrorSpy).toHaveBeenCalledWith('[json-schema-form] `customProperties` is a deprecated option and it\'s not supported on json-schema-form v1')
     })
 
     it('should not throw error when modifyConfig option is not provided', () => {
