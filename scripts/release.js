@@ -18,6 +18,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const packageJsonPath = path.resolve(__dirname, '../package.json');
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
 
+const releaseTypes = ['dev', 'beta', 'official'];
+const bumpTypes = ['patch', 'minor', 'major'];
+
 async function checkGitBranchAndStatus() {
   const releaseType = process.argv[2];
   console.log(`Checking your branch for ${releaseType} release...`);
@@ -59,13 +62,15 @@ async function checkGitBranchAndStatus() {
 async function getNewVersion() {
   async function getVersionsFromGitTags() {
     const result = await runExec(`git tag --list --sort=-version:refname`, { silent: true });
-    const tags = result.stdout.toString().trim().split('\n').filter(tag => tag.startsWith(tagPrefix));
+    const tags = result.stdout.toString().trim().split('\n').filter(tag => tag.startsWith('v'));
     return tags
   }
 
   const releaseType = process.argv[2];
-  if (!['dev', 'beta', 'official'].includes(releaseType)) {
-    console.error('🟠 Invalid release type. Use dev, beta or official');
+  const bumpType = process.argv[3];
+
+  if (!releaseTypes.includes(releaseType)) {
+    console.error(`🟠 Invalid release type. Use ${releaseTypes.join(', ')}`);
     process.exit(1);
   }
 
@@ -93,12 +98,18 @@ async function getNewVersion() {
   }
 
   if (releaseType === 'official') {
+    if (!bumpTypes.includes(bumpType)) {
+      console.error(`🟠 Invalid bump type. Use ${bumpTypes.join(', ')}\ne.g. pnpm run release patch`);
+      process.exit(1);
+    }
+
     // get latest official version from git tags
     const tags = await getVersionsFromGitTags();
     const latestOfficialTag = tags.find(tag => !tag.includes('-beta.') && !tag.includes('-dev.'));
     // If no official version found, use v1.0.0 as the starting point
-    const latestOfficialVersion = latestOfficialTag ? latestOfficialTag.replace('v', '') : '1.0.0';
-    return semver.inc(latestOfficialVersion, 'prerelease', 'beta');
+    const latestOfficialVersion = latestOfficialTag ? latestOfficialTag.replace('v', '') : '0.0.0';
+
+    return semver.inc(latestOfficialVersion, bumpType);
   }
 }
 
@@ -124,7 +135,7 @@ async function gitCommit({ newVersion, releaseType }) {
   const prefix = `v1-${releaseType}`;
 
   let cmd;
-  if (releaseType === 'beta') {
+  if (releaseType === 'beta' || releaseType === 'official') {
     // For beta, we commit package.json changes and changelog
     cmd = `git add package.json CHANGELOG.md && git commit -m "Release ${prefix} ${newVersion}" && git tag ${prefix}-${newVersion} && git push && git push origin --tags`;
   } else {
@@ -155,6 +166,10 @@ async function publish({ newVersion, releaseType, otp }) {
     if (releaseType === 'beta') {
       console.log(`✍️ REMINDER: Please publish the release on Github too as "pre-release".`);
     }
+    
+    if (releaseType === 'official') {
+      console.log(`✍️ REMINDER: Please publish the release on Github too.`);
+    }
     console.log(`Install with: npm i @remoteoss/json-schema-form@${npmTag}`);
   } catch {
     console.log('🚨 Publish failed! Perhaps the OTP is wrong.');
@@ -164,7 +179,7 @@ async function publish({ newVersion, releaseType, otp }) {
 
 async function init() {
   const releaseType = process.argv[2];
-  await checkGitBranchAndStatus();
+  // await checkGitBranchAndStatus();
   const newVersion = await getNewVersion();
 
   console.log(':: Current version:', packageJson.version);
