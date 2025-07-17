@@ -467,6 +467,7 @@ describe('applyComputedAttrsToSchema', () => {
 
   it('allows to use computed values inside conditional statements', () => {
     const schema: JsfObjectSchema = {
+      'type': 'object',
       'properties': {
         pine_trees: {
           title: 'Pine trees planted',
