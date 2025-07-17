@@ -79,8 +79,6 @@ export type JsfSchema = JSONSchema & {
   'x-jsf-logic-validations'?: string[]
   /* Extra attributes to add to the schema. References computedValues in the `x-jsf-logic` root property. */
   'x-jsf-logic-computedAttrs'?: Record<string, string | object>
-  /* validations references validations in the `x-jsf-logic` root property as if they were properties of the schema, so logic can be applied to them. */
-  'validations'?: JsfSchema['properties']
 }
 
 /**
