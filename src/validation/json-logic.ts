@@ -165,7 +165,7 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
     delete propertySchema['x-jsf-logic-computedAttrs']
   }
 
-  // If this is a full property schema, we need to cycle through the properties and apply the computed values
+  // If the schemas has properties, we need to cycle through each one and apply the computed values
   // Otherwise, just process the property
   if (schemaCopy.properties) {
     for (const propertyName in schemaCopy.properties) {
@@ -174,6 +174,27 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
   }
   else {
     processProperty(schemaCopy)
+  }
+
+  // If the schema has an if statement, we need to cycle through the properties and apply the computed values
+  if (schemaCopy.if) {
+    cycleThroughPropertiesAndApplyValues(schemaCopy.if as JsfObjectSchema, computedValues)
+  }
+
+  /* If the schema has an allOf or anyOf property, we need to cycle through each property inside it and
+   * apply the computed values
+   */
+
+  if (schemaCopy.allOf && schemaCopy.allOf.length > 0) {
+    for (const schema of schemaCopy.allOf) {
+      cycleThroughPropertiesAndApplyValues(schema as JsfObjectSchema, computedValues)
+    }
+  }
+
+  if (schemaCopy.anyOf && schemaCopy.anyOf.length > 0) {
+    for (const schema of schemaCopy.anyOf) {
+      cycleThroughPropertiesAndApplyValues(schema as JsfObjectSchema, computedValues)
+    }
   }
 }
 
