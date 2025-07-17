@@ -32,6 +32,9 @@ export function calculateFinalSchema({
 
   if (jsonLogicContext?.schema.computedValues) {
     applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values)
+    // If we had computed values applied to the schema,
+    // we need to re-apply the schema rules to update the fields
+    applySchemaRules(schemaCopy, values, options, jsonLogicContext)
   }
 
   return schemaCopy
