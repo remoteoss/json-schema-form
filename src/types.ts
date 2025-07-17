@@ -68,17 +68,19 @@ export type JsfSchema = JSONSchema & {
   // schema (like an if inside another schema), the required property won't be
   // present in the type
   'required'?: string[]
-  // Defines the order of the fields in the form.
+  /* Defines the order of the fields in the form. */
   'x-jsf-order'?: string[]
-  // Defines the presentation of the field in the form.
+  /* Defines the presentation of the field in the form. */
   'x-jsf-presentation'?: JsfPresentation
-  // Defines the error message of the field in the form.
+  /* Defines the error message of the field in the form. */
   'x-jsf-errorMessage'?: Record<string, string>
   'x-jsf-logic'?: JsonLogicSchema
-  // Extra validations to run. References validations in the `x-jsf-logic` root property.
+  /* Extra validations to run. References validations in the `x-jsf-logic` root property. */
   'x-jsf-logic-validations'?: string[]
-  // Extra attributes to add to the schema. References computedValues in the `x-jsf-logic` root property.
+  /* Extra attributes to add to the schema. References computedValues in the `x-jsf-logic` root property. */
   'x-jsf-logic-computedAttrs'?: Record<string, string | object>
+  /* validations references validations in the `x-jsf-logic` root property as if they were properties of the schema, so logic can be applied to them. */
+  'validations'?: JsfSchema['properties']
 }
 
 /**
