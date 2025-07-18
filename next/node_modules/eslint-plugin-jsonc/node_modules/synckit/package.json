@@ -1,0 +1,37 @@
+{
+  "name": "synckit",
+  "version": "0.6.2",
+  "type": "module",
+  "description": "Perform async work synchronously in Node.js using `worker_threads`, or `child_process` as fallback, with first-class TypeScript support.",
+  "repository": "git+https://github.com/rx-ts/synckit.git",
+  "author": "JounQin <admin@1stg.me>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=12.20"
+  },
+  "main": "./lib/index.cjs",
+  "module": "./lib/index.js",
+  "exports": {
+    "import": "./lib/index.js",
+    "require": "./lib/index.cjs",
+    "types": "./lib/index.d.ts"
+  },
+  "types": "./lib/index.d.ts",
+  "files": [
+    "lib",
+    "!*.tsbuildinfo"
+  ],
+  "keywords": [
+    "deasync",
+    "make-synchronous",
+    "sync",
+    "sync-exec",
+    "sync-rpc",
+    "sync-threads",
+    "synchronize",
+    "synckit"
+  ],
+  "dependencies": {
+    "tslib": "^2.3.1"
+  }
+}
