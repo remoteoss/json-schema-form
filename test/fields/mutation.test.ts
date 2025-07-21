@@ -2,6 +2,7 @@ import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
 import { getField } from '../../src/utils'
+import { errorLike } from '../test-utils'
 
 describe('field mutation', () => {
   describe('enum options mutation', () => {
@@ -139,6 +140,55 @@ describe('field mutation', () => {
       form.handleValidation({ accountType: 'personal' })
       expect(getField(form.fields, 'employees')?.minimum).toBe(1)
       expect(getField(form.fields, 'employees')?.maximum).toBe(100)
+    })
+  })
+
+  describe('boolean condition mutation', () => {
+    it.each([true, false])('should ignore the allowForbiddenValues option (%s) when the condition is a plain boolean', (allowForbiddenValues) => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+        },
+        if: true,
+        then: {
+          properties: {
+            name: {
+              const: 'foo',
+            },
+          },
+        },
+        else: {
+          properties: {
+            name: {
+              const: 'bar',
+            },
+          },
+        },
+      }
+
+      // check that the then branch is applied
+      let form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      let errors = form.handleValidation({ name: 'bar' })
+      expect(errors.formErrors).toEqual({ name: 'The only accepted value is "foo".' })
+      errors = form.handleValidation({ name: 'foo' })
+      expect(errors.formErrors).toBeUndefined()
+
+      // change condition to false
+      schema.if = false
+      form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      errors = form.handleValidation({ name: 'foo' })
+      expect(errors.formErrors).toEqual({ name: 'The only accepted value is "bar".' })
+      errors = form.handleValidation({ name: 'bar' })
+      expect(errors.formErrors).toBeUndefined()
+
+      // check that it correctly applies visibility state
+      schema.else = { properties: { name: false } }
+      form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      expect(getField(form.fields, 'name')?.isVisible).toBe(false)
+      expect(errors.formErrors).toBeUndefined()
     })
   })
 

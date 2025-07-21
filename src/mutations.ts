@@ -3,6 +3,7 @@ import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema,
 import type { LegacyOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
 import { deepMergeSchemas } from './utils'
+import { evaluateIfCondition } from './validation/conditions'
 import { applyComputedAttrsToSchema, getJsonLogicContextFromSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 import { isObjectValue, safeDeepClone } from './validation/util'
@@ -50,8 +51,10 @@ function evaluateConditional(
   schema: JsfObjectSchema,
   rule: NonBooleanJsfSchema,
   options: LegacyOptions = {},
+  jsonLogicContext: JsonLogicContext | undefined,
 ) {
-  const conditionIsTrue = validateSchema(values, rule.if!, options).length === 0
+  // At this point, we know that the rule has an if property
+  const conditionIsTrue = evaluateIfCondition(values, rule.if!, options, jsonLogicContext)
 
   // Prevent fields from being shown when required fields have type errors
   let hasTypeErrors = false
@@ -91,15 +94,15 @@ function applySchemaRules(
   const conditionalRules: { rule: NonBooleanJsfSchema, matches: boolean }[] = []
 
   // If the schema has an if property, evaluate it and add it to the conditional rules array
-  if (schema.if) {
-    conditionalRules.push(evaluateConditional(values, schema, schema, options))
+  if (typeof schema.if !== 'undefined') {
+    conditionalRules.push(evaluateConditional(values, schema, schema, options, jsonLogicContext))
   }
 
   // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
   (schema.allOf ?? [])
     .filter((rule: JsfSchema) => typeof rule.if !== 'undefined')
     .forEach((rule) => {
-      const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options)
+      const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options, jsonLogicContext)
       conditionalRules.push(result)
     })
 
@@ -113,6 +116,7 @@ function applySchemaRules(
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
+      debugger
       processBranch(schema, values, rule.else, options, jsonLogicContext)
       // Delete the else branch to avoid processing it again when validating the schema
       delete rule.else
