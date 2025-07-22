@@ -143,7 +143,7 @@ describe('field mutation', () => {
   })
 
   describe('boolean condition mutation', () => {
-    it.each([true, false])('should ignore the allowForbiddenValues option (%s) when the condition is a plain boolean', (allowForbiddenValues) => {
+    it.each([true, false])('should ignore the allowForbiddenValues option (%s) when evaluating a condition that\'s a plain boolean', (allowForbiddenValues) => {
       const schema: JsfObjectSchema = {
         type: 'object',
         properties: {
@@ -188,6 +188,47 @@ describe('field mutation', () => {
       form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
       expect(getField(form.fields, 'name')?.isVisible).toBe(false)
       expect(errors.formErrors).toBeUndefined()
+    })
+
+    it.each([true, false])('given allowForbiddenValues: %s, and a schema with a conditional boolean, it ignores errors in fieldsets', (allowForbiddenValues) => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          address: {
+            type: 'object',
+            properties: {
+              street: {
+                type: 'string',
+              },
+              zipCode: {
+                type: 'string',
+              },
+            },
+          },
+        },
+        if: false,
+        then: {
+          required: ['address'],
+        },
+        else: {
+          properties: {
+            address: false,
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      const errors = form.handleValidation({
+        // This value is not allowed, but by passing allowForbiddenValues: true, the error is ignored.
+        address: {},
+      })
+
+      if (allowForbiddenValues) {
+        expect(errors.formErrors).toBeUndefined()
+      }
+      else {
+        expect(errors.formErrors).toEqual({ address: 'Not allowed' })
+      }
     })
   })
 
