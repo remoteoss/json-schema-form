@@ -34,13 +34,24 @@ Documentation website is available [here](https://json-schema-form.vercel.app/).
 This project requires Node.js LTS v22.13.1.
 We recommend using the exact version specified in `.nvmrc`:
 
+
 Navigate to the "next" folder and run:
 
+
+**Troubleshooting:** If your node version doesn't match, use `nvm` or another version manager to use the correct version.
+
 ```bash
+# Check your Node version
+node -v
+
+## Update the version to match `.nvmrc`. For example, using `nvm`
 nvm use
+
+# If needed, check where Node comes from. Might be different from your version manager (eg `nvm`).
+which node
 ```
 
-Without the correct Node.js version,
+Without the correct Node.js version and ``pnpm`,
 tests and other development tasks will likely fail.
 
 
@@ -77,16 +88,6 @@ pnpm test:watch
 You can also run a single test file with:
 ```bash
 pnpm test:file path/to/file
-```
-
-**Troubleshooting:** If you face an error about _"using a native ECMAScript module configuration file"_, make sure your Node version matches the nvmrc, and you are using `pnpm`.
-
-```bash
-# Check your Node version
-node -v
-
-# Check where it comes from. Might be different from your version manager (eg nvm).
-which node
 ```
 
 ### Testing the PR changes in your "consumer" project
