@@ -1,7 +1,5 @@
-import type { JsfSchema, JsonLogicContext, NonBooleanJsfSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
-import { evaluateIfCondition, validateCondition } from '../../src/validation/conditions'
-import { errorLike } from '../test-utils'
+import { evaluateIfCondition } from '../../src/validation/conditions'
 
 describe('condition validators', () => {
   describe('evaluateIfCondition', () => {
