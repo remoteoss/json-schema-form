@@ -464,4 +464,77 @@ describe('applyComputedAttrsToSchema', () => {
     const ageProperties = result.properties?.age as JsfObjectSchema
     expect(ageProperties?.minimum).toBe(21)
   })
+
+  it('allows to use computed values inside conditional statements', () => {
+    const schema: JsfObjectSchema = {
+      'type': 'object',
+      'properties': {
+        pine_trees: {
+          title: 'Pine trees planted',
+          type: 'number',
+          description: 'The number of pine trees you have planted.',
+        },
+        oak_trees: {
+          type: 'number',
+          title: 'Oak trees planted',
+          description: 'Enter the number of oak trees you\'ve planted. If there are more pine trees than oak trees, you\'ll need to plant spruce trees as well. But this only counts if less than 10 pines planted.',
+        },
+        spruce_trees: {
+          title: 'Spruce trees planted',
+          type: 'number',
+          description: 'The number of spruce trees you have planted (only required if specific conditions are met).',
+        },
+      },
+      'allOf': [
+        {
+          if: {
+            properties: {
+              oak_trees: {
+                'x-jsf-logic-computedAttrs': {
+                  minimum: 'pine_value',
+                },
+              },
+            },
+          },
+          then: {
+            required: [
+              'spruce_trees',
+            ],
+          },
+          else: {
+            properties: {
+              spruce_trees: false,
+            },
+          },
+        },
+      ],
+      'required': [
+        'pine_trees',
+        'oak_trees',
+      ],
+      'x-jsf-logic': {
+        computedValues: {
+          pine_value: {
+            rule: {
+              '+': [
+                {
+                  var: 'pine_trees',
+                },
+                1,
+              ],
+            },
+          },
+        },
+      },
+    };
+
+    // Mock the jsonLogic.apply to return 10
+    (jsonLogic.apply as jest.Mock).mockReturnValue(10)
+
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, { pine_trees: 10, oak_trees: 2 })
+
+    const conditionValue = result.allOf?.[0].if?.properties?.oak_trees as JsfObjectSchema
+    expect(conditionValue['x-jsf-logic-computedAttrs']).toBeUndefined()
+    expect(conditionValue.minimum).toBe(10)
+  })
 })
