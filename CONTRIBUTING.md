@@ -95,7 +95,15 @@ which node
 
 The simplest way to test your local changes is to run the `dev` script — this re-generates a `dist` folder whenever a file is changed. 
 
-Once you have a `dist` folder being created, can use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/) to test the
+Once you have a `dist` folder being created, you can either:
+- Option A: Point your local project import to the `dist` folder.
+
+```diff
+- import { createHeadlessForm } from '@remoteoss/json-schema-form'
++ import { createHeadlessForm } from '../../path/to/repo/json-schema-form/dist'
+```
+
+- Optpion B: Use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/):
 
 ```bash
 # in json-schema-form repo:
@@ -105,14 +113,13 @@ $ npm link
 $ npm  link @remoteoss/json-schema-form
 
 # Run npm unlink --no-save @remoteoss/json-schema-form to remove the local symlink
-
 ```
 
 #### Public release
 
 If you need a public release (for example, to run it on your project CI), you can publish a `dev` release.
 
-Note that only core maintainers can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
+Note that only core maintainers can publish public releases. If needed, ask us in the PR and we'll do it for you. Check PR #3 for the video walkthrough.
 
 1.  Locally run the script `npm run release:dev:patch` or `npm run release:dev:minor` depending on your changes.
     1. You'll be shown what's the new version and prompt you if it's correct. Eg
