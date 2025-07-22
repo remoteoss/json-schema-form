@@ -142,6 +142,96 @@ describe('field mutation', () => {
     })
   })
 
+  describe('boolean condition mutation', () => {
+    it.each([true, false])('should ignore the allowForbiddenValues option (%s) when evaluating a condition that\'s a plain boolean', (allowForbiddenValues) => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          name: {
+            type: 'string',
+          },
+        },
+        if: true,
+        then: {
+          properties: {
+            name: {
+              const: 'foo',
+            },
+          },
+        },
+        else: {
+          properties: {
+            name: {
+              const: 'bar',
+            },
+          },
+        },
+      }
+
+      // check that the then branch is applied
+      let form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      let errors = form.handleValidation({ name: 'bar' })
+      expect(errors.formErrors).toEqual({ name: 'The only accepted value is "foo".' })
+      errors = form.handleValidation({ name: 'foo' })
+      expect(errors.formErrors).toBeUndefined()
+
+      // change condition to false
+      schema.if = false
+      form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      errors = form.handleValidation({ name: 'foo' })
+      expect(errors.formErrors).toEqual({ name: 'The only accepted value is "bar".' })
+      errors = form.handleValidation({ name: 'bar' })
+      expect(errors.formErrors).toBeUndefined()
+
+      // check that it correctly applies visibility state
+      schema.else = { properties: { name: false } }
+      form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      expect(getField(form.fields, 'name')?.isVisible).toBe(false)
+      expect(errors.formErrors).toBeUndefined()
+    })
+
+    it.each([true, false])('given allowForbiddenValues: %s, and a schema with a conditional boolean, it ignores errors in fieldsets', (allowForbiddenValues) => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          address: {
+            type: 'object',
+            properties: {
+              street: {
+                type: 'string',
+              },
+              zipCode: {
+                type: 'string',
+              },
+            },
+          },
+        },
+        if: false,
+        then: {
+          required: ['address'],
+        },
+        else: {
+          properties: {
+            address: false,
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema, { legacyOptions: { allowForbiddenValues } })
+      const errors = form.handleValidation({
+        // This value is not allowed, but by passing allowForbiddenValues: true, the error is ignored.
+        address: {},
+      })
+
+      if (allowForbiddenValues) {
+        expect(errors.formErrors).toBeUndefined()
+      }
+      else {
+        expect(errors.formErrors).toEqual({ address: 'Not allowed' })
+      }
+    })
+  })
+
   describe('nested object property mutation', () => {
     const schema: JsfObjectSchema = {
       type: 'object',
