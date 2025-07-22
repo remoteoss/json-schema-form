@@ -14,13 +14,21 @@ describe('condition validators', () => {
         expect(result).toBe(false)
       })
 
-      it('should ignore allowForbiddenValues option for boolean conditions', () => {
+      it('should ignore `allowForbiddenValues` option for boolean conditions', () => {
         // With allowForbiddenValues: true, boolean false should still return false
-        const result = evaluateIfCondition('any-value', false, { allowForbiddenValues: true }, undefined)
+        let result = evaluateIfCondition('any-value', false, { allowForbiddenValues: true }, undefined)
         expect(result).toBe(false)
 
-        const resultTrue = evaluateIfCondition('any-value', true, { allowForbiddenValues: true }, undefined)
-        expect(resultTrue).toBe(true)
+        result = evaluateIfCondition('any-value', true, { allowForbiddenValues: true }, undefined)
+        expect(result).toBe(true)
+      })
+
+      it('takes into account `allowForbiddenValues` for non-boolean conditions', () => {
+        let result = evaluateIfCondition({ foo: 'bar' }, { properties: { foo: false } }, { allowForbiddenValues: false }, undefined)
+        expect(result).toBe(false)
+
+        result = evaluateIfCondition({ foo: 'bar' }, { properties: { foo: false } }, { allowForbiddenValues: true }, undefined)
+        expect(result).toBe(true)
       })
     })
   })
