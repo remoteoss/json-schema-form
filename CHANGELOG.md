@@ -1,3 +1,17 @@
+#### 1.0.2 (2025-07-22)
+
+##### Bug Fixes
+
+*  use commiter date as sorting order for tags, not version ([#220](https://github.com/remoteoss/json-schema-form/pull/220)) ([53a2464e](https://github.com/remoteoss/json-schema-form/commit/53a2464e0d1327368affe616df3f0ea6495e55b6))
+*  update changelog on non-dev release ([#219](https://github.com/remoteoss/json-schema-form/pull/219)) ([9e313591](https://github.com/remoteoss/json-schema-form/commit/9e313591115fef475c0b74c278f7309c1752acac))
+
+#### 1.0.1
+
+##### Bug fixes
+
+* fix: allow for computed values to be used inside conditionals (#215)
+* fix(conditionals): respect "if" blocks that are booleans (#216)
+
 #### 1.0.0
 
 ##### Migrating from v0
