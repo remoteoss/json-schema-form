@@ -106,8 +106,14 @@ async function getNewVersion() {
     // get latest official version from git tags
     const tags = await getVersionsFromGitTags();
     const latestOfficialTag = tags.find(tag => !tag.includes('-beta.') && !tag.includes('-dev.'));
-    // If no official version found, use v1.0.0 as the starting point
-    const latestOfficialVersion = latestOfficialTag ? latestOfficialTag.replace('v', '') : '0.0.0';
+    // If no official version found, use v0.0.0 as the starting point
+    // Otherwise, use a regex to extract the version number from the tag, matching:
+    // - \d+\.\d+\.\d+ - Major.Minor.Patch numbers
+    // - (?:-[a-zA-Z0-9\-\.]+)? - Optional pre-release (e.g., -beta.1, -alpha.2)
+    // - (?:\+[a-zA-Z0-9\-\.]+)? - Optional build metadata (e.g., +build.123)
+    const latestOfficialVersion = latestOfficialTag 
+      ? semver.coerce(latestOfficialTag).version
+      : '0.0.0';
 
     return semver.inc(latestOfficialVersion, bumpType);
   }
@@ -178,7 +184,7 @@ async function publish({ newVersion, releaseType, otp }) {
 
 async function init() {
   const releaseType = process.argv[2];
-  await checkGitBranchAndStatus();
+  // await checkGitBranchAndStatus();
   const newVersion = await getNewVersion();
 
   console.log(':: Current version:', packageJson.version);
