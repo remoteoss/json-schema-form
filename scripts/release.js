@@ -180,7 +180,7 @@ async function publish({ newVersion, releaseType, otp }) {
 
 async function init() {
   const releaseType = process.argv[2];
-  // await checkGitBranchAndStatus();
+  await checkGitBranchAndStatus();
   const newVersion = await getNewVersion();
 
   console.log(':: Current version:', packageJson.version);
