@@ -116,7 +116,6 @@ function applySchemaRules(
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
-      debugger
       processBranch(schema, values, rule.else, options, jsonLogicContext)
       // Delete the else branch to avoid processing it again when validating the schema
       delete rule.else

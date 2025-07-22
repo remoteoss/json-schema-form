@@ -2,7 +2,6 @@ import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
 import { getField } from '../../src/utils'
-import { errorLike } from '../test-utils'
 
 describe('field mutation', () => {
   describe('enum options mutation', () => {
