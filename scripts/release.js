@@ -61,8 +61,8 @@ async function checkGitBranchAndStatus() {
 
 async function getNewVersion() {
   async function getVersionsFromGitTags() {
-    const result = await runExec(`git tag --list --sort=-version:refname`, { silent: true });
-    const tags = result.stdout.toString().trim().split('\n').filter(tag => tag.startsWith('v'));
+    const result = await runExec(`git tag --list --sort=-committerdate`, { silent: true });
+    const tags = result.stdout.toString().trim().split('\n');
     return tags
   }
 
@@ -110,6 +110,8 @@ async function getNewVersion() {
     const latestOfficialVersion = latestOfficialTag 
       ? semver.coerce(latestOfficialTag).version
       : '0.0.0';
+
+    console.log('latestOfficialVersion', latestOfficialVersion, semver.coerce(latestOfficialVersion).version, semver.inc(latestOfficialVersion, bumpType))
 
     return semver.inc(latestOfficialVersion, bumpType);
   }
