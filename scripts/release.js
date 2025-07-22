@@ -106,8 +106,10 @@ async function getNewVersion() {
     // get latest official version from git tags
     const tags = await getVersionsFromGitTags();
     const latestOfficialTag = tags.find(tag => !tag.includes('-beta.') && !tag.includes('-dev.'));
-    // If no official version found, use v1.0.0 as the starting point
-    const latestOfficialVersion = latestOfficialTag ? latestOfficialTag.replace('v', '') : '0.0.0';
+    // If no official version found, use v0.0.0 as the starting point
+    const latestOfficialVersion = latestOfficialTag 
+      ? semver.coerce(latestOfficialTag).version
+      : '0.0.0';
 
     return semver.inc(latestOfficialVersion, bumpType);
   }
