@@ -153,7 +153,7 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
 function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedValues: Record<string, string>) {
   function processProperty(propertySchema: JsfSchema) {
     // Checking that the schema is non-boolean and is has a type property before processing it
-    if (typeof propertySchema === 'boolean' || typeof propertySchema.type === 'undefined') {
+    if (typeof propertySchema !== 'object') {
       return
     }
 
@@ -215,7 +215,7 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedVal
  * @param computedValues - The computed values to apply
  */
 function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValues: Record<string, string>, computedAttrs: JsfSchema['x-jsf-logic-computedAttrs']) {
-  if (typeof propertySchema !== 'object' || propertySchema.type !== 'object') {
+  if (typeof propertySchema !== 'object') {
     return
   }
 
@@ -246,7 +246,7 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValu
    */
   function applyNestedComputedValues(propertySchema: JsfSchema, attrName: string, computationName: string | object, computedValues: Record<string, string>) {
     // Checking that the schema is non-boolean and is has a type property before processing it
-    if (typeof propertySchema !== 'object' || typeof propertySchema.type === 'undefined') {
+    if (typeof propertySchema !== 'object') {
       return
     }
 
@@ -273,7 +273,7 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValu
     if (typeof computationName === 'string') {
       propertySchema[attributeName] = evalStringOrTemplate(computationName)
     }
-    else if (propertySchema.type === 'object' && typeof propertySchema !== 'boolean') {
+    else if (typeof propertySchema === 'object') {
       // Otherwise, it's a nested object, so we need to apply the computed values to the nested object
       applyNestedComputedValues(propertySchema, attributeName, computationName, computedValues)
     }
