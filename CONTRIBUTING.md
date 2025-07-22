@@ -52,25 +52,42 @@ Submit your branch pointing to `main`.
 
 Please, always add tests to your bug fixes and new features.
 
+### Running JSF
+
+To execute the library, run:
+
+```bash
+pnpm dev
+```
+
 ## Unit Testing
 
 To run the test suite (including the ones from the [Official JSON-schema suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite)), run:
 
 ```bash
-npm test
+pnpm test
 ```
 
 Or run the tests in watch mode:
 
 ```bash
-npm test:watch
+pnpm test:watch
 ```
 
 You can also run a single test file with:
 ```bash
-npm test:file path/to/file
+pnpm test:file path/to/file
 ```
 
+**Troubleshooting:** If you face an error about _"using a native ECMAScript module configuration file"_, make sure your Node version matches the nvmrc, and you are using `pnpm`.
+
+```bash
+# Check your Node version
+node -v
+
+# Check where it comes from. Might be different from your version manager (eg nvm).
+which node
+```
 
 ### Testing the PR changes in your "consumer" project
 
