@@ -197,7 +197,7 @@ async function init() {
   await bumpVersion({ newVersion });
 
   // Only update changelog for beta releases
-  if (releaseType === 'beta') {
+  if (releaseType !== 'dev') {
     await updateChangelog();
     const answerChangelog = await askForConfirmation(
       'Changelog is updated. You may tweak it as needed. Once ready, press Y to continue.'
