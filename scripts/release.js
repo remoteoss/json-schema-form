@@ -111,7 +111,6 @@ async function getNewVersion() {
       ? semver.coerce(latestOfficialTag).version
       : '0.0.0';
 
-    console.log('latestOfficialVersion', latestOfficialVersion, semver.coerce(latestOfficialVersion).version, semver.inc(latestOfficialVersion, bumpType))
 
     return semver.inc(latestOfficialVersion, bumpType);
   }
