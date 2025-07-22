@@ -150,8 +150,13 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
  * @param schemaCopy - The schema to apply computed values to
  * @param computedValues - The computed values to apply
  */
-function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, computedValues: Record<string, string>) {
-  function processProperty(propertySchema: JsfObjectSchema) {
+function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedValues: Record<string, string>) {
+  function processProperty(propertySchema: JsfSchema) {
+    // Checking that the schema is non-boolean and is has a type property before processing it
+    if (typeof propertySchema === 'boolean' || typeof propertySchema.type === 'undefined') {
+      return
+    }
+
     const computedAttrs = propertySchema['x-jsf-logic-computedAttrs']
     if (computedAttrs) {
       cycleThroughAttrsAndApplyValues(propertySchema, computedValues, computedAttrs)
@@ -169,7 +174,7 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
   // Otherwise, just process the property
   if (schemaCopy.properties) {
     for (const propertyName in schemaCopy.properties) {
-      processProperty(schemaCopy.properties[propertyName] as JsfObjectSchema)
+      processProperty(schemaCopy.properties[propertyName])
     }
   }
   else {
@@ -177,8 +182,8 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
   }
 
   // If the schema has an if statement, we need to cycle through the properties and apply the computed values
-  if (schemaCopy.if) {
-    cycleThroughPropertiesAndApplyValues(schemaCopy.if as JsfObjectSchema, computedValues)
+  if (typeof schemaCopy.if === 'object') {
+    cycleThroughPropertiesAndApplyValues(schemaCopy.if, computedValues)
   }
 
   /* If the schema has an allOf or anyOf property, we need to cycle through each property inside it and
@@ -187,13 +192,19 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
 
   if (schemaCopy.allOf && schemaCopy.allOf.length > 0) {
     for (const schema of schemaCopy.allOf) {
-      cycleThroughPropertiesAndApplyValues(schema as JsfObjectSchema, computedValues)
+      cycleThroughPropertiesAndApplyValues(schema, computedValues)
     }
   }
 
   if (schemaCopy.anyOf && schemaCopy.anyOf.length > 0) {
     for (const schema of schemaCopy.anyOf) {
-      cycleThroughPropertiesAndApplyValues(schema as JsfObjectSchema, computedValues)
+      cycleThroughPropertiesAndApplyValues(schema, computedValues)
+    }
+  }
+
+  if (schemaCopy.oneOf && schemaCopy.oneOf.length > 0) {
+    for (const schema of schemaCopy.oneOf) {
+      cycleThroughPropertiesAndApplyValues(schema, computedValues)
     }
   }
 }
@@ -203,7 +214,11 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfObjectSchema, compu
  * @param propertySchema - The schema to apply computed values to
  * @param computedValues - The computed values to apply
  */
-function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, computedValues: Record<string, string>, computedAttrs: JsfSchema['x-jsf-logic-computedAttrs']) {
+function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValues: Record<string, string>, computedAttrs: JsfSchema['x-jsf-logic-computedAttrs']) {
+  if (typeof propertySchema !== 'object' || propertySchema.type !== 'object') {
+    return
+  }
+
   /**
    * Evaluates a string or a handlebars template, using the computed values mapping, and returns the computed value
    * @param message - The string or template to evaluate
@@ -229,7 +244,12 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, comput
    * @param computationName - The name of the computed value to apply
    * @param computedValues - The computed values to apply
    */
-  function applyNestedComputedValues(propertySchema: JsfObjectSchema, attrName: string, computationName: string | object, computedValues: Record<string, string>) {
+  function applyNestedComputedValues(propertySchema: JsfSchema, attrName: string, computationName: string | object, computedValues: Record<string, string>) {
+    // Checking that the schema is non-boolean and is has a type property before processing it
+    if (typeof propertySchema !== 'object' || typeof propertySchema.type === 'undefined') {
+      return
+    }
+
     const attributeName = attrName as keyof NonBooleanJsfSchema
     if (!propertySchema[attributeName]) {
       // Making sure the attribute object is created if it does not exist in the original schema
@@ -253,7 +273,7 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfObjectSchema, comput
     if (typeof computationName === 'string') {
       propertySchema[attributeName] = evalStringOrTemplate(computationName)
     }
-    else {
+    else if (propertySchema.type === 'object' && typeof propertySchema !== 'boolean') {
       // Otherwise, it's a nested object, so we need to apply the computed values to the nested object
       applyNestedComputedValues(propertySchema, attributeName, computationName, computedValues)
     }
