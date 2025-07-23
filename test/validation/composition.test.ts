@@ -149,8 +149,8 @@ describe('schema composition validators', () => {
         const value = 'too long'
         const errors = validateSchema(value, schema)
         expect(errors).toHaveLength(2)
-        expect(errors[0].validation).toBe('maxLength')
-        expect(errors[1].validation).toBe('type')
+        expect(errors[0].validation).toBe('type')
+        expect(errors[1].validation).toBe('maxLength')
       })
     })
 
