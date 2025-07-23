@@ -75,21 +75,26 @@ export function validateAnyOf(
     return []
   }
 
+  const errorGroups: ValidationError[][] = []
+
+  // Check how many rules inside the anyOf array are met
   for (const subSchema of schema.anyOf) {
-    const errors = validateSchema(value, subSchema, options, path, jsonLogicContext)
-    if (errors.length === 0) {
-      return []
+    const schemaErrors = validateSchema(value, subSchema, options, path, jsonLogicContext)
+    // If the schema is not valid, add the errors to the errorGroups array
+    if (schemaErrors.length !== 0) {
+      errorGroups.push(schemaErrors)
     }
   }
 
-  return [
-    {
-      path,
-      validation: 'anyOf',
-      schema,
-      value,
-    },
-  ]
+  // If the number of failed rules is less than the number of rules, it means that the
+  // "any of" condition is met, so we return an empty array. Otherwise, we return the flattened errors.
+  const anyConditionMet = errorGroups.length < schema.anyOf.length
+  if (anyConditionMet) {
+    return []
+  }
+  else {
+    return errorGroups.flat()
+  }
 }
 
 /**
