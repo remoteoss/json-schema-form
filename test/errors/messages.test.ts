@@ -514,6 +514,46 @@ describe('validation error messages', () => {
       })
     })
 
+    it('shows field validation error messages for nested schemas in a root anyOf', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          field_a: {
+            type: 'string',
+          },
+          field_b: {
+            type: 'string',
+          },
+        },
+        anyOf: [
+          { required: ['field_a'] },
+          { required: ['field_b'] },
+        ],
+      }
+      const form = createHeadlessForm(schema)
+
+      // Check that we get an error for both fields if none is provided
+      let result = form.handleValidation({ })
+
+      expect(result.formErrors).toMatchObject({
+        field_a: 'Required field',
+        field_b: 'Required field',
+      })
+
+      // Check that we get don't get an error if one of the fields is provided
+      result = form.handleValidation({
+        field_a: '123456',
+      })
+
+      expect(result.formErrors).toBeUndefined()
+
+      result = form.handleValidation({
+        field_b: '123456',
+      })
+
+      expect(result.formErrors).toBeUndefined()
+    })
+
     it('shows oneOf validation error messages', () => {
       const schema: JsfObjectSchema = {
         type: 'object',

@@ -20,6 +20,7 @@ export type SchemaValidationErrorType =
    */
   | 'oneOf'
   | 'not'
+  | 'anyOf'
   /**
    * String validation keywords
    */

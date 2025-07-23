@@ -45,6 +45,8 @@ export function getErrorMessage(
     // Schema composition
     case 'oneOf':
       return `The option "${valueToString(value)}" is not valid.`
+    case 'anyOf':
+      return `The option "${valueToString(value)}" is not valid.`
     case 'not':
       return 'The value must not satisfy the provided schema'
     // String validation
