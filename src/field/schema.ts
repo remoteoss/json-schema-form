@@ -420,7 +420,10 @@ export function buildFieldSchema({
     })
   }
 
-  addOptions(field, schema)
+  if (name !== 'root') {
+    addOptions(field, schema)
+  }
+
   addFields(field, schema, originalSchema)
 
   return field

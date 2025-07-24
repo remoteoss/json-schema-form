@@ -43,9 +43,9 @@ export function getErrorMessage(
     case 'enum':
       return `The option "${valueToString(value)}" is not valid.`
     // Schema composition
-    case 'anyOf':
-      return `The option "${valueToString(value)}" is not valid.`
     case 'oneOf':
+      return `The option "${valueToString(value)}" is not valid.`
+    case 'anyOf':
       return `The option "${valueToString(value)}" is not valid.`
     case 'not':
       return 'The value must not satisfy the provided schema'

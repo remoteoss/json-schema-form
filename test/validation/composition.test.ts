@@ -148,8 +148,9 @@ describe('schema composition validators', () => {
       it('should fail when value matches no schema', () => {
         const value = 'too long'
         const errors = validateSchema(value, schema)
-        expect(errors).toHaveLength(1)
-        expect(errors[0].validation).toBe('anyOf')
+        expect(errors).toHaveLength(2)
+        expect(errors[0].validation).toBe('type')
+        expect(errors[1].validation).toBe('maxLength')
       })
     })
 
@@ -225,7 +226,7 @@ describe('schema composition validators', () => {
       it('should fail for non-null values', () => {
         const errors = validateSchema(123, schema)
         expect(errors).toHaveLength(1)
-        expect(errors[0].validation).toBe('anyOf')
+        expect(errors[0].validation).toBe('type')
       })
     })
   })

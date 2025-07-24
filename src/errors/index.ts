@@ -18,9 +18,9 @@ export type SchemaValidationErrorType =
    * Schema composition keywords (allOf, anyOf, oneOf, not)
    * These keywords apply subschemas in a logical manner according to JSON Schema spec
    */
-  | 'anyOf'
   | 'oneOf'
   | 'not'
+  | 'anyOf'
   /**
    * String validation keywords
    */

@@ -75,21 +75,49 @@ export function validateAnyOf(
     return []
   }
 
+  // If the path is not empty, we are validating a nested schema (property).
+  // In this case, we need to check if any of the sub-schemas are valid. If not, we indicate
+  // the field is invalid with a generic (anyOf) error.
+  if (path.length !== 0) {
+    for (const subSchema of schema.anyOf) {
+      const errors = validateSchema(value, subSchema, options, path, jsonLogicContext)
+      if (errors.length === 0) {
+        return []
+      }
+    }
+
+    return [
+      {
+        path,
+        validation: 'anyOf',
+        schema,
+        value,
+      },
+    ]
+  }
+
+  const errorGroups: ValidationError[][] = []
+
+  // If the path is empty, we are validating the root schema.
+  // If the number of failed rules is less than the number of rules, it means that the
+  // "any of" condition is met, so we return an empty array. Otherwise, we return the flattened errors.
   for (const subSchema of schema.anyOf) {
-    const errors = validateSchema(value, subSchema, options, path, jsonLogicContext)
-    if (errors.length === 0) {
-      return []
+    const schemaErrors = validateSchema(value, subSchema, options, path, jsonLogicContext)
+    // If the schema is not valid, add the errors to the errorGroups array
+    if (schemaErrors.length !== 0) {
+      errorGroups.push(schemaErrors)
     }
   }
 
-  return [
-    {
-      path,
-      validation: 'anyOf',
-      schema,
-      value,
-    },
-  ]
+  const anyConditionMet = errorGroups.length < schema.anyOf.length
+  if (anyConditionMet) {
+    return []
+  }
+  else {
+    // Reversing the errors to show the first error that occurred (in the addErrorMessages function,
+    // the last error is usually the one being displayed)
+    return errorGroups.flat().reverse()
+  }
 }
 
 /**
