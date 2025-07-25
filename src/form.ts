@@ -2,6 +2,7 @@ import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { LegacyOptions } from './validation/schema'
+import jsonLogic from 'json-logic-js'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
@@ -193,6 +194,30 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
 }
 
 /**
+ * Register custom used defined JSON Logic operations to the jsonLogic instance
+ * @param customJsonLogicOps - The custom JSON Logic operations
+ */
+function addCustomJsonLogicOperations(customJsonLogicOps: Record<string, (...args: any[]) => any> | undefined) {
+  if (customJsonLogicOps) {
+    for (const [name, func] of Object.entries(customJsonLogicOps)) {
+      jsonLogic.add_operation(name, func)
+    }
+  }
+}
+
+/**
+ * Remove custom JSON Logic operations from the jsonLogic instance
+ * @param customJsonLogicOps - The custom JSON Logic operations
+ */
+function removeJsonLogicCustomOperations(customJsonLogicOps: Record<string, (...args: any[]) => any> | undefined) {
+  if (customJsonLogicOps) {
+    for (const name of Object.keys(customJsonLogicOps)) {
+      jsonLogic.rm_operation(name)
+    }
+  }
+}
+
+/**
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
@@ -251,6 +276,22 @@ function validateOptions(options: CreateHeadlessFormOptions) {
   if (Object.prototype.hasOwnProperty.call(options, 'customProperties')) {
     console.error('[json-schema-form] `customProperties` is a deprecated option and it\'s not supported on json-schema-form v1')
   }
+
+  const customJsonLogicOps = options?.validationOptions?.customJsonLogicOps
+
+  if (customJsonLogicOps) {
+    if (typeof customJsonLogicOps !== 'object' || customJsonLogicOps === null) {
+      throw new TypeError('validationOptions.customJsonLogicOps must be an object.')
+    }
+
+    for (const [name, func] of Object.entries(customJsonLogicOps)) {
+      if (typeof func !== 'function') {
+        throw new TypeError(
+          `Custom JSON Logic operator '${name}' must be a function, but received type '${typeof func}'.`,
+        )
+      }
+    }
+  }
 }
 
 export function createHeadlessForm(
@@ -260,6 +301,7 @@ export function createHeadlessForm(
   validateOptions(options)
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
+
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
   const updatedSchema = calculateFinalSchema({
     schema,
@@ -271,20 +313,27 @@ export function createHeadlessForm(
 
   // TODO: check if we need this isError variable exposed
   const isError = false
+  const customJsonLogicOps = options?.validationOptions?.customJsonLogicOps
 
   const handleValidation = (value: SchemaValue) => {
-    const updatedSchema = calculateFinalSchema({
-      schema,
-      values: value,
-      options: options.legacyOptions,
-    })
+    try {
+      addCustomJsonLogicOperations(customJsonLogicOps)
 
-    const result = validate(value, updatedSchema, options.legacyOptions)
+      const updatedSchema = calculateFinalSchema({
+        schema,
+        values: value,
+        options: options.legacyOptions,
+      })
 
-    // Fields properties might have changed, so we need to reset the fields by updating them in place
-    updateFieldProperties(fields, updatedSchema, schema)
+      const result = validate(value, updatedSchema, options.legacyOptions)
 
-    return result
+      updateFieldProperties(fields, updatedSchema, schema)
+
+      return result
+    }
+    finally {
+      removeJsonLogicCustomOperations(customJsonLogicOps)
+    }
   }
 
   return {
