@@ -744,3 +744,14 @@ export const schemaWithReduceAccumulator = {
     },
   },
 }
+
+export const schemaForCustomValidationFunctions = {
+  'properties': {
+    field_a: {
+      'type': 'string',
+      'x-jsf-logic-validations': [
+        'is_hello',
+      ],
+    },
+  },
+}

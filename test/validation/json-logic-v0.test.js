@@ -29,6 +29,7 @@ import {
   schemaWithUnknownVariableInComputedValues,
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
+  schemaForCustomValidationFunctions
 } from './json-logic.fixtures'
 
 beforeEach(mockConsole)
@@ -444,6 +445,15 @@ describe('jsonLogic: cross-values validations', () => {
         field_b: 'Must be greater than two times A',
       })
       expect(handleValidation({ field_a: 20, field_b: 41 }).formErrors).toEqual()
+    })
+
+    it('custom validation functions', () => {
+      const { handleValidation } = createHeadlessForm(
+        schemaForCustomValidationFunctions,
+        { strictInputType: false, customJsonLogicOps: {"is_hello": (text) => text === "Hello!"} },
+      )
+
+      expect(handleValidation({ field_a: "Hello!" }).formErrors).toEqual()
     })
   })
 })
