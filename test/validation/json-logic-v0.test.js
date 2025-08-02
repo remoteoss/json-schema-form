@@ -29,7 +29,7 @@ import {
   schemaWithUnknownVariableInComputedValues,
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
-  schemaForCustomValidationFunctions
+  schemaWithCustomValidationFunction
 } from './json-logic.fixtures'
 
 beforeEach(mockConsole)
@@ -446,14 +446,39 @@ describe('jsonLogic: cross-values validations', () => {
       })
       expect(handleValidation({ field_a: 20, field_b: 41 }).formErrors).toEqual()
     })
+  })
 
-    it('custom validation functions', () => {
-      const { handleValidation } = createHeadlessForm(
-        schemaForCustomValidationFunctions,
-        { strictInputType: false, customJsonLogicOps: {"is_hello": (text) => text === "Hello!"} },
-      )
+  describe('custom operators', () => {
+    it('custom function', () => {
+      const { handleValidation } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: a => a === 'hello world' } })
+      expect(handleValidation({ field_a: 'hello world' }).formErrors).toEqual(undefined)
+      const { formErrors } = handleValidation({ field_a: 'wrong text' })
+      expect(formErrors?.field_a).toEqual('Invalid hello world')
+    })
 
-      expect(handleValidation({ field_a: "Hello!" }).formErrors).toEqual()
+    it('custom function are form specific', () => {
+      const { handleValidation } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: a => a === 'hello world' } })
+      expect(handleValidation({ field_a: 'hello world' }).formErrors).toEqual(undefined)
+      const { formErrors } = handleValidation({ field_a: 'wrong text' })
+      expect(formErrors?.field_a).toEqual('Invalid hello world')
+
+      const { handleValidation: handleValidation2 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: a => a === 'hello world!' } })
+      expect(handleValidation2({ field_a: 'hello world!' }).formErrors).toEqual(undefined)
+
+      const { handleValidation: handleValidation3 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false })
+      const actionThatWillThrow = () => {
+        handleValidation3({ field_a: 'hello world' })
+      }
+
+      expect(actionThatWillThrow).toThrow('Unrecognized operation is_hello')
+    })
+
+    it('validation on custom functions', () => {
+      const actionThatWillThrow = () => {
+        createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: 'not a funcion' } })
+      }
+
+      expect(actionThatWillThrow).toThrow('Custom JSON Logic operator \'is_hello\' must be a function, but received type \'string\'.')
     })
   })
 })
