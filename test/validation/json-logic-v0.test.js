@@ -15,6 +15,7 @@ import {
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
   schemaWithComputedAttributeThatDoesntExistTitle,
+  schemaWithCustomValidationFunction,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithDeepVarThatDoesNotExistOnFieldset,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
@@ -29,7 +30,6 @@ import {
   schemaWithUnknownVariableInComputedValues,
   schemaWithUnknownVariableInValidations,
   schemaWithValidationThatDoesNotExistOnProperty,
-  schemaWithCustomValidationFunction
 } from './json-logic.fixtures'
 
 beforeEach(mockConsole)

@@ -5,9 +5,10 @@ import type { LegacyOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
-import { validateSchema } from './validation/schema'
-export { LegacyOptions } from './validation/schema'
 import { addCustomJsonLogicOperations, removeCustomJsonLogicOperations } from './validation/json-logic'
+import { validateSchema } from './validation/schema'
+
+export { LegacyOptions } from './validation/schema'
 
 interface FormResult {
   fields: Field[]
@@ -232,7 +233,7 @@ export interface CreateHeadlessFormOptions {
   /**
    * Custom user defined functions. A dictionary of name and function
    */
-  customJsonLogicOps?: Record<string, (...args: any[]) => any>;
+  customJsonLogicOps?: Record<string, (...args: any[]) => any>
 }
 
 function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
@@ -320,5 +321,4 @@ export function createHeadlessForm(
     error: null,
     handleValidation,
   }
-  
 }
