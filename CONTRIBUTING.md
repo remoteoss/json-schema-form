@@ -34,13 +34,24 @@ Documentation website is available [here](https://json-schema-form.vercel.app/).
 This project requires Node.js LTS v22.13.1.
 We recommend using the exact version specified in `.nvmrc`:
 
+
 Navigate to the "next" folder and run:
 
+
+**Troubleshooting:** If your node version doesn't match, use `nvm` or another version manager to use the correct version.
+
 ```bash
+# Check your Node version
+node -v
+
+## Update the version to match `.nvmrc`. For example, using `nvm`
 nvm use
+
+# If needed, check where Node comes from. Might be different from your version manager (eg `nvm`).
+which node
 ```
 
-Without the correct Node.js version,
+Without the correct Node.js version and ``pnpm`,
 tests and other development tasks will likely fail.
 
 
@@ -52,25 +63,32 @@ Submit your branch pointing to `main`.
 
 Please, always add tests to your bug fixes and new features.
 
+### Running JSF
+
+To execute the library, run:
+
+```bash
+pnpm dev
+```
+
 ## Unit Testing
 
 To run the test suite (including the ones from the [Official JSON-schema suite](https://github.com/json-schema-org/JSON-Schema-Test-Suite)), run:
 
 ```bash
-npm test
+pnpm test
 ```
 
 Or run the tests in watch mode:
 
 ```bash
-npm test:watch
+pnpm test:watch
 ```
 
 You can also run a single test file with:
 ```bash
-npm test:file path/to/file
+pnpm test:file path/to/file
 ```
-
 
 ### Testing the PR changes in your "consumer" project
 
@@ -78,7 +96,15 @@ npm test:file path/to/file
 
 The simplest way to test your local changes is to run the `dev` script — this re-generates a `dist` folder whenever a file is changed. 
 
-Once you have a `dist` folder being created, can use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/) to test the
+Once you have a `dist` folder being created, you can either:
+- Option A: Point your local project import to the `dist` folder.
+
+```diff
+- import { createHeadlessForm } from '@remoteoss/json-schema-form'
++ import { createHeadlessForm } from '../../path/to/repo/json-schema-form/dist'
+```
+
+- Optpion B: Use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/):
 
 ```bash
 # in json-schema-form repo:
@@ -88,14 +114,13 @@ $ npm link
 $ npm  link @remoteoss/json-schema-form
 
 # Run npm unlink --no-save @remoteoss/json-schema-form to remove the local symlink
-
 ```
 
 #### Public release
 
 If you need a public release (for example, to run it on your project CI), you can publish a `dev` release.
 
-Note that only core maintainers can publish public releases. If needed, ask us in the PR and we'll do it for you. Check #3 for the video walkthrough.
+Note that only core maintainers can publish public releases. If needed, ask us in the PR and we'll do it for you. Check PR #3 for the video walkthrough.
 
 1.  Locally run the script `npm run release:dev:patch` or `npm run release:dev:minor` depending on your changes.
     1. You'll be shown what's the new version and prompt you if it's correct. Eg
