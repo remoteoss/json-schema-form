@@ -5,6 +5,7 @@ import type { LegacyOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
+import { addCustomJsonLogicOperations, removeCustomJsonLogicOperations } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 
 export { LegacyOptions } from './validation/schema'
@@ -228,6 +229,11 @@ export interface CreateHeadlessFormOptions {
    * @default false
    */
   strictInputType?: boolean
+
+  /**
+   * Custom user defined functions. A dictionary of name and function
+   */
+  customJsonLogicOps?: Record<string, (...args: any[]) => any>
 }
 
 function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
@@ -251,6 +257,20 @@ function validateOptions(options: CreateHeadlessFormOptions) {
   if (Object.prototype.hasOwnProperty.call(options, 'customProperties')) {
     console.error('[json-schema-form] `customProperties` is a deprecated option and it\'s not supported on json-schema-form v1')
   }
+
+  if (options.customJsonLogicOps) {
+    if (typeof options.customJsonLogicOps !== 'object' || options.customJsonLogicOps === null) {
+      throw new TypeError('validationOptions.customJsonLogicOps must be an object.')
+    }
+
+    for (const [name, func] of Object.entries(options.customJsonLogicOps)) {
+      if (typeof func !== 'function') {
+        throw new TypeError(
+          `Custom JSON Logic operator '${name}' must be a function, but received type '${typeof func}'.`,
+        )
+      }
+    }
+  }
 }
 
 export function createHeadlessForm(
@@ -273,18 +293,26 @@ export function createHeadlessForm(
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const updatedSchema = calculateFinalSchema({
-      schema,
-      values: value,
-      options: options.legacyOptions,
-    })
+    const customJsonLogicOps = options?.customJsonLogicOps
 
-    const result = validate(value, updatedSchema, options.legacyOptions)
+    try {
+      addCustomJsonLogicOperations(customJsonLogicOps)
 
-    // Fields properties might have changed, so we need to reset the fields by updating them in place
-    updateFieldProperties(fields, updatedSchema, schema)
+      const updatedSchema = calculateFinalSchema({
+        schema,
+        values: value,
+        options: options.legacyOptions,
+      })
 
-    return result
+      const result = validate(value, updatedSchema, options.legacyOptions)
+
+      updateFieldProperties(fields, updatedSchema, schema)
+
+      return result
+    }
+    finally {
+      removeCustomJsonLogicOperations(customJsonLogicOps)
+    }
   }
 
   return {

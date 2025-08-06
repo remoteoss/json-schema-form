@@ -279,3 +279,19 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValu
     }
   }
 }
+
+export function addCustomJsonLogicOperations(ops?: Record<string, (...args: any[]) => any>) {
+  if (ops) {
+    for (const [name, func] of Object.entries(ops)) {
+      jsonLogic.add_operation(name, func)
+    }
+  }
+}
+
+export function removeCustomJsonLogicOperations(ops?: Record<string, (...args: any[]) => any>) {
+  if (ops) {
+    for (const name of Object.keys(ops)) {
+      jsonLogic.rm_operation(name)
+    }
+  }
+}
