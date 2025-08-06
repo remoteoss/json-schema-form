@@ -1,3 +1,13 @@
+#### 1.1.0 (2025-08-06)
+
+##### New Features
+
+*  Custom user defined validations ([#223](https://github.com/remoteoss/json-schema-form/pull/223)) ([a8d4cac3](https://github.com/remoteoss/json-schema-form/commit/a8d4cac39e2c6c2200c2dc531d0bd52c74514926))
+
+##### Bug Fixes
+
+*  anyof condition breaking UI  ([#221](https://github.com/remoteoss/json-schema-form/pull/221)) ([37156c8a](https://github.com/remoteoss/json-schema-form/commit/37156c8ae3540abc2f2ca9feb2ab7d858f7a268d))
+
 #### 1.0.2 (2025-07-22)
 
 ##### Bug Fixes
