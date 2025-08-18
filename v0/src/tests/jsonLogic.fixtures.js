@@ -1061,7 +1061,7 @@ export const schemaWithReduceAccumulator = {
       type: 'number',
       'x-jsf-logic-computedAttrs': {
         const: 'computed_work_hours_per_week',
-        defaultValue: 'computed_work_hours_per_week',
+        default: 'computed_work_hours_per_week',
         title: '{{computed_work_hours_per_week}} hours per week',
       },
     },
@@ -1073,8 +1073,56 @@ export const schemaWithReduceAccumulator = {
           '*': [
             { var: 'working_hours_per_day' },
             {
-              reduce: [{ var: 'work_days' }, { '+': [{ var: ['accumulator', 0] }, 1] }, 0],
+              reduce: [{ var: 'work_days' }, { '+': [{ var: 'accumulator' }, 1] }, 0],
             },
+          ],
+        },
+      },
+    },
+  },
+};
+
+export const schemaWithReduceAccumulatorAndMerge = {
+  properties: {
+    work_days: {
+      items: {
+        anyOf: [
+          { const: 'monday', title: 'Monday' },
+          { const: 'tuesday', title: 'Tuesday' },
+          { const: 'wednesday', title: 'Wednesday' },
+          { const: 'thursday', title: 'Thursday' },
+          { const: 'friday', title: 'Friday' },
+          { const: 'saturday', title: 'Saturday' },
+          { const: 'sunday', title: 'Sunday' },
+        ],
+      },
+      type: 'array',
+      uniqueItems: true,
+      'x-jsf-presentation': {
+        inputType: 'select',
+      },
+    },
+    working_hours_per_day: {
+      type: 'number',
+    },
+    working_hours_per_week: {
+      type: 'number',
+      'x-jsf-logic-computedAttrs': {
+        const: 'computed_work_hours_per_week',
+        default: 'computed_work_hours_per_week',
+        title: '{{computed_work_hours_per_week}} hours per week',
+      },
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      computed_work_hours_per_week: {
+        rule: {
+          reduce: [
+            { var: 'work_days' },
+            { merge: [{ var: 'accumulator' }, [{ var: 'current' }]] },
+            // note we use the wrong accumulator type
+            0,
           ],
         },
       },

@@ -35,6 +35,7 @@ import {
   schemaWithValidationThatDoesNotExistOnProperty,
   badSchemaThatWillNotSetAForcedValue,
   schemaWithReduceAccumulator,
+  schemaWithReduceAccumulatorAndMerge,
   schemaWithComputedPresentationAttributes,
 } from './jsonLogic.fixtures';
 import { mockConsole, restoreConsoleAndEnsureItWasNotCalled } from './testUtils';
@@ -245,8 +246,7 @@ describe('jsonLogic: cross-values validations', () => {
     });
   });
 
-  // TODO: Implement this test.
-  describe.skip('Reduce', () => {
+  describe('Reduce', () => {
     it('reduce: working_hours_per_day * work_days', () => {
       const { fields, handleValidation } = createHeadlessForm(schemaWithReduceAccumulator, {
         strictInputType: false,
@@ -259,6 +259,18 @@ describe('jsonLogic: cross-values validations', () => {
       expect(field.const).toEqual(16);
       expect(field.default).toEqual(16);
       expect(field.label).toEqual('16 hours per week');
+    });
+
+    it('reduce: handles when operator is non numerical', () => {
+      const { fields, handleValidation } = createHeadlessForm(schemaWithReduceAccumulatorAndMerge, {
+        strictInputType: false,
+      });
+      handleValidation({
+        work_days: ['monday', 'tuesday'],
+        working_hours_per_day: 8,
+      });
+      const field = fields.find((i) => i.name === 'working_hours_per_week');
+      expect(field.const).toEqual([0, 'monday', 'tuesday']);
     });
   });
 
