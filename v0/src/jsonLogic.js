@@ -404,26 +404,40 @@ function validateInlineRules(jsonSchema, sampleEmptyObject) {
  * @param {Function} errorMessage - Function to generate custom error message.
  *                                  Receives the invalid rule part and should throw an error message string.
  */
+
 function checkRuleIntegrity(
   rule,
   id,
   data,
   errorMessage = (item) =>
-    `[json-schema-form] json-logic error: rule "${id}" has no variable "${item.var}".`
+    `[json-schema-form] json-logic error: rule "${id}" has no variable "${item.var}".`,
+  inReduceOrMap = false
 ) {
   Object.entries(rule ?? {}).map(([operator, subRule]) => {
     if (!Array.isArray(subRule) && subRule !== null && subRule !== undefined) return;
     throwIfUnknownOperator(operator, subRule, id);
 
+    // If we are within a reduce or map, we allow references to `accumulator` and/or `current`.
+    // We augment the data so that we still validate any other field.
+    const isReduceOrMap = inReduceOrMap || operator === 'reduce' || operator === 'map';
+
+    const validationData = isReduceOrMap
+      ? {
+          ...data,
+          accumulator: 0,
+          current: null,
+        }
+      : data;
+
     subRule.map((item) => {
       const isVar = item !== null && typeof item === 'object' && Object.hasOwn(item, 'var');
       if (isVar) {
-        const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, data);
+        const exists = jsonLogic.apply({ var: removeIndicesFromPath(item.var) }, validationData);
         if (exists === null) {
           throw Error(errorMessage(item));
         }
       } else {
-        checkRuleIntegrity(item, id, data);
+        checkRuleIntegrity(item, id, data, errorMessage, isReduceOrMap);
       }
     });
   });
