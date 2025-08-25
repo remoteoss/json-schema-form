@@ -162,51 +162,45 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedVal
       cycleThroughAttrsAndApplyValues(propertySchema, computedValues, computedAttrs)
     }
 
-    if (propertySchema.type === 'object' && propertySchema.properties) {
-      cycleThroughPropertiesAndApplyValues(propertySchema, computedValues)
+    // If the schemas has properties, we need to cycle through each one and apply the computed values
+    if (typeof propertySchema.properties === 'object') {
+      for (const propertyName in propertySchema.properties) {
+        processProperty(propertySchema.properties[propertyName])
+      }
+    }
+
+    // If the schema has an if statement, we need to cycle through the properties and apply the computed values
+    if (typeof propertySchema.if === 'object') {
+      cycleThroughPropertiesAndApplyValues(propertySchema.if, computedValues)
+    }
+
+    /* If the schema has an allOf or anyOf property, we need to cycle through each property inside it and
+    * apply the computed values
+    */
+
+    if (propertySchema.allOf && propertySchema.allOf.length > 0) {
+      for (const schema of propertySchema.allOf) {
+        cycleThroughPropertiesAndApplyValues(schema, computedValues)
+      }
+    }
+
+    if (propertySchema.anyOf && propertySchema.anyOf.length > 0) {
+      for (const schema of propertySchema.anyOf) {
+        cycleThroughPropertiesAndApplyValues(schema, computedValues)
+      }
+    }
+
+    if (propertySchema.oneOf && propertySchema.oneOf.length > 0) {
+      for (const schema of propertySchema.oneOf) {
+        cycleThroughPropertiesAndApplyValues(schema, computedValues)
+      }
     }
 
     // deleting x-jsf-logic-computedAttrs to keep the schema clean
     delete propertySchema['x-jsf-logic-computedAttrs']
   }
 
-  // If the schemas has properties, we need to cycle through each one and apply the computed values
-  // Otherwise, just process the property
-  if (schemaCopy.properties) {
-    for (const propertyName in schemaCopy.properties) {
-      processProperty(schemaCopy.properties[propertyName])
-    }
-  }
-  else {
-    processProperty(schemaCopy)
-  }
-
-  // If the schema has an if statement, we need to cycle through the properties and apply the computed values
-  if (typeof schemaCopy.if === 'object') {
-    cycleThroughPropertiesAndApplyValues(schemaCopy.if, computedValues)
-  }
-
-  /* If the schema has an allOf or anyOf property, we need to cycle through each property inside it and
-   * apply the computed values
-   */
-
-  if (schemaCopy.allOf && schemaCopy.allOf.length > 0) {
-    for (const schema of schemaCopy.allOf) {
-      cycleThroughPropertiesAndApplyValues(schema, computedValues)
-    }
-  }
-
-  if (schemaCopy.anyOf && schemaCopy.anyOf.length > 0) {
-    for (const schema of schemaCopy.anyOf) {
-      cycleThroughPropertiesAndApplyValues(schema, computedValues)
-    }
-  }
-
-  if (schemaCopy.oneOf && schemaCopy.oneOf.length > 0) {
-    for (const schema of schemaCopy.oneOf) {
-      cycleThroughPropertiesAndApplyValues(schema, computedValues)
-    }
-  }
+  processProperty(schemaCopy)
 }
 
 /**
