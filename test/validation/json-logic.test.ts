@@ -537,4 +537,59 @@ describe('applyComputedAttrsToSchema', () => {
     expect(conditionValue['x-jsf-logic-computedAttrs']).toBeUndefined()
     expect(conditionValue.minimum).toBe(10)
   })
+
+  it('allows to use computed values inside oneOf statements nested in a property', () => {
+    const schema: JsfObjectSchema = {
+      'type': 'object',
+      'properties': {
+        maximum_temperature: {
+          title: 'Maximum room temperature',
+          type: 'number',
+          description: 'What is the maximum room temperature in Celsius?',
+        },
+        temperature_setting: {
+          title: 'Select a preset temperature',
+          type: 'string',
+          oneOf: [
+            {
+              title: 'Low',
+              const: 18,
+            },
+            {
+              title: 'Medium',
+              const: 20,
+            },
+            {
+              'title': 'Maximum',
+              'x-jsf-logic-computedAttrs': {
+                const: 'maximum_temperature',
+              },
+            },
+          ],
+        },
+      },
+      'required': [
+        'maximum_temperature',
+        'temperature_setting',
+      ],
+      'x-jsf-logic': {
+        computedValues: {
+          maximum_temperature: {
+            rule: {
+              var: 'maximum_temperature',
+            },
+          },
+        },
+      },
+    };
+
+    // Mock the jsonLogic.apply to return 24
+    (jsonLogic.apply as jest.Mock).mockReturnValue(24)
+
+    const result = JsonLogicValidation.applyComputedAttrsToSchema(schema, schema['x-jsf-logic']?.computedValues, { maximum_temperature: 24 })
+
+    const temperatureSetting = result.properties?.temperature_setting as NonBooleanJsfSchema
+    expect(temperatureSetting['x-jsf-logic-computedAttrs']).toBeUndefined()
+    expect((temperatureSetting.oneOf?.[2] as NonBooleanJsfSchema)?.const).toBe(24)
+  })
 })
