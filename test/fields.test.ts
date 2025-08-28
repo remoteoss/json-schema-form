@@ -167,6 +167,9 @@ describe('fields', () => {
     const customComponent = () => {
       return null
     }
+    const nestedPresentationComponent = () => {
+      return null
+    }
     const schema: JsfSchema = {
       type: 'object',
       properties: {
@@ -178,6 +181,9 @@ describe('fields', () => {
             accept: '.pdf,.doc',
             maxFileSize: 5000000,
             Component: customComponent,
+            sharedContent: {
+              helpCenter: nestedPresentationComponent,
+            },
           },
         },
       },
@@ -197,6 +203,9 @@ describe('fields', () => {
         accept: '.pdf,.doc',
         maxFileSize: 5000000,
         Component: customComponent,
+        sharedContent: {
+          helpCenter: nestedPresentationComponent,
+        },
       },
     ])
   })
