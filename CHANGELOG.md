@@ -1,3 +1,14 @@
+#### 1.1.1 (2025-08-28)
+
+##### New Features
+
+* **json-logic:**  apply computed attrs on nested allOf/anyOf/oneOf properties ([#227](https://github.com/remoteoss/json-schema-form/pull/227)) ([4375598e](https://github.com/remoteoss/json-schema-form/commit/4375598e57095ab01a75d43e495a03b295c3639c))
+*  allow accumulator/current in reduce/map operations ([#225](https://github.com/remoteoss/json-schema-form/pull/225)) ([82268578](https://github.com/remoteoss/json-schema-form/commit/82268578149321fdfc4b2587427c748e61357f21))
+
+##### Bug Fixes
+
+* **schema:**  keep custom components on nested presentation properties ([#229](https://github.com/remoteoss/json-schema-form/pull/229)) ([99a8d432](https://github.com/remoteoss/json-schema-form/commit/99a8d432a78beb58ea997f3abd538a8b6a9e87d7))
+
 #### 1.1.0 (2025-08-06)
 
 ##### New Features
