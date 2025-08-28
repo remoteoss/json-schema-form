@@ -142,7 +142,7 @@ async function gitCommit({ newVersion, releaseType }) {
     cmd = `git add package.json CHANGELOG.md && git commit -m "Release ${newVersion}" && git tag ${newVersion} && git push && git push origin --tags`;
   } else {
     // For dev, we only create a tag
-    cmd = `git tag ${prefix}-${newVersion} && git push origin --tags`;
+    cmd = `git tag ${newVersion} && git push origin --tags`;
   }
 
   await runExec(cmd);
