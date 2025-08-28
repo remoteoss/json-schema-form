@@ -1,5 +1,6 @@
 import type { JsfObjectSchema, JsfSchema, JsfSchemaType, NonBooleanJsfSchema, SchemaValue } from '../types'
 import type { Field, FieldOption, FieldType } from './type'
+import deepmerge from 'deepmerge'
 import { setCustomOrder } from '../custom/order'
 
 /**
@@ -373,12 +374,11 @@ export function buildFieldSchema({
     return null
   }
 
-  const presentation = {
-    // We need to use the original schema's presentation as a basis as there are some properties that can't be
-    // serialized (so they were not cloned)
-    ...(originalSchema['x-jsf-presentation'] || {}),
-    ...(schema['x-jsf-presentation'] || {}),
-  }
+  // We need to use the original schema's presentation as a basis as there are some properties that can't be
+  // serialized (so they were not cloned). Arrays will always be overwritten by the new schema's presentation.
+  const originalSchemaPresentation = originalSchema['x-jsf-presentation'] || {}
+  const schemaPresentation = schema['x-jsf-presentation'] || {}
+  const presentation = deepmerge(originalSchemaPresentation, schemaPresentation, { arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray })
   const errorMessage = schema['x-jsf-errorMessage']
 
   // Get input type from presentation or fallback to schema type
