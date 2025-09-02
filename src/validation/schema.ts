@@ -259,6 +259,43 @@ export function validateSchema(
     }
   }
 
+  if (schema.additionalProperties === false && isObjectValue(value)) {
+    const definedProperties = new Set(Object.keys(schema.properties || {}))
+    const actualProperties = Object.keys(value)
+
+    // Create a set of pattern regexes from patternProperties
+    const patternRegexes: RegExp[] = []
+    if (schema.patternProperties) {
+      for (const pattern of Object.keys(schema.patternProperties)) {
+        try {
+          patternRegexes.push(new RegExp(pattern))
+        }
+        catch {
+          // Invalid regex pattern, skip it
+          console.warn(`Invalid regex pattern in patternProperties: ${pattern}`)
+        }
+      }
+    }
+
+    for (const prop of actualProperties) {
+      if (definedProperties.has(prop)) {
+        continue
+      }
+
+      const matchesPattern = patternRegexes.some(regex => regex.test(prop))
+      if (matchesPattern) {
+        continue
+      }
+
+      errors.push({
+        path: [...path, prop],
+        validation: 'additionalProperties',
+        schema,
+        value: value[prop],
+      })
+    }
+  }
+
   return [
     ...errors,
     // JSON-schema spec validations

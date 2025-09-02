@@ -14,6 +14,7 @@ export type SchemaValidationErrorType =
   | 'forbidden'
   | 'const'
   | 'enum'
+  | 'additionalProperties'
   /**
    * Schema composition keywords (allOf, anyOf, oneOf, not)
    * These keywords apply subschemas in a logical manner according to JSON Schema spec
