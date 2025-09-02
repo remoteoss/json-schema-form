@@ -112,6 +112,8 @@ export function getErrorMessage(
       throw new Error('"minContains" is not implemented yet')
     case 'maxContains':
       throw new Error('"maxContains" is not implemented yet')
+    case 'additionalProperties':
+      return 'Additional property is not allowed'
     case 'json-logic':
       return customErrorMessage || 'The value is not valid'
   }
