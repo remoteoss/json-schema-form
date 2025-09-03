@@ -147,6 +147,14 @@ function validateJsonLogicSchema(value: SchemaValue, schema: JsfSchema | undefin
   return validateSchema(value, schema, options, path, jsonLogicContext)
 }
 
+interface CompiledPattern { regex: RegExp }
+
+function compilePatternProperties(patternProperties: Record<string, any> = {}): CompiledPattern[] {
+  return Object.keys(patternProperties).map(
+    pattern => ({ regex: new RegExp(pattern) }),
+  )
+}
+
 /**
  * Validate a value against a schema
  * @param value - The value to validate
@@ -260,38 +268,21 @@ export function validateSchema(
   }
 
   if (schema.additionalProperties === false && isObjectValue(value)) {
-    const definedProperties = new Set(Object.keys(schema.properties || {}))
-    const actualProperties = Object.keys(value)
+    const definedProps = new Set(Object.keys(schema.properties || {}))
+    const compiledPatterns = compilePatternProperties(schema.patternProperties)
 
-    // Create a set of pattern regexes from patternProperties
-    const patternRegexes: RegExp[] = []
-    if (schema.patternProperties) {
-      for (const pattern of Object.keys(schema.patternProperties)) {
-        try {
-          patternRegexes.push(new RegExp(pattern))
-        }
-        catch {
-          throw new Error(`[json-schema-form] Invalid regex pattern in patternProperties: ${pattern}`)
-        }
+    for (const key of Object.keys(value)) {
+      const isDefined = definedProps.has(key)
+      const matchesPattern = compiledPatterns.some(({ regex }) => regex.test(key))
+
+      if (!isDefined && !matchesPattern) {
+        errors.push({
+          path: [...path, key],
+          validation: 'additionalProperties',
+          schema,
+          value: value[key],
+        })
       }
-    }
-
-    for (const prop of actualProperties) {
-      if (definedProperties.has(prop)) {
-        continue
-      }
-
-      const matchesPattern = patternRegexes.some(regex => regex.test(prop))
-      if (matchesPattern) {
-        continue
-      }
-
-      errors.push({
-        path: [...path, prop],
-        validation: 'additionalProperties',
-        schema,
-        value: value[prop],
-      })
     }
   }
 
