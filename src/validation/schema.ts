@@ -147,6 +147,14 @@ function validateJsonLogicSchema(value: SchemaValue, schema: JsfSchema | undefin
   return validateSchema(value, schema, options, path, jsonLogicContext)
 }
 
+interface CompiledPattern { regex: RegExp }
+
+function compilePatternProperties(patternProperties: Record<string, any> = {}): CompiledPattern[] {
+  return Object.keys(patternProperties).map(
+    pattern => ({ regex: new RegExp(pattern) }),
+  )
+}
+
 /**
  * Validate a value against a schema
  * @param value - The value to validate
@@ -256,6 +264,25 @@ export function validateSchema(
         schema: schema?.properties?.[key] || schema,
         value,
       })
+    }
+  }
+
+  if (schema.additionalProperties === false && isObjectValue(value)) {
+    const definedProps = new Set(Object.keys(schema.properties || {}))
+    const compiledPatterns = compilePatternProperties(schema.patternProperties)
+
+    for (const key of Object.keys(value)) {
+      const isDefined = definedProps.has(key)
+      const matchesPattern = compiledPatterns.some(({ regex }) => regex.test(key))
+
+      if (!isDefined && !matchesPattern) {
+        errors.push({
+          path: [...path, key],
+          validation: 'additionalProperties',
+          schema,
+          value: value[key],
+        })
+      }
     }
   }
 
