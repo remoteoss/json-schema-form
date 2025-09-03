@@ -1,3 +1,9 @@
+#### 1.2.0 (2025-09-03)
+
+##### Bug Fixes
+
+* **schema:** validate schema properties when `additionalProperties` is set to `false`.  ([#230](https://github.com/remoteoss/json-schema-form/pull/230)) ([a1fdceb7](https://github.com/remoteoss/json-schema-form/commit/a1fdceb7b8d4ed4b32d508c40f80c8309970a80b))
+
 #### 1.1.2 (2025-08-29)
 
 ##### New Features
