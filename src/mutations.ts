@@ -181,10 +181,11 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema, 
       deepMergeSchemas(field, newField)
 
       const fieldSchema = schema.properties?.[field.name]
+      const originalFieldSchema = originalSchema.properties?.[field.name]
 
       if (fieldSchema && typeof fieldSchema === 'object') {
         if (field.fields && fieldSchema.type === 'object') {
-          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema, originalSchema)
+          updateFieldProperties(field.fields, fieldSchema as JsfObjectSchema, originalFieldSchema as JsfObjectSchema)
         }
       }
     }
