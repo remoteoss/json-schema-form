@@ -133,7 +133,20 @@ function applySchemaRules(
           applySchemaRules(propertySchema, values[key] as ObjectValue, options, jsonLogicContext)
         }
         if (propertySchema.items) {
-          applySchemaRules(propertySchema.items as JsfObjectSchema, values[key], options, jsonLogicContext)
+          /*
+          * This is a partial workaround to apply conditional logic to fields with items.
+          * Due to the nature of these fields, the value is an array. applySchemaRules expects
+          * an object and it simply does not process the rules if the value is not an object.
+          *
+          * The correct solution would be to refactor applySchemaRules to handle arrays properly,
+          * but for now we simply pass an empty object to ensure the rules are applied.
+          *
+          * This means that the visibility rules in this case will only be based on the
+          * schema and will not work based on the actual values of the items in the array.
+          *
+          * This is not ideal, but it's better than the previous situation where the rules were not applied at all.
+          */
+          applySchemaRules(propertySchema.items as JsfObjectSchema, {}, options, jsonLogicContext)
         }
       }
     }

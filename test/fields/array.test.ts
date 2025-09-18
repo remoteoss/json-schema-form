@@ -795,6 +795,243 @@ describe('buildFieldArray', () => {
     })
   })
 
+  describe('with visibility logic', () => {
+    describe('with constant logic', () => {
+      it('correctly applies visibility when the condition is true', () => {
+        const schema: JsfObjectSchema = {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            children: {
+              'items': {
+                'properties': {
+                  full_name: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Child Full Name',
+                    'type': 'string',
+                  },
+                  field_1: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Field 1',
+                    'type': 'string',
+                  },
+                  field_2: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Field 2',
+                    'type': 'string',
+                  },
+                },
+                'x-jsf-order': ['full_name', 'field_1', 'field_2'],
+                'required': ['full_name'],
+                'type': 'object',
+                'allOf': [
+                  {
+                    if: true,
+                    then: {
+                      required: ['field_1'],
+                      properties: {
+                        field_2: false,
+                      },
+                    },
+                    else: {
+                      required: ['field_2'],
+                      properties: {
+                        field_1: false,
+                      },
+                    },
+                  },
+                ],
+              },
+              'x-jsf-presentation': {
+                inputType: 'group-array',
+                addFieldText: 'Add new field',
+              },
+              'title': 'Children',
+              'type': 'array',
+            },
+          },
+          required: ['children'],
+        }
+
+        const form = createHeadlessForm(schema, { initialValues: { children: [{ full_name: 'name' }] } })
+
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_1')?.isVisible).toBe(true)
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_2')?.isVisible).toBe(false)
+      })
+
+      it('correctly applies visibility when the condition is false', () => {
+        const schema: JsfObjectSchema = {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            children: {
+              'items': {
+                'properties': {
+                  full_name: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Child Full Name',
+                    'type': 'string',
+                  },
+                  field_1: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Field 1',
+                    'type': 'string',
+                  },
+                  field_2: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Field 2',
+                    'type': 'string',
+                  },
+                },
+                'x-jsf-order': ['full_name', 'field_1', 'field_2'],
+                'required': ['full_name'],
+                'type': 'object',
+                'allOf': [
+                  {
+                    if: false,
+                    then: {
+                      required: ['field_1'],
+                      properties: {
+                        field_2: false,
+                      },
+                    },
+                    else: {
+                      required: ['field_2'],
+                      properties: {
+                        field_1: false,
+                      },
+                    },
+                  },
+                ],
+              },
+              'x-jsf-presentation': {
+                inputType: 'group-array',
+                addFieldText: 'Add new field',
+              },
+              'title': 'Children',
+              'type': 'array',
+            },
+          },
+          required: ['children'],
+        }
+
+        const form = createHeadlessForm(schema, { initialValues: { children: [{ full_name: 'name' }] } })
+
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_1')?.isVisible).toBe(false)
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_2')?.isVisible).toBe(true)
+      })
+    })
+
+    describe.skip('with logic based on answers', () => {
+      // This is not implemented yet for group-array
+
+      it('correctly handles visibility', () => {
+        const schema: JsfObjectSchema = {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            children: {
+              'items': {
+                'properties': {
+                  full_name: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Child Full Name',
+                    'type': 'string',
+                  },
+                  field_1: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Field 1',
+                    'type': 'string',
+                  },
+                  field_2: {
+                    'x-jsf-presentation': {
+                      inputType: 'text',
+                    },
+                    'title': 'Field 2',
+                    'type': 'string',
+                  },
+                },
+                'x-jsf-order': ['full_name', 'field_1', 'field_2'],
+                'required': ['full_name'],
+                'type': 'object',
+                'allOf': [
+                  {
+
+                    if: {
+                      properties: {
+                        full_name: {
+                          const: 'john',
+                        },
+                      },
+                      required: ['full_name'],
+                    },
+                    then: {
+                      required: ['field_1'],
+                      properties: {
+                        field_2: false,
+                      },
+                    },
+                    else: {
+                      required: ['field_2'],
+                      properties: {
+                        field_1: false,
+                      },
+                    },
+                  },
+                ],
+              },
+              'x-jsf-presentation': {
+                inputType: 'group-array',
+                addFieldText: 'Add new field',
+              },
+              'title': 'Children',
+              'type': 'array',
+            },
+          },
+          required: ['children'],
+        }
+
+        // Assert when the condition is true
+        const form = createHeadlessForm(schema, {
+          initialValues: {
+            children: [
+              { full_name: 'john' },
+            ],
+          },
+        })
+
+        // BUG:🐛 This should not fail. - The conditional is true, but it's behaving as if it was false
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_2')?.isVisible).toBe(false)
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_1')?.isVisible).toBe(true)
+
+        // Assert when the condition is false
+        form.handleValidation({
+          children: [
+            { full_name: 'kim' },
+          ],
+        })
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_2')?.isVisible).toBe(false)
+        expect(form.fields.find(({ name }) => name === 'children')?.fields?.find(({ name }) => name === 'field_1')?.isVisible).toBe(true)
+      })
+    })
+  })
+
   // These do not work with the current group-array API where all groups share the same `fields` property which
   // makes it impossible to have different fields for each item in the array.
   // This applies to all kinds of mutations such as conditional rendering, default values, etc. and not just titles.
