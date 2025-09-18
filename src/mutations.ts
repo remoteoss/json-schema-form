@@ -134,18 +134,18 @@ function applySchemaRules(
         }
         if (propertySchema.items) {
           /*
-             * This is a partial workaround for group-array field items with conditional visibility rules.
-             * Due to the nature of group-array, the value is an array. applySchemaRules expects an object
-             * and it simply does not process the rules if the value is not an object.
-             *
-             * The correct solution would be to refactor applySchemaRules to handle arrays properly,
-             * but for now we simply pass an empty object to ensure the rules are applied.
-             *
-             * This means that the visibility rules for group-array items will only be based on the
-             * schema and will not work based on the actual values of the items in the array.
-             *
-             * This is not ideal, but it's better than the previous situation where the rules were not applied at all.
-             */
+          * This is a partial workaround to apply conditional logic to fields with items.
+          * Due to the nature of these fields, the value is an array. applySchemaRules expects
+          * an object and it simply does not process the rules if the value is not an object.
+          *
+          * The correct solution would be to refactor applySchemaRules to handle arrays properly,
+          * but for now we simply pass an empty object to ensure the rules are applied.
+          *
+          * This means that the visibility rules in this case will only be based on the
+          * schema and will not work based on the actual values of the items in the array.
+          *
+          * This is not ideal, but it's better than the previous situation where the rules were not applied at all.
+          */
           applySchemaRules(propertySchema.items as JsfObjectSchema, {}, options, jsonLogicContext)
         }
       }
