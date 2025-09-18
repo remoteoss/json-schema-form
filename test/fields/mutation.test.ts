@@ -440,7 +440,7 @@ describe('field mutation', () => {
       })
     })
 
-    it('should be able to preserve x-jsf-presentation properties in a nested field when mutating the schema', () => {
+    it('should be able to preserve x-jsf-presentation properties in a nested field', () => {
       const customComponent = () => {
         return null
       }
