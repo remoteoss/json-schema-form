@@ -133,8 +133,7 @@ function applySchemaRules(
           applySchemaRules(propertySchema, values[key] as ObjectValue, options, jsonLogicContext)
         }
         if (propertySchema.items) {
-          if (propertySchema['x-jsf-presentation']?.inputType === 'group-array' && Array.isArray(values[key])) {
-            /*
+          /*
              * This is a partial workaround for group-array field items with conditional visibility rules.
              * Due to the nature of group-array, the value is an array. applySchemaRules expects an object
              * and it simply does not process the rules if the value is not an object.
@@ -147,11 +146,7 @@ function applySchemaRules(
              *
              * This is not ideal, but it's better than the previous situation where the rules were not applied at all.
              */
-            applySchemaRules(propertySchema.items as JsfObjectSchema, {}, options, jsonLogicContext)
-          }
-          else {
-            applySchemaRules(propertySchema.items as JsfObjectSchema, values[key], options, jsonLogicContext)
-          }
+          applySchemaRules(propertySchema.items as JsfObjectSchema, {}, options, jsonLogicContext)
         }
       }
     }
