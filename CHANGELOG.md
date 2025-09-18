@@ -1,8 +1,10 @@
+#### 1.2.2 (2025-09-18)
+
+##### Bug Fixes
+
+* **array:**  Fix conditional visibility in group-arrays for booleans conditionals ([#231](https://github.com/remoteoss/json-schema-form/pull/231)) ([91e5ccde](https://github.com/remoteoss/json-schema-form/commit/91e5ccdea52d2ec2fdd79a7720a19f34d12398c1))
+
 #### 1.2.1 (2025-09-18)
-
-##### Chores
-
-* **contributing:**  Clarify pnpm usage and node troubleshooting ([#217](https://github.com/remoteoss/json-schema-form/pull/217)) ([aebb39e1](https://github.com/remoteoss/json-schema-form/commit/aebb39e10f4c996708613a3a4e424f9de494a81f))
 
 ##### Bug Fixes
 
