@@ -1,3 +1,13 @@
+#### 1.2.1 (2025-09-18)
+
+##### Chores
+
+* **contributing:**  Clarify pnpm usage and node troubleshooting ([#217](https://github.com/remoteoss/json-schema-form/pull/217)) ([aebb39e1](https://github.com/remoteoss/json-schema-form/commit/aebb39e10f4c996708613a3a4e424f9de494a81f))
+
+##### Bug Fixes
+
+* **schema:**  keep custom functions on nested fields  ([#232](https://github.com/remoteoss/json-schema-form/pull/232)) ([2dbdd82b](https://github.com/remoteoss/json-schema-form/commit/2dbdd82bc77942883ab8c761eba4b0c989a8fe4a))
+
 #### 1.2.0 (2025-09-03)
 
 ##### Bug Fixes
