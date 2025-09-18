@@ -239,9 +239,6 @@ describe('modifySchema', () => {
     })
 
     it('replace nested field', () => {
-      const customComponent = () => {
-        return null
-      }
       const result = modifySchema(schemaAddress, {
         fields: {
           // You can use dot notation
@@ -253,10 +250,7 @@ describe('modifySchema', () => {
           }),
           // should be able to handle deep nested fields
           'address.apartment.number': {
-            'title': 'Apartment Number',
-            'x-jsf-presentation': {
-              Component: customComponent,
-            },
+            title: 'Apartment Number',
           },
           // Or pass the native object
           'address': (fieldAttrs) => {
@@ -294,10 +288,7 @@ describe('modifySchema', () => {
                     title: 'Floor',
                   },
                   number: {
-                    'title': 'Apartment Number',
-                    'x-jsf-presentation': {
-                      Component: customComponent,
-                    },
+                    title: 'Apartment Number',
                   },
                 },
               },

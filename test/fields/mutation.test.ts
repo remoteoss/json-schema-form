@@ -439,6 +439,32 @@ describe('field mutation', () => {
         hint: 'Optional contact method',
       })
     })
+
+    it('should be able to preserve x-jsf-presentation properties in a nested field when mutating the schema', () => {
+      const customComponent = () => {
+        return null
+      }
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          apartment: {
+            type: 'object',
+            properties: {
+              number: {
+                'type': 'string',
+                'x-jsf-presentation': {
+                  Component: customComponent,
+                },
+              },
+            },
+          },
+        },
+      }
+      const form = createHeadlessForm(schema)
+      form.handleValidation({ formType: 'advanced' })
+
+      expect(getField(form.fields, 'apartment', 'number')).toHaveProperty('Component', customComponent)
+    })
   })
 
   it('correctly updates required on fields', () => {
