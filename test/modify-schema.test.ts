@@ -107,6 +107,17 @@ describe('modifySchema', () => {
           city: {
             title: 'City',
           },
+          apartment: {
+            title: 'House',
+            properties: {
+              floor: {
+                title: 'Floor',
+              },
+              number: {
+                title: 'Number',
+              },
+            },
+          },
         },
       },
     },
@@ -237,6 +248,10 @@ describe('modifySchema', () => {
           'address.city': () => ({
             title: 'City name',
           }),
+          // should be able to handle deep nested fields
+          'address.apartment.number': {
+            title: 'Apartment Number',
+          },
           // Or pass the native object
           'address': (fieldAttrs) => {
             return {
@@ -262,10 +277,20 @@ describe('modifySchema', () => {
               },
               number: {
                 'title': 'Door Number',
-                'x-test-siblings': ['street', 'number', 'city'],
+                'x-test-siblings': ['street', 'number', 'city', 'apartment'],
               },
               city: {
                 title: 'City name',
+              },
+              apartment: {
+                properties: {
+                  floor: {
+                    title: 'Floor',
+                  },
+                  number: {
+                    title: 'Apartment Number',
+                  },
+                },
               },
             },
           },

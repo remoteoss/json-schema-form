@@ -51,7 +51,7 @@ interface ModifyResult {
  * shortToFullPath('foo.bar') // 'foo.properties.bar'
  */
 function shortToFullPath(path: string) {
-  return path.replace('.', '.properties.')
+  return path.replaceAll('.', '.properties.')
 }
 
 /**
