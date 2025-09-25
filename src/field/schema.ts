@@ -160,8 +160,7 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
     .map((schemaOption) => {
       const title = schemaOption.title
       const value = schemaOption.const
-      const presentation = schemaOption['x-jsf-presentation']
-      const meta = presentation?.meta
+      const presentation = typeof schemaOption['x-jsf-presentation'] === 'object' ? schemaOption['x-jsf-presentation'] : {}
 
       const result: {
         label: string
@@ -172,15 +171,10 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
         value,
       }
 
-      // Add meta if it exists
-      if (meta) {
-        result.meta = meta
-      }
-
       // Add other properties, without known ones we already handled above
       const { title: _, const: __, 'x-jsf-presentation': ___, ...rest } = schemaOption
 
-      return { ...result, ...rest }
+      return { ...result, ...presentation, ...rest }
     })
 }
 
