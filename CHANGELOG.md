@@ -1,3 +1,9 @@
+#### 1.2.3 (2025-09-25)
+
+##### Bug Fixes
+
+* **options:**  spread all option's presentation properties into option's root ([#233](https://github.com/remoteoss/json-schema-form/pull/233)) ([b98cc160](https://github.com/remoteoss/json-schema-form/commit/b98cc160bdf59c10e5a5f276f4564274e5e8e0b3))
+
 #### 1.2.2 (2025-09-18)
 
 ##### Bug Fixes
