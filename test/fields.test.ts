@@ -441,6 +441,79 @@ describe('fields', () => {
         },
       ])
     })
+
+    it('supports x-jsf-presentation properties inside options', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          plan: {
+            'type': 'string',
+            'oneOf': [
+              { const: 'free', title: 'Free' },
+              { 'const': 'basic', 'title': 'Basic', 'x-jsf-presentation': { meta: { displayCost: '$30.00/mo', originalCost: '$35.00/mo' } } },
+              { 'const': 'standard', 'title': 'Standard', 'x-jsf-presentation': { meta: { displayCost: '$50.00/mo' }, recommended: true } },
+            ],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          inputType: 'radio',
+          type: 'radio',
+          jsonType: 'string',
+          isVisible: true,
+          name: 'plan',
+          required: false,
+          options: [
+            { label: 'Free', value: 'free' },
+            { label: 'Basic', value: 'basic', meta: { displayCost: '$30.00/mo', originalCost: '$35.00/mo' } },
+            { label: 'Standard', value: 'standard', meta: { displayCost: '$50.00/mo' }, recommended: true },
+          ],
+        },
+      ])
+    })
+
+    it('ignores a non-object x-jsf-presentation', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          plan: {
+            'type': 'string',
+            'oneOf': [
+              { const: 'free', title: 'Free' },
+              // @ts-expect-error - using an invalid value on purpose
+              { 'const': 'basic', 'title': 'Basic', 'x-jsf-presentation': '$30.00/mo' },
+            ],
+            'x-jsf-presentation': {
+              inputType: 'radio',
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields).toEqual([
+        {
+          inputType: 'radio',
+          type: 'radio',
+          jsonType: 'string',
+          isVisible: true,
+          name: 'plan',
+          required: false,
+          options: [
+            { label: 'Free', value: 'free' },
+            { label: 'Basic', value: 'basic' },
+          ],
+        },
+      ])
+    })
   })
 
   describe('input type calculation', () => {
