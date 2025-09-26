@@ -1939,7 +1939,6 @@ export const schemaWithConditionalToFieldset = {
       then: {
         properties: {
           pto: {
-            $comment: '@BUG: This description does not disappear once activated.',
             description: 'Above 30 hours, the PTO needs to be at least 20 days.',
             minimum: 20,
           },
@@ -1972,14 +1971,14 @@ export const schemaWithConditionalToFieldset = {
   required: ['perks', 'work_hours_per_week'],
 };
 
-export const schemaWithRootFieldsetsConditionals = {
+export const schemaWithNestedFieldsetsConditionals = {
   additionalProperties: false,
   type: 'object',
   properties: {
     perks: {
       additionalProperties: false,
       properties: {
-        retirement: {
+        benefits_package: {
           oneOf: [
             {
               const: 'basic',
@@ -1990,13 +1989,13 @@ export const schemaWithRootFieldsetsConditionals = {
               title: 'Plus',
             },
           ],
-          title: 'Retirement',
+          title: 'Benefits package',
           type: 'string',
           'x-jsf-presentation': {
             inputType: 'radio',
           },
         },
-        has_pension: {
+        has_retirement_plan: {
           oneOf: [
             {
               const: 'yes',
@@ -2007,14 +2006,33 @@ export const schemaWithRootFieldsetsConditionals = {
               title: 'No',
             },
           ],
-          title: 'Has pension',
+          title: 'Has retirement plan?',
           type: 'string',
           'x-jsf-presentation': {
             inputType: 'radio',
           },
         },
+        retirement_plan: {
+          type: 'object',
+          title: 'Retirement plan',
+          properties: {
+            plan_name: {
+              type: 'string',
+              title: 'Plan name',
+            },
+            year: {
+              type: 'number',
+              title: 'Year',
+            },
+            amount: {
+              type: 'number',
+              title: 'Amount',
+            },
+          },
+          required: ['plan_name', 'year', 'amount'],
+        },
       },
-      required: ['retirement'],
+      required: ['benefits_package'],
       title: 'Perks',
       type: 'object',
       'x-jsf-presentation': {
@@ -2022,15 +2040,14 @@ export const schemaWithRootFieldsetsConditionals = {
       },
     },
   },
-  required: ['perks'],
   allOf: [
     {
       if: {
         properties: {
           perks: {
             properties: {
-              retirement: {
-                const: 'basic',
+              has_retirement_plan: {
+                const: 'no',
               },
             },
           },
@@ -2040,15 +2057,8 @@ export const schemaWithRootFieldsetsConditionals = {
         properties: {
           perks: {
             properties: {
-              has_pension: false,
+              retirement_plan: false,
             },
-          },
-        },
-      },
-      else: {
-        properties: {
-          perks: {
-            required: ['has_pension'],
           },
         },
       },
