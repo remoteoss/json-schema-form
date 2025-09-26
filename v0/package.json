@@ -43,7 +43,7 @@
   },
   "lint-staged": {
     "*.{js,jsx}": [
-      "npm run format"
+      "npm run format --prefix ./v0"
     ]
   },
   "dependencies": {
