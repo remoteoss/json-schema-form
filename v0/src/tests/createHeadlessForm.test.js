@@ -2202,48 +2202,53 @@ describe('createHeadlessForm', () => {
         });
       });
 
-      describe('supports fieldsets conditionals over nested fieldsets', () => {
-        it('Given a basic retirement, the perks.has_pension is hidden', async () => {
+      describe('supports conditionals over nested fieldsets', () => {
+        it('retirement_plan fieldset is hidden when no values are provided', () => {
           const { fields, handleValidation } = createHeadlessForm(
             schemaWithNestedFieldsetsConditionals,
             {}
           );
           const validateForm = (vals) => friendlyError(handleValidation(vals));
 
+          expect(getField(fields, 'perks', 'retirement_plan').isVisible).toBe(false);
+
           expect(validateForm({ perks: {} })).toEqual({
             perks: {
               benefits_package: 'Required field',
+              has_retirement_plan: 'Required field',
             },
           });
 
-          // retirement_plan is not visible
           expect(getField(fields, 'perks', 'retirement_plan').isVisible).toBe(false);
+        });
 
-          // can submit without retirement_plan
-          expect(validateForm({ perks: { benefits_package: 'basic' } })).toBeUndefined();
+        it("submits without retirement_plan when user selects 'no' for has_retirement_plan", () => {
+          const { fields, handleValidation } = createHeadlessForm(
+            schemaWithNestedFieldsetsConditionals,
+            {}
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
 
           expect(
-            validateForm({
-              perks: { benefits_package: 'plus', has_retirement_plan: 'yes' },
-            })
-          ).toEqual({
-            perks: {
-              retirement_plan: {
-                plan_name: 'Required field',
-                year: 'Required field',
-                amount: 'Required field',
-              },
-            },
-          });
+            validateForm({ perks: { benefits_package: 'basic', has_retirement_plan: 'no' } })
+          ).toBeUndefined();
 
-          // retirement_plan becomes visible
-          expect(getField(fields, 'perks', 'retirement_plan').isVisible).toBe(true);
+          expect(getField(fields, 'perks', 'retirement_plan').isVisible).toBe(false);
+        });
+
+        it("retirement_plan fieldset is visible when user selects 'yes' for has_retirement_plan", () => {
+          const { fields, handleValidation } = createHeadlessForm(
+            schemaWithNestedFieldsetsConditionals,
+            {}
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
 
           expect(
             validateForm({
               perks: {
-                benefits_package: 'plus',
+                benefits_package: 'basic',
                 has_retirement_plan: 'yes',
+                declare_amount: 'yes',
                 retirement_plan: { plan_name: 'test', year: 2025 },
               },
             })
@@ -2255,7 +2260,42 @@ describe('createHeadlessForm', () => {
             },
           });
 
-          // submit with valid retirement_plan
+          expect(getField(fields, 'perks', 'retirement_plan').isVisible).toBe(true);
+          expect(getField(fields, 'perks', 'declare_amount').isVisible).toBe(true);
+          expect(getField(fields, 'perks', 'declare_amount').default).toBe('yes');
+          expect(getField(fields, 'perks', 'retirement_plan', 'amount').isVisible).toBe(true);
+        });
+
+        it("retirement_plan's amount field is hidden when user selects 'no' for declare_amount", () => {
+          const { fields, handleValidation } = createHeadlessForm(
+            schemaWithNestedFieldsetsConditionals,
+            {}
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+          expect(
+            validateForm({
+              perks: {
+                benefits_package: 'basic',
+                has_retirement_plan: 'yes',
+                declare_amount: 'no',
+                retirement_plan: { plan_name: 'test', year: 2025 },
+              },
+            })
+          ).toBeUndefined();
+
+          expect(getField(fields, 'perks', 'retirement_plan').isVisible).toBe(true);
+          expect(getField(fields, 'perks', 'declare_amount').isVisible).toBe(true);
+          expect(getField(fields, 'perks', 'retirement_plan', 'amount').isVisible).toBe(false);
+        });
+
+        it('submits with valid retirement_plan', async () => {
+          const { handleValidation } = createHeadlessForm(
+            schemaWithNestedFieldsetsConditionals,
+            {}
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
           expect(
             validateForm({
               perks: {
@@ -2265,15 +2305,6 @@ describe('createHeadlessForm', () => {
               },
             })
           ).toBeUndefined();
-
-          expect(
-            validateForm({
-              perks: { benefits_package: 'plus', has_retirement_plan: 'no' },
-            })
-          ).toBeUndefined();
-
-          // retirement_plan becomes invisible
-          expect(getField(fields, 'perks', 'retirement_plan').isVisible).toBe(false);
         });
       });
     });
