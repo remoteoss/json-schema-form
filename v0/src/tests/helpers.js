@@ -2012,6 +2012,24 @@ export const schemaWithNestedFieldsetsConditionals = {
             inputType: 'radio',
           },
         },
+        declare_amount: {
+          oneOf: [
+            {
+              const: 'yes',
+              title: 'Yes',
+            },
+            {
+              const: 'no',
+              title: 'No',
+            },
+          ],
+          title: 'Declare retirement amount?',
+          type: 'string',
+          default: 'yes',
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+        },
         retirement_plan: {
           type: 'object',
           title: 'Retirement plan',
@@ -2029,10 +2047,13 @@ export const schemaWithNestedFieldsetsConditionals = {
               title: 'Amount',
             },
           },
-          required: ['plan_name', 'year', 'amount'],
+          required: ['plan_name', 'year'],
+          'x-jsf-presentation': {
+            inputType: 'fieldset',
+          },
         },
       },
-      required: ['benefits_package'],
+      required: ['benefits_package', 'has_retirement_plan'],
       title: 'Perks',
       type: 'object',
       'x-jsf-presentation': {
@@ -2058,6 +2079,62 @@ export const schemaWithNestedFieldsetsConditionals = {
           perks: {
             properties: {
               retirement_plan: false,
+              declare_amount: false,
+            },
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              declare_amount: {
+                const: 'no',
+              },
+            },
+            required: ['declare_amount'],
+          },
+        },
+      },
+      then: {
+        properties: {
+          perks: {
+            properties: {
+              retirement_plan: {
+                properties: {
+                  amount: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              has_retirement_plan: {
+                const: 'yes',
+              },
+              declare_amount: {
+                const: 'yes',
+              },
+            },
+            required: ['has_retirement_plan', 'declare_amount'],
+          },
+        },
+      },
+      then: {
+        properties: {
+          perks: {
+            properties: {
+              retirement_plan: {
+                required: ['amount'],
+              },
             },
           },
         },
