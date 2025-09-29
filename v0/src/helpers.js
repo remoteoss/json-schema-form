@@ -7,7 +7,7 @@ import set from 'lodash/set';
 import { lazy } from 'yup';
 
 import { checkIfConditionMatchesProperties } from './internals/checkIfConditionMatches';
-import { supportedTypes, getInputType } from './internals/fields';
+import { supportedTypes } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { processJSONLogicNode } from './jsonLogic';
 import { hasProperty } from './utils';
@@ -214,6 +214,46 @@ export function getPrefillValues(fields, initialValues = {}) {
 }
 
 /**
+ * Preserves the visibility of nested fields in a fieldset
+ * @param {Object} field - field object
+ * @param {String} parentPath - path to the parent field
+ * @returns {Object} - object with a map of the visibility of the nested fields, e.g. { 'parent.child': true }
+ */
+function preserveNestedFieldsVisibility(field, parentPath = '') {
+  return field.fields?.reduce?.((acc, f) => {
+    const path = parentPath ? `${parentPath}.${f.name}` : f.name;
+    if (!isNil(f.isVisible)) {
+      acc[path] = f.isVisible;
+    }
+
+    if (f.fields) {
+      Object.assign(acc, preserveNestedFieldsVisibility(f, path));
+    }
+    return acc;
+  }, {});
+}
+
+/**
+ * Restores the visibility of nested fields in a fieldset
+ * @param {Object} field - field object
+ * @param {Object} nestedFieldsVisibility - object with a map of the visibility of the nested fields, e.g. { 'parent.child': true }
+ * @param {String} parentPath - path to the parent field
+ */
+function restoreNestedFieldsVisibility(field, nestedFieldsVisibility, parentPath = '') {
+  field.fields.forEach((f) => {
+    const path = parentPath ? `${parentPath}.${f.name}` : f.name;
+    const visibility = get(nestedFieldsVisibility, path);
+    if (!isNil(visibility)) {
+      f.isVisible = visibility;
+    }
+
+    if (f.fields) {
+      restoreNestedFieldsVisibility(f, nestedFieldsVisibility, path);
+    }
+  });
+}
+
+/**
  * Updates field properties based on the current JSON-schema node and the required fields
  *
  * @param {Object} field - field object
@@ -243,9 +283,21 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     field.isVisible = true;
   }
 
+  // Store current visibility of fields within a fieldset before updating its attributes
+  const nestedFieldsVisibility = preserveNestedFieldsVisibility(field);
+
   const updateAttributes = (fieldAttrs) => {
     Object.entries(fieldAttrs).forEach(([key, value]) => {
       field[key] = value;
+
+      // If the field is a fieldset, restore the visibility of the fields within it.
+      // If this is not in place, calling updateField for multiple conditionals touching
+      // the same fieldset will unset previously calculated visibility for the nested fields.
+      // This is because rebuildFieldset is called via the calculateConditionalProperties closure
+      // created at the time of building the fields, and it returns a new fieldset.fields array
+      if (key === 'fields' && !isNil(nestedFieldsVisibility)) {
+        restoreNestedFieldsVisibility(field, nestedFieldsVisibility);
+      }
 
       if (key === 'schema' && typeof value === 'function') {
         // key "schema" refers to YupSchema that needs to be processed for validations.
@@ -336,9 +388,22 @@ export function processNode({
   const requiredFields = new Set(accRequired);
 
   // Go through the node properties definition and update each field accordingly
-  Object.keys(node.properties ?? []).forEach((fieldName) => {
+  Object.entries(node.properties ?? []).forEach(([fieldName, nestedNode]) => {
     const field = getField(fieldName, formFields);
     updateField(field, requiredFields, node, formValues, logic, { parentID });
+
+    // If we're processing a fieldset field node
+    // update the nested fields going through the node recursively.
+    const isFieldset = field?.inputType === supportedTypes.FIELDSET;
+    if (isFieldset) {
+      processNode({
+        node: nestedNode,
+        formValues: formValues[fieldName] || {},
+        formFields: field.fields,
+        parentID,
+        logic,
+      });
+    }
   });
 
   // Update required fields based on the `required` property and mutate node if needed
@@ -406,22 +471,6 @@ export function processNode({
       .forEach(({ required: allOfItemRequired }) => {
         allOfItemRequired.forEach(requiredFields.add, requiredFields);
       });
-  }
-
-  if (node.properties) {
-    Object.entries(node.properties).forEach(([name, nestedNode]) => {
-      const inputType = getInputType(nestedNode);
-      if (inputType === supportedTypes.FIELDSET) {
-        // It's a fieldset, which might contain scoped conditions
-        processNode({
-          node: nestedNode,
-          formValues: formValues[name] || {},
-          formFields: getField(name, formFields).fields,
-          parentID: name,
-          logic,
-        });
-      }
-    });
   }
 
   if (node['x-jsf-logic']) {

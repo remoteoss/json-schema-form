@@ -6,7 +6,7 @@ const esbuild = require('esbuild');
 
 const pkg = require('../package.json');
 
-const licenseContent = fs.readFileSync(path.join(__dirname, '../LICENSE'), 'utf8');
+const licenseContent = fs.readFileSync(path.join(__dirname, '../../LICENSE'), 'utf8');
 const packageJson = require(path.resolve(__dirname, '../package.json'));
 const pkgVersion = packageJson.version;
 

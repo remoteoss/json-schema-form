@@ -1939,7 +1939,6 @@ export const schemaWithConditionalToFieldset = {
       then: {
         properties: {
           pto: {
-            $comment: '@BUG: This description does not disappear once activated.',
             description: 'Above 30 hours, the PTO needs to be at least 20 days.',
             minimum: 20,
           },
@@ -1970,6 +1969,178 @@ export const schemaWithConditionalToFieldset = {
     },
   ],
   required: ['perks', 'work_hours_per_week'],
+};
+
+export const schemaWithNestedFieldsetsConditionals = {
+  additionalProperties: false,
+  type: 'object',
+  properties: {
+    perks: {
+      additionalProperties: false,
+      properties: {
+        benefits_package: {
+          oneOf: [
+            {
+              const: 'basic',
+              title: 'Basic',
+            },
+            {
+              const: 'plus',
+              title: 'Plus',
+            },
+          ],
+          title: 'Benefits package',
+          type: 'string',
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+        },
+        has_retirement_plan: {
+          oneOf: [
+            {
+              const: 'yes',
+              title: 'Yes',
+            },
+            {
+              const: 'no',
+              title: 'No',
+            },
+          ],
+          title: 'Has retirement plan?',
+          type: 'string',
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+        },
+        declare_amount: {
+          oneOf: [
+            {
+              const: 'yes',
+              title: 'Yes',
+            },
+            {
+              const: 'no',
+              title: 'No',
+            },
+          ],
+          title: 'Declare retirement amount?',
+          type: 'string',
+          default: 'yes',
+          'x-jsf-presentation': {
+            inputType: 'radio',
+          },
+        },
+        retirement_plan: {
+          type: 'object',
+          title: 'Retirement plan',
+          properties: {
+            plan_name: {
+              type: 'string',
+              title: 'Plan name',
+            },
+            year: {
+              type: 'number',
+              title: 'Year',
+            },
+            amount: {
+              type: 'number',
+              title: 'Amount',
+            },
+          },
+          required: ['plan_name', 'year'],
+          'x-jsf-presentation': {
+            inputType: 'fieldset',
+          },
+        },
+      },
+      required: ['benefits_package', 'has_retirement_plan'],
+      title: 'Perks',
+      type: 'object',
+      'x-jsf-presentation': {
+        inputType: 'fieldset',
+      },
+    },
+  },
+  allOf: [
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              has_retirement_plan: {
+                const: 'no',
+              },
+            },
+          },
+        },
+      },
+      then: {
+        properties: {
+          perks: {
+            properties: {
+              retirement_plan: false,
+              declare_amount: false,
+            },
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              declare_amount: {
+                const: 'no',
+              },
+            },
+            required: ['declare_amount'],
+          },
+        },
+      },
+      then: {
+        properties: {
+          perks: {
+            properties: {
+              retirement_plan: {
+                properties: {
+                  amount: false,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              has_retirement_plan: {
+                const: 'yes',
+              },
+              declare_amount: {
+                const: 'yes',
+              },
+            },
+            required: ['has_retirement_plan', 'declare_amount'],
+          },
+        },
+      },
+      then: {
+        properties: {
+          perks: {
+            properties: {
+              retirement_plan: {
+                required: ['amount'],
+              },
+            },
+          },
+        },
+      },
+    },
+  ],
 };
 
 export const schemaWorkSchedule = {
