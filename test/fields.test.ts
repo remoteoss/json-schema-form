@@ -686,6 +686,18 @@ describe('fields', () => {
       expect(field?.checkboxValue).toBe(true)
     })
 
+    it('uses checkbox input for boolean/null type array with boolean const value', () => {
+      const booleanNullSchema = {
+        'x-jsf-presentation': {
+          inputType: 'checkbox' as const,
+        },
+        'type': ['boolean', 'null'],
+      }
+      const field = buildFieldSchema(booleanNullSchema, 'test')
+      expect(field?.inputType).toBe('checkbox')
+      expect(field?.checkboxValue).toBe(true)
+    })
+
     // Skipping these tests until we have group-array support
     describe('array type inputs', () => {
       it('uses group-array when items has properties', () => {
