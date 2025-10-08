@@ -2327,6 +2327,29 @@ describe('createHeadlessForm', () => {
           // Explained at "Given values from hidden fields, it does not thrown an error"
           expect(handleValidation({ has_pet: false, pet_is_cat: true }).formErrors).toBeUndefined();
         });
+
+        
+        it('should set checkboxValue: true for optional boolean type', () => {
+          const schema = {
+            type: 'object',
+            properties: {
+              boolean_checkbox: {
+                title: 'Boolean Checkbox Test',
+                type: ['boolean', 'null'],
+                'x-jsf-presentation': {
+                  inputType: 'checkbox',
+                },
+              }
+            },
+            required: [],
+          };
+
+          const result = createHeadlessForm(schema);
+          
+          const [optionalCheckbox] = result.fields;
+          expect(optionalCheckbox?.inputType).toBe('checkbox')
+          expect(optionalCheckbox?.checkboxValue).toBe(true)
+        });
       });
     });
 
