@@ -2328,7 +2328,6 @@ describe('createHeadlessForm', () => {
           expect(handleValidation({ has_pet: false, pet_is_cat: true }).formErrors).toBeUndefined();
         });
 
-        
         it('should set checkboxValue: true for optional boolean type', () => {
           const schema = {
             type: 'object',
@@ -2339,16 +2338,16 @@ describe('createHeadlessForm', () => {
                 'x-jsf-presentation': {
                   inputType: 'checkbox',
                 },
-              }
+              },
             },
             required: [],
           };
 
           const result = createHeadlessForm(schema);
-          
+
           const [optionalCheckbox] = result.fields;
-          expect(optionalCheckbox?.inputType).toBe('checkbox')
-          expect(optionalCheckbox?.checkboxValue).toBe(true)
+          expect(optionalCheckbox?.inputType).toBe('checkbox');
+          expect(optionalCheckbox?.checkboxValue).toBe(true);
         });
       });
     });
