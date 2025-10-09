@@ -579,7 +579,7 @@ export function extractParametersFromNode(schemaNode) {
       ...(presentation?.inputType === 'checkbox' && { checkboxValue: node.const }),
       // - For checkboxes with boolean value
       ...(presentation?.inputType === 'checkbox' &&
-        node.type === 'boolean' && {
+        hasType(node.type, 'boolean') && {
           // true is what describes this checkbox as a boolean, regardless if its required or not
           checkboxValue: true,
         }),
