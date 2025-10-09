@@ -1,3 +1,9 @@
+#### 0.12.1-beta.0 (2025-10-09)
+
+##### Bug Fixes
+
+* **checkbox:**  Support optional boolean type for v0 ([#236](https://github.com/remoteoss/json-schema-form/pull/236)) ([76e8927f](https://github.com/remoteoss/json-schema-form/commit/76e8927fc2f4615620fe34eef303b2f9c8c81e6e))
+
 #### 0.12.0-beta.0 (2025-06-25)
 
 ##### New Features
