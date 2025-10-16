@@ -467,9 +467,9 @@ export function buildYupSchema(field, config, logic) {
     const fieldSetShape = {};
     innerFields.forEach((fieldSetfield) => {
       if (fieldSetfield.fields) {
-        fieldSetShape[fieldSetfield.name] = object().shape(
-          buildFieldSetSchema(fieldSetfield.fields)
-        );
+        fieldSetShape[fieldSetfield.name] = object()
+          .shape(buildFieldSetSchema(fieldSetfield.fields))
+          .nullable();
       } else {
         fieldSetShape[fieldSetfield.name] = buildYupSchema(
           {
