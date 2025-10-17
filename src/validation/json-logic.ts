@@ -281,11 +281,3 @@ export function addCustomJsonLogicOperations(ops?: Record<string, (...args: any[
     }
   }
 }
-
-export function removeCustomJsonLogicOperations(ops?: Record<string, (...args: any[]) => any>) {
-  if (ops) {
-    for (const name of Object.keys(ops)) {
-      jsonLogic.rm_operation(name)
-    }
-  }
-}
