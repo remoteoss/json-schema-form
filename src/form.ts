@@ -5,7 +5,7 @@ import type { LegacyOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
-import { addCustomJsonLogicOperations, removeCustomJsonLogicOperations } from './validation/json-logic'
+import { addCustomJsonLogicOperations } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
 
 export { LegacyOptions } from './validation/schema'
@@ -280,6 +280,10 @@ export function createHeadlessForm(
   validateOptions(options)
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
+  const customJsonLogicOps = options?.customJsonLogicOps
+
+  addCustomJsonLogicOperations(customJsonLogicOps)
+
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
   const updatedSchema = calculateFinalSchema({
     schema,
@@ -293,26 +297,17 @@ export function createHeadlessForm(
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const customJsonLogicOps = options?.customJsonLogicOps
+    const updatedSchema = calculateFinalSchema({
+      schema,
+      values: value,
+      options: options.legacyOptions,
+    })
 
-    try {
-      addCustomJsonLogicOperations(customJsonLogicOps)
+    const result = validate(value, updatedSchema, options.legacyOptions)
 
-      const updatedSchema = calculateFinalSchema({
-        schema,
-        values: value,
-        options: options.legacyOptions,
-      })
+    updateFieldProperties(fields, updatedSchema, schema)
 
-      const result = validate(value, updatedSchema, options.legacyOptions)
-
-      updateFieldProperties(fields, updatedSchema, schema)
-
-      return result
-    }
-    finally {
-      removeCustomJsonLogicOperations(customJsonLogicOps)
-    }
+    return result
   }
 
   return {
