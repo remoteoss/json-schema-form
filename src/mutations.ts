@@ -1,4 +1,5 @@
 import type { Field } from './field/type'
+import type { CreateHeadlessFormOptions } from './form'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { LegacyOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
@@ -24,18 +25,19 @@ export function calculateFinalSchema({
 }: {
   schema: JsfObjectSchema
   values: SchemaValue
-  options?: LegacyOptions
+  options?: CreateHeadlessFormOptions
 }): JsfObjectSchema {
   const jsonLogicContext = schema['x-jsf-logic'] ? getJsonLogicContextFromSchema(schema['x-jsf-logic'], values) : undefined
   const schemaCopy = safeDeepClone(schema)
+  const { legacyOptions, customJsonLogicOps } = options
 
-  applySchemaRules(schemaCopy, values, options, jsonLogicContext)
+  applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)
 
   if (jsonLogicContext?.schema.computedValues) {
-    applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values)
+    applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values, customJsonLogicOps)
     // If we had computed values applied to the schema,
     // we need to re-apply the schema rules to update the fields
-    applySchemaRules(schemaCopy, values, options, jsonLogicContext)
+    applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)
   }
 
   return schemaCopy

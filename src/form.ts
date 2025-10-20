@@ -284,7 +284,7 @@ export function createHeadlessForm(
   const updatedSchema = calculateFinalSchema({
     schema,
     values: initialValues,
-    options: options.legacyOptions,
+    options,
   })
 
   const fields = buildFields({ schema: updatedSchema, originalSchema: schema, strictInputType })
@@ -301,7 +301,7 @@ export function createHeadlessForm(
       const updatedSchema = calculateFinalSchema({
         schema,
         values: value,
-        options: options.legacyOptions,
+        options,
       })
 
       const result = validate(value, updatedSchema, options.legacyOptions)

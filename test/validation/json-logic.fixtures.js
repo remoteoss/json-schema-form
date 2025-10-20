@@ -763,3 +763,33 @@ export const schemaWithCustomValidationFunction = {
     },
   },
 }
+
+export const schemaWithCustomComputedValueFunction = {
+  'properties': {
+    field_a: {
+      type: 'string',
+    },
+    field_b: {
+      'type': 'string',
+      'title': 'Field with computed description',
+      'x-jsf-logic-computedAttrs': {
+        description: 'Computed value is {{custom_function_result}}',
+      },
+    },
+  },
+  'x-jsf-logic': {
+    computedValues: {
+      custom_function_result: {
+        rule: {
+          if: [
+            {
+              is_hello: { var: 'field_a' },
+            },
+            'value1',
+            'value2',
+          ],
+        },
+      },
+    },
+  },
+}
