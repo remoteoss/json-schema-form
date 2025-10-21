@@ -1,3 +1,9 @@
+#### 1.2.5 (2025-10-21)
+
+##### Bug Fixes
+
+* **json-logic:**  apply custom validators when calculating the final schema ([#238](https://github.com/remoteoss/json-schema-form/pull/238)) ([15da4569](https://github.com/remoteoss/json-schema-form/commit/15da45690d26a7e525053564df06163962531505))
+
 #### 1.2.4 (2025-10-06)
 
 ##### Bug Fixes

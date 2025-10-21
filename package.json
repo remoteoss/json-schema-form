@@ -1,7 +1,7 @@
 {
   "name": "@remoteoss/json-schema-form",
   "type": "module",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "packageManager": "pnpm@9.15.2",
   "description": "WIP V2 – Headless UI form powered by JSON Schemas",
   "author": "Remote.com <engineering@remote.com> (https://remote.com/)",
