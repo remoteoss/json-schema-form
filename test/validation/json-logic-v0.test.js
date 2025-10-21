@@ -15,6 +15,7 @@ import {
   schemaWithComputedAttributeThatDoesntExist,
   schemaWithComputedAttributeThatDoesntExistDescription,
   schemaWithComputedAttributeThatDoesntExistTitle,
+  schemaWithCustomComputedValueFunction,
   schemaWithCustomValidationFunction,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithDeepVarThatDoesNotExistOnFieldset,
@@ -475,10 +476,18 @@ describe('jsonLogic: cross-values validations', () => {
 
     it('validation on custom functions', () => {
       const actionThatWillThrow = () => {
-        createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: 'not a funcion' } })
+        createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: 'not a function' } })
       }
 
       expect(actionThatWillThrow).toThrow('Custom JSON Logic operator \'is_hello\' must be a function, but received type \'string\'.')
+    })
+
+    it('applies custom functions when initial values require them', () => {
+      const actionThatWillThrow = () => {
+        createHeadlessForm(schemaWithCustomComputedValueFunction, { strictInputType: false, customJsonLogicOps: { is_hello: a => a === 'hello world!' } })
+      }
+
+      expect(actionThatWillThrow).not.toThrow()
     })
   })
 })
