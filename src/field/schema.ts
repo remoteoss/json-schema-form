@@ -142,16 +142,19 @@ You can fix the json schema or skip this error by calling createHeadlessForm(sch
   return getInputTypeFromSchema(type || schema.type || 'string', schema)
 }
 
-// Cache converted options by content hash (works even when schemas are cloned)
-const optionsByContent = new Map<string, Array<FieldOption>>()
+const optionsMap = new Map<string, Array<FieldOption>>()
 
-// Create content hash from options array (uses length + sample for speed)
+/**
+ * Create a hash from options array for caching
+ * @param opts - The options to hash
+ * @returns The hash
+ */
 function hashOptions(opts: JsfSchema[]): string {
   if (!opts.length) {
     return '0'
   }
 
-  // Extract the const value from a schema option for hashing
+  // Extract the const value from an option
   const extractValue = (option: JsfSchema) => {
     return (typeof option === 'object' && option !== null) ? option.const : option
   }
@@ -161,7 +164,7 @@ function hashOptions(opts: JsfSchema[]): string {
   const middle = opts[Math.floor(length / 2)]
   const end = opts[length - 1]
 
-  // Sample first, middle, last options for a lightweight but reliable hash
+  // Sample 3 parts of the array for a reliable hash
   const sampledValues = [
     extractValue(start),
     extractValue(middle),
@@ -182,14 +185,12 @@ function hashOptions(opts: JsfSchema[]): string {
  * If it doesn't, we skip the option.
  */
 function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
-  // Check cache by content hash (works even when schemas are cloned)
   const hash = hashOptions(nodeOptions)
-  const cached = optionsByContent.get(hash)
+  const cached = optionsMap.get(hash)
   if (cached) {
     return cached
   }
 
-  // Convert options
   const converted = nodeOptions
     .filter((option): option is NonBooleanJsfSchema =>
       option !== null && typeof option === 'object' && option.const !== null,
@@ -214,8 +215,7 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
       return { ...result, ...presentation, ...rest }
     })
 
-  // Cache for future use
-  optionsByContent.set(hash, converted)
+  optionsMap.set(hash, converted)
   return converted
 }
 

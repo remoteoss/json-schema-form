@@ -100,7 +100,8 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1: T, sche
     else if (schema1Value && Array.isArray(schema2Value)) {
       const originalArray = schema1Value
 
-      // For 'options' arrays, just replace the whole array (they're immutable and cached)
+      // For 'options' arrays, just replace the whole array (they're immutable and cached) rather
+      // than recursively deep merging them
       if (key === 'options') {
         schema1[key as keyof T] = schema2Value as T[keyof T]
         continue
