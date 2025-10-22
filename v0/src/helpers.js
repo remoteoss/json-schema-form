@@ -161,7 +161,7 @@ function getPrefillSubFieldValues(field, defaultValues, parentFieldKeyPath) {
       initialValue[field.name] = subFieldValues;
     }
   } else {
-    // getDefaultValues and getPrefillSubFieldValues have a circluar dependency, resulting in one having to be used before defined.
+    // getDefaultValues and getPrefillSubFieldValues have a circular dependency, resulting in one having to be used before defined.
     // As function declarations are hoisted this should not be a problem.
     // eslint-disable-next-line no-use-before-define
 
@@ -214,46 +214,6 @@ export function getPrefillValues(fields, initialValues = {}) {
 }
 
 /**
- * Preserves the visibility of nested fields in a fieldset
- * @param {Object} field - field object
- * @param {String} parentPath - path to the parent field
- * @returns {Object} - object with a map of the visibility of the nested fields, e.g. { 'parent.child': true }
- */
-function preserveNestedFieldsVisibility(field, parentPath = '') {
-  return field.fields?.reduce?.((acc, f) => {
-    const path = parentPath ? `${parentPath}.${f.name}` : f.name;
-    if (!isNil(f.isVisible)) {
-      acc[path] = f.isVisible;
-    }
-
-    if (f.fields) {
-      Object.assign(acc, preserveNestedFieldsVisibility(f, path));
-    }
-    return acc;
-  }, {});
-}
-
-/**
- * Restores the visibility of nested fields in a fieldset
- * @param {Object} field - field object
- * @param {Object} nestedFieldsVisibility - object with a map of the visibility of the nested fields, e.g. { 'parent.child': true }
- * @param {String} parentPath - path to the parent field
- */
-function restoreNestedFieldsVisibility(field, nestedFieldsVisibility, parentPath = '') {
-  field.fields.forEach((f) => {
-    const path = parentPath ? `${parentPath}.${f.name}` : f.name;
-    const visibility = get(nestedFieldsVisibility, path);
-    if (!isNil(visibility)) {
-      f.isVisible = visibility;
-    }
-
-    if (f.fields) {
-      restoreNestedFieldsVisibility(f, nestedFieldsVisibility, path);
-    }
-  });
-}
-
-/**
  * Updates field properties based on the current JSON-schema node and the required fields
  *
  * @param {Object} field - field object
@@ -283,21 +243,9 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
     field.isVisible = true;
   }
 
-  // Store current visibility of fields within a fieldset before updating its attributes
-  const nestedFieldsVisibility = preserveNestedFieldsVisibility(field);
-
   const updateAttributes = (fieldAttrs) => {
     Object.entries(fieldAttrs).forEach(([key, value]) => {
       field[key] = value;
-
-      // If the field is a fieldset, restore the visibility of the fields within it.
-      // If this is not in place, calling updateField for multiple conditionals touching
-      // the same fieldset will unset previously calculated visibility for the nested fields.
-      // This is because rebuildFieldset is called via the calculateConditionalProperties closure
-      // created at the time of building the fields, and it returns a new fieldset.fields array
-      if (key === 'fields' && !isNil(nestedFieldsVisibility)) {
-        restoreNestedFieldsVisibility(field, nestedFieldsVisibility);
-      }
 
       if (key === 'schema' && typeof value === 'function') {
         // key "schema" refers to YupSchema that needs to be processed for validations.
@@ -347,6 +295,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       isRequired: fieldIsRequired,
       conditionBranch: node,
       formValues,
+      currentField: field,
     });
     updateAttributes(newAttributes);
     removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
@@ -416,7 +365,7 @@ export function processNode({
 
   if (node.if !== undefined) {
     const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
-    // BUG HERE (unreleated) - what if it matches but doesn't has a then,
+    // BUG HERE (unrelated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
       const { required: branchRequired } = processNode({
@@ -500,7 +449,6 @@ export function processNode({
 function clearValuesIfNotVisible(fields, formValues) {
   fields.forEach(({ isVisible = true, name, inputType, fields: nestedFields }) => {
     if (!isVisible) {
-      // TODO I (Sandrina) think this doesn't work. I didn't find any test covering this scenario. Revisit later.
       formValues[name] = null;
     }
     if (inputType === supportedTypes.FIELDSET && nestedFields && formValues[name]) {
@@ -508,6 +456,7 @@ function clearValuesIfNotVisible(fields, formValues) {
     }
   });
 }
+
 /**
  * Updates form fields properties based on the current form state and the JSON schema rules
  *
@@ -549,7 +498,7 @@ function getFieldOptions(node, presentation) {
     }));
   }
 
-  /** @deprecated - takes precendence in case a JSON Schema still has deprecated options */
+  /** @deprecated - takes precedence in case a JSON Schema still has deprecated options */
   if (presentation.options) {
     return presentation.options;
   }

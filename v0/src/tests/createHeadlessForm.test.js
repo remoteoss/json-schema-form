@@ -2307,6 +2307,85 @@ describe('createHeadlessForm', () => {
           ).toBeUndefined();
         });
       });
+
+      describe('supports computed values based on values from nested fieldsets', () => {
+        it("computed value for total_contributions is calculated correctly with defaults when user selects 'yes' for has_retirement_plan", () => {
+          const { fields, handleValidation } = createHeadlessForm(
+            schemaWithNestedFieldsetsConditionals,
+            {}
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+          expect(
+            validateForm({
+              perks: {
+                benefits_package: 'basic',
+                has_retirement_plan: 'yes',
+                declare_amount: 'no',
+                retirement_plan: {
+                  plan_name: 'test',
+                  create_plan: 'no',
+                },
+              },
+            })
+          ).toEqual({ perks: { retirement_plan: { year: 'Required field' } } });
+
+          expect(getField(fields, 'total_contributions').isVisible).toBe(true);
+          expect(getField(fields, 'total_contributions').default).toBe(0);
+          expect(getField(fields, 'total_contributions').const).toBe(0);
+        });
+
+        it('computed value for total_contributions is calculated correctly based on the selected months', () => {
+          const { fields, handleValidation } = createHeadlessForm(
+            schemaWithNestedFieldsetsConditionals,
+            {}
+          );
+          const validateForm = (vals) => friendlyError(handleValidation(vals));
+
+          expect(
+            validateForm({
+              perks: {
+                benefits_package: 'basic',
+                has_retirement_plan: 'yes',
+                declare_amount: 'no',
+                retirement_plan: {
+                  plan_name: 'test',
+                  year: 2025,
+                  create_plan: 'yes',
+                  planned_contributions: {
+                    months: ['january', 'february', 'march', 'april', 'may'],
+                  },
+                },
+              },
+            })
+          ).toBeUndefined();
+
+          expect(getField(fields, 'total_contributions').isVisible).toBe(true);
+          expect(getField(fields, 'total_contributions').default).toBe(5);
+          expect(getField(fields, 'total_contributions').const).toBe(5);
+
+          expect(
+            validateForm({
+              perks: {
+                benefits_package: 'basic',
+                has_retirement_plan: 'yes',
+                declare_amount: 'no',
+                retirement_plan: {
+                  plan_name: 'test',
+                  year: 2025,
+                  create_plan: 'yes',
+                  planned_contributions: {
+                    months: ['january', 'february', 'march'],
+                  },
+                },
+              },
+            })
+          ).toBeUndefined();
+
+          expect(getField(fields, 'total_contributions').default).toBe(3);
+          expect(getField(fields, 'total_contributions').const).toBe(3);
+        });
+      });
     });
 
     it('support "email" field type', () => {

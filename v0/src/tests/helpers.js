@@ -2023,7 +2023,7 @@ export const schemaWithNestedFieldsetsConditionals = {
               title: 'No',
             },
           ],
-          title: 'Declare retirement amount?',
+          title: 'Declare planned retirement amount?',
           type: 'string',
           default: 'yes',
           'x-jsf-presentation': {
@@ -2031,6 +2031,23 @@ export const schemaWithNestedFieldsetsConditionals = {
           },
         },
         retirement_plan: {
+          allOf: [
+            {
+              if: {
+                properties: {
+                  create_plan: {
+                    const: 'yes',
+                  },
+                },
+              },
+              then: {},
+              else: {
+                properties: {
+                  planned_contributions: false,
+                },
+              },
+            },
+          ],
           type: 'object',
           title: 'Retirement plan',
           properties: {
@@ -2041,10 +2058,72 @@ export const schemaWithNestedFieldsetsConditionals = {
             year: {
               type: 'number',
               title: 'Year',
+              default: 2025,
             },
             amount: {
               type: 'number',
-              title: 'Amount',
+              title: 'Planned amount',
+            },
+            create_plan: {
+              type: 'radio',
+              title: 'Create plan?',
+              oneOf: [
+                {
+                  const: 'yes',
+                  title: 'Yes',
+                },
+                {
+                  const: 'no',
+                  title: 'No',
+                },
+              ],
+              default: 'yes',
+              'x-jsf-presentation': {
+                inputType: 'radio',
+              },
+            },
+            planned_contributions: {
+              type: 'object',
+              title: 'Planned contributions',
+              properties: {
+                months: {
+                  default: ['january', 'february'],
+                  oneOf: [
+                    {
+                      const: 'january',
+                      title: 'January',
+                    },
+                    {
+                      const: 'february',
+                      title: 'February',
+                    },
+                    {
+                      const: 'march',
+                      title: 'March',
+                    },
+                    {
+                      const: 'april',
+                      title: 'April',
+                    },
+                    {
+                      const: 'may',
+                      title: 'May',
+                    },
+                    {
+                      const: 'june',
+                      title: 'June',
+                    },
+                  ],
+                  title: "Select the months when you'll contribute",
+                  type: 'array',
+                  'x-jsf-presentation': {
+                    inputType: 'checkbox',
+                  },
+                },
+              },
+              'x-jsf-presentation': {
+                inputType: 'fieldset',
+              },
             },
           },
           required: ['plan_name', 'year'],
@@ -2058,6 +2137,19 @@ export const schemaWithNestedFieldsetsConditionals = {
       type: 'object',
       'x-jsf-presentation': {
         inputType: 'fieldset',
+      },
+    },
+    total_contributions: {
+      title: 'Total contributions',
+      description: 'The total contributions for the retirement plan',
+      type: 'number',
+      'x-jsf-presentation': {
+        inputType: 'number',
+      },
+      'x-jsf-logic-computedAttrs': {
+        const: 'total_contributions',
+        default: 'total_contributions',
+        description: 'You will contribute {{total_contributions}} times this year',
       },
     },
   },
@@ -2141,6 +2233,125 @@ export const schemaWithNestedFieldsetsConditionals = {
       },
     },
   ],
+  'x-jsf-logic': {
+    computedValues: {
+      total_contributions: {
+        rule: {
+          if: [
+            {
+              and: [
+                {
+                  '===': [
+                    {
+                      var: 'perks.has_retirement_plan',
+                    },
+                    'yes',
+                  ],
+                },
+                {
+                  '===': [
+                    {
+                      var: 'perks.retirement_plan.create_plan',
+                    },
+                    'yes',
+                  ],
+                },
+              ],
+            },
+            {
+              '+': [
+                {
+                  if: [
+                    {
+                      in: [
+                        'january',
+                        {
+                          var: 'perks.retirement_plan.planned_contributions.months',
+                        },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+                {
+                  if: [
+                    {
+                      in: [
+                        'february',
+                        {
+                          var: 'perks.retirement_plan.planned_contributions.months',
+                        },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+                {
+                  if: [
+                    {
+                      in: [
+                        'march',
+                        {
+                          var: 'perks.retirement_plan.planned_contributions.months',
+                        },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+                {
+                  if: [
+                    {
+                      in: [
+                        'april',
+                        {
+                          var: 'perks.retirement_plan.planned_contributions.months',
+                        },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+                {
+                  if: [
+                    {
+                      in: [
+                        'may',
+                        {
+                          var: 'perks.retirement_plan.planned_contributions.months',
+                        },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+                {
+                  if: [
+                    {
+                      in: [
+                        'june',
+                        {
+                          var: 'perks.retirement_plan.planned_contributions.months',
+                        },
+                      ],
+                    },
+                    1,
+                    0,
+                  ],
+                },
+              ],
+            },
+            0,
+          ],
+        },
+      },
+    },
+  },
 };
 
 export const schemaWorkSchedule = {
