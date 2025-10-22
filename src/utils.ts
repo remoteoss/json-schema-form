@@ -99,6 +99,13 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1: T, sche
     // If the value is an array, cycle through it and merge values if they're different (take objects into account)
     else if (schema1Value && Array.isArray(schema2Value)) {
       const originalArray = schema1Value
+
+      // For 'options' arrays, just replace the whole array (they're immutable and cached)
+      if (key === 'options') {
+        schema1[key as keyof T] = schema2Value as T[keyof T]
+        continue
+      }
+
       // If the destiny value exists and it's an array, cycle through the incoming values and merge if they're different (take objects into account)
       for (const item of schema2Value) {
         if (item && typeof item === 'object') {

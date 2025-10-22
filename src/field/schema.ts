@@ -142,6 +142,35 @@ You can fix the json schema or skip this error by calling createHeadlessForm(sch
   return getInputTypeFromSchema(type || schema.type || 'string', schema)
 }
 
+// Cache converted options by content hash (works even when schemas are cloned)
+const optionsByContent = new Map<string, Array<FieldOption>>()
+
+// Create content hash from options array (uses length + sample for speed)
+function hashOptions(opts: JsfSchema[]): string {
+  if (!opts.length) {
+    return '0'
+  }
+
+  // Extract the const value from a schema option for hashing
+  const extractValue = (option: JsfSchema) => {
+    return (typeof option === 'object' && option !== null) ? option.const : option
+  }
+
+  const length = opts.length
+  const start = opts[0]
+  const middle = opts[Math.floor(length / 2)]
+  const end = opts[length - 1]
+
+  // Sample first, middle, last options for a lightweight but reliable hash
+  const sampledValues = [
+    extractValue(start),
+    extractValue(middle),
+    extractValue(end),
+  ]
+
+  return `${length}:${JSON.stringify(sampledValues)}`
+}
+
 /**
  * Convert options to the required format
  * This is used when we have a oneOf or anyOf schema property
@@ -153,7 +182,15 @@ You can fix the json schema or skip this error by calling createHeadlessForm(sch
  * If it doesn't, we skip the option.
  */
 function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
-  return nodeOptions
+  // Check cache by content hash (works even when schemas are cloned)
+  const hash = hashOptions(nodeOptions)
+  const cached = optionsByContent.get(hash)
+  if (cached) {
+    return cached
+  }
+
+  // Convert options
+  const converted = nodeOptions
     .filter((option): option is NonBooleanJsfSchema =>
       option !== null && typeof option === 'object' && option.const !== null,
     )
@@ -176,6 +213,10 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
 
       return { ...result, ...presentation, ...rest }
     })
+
+  // Cache for future use
+  optionsByContent.set(hash, converted)
+  return converted
 }
 
 /**
