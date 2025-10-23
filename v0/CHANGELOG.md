@@ -1,3 +1,9 @@
+#### 0.12.2-beta.0 (2025-10-23)
+
+##### New Features
+
+* **v0:**  Support nested fieldset conditionals ([#156](https://github.com/remoteoss/json-schema-form/pull/156)) ([877e82e1](https://github.com/remoteoss/json-schema-form/commit/877e82e148d1ff6964ba634108f8ca821c040565))
+
 #### 0.12.1-beta.0 (2025-10-09)
 
 ##### Bug Fixes
