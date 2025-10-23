@@ -7,7 +7,7 @@ import set from 'lodash/set';
 import { lazy } from 'yup';
 
 import { checkIfConditionMatchesProperties } from './internals/checkIfConditionMatches';
-import { supportedTypes, getInputType } from './internals/fields';
+import { supportedTypes } from './internals/fields';
 import { pickXKey } from './internals/helpers';
 import { processJSONLogicNode } from './jsonLogic';
 import { hasProperty } from './utils';
@@ -161,7 +161,7 @@ function getPrefillSubFieldValues(field, defaultValues, parentFieldKeyPath) {
       initialValue[field.name] = subFieldValues;
     }
   } else {
-    // getDefaultValues and getPrefillSubFieldValues have a circluar dependency, resulting in one having to be used before defined.
+    // getDefaultValues and getPrefillSubFieldValues have a circular dependency, resulting in one having to be used before defined.
     // As function declarations are hoisted this should not be a problem.
     // eslint-disable-next-line no-use-before-define
 
@@ -295,6 +295,7 @@ function updateField(field, requiredFields, node, formValues, logic, config) {
       isRequired: fieldIsRequired,
       conditionBranch: node,
       formValues,
+      currentField: field,
     });
     updateAttributes(newAttributes);
     removeConditionalStaleAttributes(field, newAttributes, rootFieldAttrs);
@@ -336,9 +337,22 @@ export function processNode({
   const requiredFields = new Set(accRequired);
 
   // Go through the node properties definition and update each field accordingly
-  Object.keys(node.properties ?? []).forEach((fieldName) => {
+  Object.entries(node.properties ?? []).forEach(([fieldName, nestedNode]) => {
     const field = getField(fieldName, formFields);
     updateField(field, requiredFields, node, formValues, logic, { parentID });
+
+    // If we're processing a fieldset field node
+    // update the nested fields going through the node recursively.
+    const isFieldset = field?.inputType === supportedTypes.FIELDSET;
+    if (isFieldset) {
+      processNode({
+        node: nestedNode,
+        formValues: formValues[fieldName] || {},
+        formFields: field.fields,
+        parentID,
+        logic,
+      });
+    }
   });
 
   // Update required fields based on the `required` property and mutate node if needed
@@ -351,7 +365,7 @@ export function processNode({
 
   if (node.if !== undefined) {
     const matchesCondition = checkIfConditionMatchesProperties(node, formValues, formFields, logic);
-    // BUG HERE (unreleated) - what if it matches but doesn't has a then,
+    // BUG HERE (unrelated) - what if it matches but doesn't has a then,
     // it should do nothing, but instead it jumps to node.else when it shouldn't.
     if (matchesCondition && node.then) {
       const { required: branchRequired } = processNode({
@@ -408,22 +422,6 @@ export function processNode({
       });
   }
 
-  if (node.properties) {
-    Object.entries(node.properties).forEach(([name, nestedNode]) => {
-      const inputType = getInputType(nestedNode);
-      if (inputType === supportedTypes.FIELDSET) {
-        // It's a fieldset, which might contain scoped conditions
-        processNode({
-          node: nestedNode,
-          formValues: formValues[name] || {},
-          formFields: getField(name, formFields).fields,
-          parentID: name,
-          logic,
-        });
-      }
-    });
-  }
-
   if (node['x-jsf-logic']) {
     const { required: requiredFromLogic } = processJSONLogicNode({
       node: node['x-jsf-logic'],
@@ -451,7 +449,6 @@ export function processNode({
 function clearValuesIfNotVisible(fields, formValues) {
   fields.forEach(({ isVisible = true, name, inputType, fields: nestedFields }) => {
     if (!isVisible) {
-      // TODO I (Sandrina) think this doesn't work. I didn't find any test covering this scenario. Revisit later.
       formValues[name] = null;
     }
     if (inputType === supportedTypes.FIELDSET && nestedFields && formValues[name]) {
@@ -459,6 +456,7 @@ function clearValuesIfNotVisible(fields, formValues) {
     }
   });
 }
+
 /**
  * Updates form fields properties based on the current form state and the JSON schema rules
  *
@@ -500,7 +498,7 @@ function getFieldOptions(node, presentation) {
     }));
   }
 
-  /** @deprecated - takes precendence in case a JSON Schema still has deprecated options */
+  /** @deprecated - takes precedence in case a JSON Schema still has deprecated options */
   if (presentation.options) {
     return presentation.options;
   }
