@@ -28,17 +28,23 @@ function isFieldRequired(node, field) {
 /**
  * Loops recursively through fieldset fields and returns an copy version of them
  * where the required property is updated.
+ * Since rebuildFieldset is called within a closure, we pass the current fields as parameter
+ * to restore the computed isVisible property.
  *
  * @param {Array} fields - list of fields of a fieldset
  * @param {Object} property - property that relates with the list of fields
  * @returns {Object}
  */
-function rebuildFieldset(fields, property) {
+function rebuildFieldset(fields, currentFields, property) {
   if (property?.properties) {
-    return fields.map((field) => {
+    return fields.map((field, index) => {
       const propertyConditionals = property.properties[field.name];
+      const isVisible = currentFields[index].isVisible;
       if (!propertyConditionals) {
-        return field;
+        return {
+          ...field,
+          isVisible,
+        };
       }
 
       const newFieldParams = extractParametersFromNode(propertyConditionals);
@@ -47,19 +53,22 @@ function rebuildFieldset(fields, property) {
         return {
           ...field,
           ...newFieldParams,
-          fields: rebuildFieldset(field.fields, propertyConditionals),
+          isVisible,
+          fields: rebuildFieldset(field.fields, currentFields[index].fields, propertyConditionals),
         };
       }
       return {
         ...field,
         ...newFieldParams,
+        isVisible,
         required: isFieldRequired(property, field),
       };
     });
   }
 
-  return fields.map((field) => ({
+  return fields.map((field, index) => ({
     ...field,
+    isVisible: currentFields[index].isVisible,
     required: isFieldRequired(property, field),
   }));
 }
@@ -92,7 +101,7 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
    *
    * @returns {calculateConditionalPropertiesReturn}
    */
-  return ({ isRequired, conditionBranch, formValues }) => {
+  return ({ isRequired, conditionBranch, formValues, currentField }) => {
     // Check if the current field is conditionally declared in the schema
     // console.log('::calc (closure original)', fieldParams.description);
     const conditionalProperty = conditionBranch?.properties?.[fieldParams.name];
@@ -110,7 +119,11 @@ export function calculateConditionalProperties({ fieldParams, customProperties, 
       let fieldSetFields;
 
       if (fieldParams.inputType === supportedTypes.FIELDSET) {
-        fieldSetFields = rebuildFieldset(fieldParams.fields, conditionalProperty);
+        fieldSetFields = rebuildFieldset(
+          fieldParams.fields,
+          currentField.fields,
+          conditionalProperty
+        );
         newFieldParams.fields = fieldSetFields;
       }
 

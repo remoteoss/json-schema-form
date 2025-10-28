@@ -1,6 +1,6 @@
 {
   "name": "@remoteoss/json-schema-form",
-  "version": "0.12.1-beta.0",
+  "version": "0.12.2-beta.0",
   "description": "Headless UI form powered by JSON Schemas",
   "author": "Remote.com <engineering@remote.com> (https://remote.com/)",
   "license": "MIT",
@@ -43,7 +43,7 @@
   },
   "lint-staged": {
     "*.{js,jsx}": [
-      "npm run format"
+      "npm run format --prefix ./v0"
     ]
   },
   "dependencies": {
