@@ -154,24 +154,7 @@ function hashOptions(opts: JsfSchema[]): string {
     return '0'
   }
 
-  // Extract the const value from an option
-  const extractValue = (option: JsfSchema) => {
-    return (typeof option === 'object' && option !== null) ? option.const : option
-  }
-
-  const length = opts.length
-  const start = opts[0]
-  const middle = opts[Math.floor(length / 2)]
-  const end = opts[length - 1]
-
-  // Sample 3 parts of the array for a reliable hash
-  const sampledValues = [
-    extractValue(start),
-    extractValue(middle),
-    extractValue(end),
-  ]
-
-  return `${length}:${JSON.stringify(sampledValues)}`
+  return JSON.stringify(opts)
 }
 
 /**
