@@ -1,3 +1,9 @@
+#### 1.2.6 (2025-10-30)
+
+##### Chores
+
+* **performance:**  optimise field updates with large dropdown options ([#239](https://github.com/remoteoss/json-schema-form/pull/239)) ([272e0536](https://github.com/remoteoss/json-schema-form/commit/272e053697fd59cb3f9d4b01fa17236e2c411630))
+
 #### 1.2.5 (2025-10-21)
 
 ##### Bug Fixes
