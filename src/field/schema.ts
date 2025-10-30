@@ -142,6 +142,21 @@ You can fix the json schema or skip this error by calling createHeadlessForm(sch
   return getInputTypeFromSchema(type || schema.type || 'string', schema)
 }
 
+const optionsMap = new Map<string, Array<FieldOption>>()
+
+/**
+ * Create a hash from options array for caching
+ * @param opts - The options to hash
+ * @returns The hash
+ */
+function hashOptions(opts: JsfSchema[]): string {
+  if (!opts.length) {
+    return '0'
+  }
+
+  return JSON.stringify(opts)
+}
+
 /**
  * Convert options to the required format
  * This is used when we have a oneOf or anyOf schema property
@@ -153,7 +168,13 @@ You can fix the json schema or skip this error by calling createHeadlessForm(sch
  * If it doesn't, we skip the option.
  */
 function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
-  return nodeOptions
+  const hash = hashOptions(nodeOptions)
+  const cached = optionsMap.get(hash)
+  if (cached) {
+    return cached
+  }
+
+  const converted = nodeOptions
     .filter((option): option is NonBooleanJsfSchema =>
       option !== null && typeof option === 'object' && option.const !== null,
     )
@@ -176,6 +197,9 @@ function convertToOptions(nodeOptions: JsfSchema[]): Array<FieldOption> {
 
       return { ...result, ...presentation, ...rest }
     })
+
+  optionsMap.set(hash, converted)
+  return converted
 }
 
 /**
