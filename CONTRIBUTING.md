@@ -6,7 +6,7 @@ If you have questions about the library, found a bug or want to suggest a featur
 
 ## Documentation
 
-Documentation website is available [here](https://json-schema-form.vercel.app/). Please note that its source code is not in the repo yet. Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high.
+Documentation website is available [here](https://json-schema-form.vercel.app/). Please note that its source code is not in the repo yet. Our docs are still coupled to Remote's internal Design System and integration tests. The effort to decouple it at the moment is too high. Please refer to [this section](#how-it-works) for details about how the library works.
 
 ## Setup
 
@@ -94,7 +94,7 @@ pnpm test:file path/to/file
 
 #### Local build
 
-The simplest way to test your local changes is to run the `dev` script — this re-generates a `dist` folder whenever a file is changed. 
+The simplest way to test your local changes is to run the `dev` script — this re-generates a `dist` folder whenever a file is changed.
 
 Once you have a `dist` folder being created, you can either:
 - Option A: Point your local project import to the `dist` folder.
@@ -179,3 +179,54 @@ The final release is done after merge.
     1. Choose the tag matching the newest version.
     2. Leave the title empty
     3. Copy the new part of the CHANGELOG to the description.
+
+## How it works
+
+This is a high level overview of how the library works and what its main components are.
+
+## Architecture Overview
+
+The code is organized into clear, focused modules to provide a clear separation of concerns and allow us to unit test each individual part of the library.
+
+### Main entry point
+
+- `src/index.ts` re-exports `createHeadlessForm` & `modifySchema`
+- `src/form.ts` defines  `createHeadlessForm` the main entry point to the library and orchestrates **field generation** and **validation**
+
+### Field generation
+
+- `src/field/schema.ts` implements generation of fields that can be used to build user interfaces from
+  - `buildFieldSchema` is the main function that builds a field for any given schema, we assume that the root schema is always of type `object`
+  - The rest of this modules implements helper functions for mapping the different schema types to corresponding fields
+
+### Validation Logic
+
+- `src/validation/schema.ts` provides the `validateSchema` function which can validate a JSON value against a given schema and returns validation errors in the form of `ValidationError[]`
+- `validateSchema` calls all type or keyword specific validation functions such as `validateObject`, `validateArray`, `validateString`, `validateAnyOf` , `validateCondition`, etc. and combine their returned validation errors
+- Those validation functions apply their validation logic when needed or simply return `[]`
+- When those functions need to validate a nested schema or `subschema` as the spec calls it, they recursively call `validateSchema`
+
+### Validation Error Handling
+
+- `src/errors/index.ts` defines the `ValidationError` type return from the validation functions
+- `src/errors/messages.ts` defines `getErrorMessage` which translates validation errors into human readable error messages which can be shown in a UI, these error messages are returned when calling `handleValidation` on a form as part of the `ValidationResult`
+
+## Configuration options
+
+`createHeadlessForm` takes an options object with three properties: [CreateHeadlessFormOptions](https://github.com/remoteoss/json-schema-form/blob/main/next/src/form.ts)
+
+- `initialValues` values to be used when initially rendering a form
+- `strictInputType` when true, each `['x-jsf-presentation'].inputType` must be present for each schema property
+- `validationOptions` an object that specifies options specific to validation, these options are here mainly for dragon and are disabled by default
+    - `treatNullAsUndefined`
+        - when true, a `null` value will be considered absent when validated against a schema
+        - per the json-schema spec `null` is a perfectly valid value that can be validated, for example with a schema like `{ "type": "null" }` that only allows a `null` value
+        - providing a `null` value to a schema like `{ "type": "string" }` should result in a validation error as the value’s type does not match
+        - json-schema-form v0 does not return this error and all our forms rely on this, form fields that have not been filled, even hidden ones, will cause `null` values to be passed which would result in validation errors in nearly every form
+        - dragon’s `useCreateHeadlessForm` hook enables this option by default
+    - `allowForbiddenValues`
+        - when true, validating a value against a `false`  schema will not result in a validation error
+        - when validating any value against a schema that is `false` the json-schema spec says that this is a validation error, as `false` means “you must not provide a value to this schema”
+        - we frequently use `false` schemas when we conditionally hide properties by setting them to `false`
+        - as mentioned above, dragon passes `null` values for hidden fields to `handleValidate`
+        - dragon’s `useCreateHeadlessForm` hook enables this option by default
