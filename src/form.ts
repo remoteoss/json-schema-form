@@ -10,7 +10,7 @@ import { validateSchema } from './validation/schema'
 
 export { LegacyOptions } from './validation/schema'
 
-interface FormResult {
+export interface FormResult {
   fields: Field[]
   isError: boolean
   error: string | null
