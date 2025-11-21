@@ -1,3 +1,9 @@
+#### 1.2.7 (2025-11-21)
+
+##### Fixes
+
+* **typescript:** export FormResult and related types for better type inference ([#241](https://github.com/remoteoss/json-schema-form/pull/241)) ([a9fd050](https://github.com/remoteoss/json-schema-form/commit/a9fd050))
+
 #### 1.2.6 (2025-10-30)
 
 ##### Chores
