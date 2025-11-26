@@ -217,8 +217,6 @@ describe('buildFieldArray', () => {
           isVisible: true,
           nameKey: 'title',
           required: false,
-          foo: 'bar',
-          bar: 'baz',
         },
       ],
       items: expect.any(Object),
@@ -1091,6 +1089,247 @@ describe('buildFieldArray', () => {
       expect(form.handleValidation({ animals: [{ kind: 'dog', name: 'Buddy' }, { kind: 'cat', name: 'Whiskers' }] }).formErrors).toBeUndefined()
       // This creates a form where the two items both mutate the same field and we have no way to distinguish them
       // as both will be rendered from the same fields in the `fields` property.
+    })
+  })
+
+  describe('default values', () => {
+    it('should preserve default values for GROUP_ARRAY fields', () => {
+      const schema: JsfSchema = {
+        type: 'array',
+        default: [
+          { title: 'Book 1', pages: 100 },
+          { title: 'Book 2', pages: 200 },
+        ],
+        items: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            pages: { type: 'number' },
+          },
+        },
+      }
+
+      const field = buildFieldSchema(schema, 'books', false)
+
+      expect(field?.default).toEqual([
+        { title: 'Book 1', pages: 100 },
+        { title: 'Book 2', pages: 200 },
+      ])
+    })
+
+    it('should preserve default values from originalSchema when processed schema loses it', () => {
+      const originalSchema: JsfSchema = {
+        type: 'array',
+        default: [{ title: 'Test Book', pages: 300 }],
+        items: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            pages: { type: 'number' },
+          },
+        },
+      }
+
+      // Simulate a processed schema where default was lost (e.g., during conditional merging)
+      const processedSchema: JsfSchema = {
+        type: 'array',
+        // default is missing here
+        items: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            pages: { type: 'number' },
+          },
+        },
+      }
+
+      const field = buildField({
+        schema: processedSchema,
+        name: 'books',
+        required: false,
+        originalSchema,
+        strictInputType: false,
+      })
+
+      expect(field?.default).toEqual([{ title: 'Test Book', pages: 300 }])
+    })
+
+    it('should use processed schema default if both exist', () => {
+      const originalSchema: JsfSchema = {
+        type: 'array',
+        default: [{ title: 'Original Book', pages: 150 }],
+        items: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            pages: { type: 'number' },
+          },
+        },
+      }
+
+      const processedSchema: JsfSchema = {
+        type: 'array',
+        default: [{ title: 'Updated Book', pages: 250 }],
+        items: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            pages: { type: 'number' },
+          },
+        },
+      }
+
+      const field = buildField({
+        schema: processedSchema,
+        name: 'books',
+        required: false,
+        originalSchema,
+        strictInputType: false,
+      })
+
+      // Should use processed schema's default, not originalSchema's
+      expect(field?.default).toEqual([{ title: 'Updated Book', pages: 250 }])
+    })
+
+    it('should preserve default values for GROUP_ARRAY fields that become visible conditionally', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          has_books: {
+            type: 'string',
+            default: 'no',
+            oneOf: [
+              { const: 'yes', title: 'Yes' },
+              { const: 'no', title: 'No' },
+            ],
+          },
+          books: {
+            type: 'array',
+            default: [
+              { title: 'Book 1', pages: 100 },
+              { title: 'Book 2', pages: 200 },
+            ],
+            items: {
+              type: 'object',
+              properties: {
+                title: { type: 'string' },
+                pages: { type: 'number' },
+              },
+            },
+          },
+        },
+        allOf: [
+          {
+            if: {
+              properties: {
+                has_books: { const: 'yes' },
+              },
+            },
+            then: {
+              required: ['books'],
+            },
+            else: {
+              properties: {
+                books: false,
+              },
+            },
+          },
+        ],
+      }
+
+      // Initially, field should be hidden but still have default
+      const formInitial = createHeadlessForm(schema, { initialValues: { has_books: 'no' } })
+      const fieldInitial = formInitial.fields.find(f => f.name === 'books')
+      expect(fieldInitial?.isVisible).toBe(false)
+      // Default should be preserved even when hidden
+      expect(fieldInitial?.default).toEqual([
+        { title: 'Book 1', pages: 100 },
+        { title: 'Book 2', pages: 200 },
+      ])
+
+      // When field becomes visible, default should still be available
+      formInitial.handleValidation({ has_books: 'yes' })
+      const fieldVisible = formInitial.fields.find(f => f.name === 'books')
+      expect(fieldVisible?.isVisible).toBe(true)
+      expect(fieldVisible?.default).toEqual([
+        { title: 'Book 1', pages: 100 },
+        { title: 'Book 2', pages: 200 },
+      ])
+    })
+  })
+
+  describe('inner field defaults', () => {
+    it('should NOT copy GROUP_ARRAY default to inner fields', () => {
+      const schema: JsfSchema = {
+        type: 'array',
+        default: [
+          { title: 'Book 1', pages: 100 },
+          { title: 'Book 2', pages: 200 },
+        ],
+        items: {
+          type: 'object',
+          properties: {
+            title: {
+              type: 'string',
+              title: 'Title',
+            },
+            pages: {
+              type: 'number',
+            },
+          },
+        },
+      }
+
+      const field = buildFieldSchema(schema, 'books', false)
+
+      // Parent GROUP_ARRAY field should have the default array
+      expect(field?.default).toEqual([
+        { title: 'Book 1', pages: 100 },
+        { title: 'Book 2', pages: 200 },
+      ])
+
+      // Inner fields should NOT have the parent's default array
+      const titleField = field?.fields?.find(f => f.name === 'title')
+      const pagesField = field?.fields?.find(f => f.name === 'pages')
+
+      expect(titleField?.default).toBeUndefined()
+      expect(pagesField?.default).toBeUndefined()
+    })
+
+    it('should preserve inner field defaults when specified', () => {
+      const schema: JsfSchema = {
+        type: 'array',
+        default: [
+          { title: 'Book 1', pages: 300 },
+        ],
+        items: {
+          type: 'object',
+          properties: {
+            title: {
+              type: 'string',
+              default: 'Untitled',
+            },
+            pages: {
+              type: 'number',
+              default: 0,
+            },
+          },
+        },
+      }
+
+      const field = buildFieldSchema(schema, 'books', false)
+
+      // Parent GROUP_ARRAY field should have the default array
+      expect(field?.default).toEqual([
+        { title: 'Book 1', pages: 300 },
+      ])
+
+      // Inner fields should have their own defaults, not the parent's array
+      const titleField = field?.fields?.find(f => f.name === 'title')
+      const pagesField = field?.fields?.find(f => f.name === 'pages')
+
+      expect(titleField?.default).toBe('Untitled')
+      expect(pagesField?.default).toBe(0)
     })
   })
 })
