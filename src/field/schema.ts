@@ -277,6 +277,7 @@ function getArrayFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJ
 
   if (schema.items?.type === 'object') {
     const objectSchema = schema.items as JsfObjectSchema
+    const originalItemsSchema = originalSchema.items as JsfObjectSchema | undefined
 
     for (const key in objectSchema.properties) {
       const isFieldRequired = objectSchema.required?.includes(key) || false
@@ -284,7 +285,9 @@ function getArrayFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJ
         schema: objectSchema.properties[key],
         name: key,
         required: isFieldRequired,
-        originalSchema,
+        // Use the inner field's original schema, not the GROUP_ARRAY schema
+        // This prevents the GROUP_ARRAY's default from being copied to inner fields
+        originalSchema: originalItemsSchema?.properties?.[key] || objectSchema.properties[key],
         strictInputType,
       })
       if (field) {
@@ -298,7 +301,8 @@ function getArrayFields(schema: NonBooleanJsfSchema, originalSchema: NonBooleanJ
       schema: schema.items,
       name: 'item',
       required: false,
-      originalSchema,
+      // Use the items schema from originalSchema, not the GROUP_ARRAY schema itself
+      originalSchema: originalSchema.items || schema.items,
       strictInputType,
     })
     if (field) {
@@ -376,7 +380,7 @@ export function buildFieldSchema({
     const inputType = getInputType(type, name, originalSchema, strictInputType)
     const inputHasInnerFields = ['fieldset', 'group-array'].includes(inputType)
 
-    return {
+    const hiddenField: Field = {
       type: inputType,
       name,
       inputType,
@@ -385,6 +389,13 @@ export function buildFieldSchema({
       isVisible: false,
       ...(inputHasInnerFields && { fields: [] }),
     }
+
+    // Preserve default from originalSchema for hidden fields (important for GROUP_ARRAY fields)
+    if (originalSchema.default !== undefined) {
+      hiddenField.default = originalSchema.default
+    }
+
+    return hiddenField
   }
 
   // If schema is any other boolean (true), just return null
@@ -416,6 +427,12 @@ export function buildFieldSchema({
     required,
     isVisible: true,
     ...(errorMessage && { errorMessage }),
+  }
+
+  // Preserve default from originalSchema if it's missing in the processed schema
+  // This is important for GROUP_ARRAY fields where defaults can be lost during conditional merging
+  if (field.default === undefined && originalSchema.default !== undefined) {
+    field.default = originalSchema.default
   }
 
   if (inputType === 'checkbox') {
