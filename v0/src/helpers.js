@@ -202,7 +202,6 @@ export function getPrefillValues(fields, initialValues = {}) {
       }
 
       default: {
-        if (!initialValues[fieldName]) 
         break;
       }
     }
