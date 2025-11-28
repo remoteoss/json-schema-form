@@ -88,10 +88,16 @@ describe('validateFile', () => {
     expect(errors).toEqual([errorLike({ path: [], validation: 'type' })])
   })
 
-  it('should fail validation for array with invalid file object (missing size)', () => {
-    const value = [{ name: 'file.txt' }] as any[] // Cast to bypass TS check, simulating bad input
+  it('should pass validation for array with file objects with only name', () => {
+    const value = [{ name: 'file.txt' }]
     const errors = validateSchema(value, fileSchemaWithSizeLimitKB)
-    expect(errors).toEqual([errorLike({ path: [], validation: 'fileStructure' })])
+    expect(errors).toEqual([])
+  })
+
+  it('should pass validation for array with File instances', () => {
+    const value = [new File(['file contents'], 'file.txt', { type: 'text/plain' })]
+    const errors = validateSchema(value, fileSchemaWithSizeLimitKB)
+    expect(errors).toEqual([])
   })
 
   it('should fail validation for array with invalid file object (missing name)', () => {

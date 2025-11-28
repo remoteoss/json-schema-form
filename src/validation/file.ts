@@ -3,8 +3,8 @@ import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { isObjectValue } from './util'
 
 // Represents a file-like object, either a browser native File or a plain object.
-// Both must have name (string) and size (number) properties.
-export type FileLike = (File & { name: string, size: number }) | { name: string, size: number }
+// A plain object must have a name (string) property.
+export type FileLike = File | { name: string, size?: number }
 
 /**
  * Validates file-specific constraints (maxFileSize, accept).
@@ -48,7 +48,7 @@ export function validateFile(
 
   // 2. Check structure of array items: Each item must be a FileLike object.
   const isStructureValid = value.every(
-    file => isObjectValue(file) && typeof file.name === 'string' && typeof file.size === 'number',
+    file => isObjectValue(file) && (typeof file.name === 'string' || file instanceof File),
   )
 
   if (!isStructureValid) {
@@ -62,7 +62,7 @@ export function validateFile(
   if (typeof presentation?.maxFileSize === 'number') {
     const maxSizeInBytes = presentation.maxFileSize * 1024 // Convert KB from schema to Bytes
     // Check if *any* file exceeds the limit.
-    const isAnyFileTooLarge = files.some(file => file.size > maxSizeInBytes)
+    const isAnyFileTooLarge = files.some(file => (file.size ?? 0) > maxSizeInBytes)
 
     if (isAnyFileTooLarge) {
       return [{ path, validation: 'maxFileSize', schema, value }]
