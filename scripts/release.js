@@ -107,7 +107,7 @@ async function getNewVersion() {
     const tags = await getVersionsFromGitTags();
     const latestOfficialTag = tags.find(tag => !tag.includes('-beta.') && !tag.includes('-dev.'));
     // If no official version found, use v0.0.0 as the starting point
-    const latestOfficialVersion = latestOfficialTag 
+    const latestOfficialVersion = latestOfficialTag
       ? semver.coerce(latestOfficialTag).version
       : '0.0.0';
 
@@ -150,7 +150,7 @@ async function gitCommit({ newVersion, releaseType }) {
 
 async function publish({ newVersion, releaseType, otp }) {
   console.log('Publishing new version...');
-  const npmTag = `v1-${releaseType}`;
+  const npmTag = releaseType === 'official' ? 'latest' : `v1-${releaseType}`;
   const originalVersion = packageJson.version;
 
   try {
@@ -168,7 +168,7 @@ async function publish({ newVersion, releaseType, otp }) {
     if (releaseType === 'beta') {
       console.log(`✍️ REMINDER: Please publish the release on Github too as "pre-release".`);
     }
-    
+
     if (releaseType === 'official') {
       console.log(`✍️ REMINDER: Please publish the release on Github too.`);
     }
