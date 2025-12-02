@@ -104,7 +104,7 @@ Once you have a `dist` folder being created, you can either:
 + import { createHeadlessForm } from '../../path/to/repo/json-schema-form/dist'
 ```
 
-- Optpion B: Use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/):
+- Option B: Use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/):
 
 ```bash
 # in json-schema-form repo:
