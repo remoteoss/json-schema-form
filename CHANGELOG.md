@@ -1,3 +1,10 @@
+#### 1.2.8 (2025-12-02)
+
+##### Bug Fixes
+
+* **group-array:**  support default values ([#245](https://github.com/remoteoss/json-schema-form/pull/245)) ([d3044693](https://github.com/remoteoss/json-schema-form/commit/d3044693e0ddee3c1aaaea9bf81bc71398b1e71c))
+* **file:** Support validation for file like objects ([#246](https://github.com/remoteoss/json-schema-form/pull/246)) ([726a8b67](https://github.com/remoteoss/json-schema-form/commit/726a8b67e75bf9a5d0eddcb1297115442da79069))
+
 #### 1.2.7 (2025-11-21)
 
 ##### Fixes
