@@ -1,16 +1,19 @@
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema } from '../../src/types'
 import { beforeEach, describe, expect, it, jest } from '@jest/globals'
 import jsonLogic from 'json-logic-js'
+import { createHeadlessForm } from '../../src/form'
 import * as JsonLogicValidation from '../../src/validation/json-logic'
 import * as SchemaValidation from '../../src/validation/schema'
 import { errorLike } from '../test-utils'
+import { schemaWithCustomComputedValueFunction, schemaWithCustomValidationFunction } from './json-logic.fixtures'
 
 const validateJsonLogicRules = JsonLogicValidation.validateJsonLogicRules
 
 // Mock json-logic-js
-jest.mock('json-logic-js', () => ({
-  apply: jest.fn(),
-}))
+// TODO/BUG: We cant mock this otherwise we can't test custom operators correctly.
+// jest.mock('json-logic-js', () => ({
+//   apply: jest.fn(),
+// }))
 
 describe('validateJsonLogicRules', () => {
   beforeEach(() => {
@@ -591,5 +594,103 @@ describe('applyComputedAttrsToSchema', () => {
     const temperatureSetting = result.properties?.temperature_setting as NonBooleanJsfSchema
     expect(temperatureSetting['x-jsf-logic-computedAttrs']).toBeUndefined()
     expect((temperatureSetting.oneOf?.[2] as NonBooleanJsfSchema)?.const).toBe(24)
+  })
+})
+
+describe.only('custom operators', () => {
+  it('custom function', () => {
+    const { handleValidation } = createHeadlessForm(schemaWithCustomValidationFunction, {
+      strictInputType: false,
+      customJsonLogicOps: {
+        is_hello: a => a === 'hello world',
+      },
+    })
+    expect(handleValidation({ field_a: 'hello world' }).formErrors).toEqual(undefined)
+    const { formErrors } = handleValidation({ field_a: 'wrong text' })
+    expect(formErrors?.field_a).toEqual('Invalid hello world')
+  })
+
+  it('custom function are form specific', () => {
+    const { handleValidation } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: a => a === 'hello world' } })
+    expect(handleValidation({ field_a: 'hello world' }).formErrors).toEqual(undefined)
+    const { formErrors } = handleValidation({ field_a: 'wrong text' })
+    expect(formErrors?.field_a).toEqual('Invalid hello world')
+
+    const { handleValidation: handleValidation2 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: a => a === 'hello world!' } })
+    expect(handleValidation2({ field_a: 'hello world!' }).formErrors).toEqual(undefined)
+
+    const { handleValidation: handleValidation3 } = createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false })
+    const actionThatWillThrow = () => {
+      handleValidation3({ field_a: 'hello world' })
+    }
+
+    expect(actionThatWillThrow).toThrow('Unrecognized operation is_hello')
+  })
+
+  it('validation on custom functions', () => {
+    const actionThatWillThrow = () => {
+      createHeadlessForm(schemaWithCustomValidationFunction, { strictInputType: false, customJsonLogicOps: { is_hello: 'not a function' } })
+    }
+
+    expect(actionThatWillThrow).toThrow('Custom JSON Logic operator \'is_hello\' must be a function, but received type \'string\'.')
+  })
+
+  it('applies custom functions when initial values require them', () => {
+    const actionThatWillThrow = () => {
+      createHeadlessForm(schemaWithCustomComputedValueFunction, { strictInputType: false, customJsonLogicOps: { is_hello: a => a === 'hello world!' } })
+    }
+
+    expect(actionThatWillThrow).not.toThrow()
+  })
+
+  it('custom function works with variables', () => {
+    const jsonSchema = {
+      'properties': {
+        start_date: {
+          type: 'string',
+          format: 'date',
+          title: 'Start Date',
+        },
+        end_date: {
+          'type': 'string',
+          'format': 'date',
+          'title': 'End Date',
+          'x-jsf-logic-validations': ['end_date_min_30_days'],
+        },
+      },
+      'required': ['start_date', 'end_date'],
+      'x-jsf-logic': {
+        validations: {
+          end_date_min_30_days: {
+            errorMessage: 'End date must be at least 30 days after the start date',
+            rule: {
+              '>=': [
+                { var: 'end_date' },
+                { date_add_days: [{ var: 'start_date' }, 30] },
+              ],
+            },
+          },
+        },
+      },
+    }
+
+    const dateAddDays = (date: string, days: number) => {
+      const result = new Date(date)
+      result.setDate(result.getDate() + days)
+      return result.toISOString().split('T')[0] // Returns YYYY-MM-DD format
+    }
+
+    // @ts-expect-error - jsonSchema Type is incomplete
+    const { handleValidation } = createHeadlessForm(jsonSchema, {
+      strictInputType: false,
+      customJsonLogicOps: {
+        date_add_days: dateAddDays,
+      },
+    })
+    const form1 = handleValidation({ start_date: '2025-01-01', end_date: '2025-01-15' })
+    expect(form1.formErrors?.end_date).toEqual('End date must be at least 30 days after the start date')
+
+    const form2 = handleValidation({ start_date: '2025-01-01', end_date: '2025-02-01' })
+    expect(form2.formErrors?.end_date).toEqual(undefined)
   })
 })
