@@ -491,3 +491,27 @@ describe('jsonLogic: cross-values validations', () => {
     })
   })
 })
+
+// False alarm!
+// it.only('keys inside x-jsf-* are passed to the root', () => {
+//   const schema = {
+//     properties: {
+//       workingHours: {
+//         'title': 'Working hours',
+//         'type': 'integer',
+//         'x-jsf-ui': {
+//           inputType: 'number',
+//           statement: {
+//             title: 'Watch out!',
+//             severity: 'warning',
+//             description: 'Working too many hours can cause serious health problems.',
+//           },
+//         },
+//       },
+//     },
+//   }
+
+//   const { fields } = createHeadlessForm(schema, { strictInputType: false })
+//   expect(fields[0].statement.title).toEqual('Watch out!')
+//   console.log(fields[0])
+// })

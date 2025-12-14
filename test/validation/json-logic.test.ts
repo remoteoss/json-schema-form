@@ -597,7 +597,58 @@ describe('applyComputedAttrsToSchema', () => {
   })
 })
 
-describe.only('custom operators', () => {
+it('applies computedValues on mount', () => {
+  const schema: JsfObjectSchema = {
+    'type': 'object',
+    'additionalProperties': false,
+    'properties': {
+      workingHours: {
+        'title': 'Working hours',
+        'type': 'integer',
+        'x-jsf-ui': {
+          inputType: 'number',
+        },
+      },
+      timeOff: {
+        'title': 'Time-off days',
+        'type': 'integer',
+        'x-jsf-ui': {
+          inputType: 'number',
+        },
+        'x-jsf-errorMessage': {
+          required: 'Don\'t you dare!',
+        },
+        'x-jsf-logic-computedAttrs': {
+          'description': 'Half of the working days, at least {{min_timeoff}} days.',
+          'minimum': '{{min_timeoff}}',
+          'x-jsf-errorMessage': {
+            minimum: 'Must be at least {{min_timeoff}} days.',
+          },
+        },
+      },
+    },
+    'x-jsf-logic': {
+      computedValues: {
+        min_timeoff: {
+          rule: {
+            '/': [
+              {
+                var: 'workingHours',
+              },
+              2,
+            ],
+          },
+        },
+      },
+    },
+  }
+
+  const { fields } = createHeadlessForm(schema, { strictInputType: false, initialValues: { workingHours: 20 } })
+
+  expect(fields[0].description).toBe('Half of the working days, at least 10 days.')
+})
+
+describe('custom operators', () => {
   it('custom function', () => {
     const { handleValidation } = createHeadlessForm(schemaWithCustomValidationFunction, {
       strictInputType: false,
@@ -693,4 +744,63 @@ describe.only('custom operators', () => {
     const form2 = handleValidation({ start_date: '2025-01-01', end_date: '2025-02-01' })
     expect(form2.formErrors?.end_date).toEqual(undefined)
   })
+})
+
+it.only('disallow conditional hidden fields', () => {
+  const schema: JsfObjectSchema = {
+    type: 'object',
+    properties: {
+      schedule: {
+        enum: ['part_time', 'full_time'],
+      },
+      workingHours: {
+        type: 'integer',
+      },
+      timeOff: {
+        type: 'integer',
+      },
+      holidayBonus: {
+        enum: ['monthly', 'yearly'],
+      },
+    },
+    required: ['schedule', 'workingHours', 'timeOff'],
+    allOf: [
+      {
+        if: {
+          properties: {
+            schedule: {
+              const: 'full_time',
+            },
+          },
+          required: ['schedule'],
+        },
+        then: {
+          properties: {
+            workingHours: {
+              minimum: 36,
+            },
+          },
+          required: ['holidayBonus'],
+        },
+        else: {
+          properties: {
+            workingHours: {
+              minimum: 0,
+              maximum: 35,
+            },
+            holidayBonus: false,
+          },
+        },
+      },
+    ],
+  }
+
+  const { handleValidation } = createHeadlessForm(schema, { strictInputType: false })
+  const { formErrors } = handleValidation({
+    schedule: 'part_time',
+    workingHours: 30,
+    timeOff: 20,
+    holidayBonus: 'monthly',
+  })
+  expect(formErrors).toEqual({ holidayBonus: 'Not allowed' })
 })
