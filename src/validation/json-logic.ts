@@ -233,7 +233,8 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValu
     // If it's a template, we need to interpolate it, replacing the handlebars with the computed value
     return message.replace(/\{\{(.*?)\}\}/g, (_, computation) => {
       const computationName = computation.trim()
-      return computedValues[computationName] || `{{${computationName}}}`
+      // 0 is a valid computation output
+      return computedValues[computationName] ?? `{{${computationName}}}`
     })
   }
 
