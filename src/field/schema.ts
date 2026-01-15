@@ -378,7 +378,6 @@ export function buildFieldSchema({
   if (schema === false) {
     // If the schema is false (hidden field), we use the original schema to get the input type
     const inputType = getInputType(type, name, originalSchema, strictInputType)
-    const inputHasInnerFields = ['fieldset', 'group-array'].includes(inputType)
 
     const hiddenField: Field = {
       type: inputType,
@@ -387,13 +386,17 @@ export function buildFieldSchema({
       jsonType: 'boolean',
       required,
       isVisible: false,
-      ...(inputHasInnerFields && { fields: [] }),
     }
 
     // Preserve default from originalSchema for hidden fields (important for GROUP_ARRAY fields)
     if (originalSchema.default !== undefined) {
       hiddenField.default = originalSchema.default
     }
+
+    // We still build nested fields if the parent schema is deemed false
+    // These allow the fields to be initialized by a form, and their default values to be set for when they're displayed
+    // We pass originalSchema instead of schema since schema is false at this point
+    addFields(hiddenField, originalSchema, originalSchema)
 
     return hiddenField
   }
