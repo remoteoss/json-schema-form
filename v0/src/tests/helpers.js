@@ -2039,6 +2039,7 @@ export const schemaWithNestedFieldsetsConditionals = {
                     const: 'yes',
                   },
                 },
+                required: ['create_plan'],
               },
               then: {},
               else: {
@@ -2161,29 +2162,6 @@ export const schemaWithNestedFieldsetsConditionals = {
         properties: {
           perks: {
             properties: {
-              has_retirement_plan: {
-                const: 'no',
-              },
-            },
-          },
-        },
-      },
-      then: {
-        properties: {
-          perks: {
-            properties: {
-              retirement_plan: false,
-              declare_amount: false,
-            },
-          },
-        },
-      },
-    },
-    {
-      if: {
-        properties: {
-          perks: {
-            properties: {
               declare_amount: {
                 const: 'no',
               },
@@ -2191,6 +2169,7 @@ export const schemaWithNestedFieldsetsConditionals = {
             required: ['declare_amount'],
           },
         },
+        required: ['perks'],
       },
       then: {
         properties: {
@@ -2214,6 +2193,32 @@ export const schemaWithNestedFieldsetsConditionals = {
               has_retirement_plan: {
                 const: 'yes',
               },
+            },
+            required: ['has_retirement_plan'],
+          },
+        },
+        required: ['perks'],
+      },
+      then: {},
+      else: {
+        properties: {
+          perks: {
+            properties: {
+              retirement_plan: false,
+              declare_amount: false,
+            },
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              has_retirement_plan: {
+                const: 'yes',
+              },
               declare_amount: {
                 const: 'yes',
               },
@@ -2221,6 +2226,7 @@ export const schemaWithNestedFieldsetsConditionals = {
             required: ['has_retirement_plan', 'declare_amount'],
           },
         },
+        required: ['perks'],
       },
       then: {
         properties: {
