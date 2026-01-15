@@ -98,7 +98,7 @@ describe('fields', () => {
       {
         inputType: 'fieldset',
         type: 'fieldset',
-        jsonType: 'boolean',
+        jsonType: 'object',
         fields: [
           {
             inputType: 'number',

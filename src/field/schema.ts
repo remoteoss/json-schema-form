@@ -383,7 +383,7 @@ export function buildFieldSchema({
       type: inputType,
       name,
       inputType,
-      jsonType: 'boolean',
+      jsonType: type || originalSchema.type,
       required,
       isVisible: false,
     }
