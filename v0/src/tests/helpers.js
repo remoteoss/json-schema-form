@@ -2065,7 +2065,7 @@ export const schemaWithNestedFieldsetsConditionals = {
               title: 'Planned amount',
             },
             create_plan: {
-              type: 'radio',
+              type: 'string',
               title: 'Create plan?',
               oneOf: [
                 {
@@ -2088,32 +2088,34 @@ export const schemaWithNestedFieldsetsConditionals = {
               properties: {
                 months: {
                   default: ['january', 'february'],
-                  oneOf: [
-                    {
-                      const: 'january',
-                      title: 'January',
-                    },
-                    {
-                      const: 'february',
-                      title: 'February',
-                    },
-                    {
-                      const: 'march',
-                      title: 'March',
-                    },
-                    {
-                      const: 'april',
-                      title: 'April',
-                    },
-                    {
-                      const: 'may',
-                      title: 'May',
-                    },
-                    {
-                      const: 'june',
-                      title: 'June',
-                    },
-                  ],
+                  items: {
+                    anyOf: [
+                      {
+                        const: 'january',
+                        title: 'January',
+                      },
+                      {
+                        const: 'february',
+                        title: 'February',
+                      },
+                      {
+                        const: 'march',
+                        title: 'March',
+                      },
+                      {
+                        const: 'april',
+                        title: 'April',
+                      },
+                      {
+                        const: 'may',
+                        title: 'May',
+                      },
+                      {
+                        const: 'june',
+                        title: 'June',
+                      },
+                    ],
+                  },
                   title: "Select the months when you'll contribute",
                   type: 'array',
                   'x-jsf-presentation': {

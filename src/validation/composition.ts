@@ -164,29 +164,18 @@ export function validateOneOf(
     }
   }
 
-  if (validCount === 0) {
-    return [
-      {
-        path,
-        validation: 'oneOf',
-        schema,
-        value,
-      },
-    ]
+  if (validCount === 1) {
+    return []
   }
 
-  if (validCount > 1) {
-    return [
-      {
-        path,
-        validation: 'oneOf',
-        schema,
-        value,
-      },
-    ]
-  }
-
-  return []
+  return [
+    {
+      path,
+      validation: 'oneOf',
+      schema,
+      value,
+    },
+  ]
 }
 
 /**
