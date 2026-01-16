@@ -1,11 +1,5 @@
 {
   "JSON Schema Test Suite": {
-    "additionalProperties being false does not allow other properties": [
-      "an additional property is invalid"
-    ],
-    "non-ASCII pattern with additionalProperties": [
-      "not matching the pattern is invalid"
-    ],
     "additionalProperties with schema": [
       "an additional invalid property is invalid"
     ],
@@ -17,11 +11,6 @@
     ],
     "additionalProperties with propertyNames": [
       "Valid against propertyNames, but not additionalProperties"
-    ],
-    "dependentSchemas with additionalProperties": [
-      "additionalProperties doesn't consider dependentSchemas",
-      "additionalProperties can't see bar",
-      "additionalProperties can't see bar even when foo2 is present"
     ],
     "Location-independent identifier": [
       "mismatch"
@@ -230,7 +219,6 @@
       "object with any properties is invalid"
     ],
     "root pointer ref": [
-      "mismatch",
       "recursive mismatch"
     ],
     "relative pointer ref to object": [
