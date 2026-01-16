@@ -104,12 +104,13 @@ function applySchemaRules(
   }
 
   // If the schema has an allOf property, evaluate each rule and add it to the conditional rules array
-  (schema.allOf ?? [])
-    .filter((rule: JsfSchema) => typeof rule.if !== 'undefined')
-    .forEach((rule) => {
-      const result = evaluateConditional(values, schema, rule as NonBooleanJsfSchema, options, jsonLogicContext)
-      conditionalRules.push(result)
-    })
+  const allOf = schema.allOf ?? []
+  const jsonLogicAllOf = schema['x-jsf-logic']?.allOf ?? [];
+
+  [...allOf, ...jsonLogicAllOf].filter((rule: JsfSchema) => typeof rule.if !== 'undefined').forEach((rule) => {
+    const result = evaluateConditional(values, schema, rule, options, jsonLogicContext)
+    conditionalRules.push(result)
+  })
 
   // Process the conditional rules
   for (const { rule, matches } of conditionalRules) {

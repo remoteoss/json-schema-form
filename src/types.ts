@@ -44,7 +44,14 @@ export interface JsonLogicRules {
     rule: RulesLogic
   }>
 }
-export interface JsonLogicRootSchema extends Pick<NonBooleanJsfSchema, 'if' | 'then' | 'else' | 'allOf' | 'anyOf' | 'oneOf' | 'not'> {}
+export type JsonLogicRootSchema = Pick<NonBooleanJsfSchema, 'if' | 'then' | 'else' | 'anyOf' | 'oneOf' | 'not'> & {
+  allOf?: (JsfSchema & { if?: JsonLogicIfNodeSchema })[]
+}
+
+export type JsonLogicIfNodeSchema = JsfSchema & {
+  validations?: JsfSchema
+  computedValues?: JsfSchema
+}
 
 export interface JsonLogicSchema extends JsonLogicRules, JsonLogicRootSchema {}
 
