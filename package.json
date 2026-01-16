@@ -39,7 +39,7 @@
     "lint": "eslint --max-warnings 0 .",
     "typecheck": "tsc --noEmit",
     "check": "pnpm run lint && pnpm run typecheck",
-    "check:pr-next-version": "node ../scripts/pr_next_dev_version",
+    "check:pr-next-version": "node ./scripts/pr_next_dev_version",
     "release:dev": "node ./scripts/release dev",
     "release:beta": "node ./scripts/release beta",
     "release": "node ./scripts/release official"
