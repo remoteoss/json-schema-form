@@ -49,8 +49,8 @@ export type JsonLogicRootSchema = Pick<NonBooleanJsfSchema, 'if' | 'then' | 'els
 }
 
 export type JsonLogicIfNodeSchema = JsfSchema & {
-  validations?: JsfSchema
-  computedValues?: JsfSchema
+  validations?: Record<string, JsfSchema>
+  computedValues?: Record<string, JsfSchema>
 }
 
 export interface JsonLogicSchema extends JsonLogicRules, JsonLogicRootSchema {}

@@ -184,7 +184,6 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedVal
      * If the schema has an allOf, anyOf or oneOf property, we need to cycle through each property inside it and
      * apply the computed values
      */
-
     if (propertySchema.allOf && propertySchema.allOf.length > 0) {
       for (const schema of propertySchema.allOf) {
         cycleThroughPropertiesAndApplyValues(schema, computedValues)
