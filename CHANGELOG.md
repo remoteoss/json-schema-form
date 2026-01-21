@@ -1,3 +1,9 @@
+#### 1.2.9 (2026-01-21)
+
+##### New Features
+
+*  Nested fieldsets conditionals & defaults support, json-logic `allOf` conditionals support ([#248](https://github.com/remoteoss/json-schema-form/pull/248)) ([a4e2b463](https://github.com/remoteoss/json-schema-form/commit/a4e2b46370293066ecc94724dd4e76b17a458a66))
+
 #### 1.2.8 (2025-12-02)
 
 ##### Bug Fixes
