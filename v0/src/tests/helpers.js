@@ -2039,6 +2039,7 @@ export const schemaWithNestedFieldsetsConditionals = {
                     const: 'yes',
                   },
                 },
+                required: ['create_plan'],
               },
               then: {},
               else: {
@@ -2065,7 +2066,7 @@ export const schemaWithNestedFieldsetsConditionals = {
               title: 'Planned amount',
             },
             create_plan: {
-              type: 'radio',
+              type: 'string',
               title: 'Create plan?',
               oneOf: [
                 {
@@ -2088,32 +2089,34 @@ export const schemaWithNestedFieldsetsConditionals = {
               properties: {
                 months: {
                   default: ['january', 'february'],
-                  oneOf: [
-                    {
-                      const: 'january',
-                      title: 'January',
-                    },
-                    {
-                      const: 'february',
-                      title: 'February',
-                    },
-                    {
-                      const: 'march',
-                      title: 'March',
-                    },
-                    {
-                      const: 'april',
-                      title: 'April',
-                    },
-                    {
-                      const: 'may',
-                      title: 'May',
-                    },
-                    {
-                      const: 'june',
-                      title: 'June',
-                    },
-                  ],
+                  items: {
+                    anyOf: [
+                      {
+                        const: 'january',
+                        title: 'January',
+                      },
+                      {
+                        const: 'february',
+                        title: 'February',
+                      },
+                      {
+                        const: 'march',
+                        title: 'March',
+                      },
+                      {
+                        const: 'april',
+                        title: 'April',
+                      },
+                      {
+                        const: 'may',
+                        title: 'May',
+                      },
+                      {
+                        const: 'june',
+                        title: 'June',
+                      },
+                    ],
+                  },
                   title: "Select the months when you'll contribute",
                   type: 'array',
                   'x-jsf-presentation': {
@@ -2159,29 +2162,6 @@ export const schemaWithNestedFieldsetsConditionals = {
         properties: {
           perks: {
             properties: {
-              has_retirement_plan: {
-                const: 'no',
-              },
-            },
-          },
-        },
-      },
-      then: {
-        properties: {
-          perks: {
-            properties: {
-              retirement_plan: false,
-              declare_amount: false,
-            },
-          },
-        },
-      },
-    },
-    {
-      if: {
-        properties: {
-          perks: {
-            properties: {
               declare_amount: {
                 const: 'no',
               },
@@ -2189,6 +2169,7 @@ export const schemaWithNestedFieldsetsConditionals = {
             required: ['declare_amount'],
           },
         },
+        required: ['perks'],
       },
       then: {
         properties: {
@@ -2212,6 +2193,32 @@ export const schemaWithNestedFieldsetsConditionals = {
               has_retirement_plan: {
                 const: 'yes',
               },
+            },
+            required: ['has_retirement_plan'],
+          },
+        },
+        required: ['perks'],
+      },
+      then: {},
+      else: {
+        properties: {
+          perks: {
+            properties: {
+              retirement_plan: false,
+              declare_amount: false,
+            },
+          },
+        },
+      },
+    },
+    {
+      if: {
+        properties: {
+          perks: {
+            properties: {
+              has_retirement_plan: {
+                const: 'yes',
+              },
               declare_amount: {
                 const: 'yes',
               },
@@ -2219,6 +2226,7 @@ export const schemaWithNestedFieldsetsConditionals = {
             required: ['has_retirement_plan', 'declare_amount'],
           },
         },
+        required: ['perks'],
       },
       then: {
         properties: {

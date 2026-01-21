@@ -180,10 +180,10 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedVal
       cycleThroughPropertiesAndApplyValues(propertySchema.if, computedValues)
     }
 
-    /* If the schema has an allOf or anyOf property, we need to cycle through each property inside it and
-    * apply the computed values
-    */
-
+    /**
+     * If the schema has an allOf, anyOf or oneOf property, we need to cycle through each property inside it and
+     * apply the computed values
+     */
     if (propertySchema.allOf && propertySchema.allOf.length > 0) {
       for (const schema of propertySchema.allOf) {
         cycleThroughPropertiesAndApplyValues(schema, computedValues)
@@ -233,7 +233,8 @@ function cycleThroughAttrsAndApplyValues(propertySchema: JsfSchema, computedValu
     // If it's a template, we need to interpolate it, replacing the handlebars with the computed value
     return message.replace(/\{\{(.*?)\}\}/g, (_, computation) => {
       const computationName = computation.trim()
-      return computedValues[computationName] || `{{${computationName}}}`
+      // 0 is a valid computation output
+      return computedValues[computationName] ?? `{{${computationName}}}`
     })
   }
 
