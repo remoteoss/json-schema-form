@@ -1,3 +1,9 @@
+#### 0.12.3-beta.0 (2026-01-21)
+
+##### Chores
+
+*  Fix schema used for testing v0 ([#248](https://github.com/remoteoss/json-schema-form/pull/248)) ([a4e2b463](https://github.com/remoteoss/json-schema-form/commit/a4e2b46370293066ecc94724dd4e76b17a458a66))
+
 #### 0.12.2-beta.0 (2025-10-23)
 
 ##### New Features
