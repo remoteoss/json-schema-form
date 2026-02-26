@@ -336,6 +336,79 @@ describe('modifySchema', () => {
       ])
     })
 
+    it.only('replace array item fields under config.fields.<arrayPath>.items.properties that dont exist gets ignored', () => {
+      const schemaPetWithArrayItemFields = {
+        ...schemaPet,
+        properties: {
+          ...schemaPet.properties,
+          meta: {
+            properties: {
+              description: 'Metadata of the pet',
+              tagNumbers: {
+                title: 'Tag History',
+                type: 'array',
+                items: {
+                  title: 'Tag Details',
+                  type: 'object',
+                  required: ['date', 'code'],
+                  properties: {
+                    date: {
+                      type: 'string',
+                    },
+                    code: {
+                      type: 'string',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }
+
+      const result = modifySchema(schemaPetWithArrayItemFields, {
+        fields: {
+          'meta.tagNumbers': {
+            items: {
+              properties: {
+                // fields that don't exist in the original schema are ignored
+                vetNumber: {
+                  type: 'number',
+                },
+              },
+            },
+          },
+        },
+      })
+
+      expect(result.schema.properties?.meta).toEqual({
+        properties: {
+          description: 'Metadata of the pet',
+          tagNumbers: {
+            title: 'Tag History',
+            type: 'array',
+            items: {
+              title: 'Tag Details',
+              type: 'object',
+              required: [
+                'date',
+                'code',
+              ],
+              properties: {
+                date: {
+                  type: 'string',
+                },
+                code: {
+                  type: 'string',
+                },
+                // vetNumber is not added
+              },
+            },
+          },
+        },
+      })
+    })
+
     it('replace all fields', () => {
       const result = modifySchema(schemaPet, {
         allFields: (fieldName, fieldAttrs) => {
