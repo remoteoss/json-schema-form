@@ -336,7 +336,7 @@ describe('modifySchema', () => {
       ])
     })
 
-    it.only('replace array item fields under config.fields.<arrayPath>.items.properties that dont exist gets ignored', () => {
+    it('replace array item fields under config.fields.<arrayPath>.items.properties that dont exist gets ignored', () => {
       const schemaPetWithArrayItemFields = {
         ...schemaPet,
         properties: {
