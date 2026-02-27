@@ -158,7 +158,7 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
 
     if (fieldChanges.items) {
       const itemSchema = fieldAttrs.items
-      const isSingleItemSchema = typeof itemSchema === 'object' && itemSchema !== null && !Array.isArray(itemSchema)
+      const isSingleItemSchema = typeof itemSchema === 'object' && itemSchema !== null
       if (isSingleItemSchema) {
         const { properties: itemProps, ...itemRest } = fieldChanges.items as Record<string, unknown>
         mergeWith(itemSchema, standardizeAttrs(itemRest as FieldModification), mergeReplaceArray)
