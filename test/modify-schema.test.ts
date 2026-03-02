@@ -67,24 +67,24 @@ describe('modifySchema', () => {
         },
       },
       pet_clinics: {
-        title: 'Pet clinics',
-        type: 'array',
+        'title': 'Pet clinics',
+        'type': 'array',
         'x-jsf-presentation': {
           inputType: 'group-array',
         },
-        items: {
+        'items': {
           type: 'object',
           properties: {
             name: {
-              title: 'name',
-              type: 'string',
+              'title': 'name',
+              'type': 'string',
               'x-jsf-presentation': {
                 inputType: 'select',
               },
             },
             address: {
-              title: 'address',
-              type: 'string',
+              'title': 'address',
+              'type': 'string',
               'x-jsf-presentation': {
                 inputType: 'text',
               },
@@ -323,7 +323,6 @@ describe('modifySchema', () => {
         },
       })
     })
-    
 
     it('replace fields that dont exist gets ignored', () => {
       // IMPORTANT NOTE on this behavior:
@@ -530,11 +529,11 @@ describe('modifySchema', () => {
         allFields: (fieldName, fieldAttrs) => {
           if (fieldAttrs['x-jsf-presentation']?.inputType === 'select') {
             return {
-              title: 'Clinic name',
+              'title': 'Clinic name',
               'x-jsf-presentation': {
                 inputType: 'text',
               },
-            };
+            }
           }
           return {}
         },
@@ -546,7 +545,7 @@ describe('modifySchema', () => {
             items: {
               properties: {
                 name: {
-                  title: 'Clinic name',
+                  'title': 'Clinic name',
                   'x-jsf-presentation': {
                     inputType: 'text',
                   },

@@ -47,7 +47,7 @@ interface ModifyResult {
  * JSON Schema keywords that are direct keys on a schema node (not inside `properties`)
  */
 const SCHEMA_PASSTHROUGH_KEYS = new Set([
-  'items'
+  'items',
 ])
 
 /**
@@ -65,7 +65,9 @@ const SCHEMA_PASSTHROUGH_KEYS = new Set([
 function shortToFullPath(path: string) {
   const segments = path.split('.')
   return segments.reduce((acc, segment, index) => {
-    if (index === 0) return segment
+    if (index === 0) {
+      return segment
+    }
     if (SCHEMA_PASSTHROUGH_KEYS.has(segment)) {
       return `${acc}.${segment}`
     }
