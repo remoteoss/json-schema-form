@@ -413,6 +413,7 @@ describe('modifySchema', () => {
           },
         },
       })
+      expect(result.warnings).toEqual([])
     })
 
     it('replace array item fields under config.fields.<arrayPath>.items.properties that dont exist gets ignored', () => {
@@ -486,6 +487,13 @@ describe('modifySchema', () => {
           },
         },
       })
+
+      expect(result.warnings).toEqual([
+        {
+          type: 'FIELD_TO_CHANGE_NOT_FOUND',
+          message: 'Changing field "vetNumber" was ignored because it does not exist.',
+        },
+      ])
     })
 
     it('replace all fields', () => {
