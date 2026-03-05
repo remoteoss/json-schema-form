@@ -145,18 +145,29 @@ function rewriteFields(schema: JsfSchema, fieldsConfig: ModifyConfig['fields']):
 
     const fieldChanges = typeof mutation === 'function' ? mutation(fieldAttrs) : mutation
 
-    mergeWith(
-      fieldAttrs,
-      {
-        ...standardizeAttrs(fieldChanges) as object,
-      },
-      mergeReplaceArray,
-    )
+    const toMerge = standardizeAttrs(fieldChanges) as Record<string, unknown>
+    delete toMerge.items
+    mergeWith(fieldAttrs, toMerge, mergeReplaceArray)
 
     if (fieldChanges.properties) {
       const result = rewriteFields(get(schema.properties!, fieldPath), fieldChanges.properties as ModifyConfig['fields'])
       if (result.warnings) {
         warnings.push(...result.warnings)
+      }
+    }
+
+    if (fieldChanges.items) {
+      const itemSchema = fieldAttrs.items
+      const isSingleItemSchema = typeof itemSchema === 'object' && itemSchema !== null
+      if (isSingleItemSchema) {
+        const { properties: itemProps, ...itemRest } = fieldChanges.items as Record<string, unknown>
+        mergeWith(itemSchema, standardizeAttrs(itemRest as FieldModification), mergeReplaceArray)
+        if (itemProps && typeof itemProps === 'object') {
+          const result = rewriteFields(itemSchema, itemProps as ModifyConfig['fields'])
+          if (result.warnings) {
+            warnings.push(...result.warnings)
+          }
+        }
       }
     }
   })

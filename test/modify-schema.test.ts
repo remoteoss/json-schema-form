@@ -336,6 +336,166 @@ describe('modifySchema', () => {
       ])
     })
 
+    it('replaces values in existing array item properties under config.fields.<arrayPath>.items.properties', () => {
+      const schemaPetWithArrayItemFields = {
+        ...schemaPet,
+        properties: {
+          ...schemaPet.properties,
+          meta: {
+            properties: {
+              description: 'Metadata of the pet',
+              tagNumbers: {
+                title: 'Tag History',
+                type: 'array',
+                items: {
+                  title: 'Tag Details',
+                  type: 'object',
+                  required: ['date', 'code'],
+                  properties: {
+                    date: {
+                      type: 'string',
+                      title: 'Date',
+                    },
+                    code: {
+                      type: 'string',
+                      title: 'Code',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }
+
+      const result = modifySchema(schemaPetWithArrayItemFields, {
+        fields: {
+          'meta.tagNumbers': {
+            items: {
+              title: 'Tag Entry',
+              properties: {
+                date: {
+                  title: 'Date applied',
+                  type: 'string',
+                },
+                code: {
+                  title: 'Tag code',
+                  minLength: 1,
+                },
+              },
+            },
+          },
+        },
+      })
+
+      expect(result.schema.properties?.meta).toEqual({
+        properties: {
+          description: 'Metadata of the pet',
+          tagNumbers: {
+            title: 'Tag History',
+            type: 'array',
+            items: {
+              title: 'Tag Entry',
+              type: 'object',
+              required: ['date', 'code'],
+              properties: {
+                date: {
+                  type: 'string',
+                  title: 'Date applied',
+                },
+                code: {
+                  type: 'string',
+                  title: 'Tag code',
+                  minLength: 1,
+                },
+              },
+            },
+          },
+        },
+      })
+      expect(result.warnings).toEqual([])
+    })
+
+    it('replace array item fields under config.fields.<arrayPath>.items.properties that dont exist gets ignored', () => {
+      const schemaPetWithArrayItemFields = {
+        ...schemaPet,
+        properties: {
+          ...schemaPet.properties,
+          meta: {
+            properties: {
+              description: 'Metadata of the pet',
+              tagNumbers: {
+                title: 'Tag History',
+                type: 'array',
+                items: {
+                  title: 'Tag Details',
+                  type: 'object',
+                  required: ['date', 'code'],
+                  properties: {
+                    date: {
+                      type: 'string',
+                    },
+                    code: {
+                      type: 'string',
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      }
+
+      const result = modifySchema(schemaPetWithArrayItemFields, {
+        fields: {
+          'meta.tagNumbers': {
+            items: {
+              properties: {
+                // fields that don't exist in the original schema are ignored
+                vetNumber: {
+                  type: 'number',
+                },
+              },
+            },
+          },
+        },
+      })
+
+      expect(result.schema.properties?.meta).toEqual({
+        properties: {
+          description: 'Metadata of the pet',
+          tagNumbers: {
+            title: 'Tag History',
+            type: 'array',
+            items: {
+              title: 'Tag Details',
+              type: 'object',
+              required: [
+                'date',
+                'code',
+              ],
+              properties: {
+                date: {
+                  type: 'string',
+                },
+                code: {
+                  type: 'string',
+                },
+                // vetNumber is not added
+              },
+            },
+          },
+        },
+      })
+
+      expect(result.warnings).toEqual([
+        {
+          type: 'FIELD_TO_CHANGE_NOT_FOUND',
+          message: 'Changing field "vetNumber" was ignored because it does not exist.',
+        },
+      ])
+    })
+
     it('replace all fields', () => {
       const result = modifySchema(schemaPet, {
         allFields: (fieldName, fieldAttrs) => {
