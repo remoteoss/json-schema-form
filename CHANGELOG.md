@@ -1,3 +1,9 @@
+#### 1.2.10 (2026-03-05)
+
+##### Bug Fixes
+
+* **modify:** Stop modified array item fields being added to schema when missing in original schema ([#250](https://github.com/remoteoss/json-schema-form/pull/250)) ([85e694da](https://github.com/remoteoss/json-schema-form/commit/85e694da7ab24fadc0de7005923695357473e50e))
+
 #### 1.2.9 (2026-01-21)
 
 ##### New Features
