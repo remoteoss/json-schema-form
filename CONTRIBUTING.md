@@ -104,14 +104,14 @@ Once you have a `dist` folder being created, you can either:
 + import { createHeadlessForm } from '../../path/to/repo/json-schema-form/dist'
 ```
 
-- Option B: Use [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/):
+- Option B: Use the `link` command of your project package manager tool to symlink the package build to your project's `node_modules`, e.g. [npm link](https://docs.npmjs.com/cli/v9/commands/npm-link) or [yarn link](https://classic.yarnpkg.com/lang/en/docs/cli/link/). For example, with `npm`:
 
 ```bash
 # in json-schema-form repo:
 $ npm link
 
 # cd to your project
-$ npm  link @remoteoss/json-schema-form
+$ npm link @remoteoss/json-schema-form
 
 # Run npm unlink --no-save @remoteoss/json-schema-form to remove the local symlink
 ```
@@ -122,7 +122,7 @@ If you need a public release (for example, to run it on your project CI), you ca
 
 Note that only core maintainers can publish public releases. If needed, ask us in the PR and we'll do it for you. Check PR #3 for the video walkthrough.
 
-1.  Locally run the script `npm run release:dev:patch` or `npm run release:dev:minor` depending on your changes.
+1.  Locally run the script `pnpm run release:dev patch` or `pnpm run release:dev minor` depending on your changes.
     1. You'll be shown what's the new version and prompt you if it's correct. Eg
        ```
        Creating a new dev...
@@ -138,7 +138,7 @@ Every `dev` release is [tagged as `dev`](https://docs.npmjs.com/cli/v9/commands/
 You must specify the exact version, for example:
 
 ```bash
-npm i -S @remoteoss/json-schema-form@1.0.1-dev.20230516-175718
+pnpm i -S @remoteoss/json-schema-form@1.0.1-dev.20230516-175718
 ```
 
 You can create as many dev releases as you need during the PRs, by running the same command.
@@ -159,7 +159,7 @@ The final release is done after merge.
 ### Publishing a stable release
 
 1.  Checkout `main` and pull the latest commit
-2.  Depending if you want a `patch` or `minor`, run the command `npm release:main:patch` or `npm release:main:minor`.
+2.  Depending if you want a `patch` or `minor`, run the command `pnpm run release patch` or `pnpm run release minor`.
 
     1. You'll be shown what's the new version and prompt you if it's correct. Eg
 
