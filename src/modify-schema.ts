@@ -44,14 +44,35 @@ interface ModifyResult {
 }
 
 /**
- * Converts a short path to a full path
+ * JSON Schema keywords that are direct keys on a schema node (not inside `properties`)
+ */
+const SCHEMA_PASSTHROUGH_KEYS = new Set([
+  'items',
+])
+
+/**
+ * Converts a short path to a full path, inserting `.properties.` before each
+ * segment that is a regular field name. JSON Schema structural keywords (e.g.
+ * `items`, `allOf`) are kept as-is because they are direct keys on a schema
+ * node, not nested inside `properties`.
+ *
  * @param {string} path
  * @returns {string} The full path
  * @example
- * shortToFullPath('foo.bar') // 'foo.properties.bar'
+ * shortToFullPath('foo.bar')          // 'foo.properties.bar'
+ * shortToFullPath('foo.items.bar')    // 'foo.items.properties.bar'
  */
 function shortToFullPath(path: string) {
-  return path.replaceAll('.', '.properties.')
+  const segments = path.split('.')
+  return segments.reduce((acc, segment, index) => {
+    if (index === 0) {
+      return segment
+    }
+    if (SCHEMA_PASSTHROUGH_KEYS.has(segment)) {
+      return `${acc}.${segment}`
+    }
+    return `${acc}.properties.${segment}`
+  }, '')
 }
 
 /**
@@ -200,6 +221,13 @@ function rewriteAllFields(schema: JsfSchema, configCallback: ModifyConfig['allFi
       // Nested fields, go recursive (fieldset)
       if (fieldAttrs.properties) {
         rewriteAllFields(fieldAttrs, configCallback, {
+          parent: fieldName,
+        })
+      }
+
+      // Array item fields, go recursive
+      if (fieldAttrs.items) {
+        rewriteAllFields(fieldAttrs.items, configCallback, {
           parent: fieldName,
         })
       }
