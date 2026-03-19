@@ -1,3 +1,9 @@
+#### 1.2.11 (2026-03-19)
+
+##### Bug Fixes
+
+* **modify:**  modify properties inside items array ([#251](https://github.com/remoteoss/json-schema-form/pull/251)) ([718af968](https://github.com/remoteoss/json-schema-form/commit/718af968e41151b014a8a45c20e775242f4b0b65))
+
 #### 1.2.10 (2026-03-05)
 
 ##### Bug Fixes
