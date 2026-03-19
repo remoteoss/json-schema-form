@@ -66,6 +66,32 @@ describe('modifySchema', () => {
           },
         },
       },
+      pet_clinics: {
+        'title': 'Pet clinics',
+        'type': 'array',
+        'x-jsf-presentation': {
+          inputType: 'group-array',
+        },
+        'items': {
+          type: 'object',
+          properties: {
+            name: {
+              'title': 'name',
+              'type': 'string',
+              'x-jsf-presentation': {
+                inputType: 'select',
+              },
+            },
+            address: {
+              'title': 'address',
+              'type': 'string',
+              'x-jsf-presentation': {
+                inputType: 'text',
+              },
+            },
+          },
+        },
+      },
     },
     'required': ['has_pet'],
     'x-jsf-order': ['has_pet', 'pet_name', 'pet_age', 'pet_fat', 'pet_address'],
@@ -633,6 +659,63 @@ describe('modifySchema', () => {
         },
       })
     })
+
+    it('replace field attrs inside array items', () => {
+      const result = modifySchema(schemaPet, {
+        fields: {
+          'pet_clinics.items.name': {
+            title: 'Clinic name',
+          },
+        },
+      })
+
+      expect(result.schema).toMatchObject({
+        properties: {
+          pet_clinics: {
+            items: {
+              properties: {
+                name: {
+                  title: 'Clinic name',
+                },
+              },
+            },
+          },
+        },
+      })
+    })
+
+    it('replace field attrs inside array items using allFields', () => {
+      const result = modifySchema(schemaPet, {
+        allFields: (fieldName, fieldAttrs) => {
+          if (fieldAttrs['x-jsf-presentation']?.inputType === 'select') {
+            return {
+              'title': 'Clinic name',
+              'x-jsf-presentation': {
+                inputType: 'text',
+              },
+            }
+          }
+          return {}
+        },
+      })
+
+      expect(result.schema).toMatchObject({
+        properties: {
+          pet_clinics: {
+            items: {
+              properties: {
+                name: {
+                  'title': 'Clinic name',
+                  'x-jsf-presentation': {
+                    inputType: 'text',
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+    })
   })
 
   describe('supporting custom attributes', () => {
@@ -700,7 +783,7 @@ describe('modifySchema', () => {
         },
       })
 
-      // Assert all the other propreties are kept
+      // Assert all the other properties are kept
       expect(result.schema).toMatchObject(invoiceSchema)
 
       expect(result.schema).toMatchObject({
