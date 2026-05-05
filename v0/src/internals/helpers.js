@@ -51,5 +51,5 @@ export function getFieldDescription(node, customProperties = {}) {
     presentation: { ...nodePresentation, ...customDescription },
   };
 
-  return merge({}, nodeDescription, { ...customDescription, ...presentation });
+  return merge(nodeDescription, { ...customDescription, ...presentation });
 }
