@@ -32,13 +32,6 @@ function standardizeAttrs(attrs) {
   };
 }
 
-/** Like object spread, but avoids spreading strings/booleans (would create bogus keys). */
-function mergeSourceBase(fieldAttrs) {
-  return fieldAttrs !== null && typeof fieldAttrs === 'object' && !Array.isArray(fieldAttrs)
-    ? fieldAttrs
-    : {};
-}
-
 function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
   const { if: ifCondition, then: thenCondition, else: elseCondition } = condition;
 
@@ -92,7 +85,7 @@ function rewriteFields(schema, fieldsConfig) {
     mergeWith(
       get(schema.properties, fieldPath),
       {
-        ...mergeSourceBase(fieldAttrs),
+        ...fieldAttrs,
         ...standardizeAttrs(fieldChanges),
       },
       mergeReplaceArray
@@ -117,7 +110,7 @@ function rewriteAllFields(schema, configCallback, context) {
     mergeWith(
       get(schema.properties, fieldName),
       {
-        ...mergeSourceBase(fieldAttrs),
+        ...fieldAttrs,
         ...standardizeAttrs(configCallback(fullName, fieldAttrs)),
       },
       mergeReplaceArray
