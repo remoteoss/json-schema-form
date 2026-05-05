@@ -1,9 +1,4 @@
-import difference from 'lodash/difference';
-import get from 'lodash/get';
-import intersection from 'lodash/intersection';
-import merge from 'lodash/merge';
-import mergeWith from 'lodash/mergeWith';
-import set from 'lodash/set';
+import { difference, get, intersection, merge, mergeWith, set } from 'es-toolkit/compat';
 
 // NOTE: If you change this, also update the d.ts file.
 export const WARNING_TYPES = {
@@ -35,6 +30,13 @@ function standardizeAttrs(attrs) {
     ...(presentation ? { 'x-jsf-presentation': presentation } : {}),
     ...(errorMessage ? { 'x-jsf-errorMessage': errorMessage } : {}),
   };
+}
+
+/** Like object spread, but avoids spreading strings/booleans (would create bogus keys). */
+function mergeSourceBase(fieldAttrs) {
+  return fieldAttrs !== null && typeof fieldAttrs === 'object' && !Array.isArray(fieldAttrs)
+    ? fieldAttrs
+    : {};
 }
 
 function isConditionalReferencingAnyPickedField(condition, fieldsToPick) {
@@ -90,7 +92,7 @@ function rewriteFields(schema, fieldsConfig) {
     mergeWith(
       get(schema.properties, fieldPath),
       {
-        ...fieldAttrs,
+        ...mergeSourceBase(fieldAttrs),
         ...standardizeAttrs(fieldChanges),
       },
       mergeReplaceArray
@@ -115,7 +117,7 @@ function rewriteAllFields(schema, configCallback, context) {
     mergeWith(
       get(schema.properties, fieldName),
       {
-        ...fieldAttrs,
+        ...mergeSourceBase(fieldAttrs),
         ...standardizeAttrs(configCallback(fullName, fieldAttrs)),
       },
       mergeReplaceArray

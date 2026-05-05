@@ -4,10 +4,7 @@
  * @typedef {Object} FieldDescription
  */
 
-import merge from 'lodash/fp/merge';
-import get from 'lodash/get';
-import isEmpty from 'lodash/isEmpty';
-import isFunction from 'lodash/isFunction';
+import { get, isEmpty, isFunction, merge } from 'es-toolkit/compat';
 
 /**
  * Shorthand to lookup for keys with `x-jsf-*` preffix.
@@ -54,5 +51,5 @@ export function getFieldDescription(node, customProperties = {}) {
     presentation: { ...nodePresentation, ...customDescription },
   };
 
-  return merge(nodeDescription, { ...customDescription, ...presentation });
+  return merge({}, nodeDescription, { ...customDescription, ...presentation });
 }
