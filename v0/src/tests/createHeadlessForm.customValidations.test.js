@@ -35,7 +35,6 @@ const schemaBasic = ({ newProperties, allOf } = {}) =>
   JSONSchemaBuilder()
     .addInput(
       merge(
-        {},
         {
           parent_age: { ...mockNumberInput, maximum: 100 },
           child_age: mockNumberInput,
