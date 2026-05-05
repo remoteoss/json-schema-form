@@ -1,9 +1,4 @@
-import get from 'lodash/get';
-import isNil from 'lodash/isNil';
-import omit from 'lodash/omit';
-import omitBy from 'lodash/omitBy';
-import pick from 'lodash/pick';
-import size from 'lodash/size';
+import { get, isNil, omit, omitBy, pick, size } from 'es-toolkit/compat';
 
 import { calculateConditionalProperties } from './calculateConditionalProperties';
 import {

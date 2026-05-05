@@ -395,9 +395,10 @@ describe('supporting shorthands', () => {
             'x-jsf-presentation': {
               inputType: 'number',
             },
+            type: 'integer',
           },
-          type: 'integer',
         },
+        type: 'object',
       },
     },
     required: ['title'],
