@@ -51,7 +51,6 @@ const schemaWithConditional = ({ newProperties } = {}) =>
   JSONSchemaBuilder()
     .addInput(
       merge(
-        {},
         {
           is_employee: mockRadioInputString,
           salary: { ...mockMoneyInput, minimum: 0 },
