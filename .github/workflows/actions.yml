@@ -18,9 +18,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           persist-credentials: false
 
-      - name: Initialize submodules
-        run: git submodule update --init
-
       - name: Setup pnpm
         uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3
         with:
