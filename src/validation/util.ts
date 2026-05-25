@@ -83,8 +83,7 @@ export function safeDeepClone<T>(obj: T): T {
     try {
       return structuredClone(obj)
     }
-    catch (err) {
-      console.warn('structuredClone failed, falling back to JSON method:', err)
+    catch {
       // Fall through to JSON method
     }
   }
