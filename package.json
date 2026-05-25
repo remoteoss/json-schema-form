@@ -37,6 +37,8 @@
     "test:v0-compare-results": "node test/v0_compare_test_results.js",
     "test:v0": "cd v0 && jest --json --outputFile=../test/v0-test-results.json; cd ..; pnpm run test:v0-compare-results",
     "lint": "eslint --max-warnings 0 .",
+    "lint:workflows": "zizmor .github/workflows/",
+    "lint:workflows:fix": "zizmor --fix .github/workflows/",
     "typecheck": "tsc --noEmit",
     "check": "pnpm run lint && pnpm run typecheck",
     "check:pr-next-version": "node ./scripts/pr_next_dev_version",
