@@ -230,3 +230,31 @@ The code is organized into clear, focused modules to provide a clear separation 
         - we frequently use `false` schemas when we conditionally hide properties by setting them to `false`
         - as mentioned above, dragon passes `null` values for hidden fields to `handleValidate`
         - dragon’s `useCreateHeadlessForm` hook enables this option by default
+
+### Workflow Security Auditing (Optional)
+
+This project uses [zizmor](https://woodruffw.github.io/zizmor/) to audit GitHub Actions workflows for security issues. The audit runs automatically in CI when workflow files are modified.
+
+To run the audit locally, you'll need to install `zizmor`:
+
+**macOS/Linux (via Homebrew):**
+```bash
+brew install zizmor
+```
+
+**Via Cargo:**
+```bash
+cargo install zizmor
+```
+
+Once installed, you can run the audit commands:
+
+```bash
+# Audit workflows
+pnpm run lint:workflows
+
+# Audit and auto-fix issues
+pnpm run lint:workflows:fix
+```
+
+Note: Installing zizmor is optional for development unless you're modifying GitHub Actions workflow files.
