@@ -26,5 +26,3 @@ jobs:
 
       - name: Run zizmor security audit
         uses: zizmorcore/zizmor-action@b1d7e1fb5de872772f31590499237e7cce841e8e
-        with:
-          sarif-file: zizmor-results.sarif
