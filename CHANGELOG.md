@@ -1,5 +1,14 @@
 #### 1.2.12 (2026-05-25)
 
+##### Bug Fixes
+
+* Remove console.log in safeDeepClone ([#255](https://github.com/remoteoss/json-schema-form/pull/255)) ([f2769e3](https://github.com/remoteoss/json-schema-form/commit/f2769e3b0fb3e065573044424d6c8c92a35aa5f5))
+
+###### Chore
+
+* **security**: add zizmor to add static analysis for github actions ([#256](https://github.com/remoteoss/json-schema-form/pull/256)) ([0600423](https://github.com/remoteoss/json-schema-form/commit/06004237e7df9f0ae60382ed89d7be8069e633cf))
+
+
 #### 1.2.11 (2026-03-19)
 
 ##### Bug Fixes
