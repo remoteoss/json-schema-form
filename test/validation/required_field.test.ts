@@ -58,6 +58,80 @@ describe('required field validation', () => {
     })
   })
 
+  it('treats an empty array as a present value for a required field', () => {
+    // A required array property with `minItems: 0` should accept an empty
+    // array: `required` only checks presence, and length is governed by
+    // `minItems`. See https://github.com/remoteoss/json-schema-form/issues/247
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        sources: {
+          type: 'array',
+          items: { type: 'integer' },
+          minItems: 0,
+        },
+      },
+      required: ['sources'],
+    }
+    const form = createHeadlessForm(schema)
+
+    // An empty array satisfies the required check
+    expect(form.handleValidation({ sources: [] })).not.toHaveProperty('formErrors')
+
+    // A populated array is also valid
+    expect(form.handleValidation({ sources: [1, 2] })).not.toHaveProperty('formErrors')
+
+    // A missing key is still reported as required
+    expect(form.handleValidation({})).toMatchObject({
+      formErrors: { sources: 'Required field' },
+    })
+  })
+
+  it('still enforces minItems on a required array (length is not the job of required)', () => {
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        sources: {
+          type: 'array',
+          items: { type: 'integer' },
+          minItems: 1,
+        },
+      },
+      required: ['sources'],
+    }
+    const form = createHeadlessForm(schema)
+
+    // An empty array is present (so not a "required" error) but violates
+    // minItems, so the error comes from minItems rather than required.
+    expect(form.handleValidation({ sources: [] })).toMatchObject({
+      formErrors: { sources: 'Must have at least 1 item' },
+    })
+
+    // A populated array satisfies minItems
+    expect(form.handleValidation({ sources: [1] })).not.toHaveProperty('formErrors')
+  })
+
+  it('treats an empty array as missing for a required field without minItems', () => {
+    // When no `minItems` is declared, a required array keeps the existing
+    // behaviour of treating an empty array as a missing value.
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        sources: {
+          type: 'array',
+          items: { type: 'integer' },
+        },
+      },
+      required: ['sources'],
+    }
+    const form = createHeadlessForm(schema)
+
+    expect(form.handleValidation({ sources: [] })).toMatchObject({
+      formErrors: { sources: 'Required field' },
+    })
+    expect(form.handleValidation({ sources: [1] })).not.toHaveProperty('formErrors')
+  })
+
   it('respects custom error messages from x-jsf-errorMessage', () => {
     const schema: JsfObjectSchema = {
       type: 'object',

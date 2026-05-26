@@ -247,6 +247,15 @@ export function validateSchema(
       // - it's null AND treatNullAsUndefined option is true
       // - it's an array/object and it's empty
       if (Array.isArray(fieldValue)) {
+        // By default an empty array is treated as a missing required value.
+        // However, when the field schema explicitly declares `minItems`, the
+        // allowed length is governed by `minItems` (validated separately), so
+        // an empty array should be considered present. This lets a required
+        // array opt into accepting empty values via `minItems: 0`.
+        const fieldSchema = schema.properties?.[key]
+        if (fieldSchema && typeof fieldSchema !== 'boolean' && fieldSchema.minItems !== undefined) {
+          return false
+        }
         return fieldValue.length === 0
       }
 
