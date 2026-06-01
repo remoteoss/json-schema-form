@@ -111,9 +111,9 @@ describe('required field validation', () => {
     expect(form.handleValidation({ sources: [1] })).not.toHaveProperty('formErrors')
   })
 
-  it('treats an empty array as missing for a required field without minItems', () => {
-    // When no `minItems` is declared, a required array keeps the existing
-    // behaviour of treating an empty array as a missing value.
+  it('treats an empty array as present for a required field without minItems', () => {
+    // An empty array satisfies `required` regardless of whether `minItems` is
+    // declared. Length is governed by `minItems` / `maxItems`, not `required`.
     const schema: JsfObjectSchema = {
       type: 'object',
       properties: {
@@ -126,10 +126,13 @@ describe('required field validation', () => {
     }
     const form = createHeadlessForm(schema)
 
-    expect(form.handleValidation({ sources: [] })).toMatchObject({
+    expect(form.handleValidation({ sources: [] })).not.toHaveProperty('formErrors')
+    expect(form.handleValidation({ sources: [1] })).not.toHaveProperty('formErrors')
+
+    // A missing key is still reported as required
+    expect(form.handleValidation({})).toMatchObject({
       formErrors: { sources: 'Required field' },
     })
-    expect(form.handleValidation({ sources: [1] })).not.toHaveProperty('formErrors')
   })
 
   it('respects custom error messages from x-jsf-errorMessage', () => {

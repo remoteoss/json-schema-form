@@ -245,18 +245,15 @@ export function validateSchema(
       // Field is considered missing if:
       // - it's undefined OR
       // - it's null AND treatNullAsUndefined option is true
-      // - it's an array/object and it's empty
+      // - it's an object and it's empty
+      //
+      // An array (including an empty one) counts as a present value: `required`
+      // only checks for the presence of a key, while array length is governed
+      // by `minItems` / `maxItems` (validated separately). To require a
+      // non-empty array, use `minItems: 1` rather than relying on `required`.
+
       if (Array.isArray(fieldValue)) {
-        // By default an empty array is treated as a missing required value.
-        // However, when the field schema explicitly declares `minItems`, the
-        // allowed length is governed by `minItems` (validated separately), so
-        // an empty array should be considered present. This lets a required
-        // array opt into accepting empty values via `minItems: 0`.
-        const fieldSchema = schema.properties?.[key]
-        if (fieldSchema && typeof fieldSchema !== 'boolean' && fieldSchema.minItems !== undefined) {
-          return false
-        }
-        return fieldValue.length === 0
+        return false
       }
 
       if (isObjectValue(fieldValue)) {
