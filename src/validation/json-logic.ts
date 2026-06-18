@@ -1,6 +1,5 @@
-import type { RulesLogic } from 'json-logic-js'
+import type { AdditionalOperation, RulesLogic } from 'json-logic-js'
 import type { ValidationError, ValidationErrorPath } from '../errors'
-import type { CreateHeadlessFormOptions } from '../form'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, JsonLogicRules, JsonLogicSchema, NonBooleanJsfSchema, ObjectValue, SchemaValue } from '../types'
 import jsonLogic from 'json-logic-js'
 
@@ -109,7 +108,7 @@ export function validateJsonLogicRules(
 
 export function computePropertyValues(
   name: string,
-  rule: RulesLogic,
+  rule: RulesLogic<AdditionalOperation>,
   values: SchemaValue,
 ): any {
   if (!rule) {
@@ -129,14 +128,11 @@ export function computePropertyValues(
  * @param schema - The schema to apply computed attributes to
  * @param computedValuesDefinition - The computed values to apply
  * @param values - The current form values
- * @param customJsonLogicOps - The custom JSON Logic operations to apply
  * @returns The schema with computed attributes applied
  */
-export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue, customJsonLogicOps: CreateHeadlessFormOptions['customJsonLogicOps'] = {}): JsfObjectSchema {
+export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValuesDefinition: JsonLogicRules['computedValues'], values: SchemaValue): JsfObjectSchema {
   if (computedValuesDefinition) {
     const computedValues: Record<string, any> = {}
-
-    addCustomJsonLogicOperations(customJsonLogicOps)
 
     Object.entries(computedValuesDefinition).forEach(([name, definition]) => {
       const computedValue = computePropertyValues(name, definition.rule, values)
@@ -144,8 +140,6 @@ export function applyComputedAttrsToSchema(schema: JsfObjectSchema, computedValu
     })
 
     cycleThroughPropertiesAndApplyValues(schema, computedValues)
-
-    removeCustomJsonLogicOperations(customJsonLogicOps)
   }
 
   return schema

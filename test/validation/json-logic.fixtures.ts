@@ -1,4 +1,6 @@
-export function createSchemaWithRulesOnFieldA(rules) {
+import type { JsfObjectSchema, JsonLogicRules } from '../../src/types'
+
+export function createSchemaWithRulesOnFieldA(rules: NonNullable<JsonLogicRules['validations']>) {
   return {
     'properties': {
       field_a: {
@@ -14,7 +16,7 @@ export function createSchemaWithRulesOnFieldA(rules) {
   }
 }
 
-export function createSchemaWithThreePropertiesWithRuleOnFieldA(rules) {
+export function createSchemaWithThreePropertiesWithRuleOnFieldA(rules: NonNullable<JsonLogicRules['validations']>) {
   return {
     'properties': {
       field_a: {
@@ -746,6 +748,7 @@ export const schemaWithReduceAccumulator = {
 }
 
 export const schemaWithCustomValidationFunction = {
+  'type': 'object',
   'properties': {
     field_a: {
       'type': 'string',
@@ -762,7 +765,7 @@ export const schemaWithCustomValidationFunction = {
       },
     },
   },
-}
+} as JsfObjectSchema
 
 export const schemaWithCustomComputedValueFunction = {
   'properties': {

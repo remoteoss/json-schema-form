@@ -273,6 +273,14 @@ function validateOptions(options: CreateHeadlessFormOptions) {
   }
 }
 
+/**
+ * JSON Logic uses a single global operators registry for all of its calls, so
+ * we need to take extra measures to keep each createHeadlessForm deterministic.
+ *
+ * addCustomJsonLogicOperations and removeCustomJsonLogicOperations are called on each
+ * createHeadlessForm and handleValidation in order to ensure each headless form's operators
+ * are limited to its schema and validations without side effects.
+ */
 export function createHeadlessForm(
   schema: JsfObjectSchema,
   options: CreateHeadlessFormOptions = {},
@@ -280,6 +288,10 @@ export function createHeadlessForm(
   validateOptions(options)
   const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
+  const customJsonLogicOps = options?.customJsonLogicOps
+
+  addCustomJsonLogicOperations(customJsonLogicOps)
+
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
   const updatedSchema = calculateFinalSchema({
     schema,
@@ -293,8 +305,6 @@ export function createHeadlessForm(
   const isError = false
 
   const handleValidation = (value: SchemaValue) => {
-    const customJsonLogicOps = options?.customJsonLogicOps
-
     try {
       addCustomJsonLogicOperations(customJsonLogicOps)
 
@@ -314,6 +324,8 @@ export function createHeadlessForm(
       removeCustomJsonLogicOperations(customJsonLogicOps)
     }
   }
+
+  removeCustomJsonLogicOperations(customJsonLogicOps)
 
   return {
     fields,
