@@ -29,12 +29,12 @@ export function calculateFinalSchema({
 }): JsfObjectSchema {
   const jsonLogicContext = schema['x-jsf-logic'] ? getJsonLogicContextFromSchema(schema['x-jsf-logic'], values) : undefined
   const schemaCopy = safeDeepClone(schema)
-  const { legacyOptions, customJsonLogicOps } = options
+  const { legacyOptions } = options
 
   applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)
 
   if (jsonLogicContext?.schema.computedValues) {
-    applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values, customJsonLogicOps)
+    applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values)
     // If we had computed values applied to the schema,
     // we need to re-apply the schema rules to update the fields
     applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)

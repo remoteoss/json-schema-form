@@ -1,4 +1,4 @@
-import type { RulesLogic } from 'json-logic-js'
+import type { AdditionalOperation, RulesLogic } from 'json-logic-js'
 import type { JSONSchema } from 'json-schema-typed/draft-2020-12'
 import type { FieldType } from './field/type'
 /**
@@ -38,10 +38,10 @@ export interface JsonLogicContext {
 export interface JsonLogicRules {
   validations?: Record<string, {
     errorMessage?: string
-    rule: RulesLogic
+    rule: RulesLogic<AdditionalOperation>
   }>
   computedValues?: Record<string, {
-    rule: RulesLogic
+    rule: RulesLogic<AdditionalOperation>
   }>
 }
 export type JsonLogicRootSchema = Pick<NonBooleanJsfSchema, 'if' | 'then' | 'else' | 'anyOf' | 'oneOf' | 'not'> & {
