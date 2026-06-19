@@ -1,3 +1,9 @@
+#### 1.2.13 (2026-06-19)
+
+##### Bug Fixes
+
+* **json-logic:**  ensure custom operators are always available ([#260](https://github.com/remoteoss/json-schema-form/pull/260)) ([989bd102](https://github.com/remoteoss/json-schema-form/commit/989bd1025c1d694c0b7d9ecc75bb4d7da14bbd12))
+
 #### 1.2.12 (2026-05-25)
 
 ##### Bug Fixes
