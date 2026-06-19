@@ -47,6 +47,7 @@
     "release": "node ./scripts/release official"
   },
   "dependencies": {
+    "big.js": "^7.0.1",
     "json-logic-js": "^2.0.5"
   },
   "devDependencies": {
@@ -56,6 +57,7 @@
     "@babel/preset-typescript": "^7.26.0",
     "@jest/globals": "^29.7.0",
     "@jest/reporters": "^29.7.0",
+    "@types/big.js": "^7.0.0",
     "@types/json-logic-js": "^2.0.8",
     "@types/lodash": "^4.17.16",
     "@types/validator": "^13.12.2",
