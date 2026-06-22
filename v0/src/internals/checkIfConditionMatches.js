@@ -59,7 +59,9 @@ export function checkIfConditionMatchesProperties(node, formValues, formFields, 
     if (currentProperty.properties) {
       return checkIfConditionMatchesProperties(
         { if: currentProperty },
-        formValues[name],
+        // A required fieldset can still be null/undefined
+        // Treat it as {} so the nested condition evaluates instead of crashing on a null property access.
+        formValues[name] ?? {},
         getField(name, formFields).fields,
         logic
       );
