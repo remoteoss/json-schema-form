@@ -62,4 +62,19 @@ describe('checkIfConditionMatchesProperties()', () => {
       )
     ).toBe(false);
   });
+
+  it('Nested required fieldset that is null does not crash', () => {
+    expect(
+      checkIfConditionMatchesProperties(
+        {
+          if: {
+            properties: { parent: { properties: { child: { const: 'hello from child' } } } },
+            required: ['parent'],
+          },
+        },
+        { parent: null },
+        [{ name: 'parent', fields: [] }]
+      )
+    ).toBe(true);
+  });
 });
