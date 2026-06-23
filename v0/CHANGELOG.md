@@ -1,3 +1,9 @@
+#### 0.12.4-beta.0 (2026-06-23)
+
+##### Bug Fixes
+
+* **v0:**  validation was crashing when a conditional reaches into a undefined fieldset value ([#261](https://github.com/remoteoss/json-schema-form/pull/261)) ([0d0041ca](https://github.com/remoteoss/json-schema-form/commit/0d0041cab5983f1159c2eb3461b81a96490af8e9))
+
 #### 0.12.3-beta.0 (2026-01-21)
 
 ##### Chores
