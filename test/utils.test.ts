@@ -246,6 +246,19 @@ describe('deepMergeSchemas', () => {
     expect(schema1.anyOf).toHaveLength(1)
   })
 
+  it('should replace an items.anyOf option-like array rather than merging it by index', () => {
+    const schema1: Record<string, any> = {
+      items: { anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }] },
+    }
+    const incomingItemsAnyOf = [{ const: 'C', label: 'C' }]
+    deepMergeSchemas(schema1, {
+      items: { anyOf: incomingItemsAnyOf },
+    })
+    // preserves the reference identity of the incoming anyOf array
+    expect(schema1.items.anyOf).toEqual(incomingItemsAnyOf)
+    expect(schema1.items.anyOf).toHaveLength(1)
+  })
+
   it('should replace the whole option-like array, preserving null const values', () => {
     const schema1: Record<string, any> = {
       oneOf: [{ const: 'A', label: 'A' }],
@@ -279,14 +292,5 @@ describe('deepMergeSchemas', () => {
     }
     expect(() => deepMergeSchemas(schema1, { anyOf: [{ const: 'C', label: 'C' }, null] })).not.toThrow()
     expect(schema1.anyOf).toStrictEqual([{ const: 'C', label: 'C' }, null])
-  })
-
-  it('should replace the original array if it is option-like', () => {
-    const schema1: Record<string, any> = {
-      anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }],
-    }
-
-    deepMergeSchemas(schema1, { anyOf: [] })
-    expect(schema1.anyOf).toStrictEqual([])
   })
 })

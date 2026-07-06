@@ -115,7 +115,7 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1?: T, sch
 
       // For 'options'/'enum' arrays or option-like arrays, just replace the whole array (they're immutable and cached) rather
       // than recursively deep merging them
-      if (['options', 'enum'].includes(key) || isOptionsLikeSchema(key, schema2Value) || isOptionsLikeSchema(key, schema1Value)) {
+      if (['options', 'enum'].includes(key) || isOptionsLikeSchema(key, schema2Value)) {
         schema1[key as keyof T] = schema2Value as T[keyof T]
         continue
       }
