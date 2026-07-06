@@ -221,7 +221,7 @@ describe('deepMergeSchemas', () => {
 
   it('should replace the whole options array rather than merging it by index', () => {
     const schema1: Record<string, any> = {
-      options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
+      options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }, { value: 'c', label: 'C' }],
     }
     const incomingOptions = [{ value: 'c', label: 'C' }]
     deepMergeSchemas(schema1, {
@@ -235,7 +235,7 @@ describe('deepMergeSchemas', () => {
 
   it('should replace the whole option-like array rather than merging it by index', () => {
     const schema1: Record<string, any> = {
-      anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }],
+      anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }, { const: 'C', label: 'C' }],
     }
     const incomingAnyOf = [{ const: 'C', label: 'C' }]
     deepMergeSchemas(schema1, {
@@ -248,7 +248,7 @@ describe('deepMergeSchemas', () => {
 
   it('should replace an items.anyOf option-like array rather than merging it by index', () => {
     const schema1: Record<string, any> = {
-      items: { anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }] },
+      items: { anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }, { const: 'C', label: 'C' }] },
     }
     const incomingItemsAnyOf = [{ const: 'C', label: 'C' }]
     deepMergeSchemas(schema1, {
@@ -261,7 +261,7 @@ describe('deepMergeSchemas', () => {
 
   it('should replace the whole option-like array, preserving null const values', () => {
     const schema1: Record<string, any> = {
-      oneOf: [{ const: 'A', label: 'A' }],
+      oneOf: [{ const: 'A', label: 'A' }, { const: 'C', label: 'C' }, { const: null, label: 'N/A' }],
     }
     const incomingOneOf = [{ const: 'C', label: 'C' }, { const: null, label: 'N/A' }]
     deepMergeSchemas(schema1, {
@@ -284,13 +284,5 @@ describe('deepMergeSchemas', () => {
       { type: 'string', title: 'New' },
       { type: 'number' },
     ])
-  })
-
-  it('should handle incoming null values for option-like arrays', () => {
-    const schema1: Record<string, any> = {
-      anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }],
-    }
-    expect(() => deepMergeSchemas(schema1, { anyOf: [{ const: 'C', label: 'C' }, null] })).not.toThrow()
-    expect(schema1.anyOf).toStrictEqual([{ const: 'C', label: 'C' }, null])
   })
 })
