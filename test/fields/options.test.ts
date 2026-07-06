@@ -155,3 +155,207 @@ describe('Select field options', () => {
     expect(field2Options?.[2]).toEqual({ label: 'Option D', value: 'value_d' })
   })
 })
+
+describe('conditionally replacing option-like arrays', () => {
+  const getOptions = (form: ReturnType<typeof createHeadlessForm>, name: string) =>
+    form.fields.find(f => f.name === name)?.options
+
+  it('should fully replace oneOf options when a conditional branch provides new options', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        trigger: { type: 'string' as const },
+        choice: {
+          type: 'string' as const,
+          oneOf: [
+            { const: 'a', title: 'A' },
+            { const: 'b', title: 'B' },
+            { const: 'c', title: 'C' },
+          ],
+        },
+      },
+      allOf: [
+        {
+          if: { properties: { trigger: { const: 'only x' } }, required: ['trigger'] },
+          then: {
+            properties: {
+              choice: {
+                oneOf: [{ const: 'x', title: 'X' }],
+              },
+            },
+          },
+        },
+      ],
+    }
+
+    const form = createHeadlessForm(schema)
+
+    expect(getOptions(form, 'choice')).toEqual([
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b' },
+      { label: 'C', value: 'c' },
+    ])
+
+    expect(form.handleValidation({ choice: 'b' }).formErrors).toBeUndefined()
+    expect(form.handleValidation({ choice: 'z' }).formErrors).toEqual({
+      choice: 'The option "z" is not valid.',
+    })
+
+    // Applies the conditional branch options
+    form.handleValidation({ trigger: 'only x' })
+    expect(getOptions(form, 'choice')).toEqual([{ label: 'X', value: 'x' }])
+
+    expect(form.handleValidation({ trigger: 'only x', choice: 'x' }).formErrors).toBeUndefined()
+    expect(form.handleValidation({ trigger: 'only x', choice: 'b' }).formErrors).toEqual({
+      choice: 'The option "b" is not valid.',
+    })
+
+    // When the branch is no longer active, options revert to the default set
+    form.handleValidation({ trigger: 'stop' })
+    expect(getOptions(form, 'choice')).toEqual([
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b' },
+      { label: 'C', value: 'c' },
+    ])
+
+    expect(form.handleValidation({ trigger: 'stop', choice: 'b' }).formErrors).toBeUndefined()
+    expect(form.handleValidation({ trigger: 'stop', choice: 'x' }).formErrors).toEqual({
+      choice: 'The option "x" is not valid.',
+    })
+  })
+
+  it('should fully replace anyOf options when a conditional branch provides new options', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        trigger: { type: 'string' as const },
+        choice: {
+          type: 'string' as const,
+          anyOf: [
+            { const: 'a', title: 'A' },
+            { const: 'b', title: 'B' },
+            { const: 'c', title: 'C' },
+          ],
+        },
+      },
+      allOf: [
+        {
+          if: { properties: { trigger: { const: 'go' } }, required: ['trigger'] },
+          then: {
+            properties: {
+              choice: {
+                anyOf: [{ const: 'x', title: 'X' }],
+              },
+            },
+          },
+        },
+      ],
+    }
+
+    const form = createHeadlessForm(schema)
+
+    expect(getOptions(form, 'choice')).toHaveLength(3)
+
+    form.handleValidation({ trigger: 'go' })
+    expect(getOptions(form, 'choice')).toEqual([{ label: 'X', value: 'x' }])
+
+    // Only the replacement option validates; the original options are gone
+    expect(form.handleValidation({ trigger: 'go', choice: 'x' }).formErrors).toBeUndefined()
+    expect(form.handleValidation({ trigger: 'go', choice: 'a' }).formErrors).toEqual({
+      choice: 'The option "a" is not valid.',
+    })
+  })
+
+  it('should fully replace enum options when a conditional branch provides new options', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        userType: { type: 'string' as const },
+        permissions: {
+          type: 'string' as const,
+          enum: ['read', 'write', 'execute'],
+        },
+      },
+      allOf: [
+        {
+          if: { properties: { userType: { const: 'guest' } }, required: ['userType'] },
+          then: {
+            properties: {
+              permissions: {
+                enum: ['read'],
+              },
+            },
+          },
+        },
+      ],
+    }
+
+    const form = createHeadlessForm(schema)
+    const getEnum = () => form.fields.find(f => f.name === 'permissions')?.enum
+
+    expect(getEnum()).toEqual(['read', 'write', 'execute'])
+
+    expect(form.handleValidation({ permissions: 'write' }).formErrors).toBeUndefined()
+
+    form.handleValidation({ userType: 'guest' })
+    expect(getEnum()).toEqual(['read'])
+
+    expect(form.handleValidation({ userType: 'guest', permissions: 'read' }).formErrors).toBeUndefined()
+    expect(form.handleValidation({ userType: 'guest', permissions: 'write' }).formErrors).toEqual({
+      permissions: 'The option "write" is not valid.',
+    })
+
+    form.handleValidation({ userType: 'user' })
+    expect(getEnum()).toEqual(['read', 'write', 'execute'])
+
+    expect(form.handleValidation({ userType: 'user', permissions: 'write' }).formErrors).toBeUndefined()
+  })
+
+  it('should replace oneOf options even when the incoming set contains a null const', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        trigger: { type: 'string' as const },
+        choice: {
+          type: 'string' as const,
+          oneOf: [
+            { const: 'a', title: 'A' },
+            { const: 'b', title: 'B' },
+          ],
+        },
+      },
+      allOf: [
+        {
+          if: { properties: { trigger: { const: 'go' } }, required: ['trigger'] },
+          then: {
+            properties: {
+              choice: {
+                type: ['string', 'null'] as const,
+                oneOf: [
+                  { const: 'x', title: 'X' },
+                  { const: null, title: 'N/A' },
+                ],
+              },
+            },
+          },
+        },
+      ],
+    }
+
+    const form = createHeadlessForm(schema)
+
+    // A null const in the incoming set must not throw during the merge, and the
+    // original 'A'/'B' options must not leak through
+    expect(() => form.handleValidation({ trigger: 'go' })).not.toThrow()
+
+    // Null option is not included
+    expect(getOptions(form, 'choice')).toEqual([{ label: 'X', value: 'x' }])
+
+    expect(form.handleValidation({ trigger: 'go', choice: 'x' }).formErrors).toBeUndefined()
+    // accepts missing option selection
+    expect(form.handleValidation({ trigger: 'go', choice: null }).formErrors).toBeUndefined()
+    expect(form.handleValidation({ trigger: 'go', choice: 'b' }).formErrors).toEqual({
+      choice: 'The option "b" is not valid.',
+    })
+  })
+})
