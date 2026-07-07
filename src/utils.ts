@@ -1,5 +1,4 @@
 import type { Field } from './field/type'
-import type { JsfSchema } from './types'
 
 type DiskSizeUnit = 'Bytes' | 'KB' | 'MB'
 
@@ -62,18 +61,6 @@ function isObject(value: any): boolean {
 }
 
 /**
- * Checks if the array is options-like.
- * Options-like arrays are arrays of objects, all items of which have a const property.
- */
-function isOptionsLikeSchema(schemaKey: string, schema: JsfSchema[]): boolean {
-  if (schemaKey === 'oneOf' || schemaKey === 'anyOf') {
-    return schema.length > 0 && schema.every(item => !!item && typeof item === 'object' && item.const !== undefined)
-  }
-
-  return false
-}
-
-/**
  * Merges schema 2 into schema 1 recursively
  * @param schema1 - The first schema to merge
  * @param schema2 - The second schema to merge
@@ -109,33 +96,21 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1?: T, sch
         schema1[key as keyof T] = schema2Value
       }
     }
-    // If the value is an array, cycle through it and merge values if they're different (take objects into account)
+    // If the value is an array, replace the whole array
+    // for the "required" key, we only add new elements to the array
     else if (schema1Value && Array.isArray(schema2Value)) {
       const originalArray = schema1Value
 
-      // For 'options'/'enum' arrays or option-like arrays, just replace the whole array (they're immutable and cached) rather
-      // than recursively deep merging them
-      if (['options', 'enum'].includes(key) || isOptionsLikeSchema(key, schema2Value)) {
-        schema1[key as keyof T] = schema2Value as T[keyof T]
-        continue
-      }
-
-      // If the destiny value exists and it's an array, cycle through the incoming values and merge if they're different (take objects into account)
-      for (const item of schema2Value) {
-        if (item && typeof item === 'object') {
-          deepMergeSchemas(originalArray, schema2Value)
-        }
-        // "required" is a special case, it only allows for new elements to be added to the array
-        else if (key === 'required') {
-          // Add any new elements to the array
-          if (!originalArray.find((originalItem: any) => originalItem === item)) {
+      if (key === 'required') {
+        for (const item of schema2Value) {
+          if (!originalArray.includes(item)) {
             originalArray.push(item)
           }
         }
-        // Otherwise, just assign it
-        else {
-          schema1[key as keyof T] = schema2Value as T[keyof T]
-        }
+      }
+      // Otherwise, just assign it
+      else {
+        schema1[key as keyof T] = schema2Value as T[keyof T]
       }
     }
     // Finally, if the value is different, just assign it
