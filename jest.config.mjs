@@ -11,6 +11,7 @@ const roots = [
   // '<rootDir>/../src/tests',
   // 2. The new tests for this version
   '<rootDir>/test',
+  '<rootDir>/src',
 ]
 
 /**
