@@ -1,6 +1,6 @@
 import type { Field } from '../src/field/type'
 import { describe, expect, it } from '@jest/globals'
-import { getField } from '../src/utils'
+import { convertKBToMB, deepMergeSchemas, getField } from '../src/utils'
 
 describe('getField', () => {
   const mockFields: Field[] = [
@@ -109,5 +109,137 @@ describe('getField', () => {
     const field = getField(deepFields, 'level1', 'level2', 'level3')
     expect(field).toBeDefined()
     expect(field?.name).toBe('level3')
+  })
+})
+
+describe('convertKBToMB', () => {
+  it('should return 0 when given 0', () => {
+    expect(convertKBToMB(0)).toBe(0)
+  })
+
+  it('should convert KB to MB', () => {
+    expect(convertKBToMB(1024)).toBe(1)
+    expect(convertKBToMB(2048)).toBe(2)
+  })
+
+  it('should round the result to 2 decimal places', () => {
+    // 1505 / 1024 = 1.469726562 -> 1.46
+    expect(convertKBToMB(1505)).toBe(1.47)
+    // 1590 / 1024 = 1.552734375 -> 1.55
+    expect(convertKBToMB(1590)).toBe(1.55)
+  })
+
+  it('should handle values smaller than 1 MB', () => {
+    // 512 / 1024 = 0.5
+    expect(convertKBToMB(512)).toBe(0.5)
+  })
+})
+
+describe('deepMergeSchemas', () => {
+  it('should do nothing when either schema is missing', () => {
+    const schema1 = { type: 'string' }
+    expect(() => deepMergeSchemas(undefined, schema1)).not.toThrow()
+    expect(() => deepMergeSchemas(schema1, undefined)).not.toThrow()
+    expect(schema1).toEqual({ type: 'string' })
+  })
+
+  it('should return early without mutating when a schema is a truthy non-object', () => {
+    const schema1: Record<string, any> = { type: 'string' }
+    expect(() => deepMergeSchemas(42 as any, schema1)).not.toThrow()
+    expect(() => deepMergeSchemas(schema1, 'not-an-object' as any)).not.toThrow()
+    expect(schema1).toEqual({ type: 'string' })
+  })
+
+  it('should copy over properties that only exist in schema2', () => {
+    const schema1: Record<string, any> = { type: 'string' }
+    deepMergeSchemas(schema1, { title: 'Name' })
+    expect(schema1).toEqual({ type: 'string', title: 'Name' })
+  })
+
+  it('should overwrite primitive values that differ', () => {
+    const schema1: Record<string, any> = { title: 'Old' }
+    deepMergeSchemas(schema1, { title: 'New' })
+    expect(schema1.title).toBe('New')
+  })
+
+  it('should merge nested objects recursively', () => {
+    const schema1: Record<string, any> = {
+      properties: { name: { type: 'string' } },
+    }
+    deepMergeSchemas(schema1, {
+      properties: { age: { type: 'number' } },
+    })
+    expect(schema1.properties).toEqual({
+      name: { type: 'string' },
+      age: { type: 'number' },
+    })
+  })
+
+  it('should assign an object when the target value is not an object', () => {
+    const schema1: Record<string, any> = { meta: 'string' }
+    deepMergeSchemas(schema1, { meta: { nested: true } })
+    expect(schema1.meta).toEqual({ nested: true })
+  })
+
+  it('should skip if/then/else properties', () => {
+    const schema1: Record<string, any> = { type: 'object' }
+    deepMergeSchemas(schema1, {
+      if: { properties: { a: { const: 1 } } },
+      then: { required: ['b'] },
+      else: { required: ['c'] },
+    })
+    expect(schema1).toEqual({ type: 'object' })
+  })
+
+  it('should replace enum arrays', () => {
+    const schema1: Record<string, any> = { enum: ['a', 'b'] }
+    deepMergeSchemas(schema1, { enum: ['c', 'd'] })
+    expect(schema1.enum).toEqual(['c', 'd'])
+  })
+
+  it('should only add new elements to the required array', () => {
+    const schema1: Record<string, any> = { required: ['a', 'b'] }
+    deepMergeSchemas(schema1, { required: ['b', 'c'] })
+    expect(schema1.required).toEqual(['a', 'b', 'c'])
+  })
+
+  it('should replace the whole options array', () => {
+    const schema1: Record<string, any> = {
+      options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }, { value: 'c', label: 'C' }],
+    }
+    const incomingOptions = [{ value: 'c', label: 'C' }]
+    deepMergeSchemas(schema1, {
+      options: incomingOptions,
+    })
+    expect(schema1.options).toStrictEqual([{ value: 'c', label: 'C' }])
+    // preserves the reference identity of the incoming options array
+    expect(schema1.options).toEqual(incomingOptions)
+    expect(schema1.options).toHaveLength(1)
+  })
+
+  it('should replace the whole anyOf options array', () => {
+    const schema1: Record<string, any> = {
+      anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }, { const: 'C', label: 'C' }],
+    }
+    const incomingAnyOf = [{ const: 'C', label: 'C' }]
+    deepMergeSchemas(schema1, {
+      anyOf: incomingAnyOf,
+    })
+    // preserves the reference identity of the incoming anyOf array
+    expect(schema1.anyOf).toEqual(incomingAnyOf)
+    expect(schema1.anyOf).toHaveLength(1)
+  })
+
+  it('should replace a nested items.anyOf options array', () => {
+    const schema1: Record<string, any> = {
+      items: { anyOf: [{ const: 'A', label: 'A' }, { const: 'B', label: 'B' }, { const: 'C', label: 'C' }] },
+    }
+    const incomingItemsAnyOf = [{ const: 'C', label: 'C' }]
+    deepMergeSchemas(schema1, {
+      items: { anyOf: incomingItemsAnyOf },
+    })
+    // preserves the reference identity of the incoming anyOf array
+    expect(schema1.items.anyOf).toEqual(incomingItemsAnyOf)
+    expect(schema1.items.anyOf).toHaveLength(1)
   })
 })

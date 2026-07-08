@@ -65,7 +65,7 @@ function isObject(value: any): boolean {
  * @param schema1 - The first schema to merge
  * @param schema2 - The second schema to merge
  */
-export function deepMergeSchemas<T extends Record<string, any>>(schema1: T, schema2: T): void {
+export function deepMergeSchemas<T extends Record<string, any>>(schema1?: T, schema2?: T): void {
   // Handle null/undefined values
   if (!schema1 || !schema2) {
     return
@@ -96,33 +96,21 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1: T, sche
         schema1[key as keyof T] = schema2Value
       }
     }
-    // If the value is an array, cycle through it and merge values if they're different (take objects into account)
+    // If the value is an array, replace the whole array
+    // for the "required" key, we only add new elements to the array
     else if (schema1Value && Array.isArray(schema2Value)) {
       const originalArray = schema1Value
 
-      // For 'options' arrays, just replace the whole array (they're immutable and cached) rather
-      // than recursively deep merging them
-      if (key === 'options') {
-        schema1[key as keyof T] = schema2Value as T[keyof T]
-        continue
-      }
-
-      // If the destiny value exists and it's an array, cycle through the incoming values and merge if they're different (take objects into account)
-      for (const item of schema2Value) {
-        if (item && typeof item === 'object') {
-          deepMergeSchemas(originalArray, schema2Value)
-        }
-        // "required" is a special case, it only allows for new elements to be added to the array
-        else if (key === 'required') {
-          // Add any new elements to the array
-          if (!originalArray.find((originalItem: any) => originalItem === item)) {
+      if (key === 'required') {
+        for (const item of schema2Value) {
+          if (!originalArray.includes(item)) {
             originalArray.push(item)
           }
         }
-        // Otherwise, just assign it
-        else {
-          schema1[key as keyof T] = schema2Value as T[keyof T]
-        }
+      }
+      // Otherwise, just assign it
+      else {
+        schema1[key as keyof T] = schema2Value as T[keyof T]
       }
     }
     // Finally, if the value is different, just assign it
