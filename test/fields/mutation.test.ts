@@ -14,7 +14,7 @@ describe('field mutation', () => {
         },
         permissions: {
           type: 'string',
-          enum: ['read', 'write', 'execute'],
+          enum: ['read', 'write', 'execute', 'all'],
         },
       },
       allOf: [
@@ -22,7 +22,7 @@ describe('field mutation', () => {
           if: {
             properties: {
               userType: {
-                const: 'admin',
+                const: 'user',
               },
             },
             required: ['userType'],
@@ -30,7 +30,7 @@ describe('field mutation', () => {
           then: {
             properties: {
               permissions: {
-                enum: ['read', 'write', 'execute', 'all'],
+                enum: ['read', 'write', 'execute'],
               },
             },
           },
@@ -57,13 +57,13 @@ describe('field mutation', () => {
 
     it('should have default enum options for permissions field', () => {
       const form = createHeadlessForm(schema)
-      expect(getField(form.fields, 'permissions')?.enum).toEqual(['read', 'write', 'execute'])
+      expect(getField(form.fields, 'permissions')?.enum).toEqual(['read', 'write', 'execute', 'all'])
     })
 
-    it('should update enum options when userType is admin', () => {
+    it('should update enum options when userType is user', () => {
       const form = createHeadlessForm(schema)
-      form.handleValidation({ userType: 'admin' })
-      expect(getField(form.fields, 'permissions')?.enum).toEqual(['read', 'write', 'execute', 'all'])
+      form.handleValidation({ userType: 'user' })
+      expect(getField(form.fields, 'permissions')?.enum).toEqual(['read', 'write', 'execute'])
     })
 
     it('should update enum options when userType is guest', () => {
@@ -72,13 +72,13 @@ describe('field mutation', () => {
       expect(getField(form.fields, 'permissions')?.enum).toEqual(['read'])
     })
 
-    it('should revert to default enum options when userType changes back to user', () => {
+    it('should revert to default enum options when userType changes back to admin', () => {
       const form = createHeadlessForm(schema)
-      form.handleValidation({ userType: 'admin' })
-      expect(getField(form.fields, 'permissions')?.enum).toEqual(['read', 'write', 'execute', 'all'])
-
       form.handleValidation({ userType: 'user' })
       expect(getField(form.fields, 'permissions')?.enum).toEqual(['read', 'write', 'execute'])
+
+      form.handleValidation({ userType: 'admin' })
+      expect(getField(form.fields, 'permissions')?.enum).toEqual(['read', 'write', 'execute', 'all'])
     })
   })
 

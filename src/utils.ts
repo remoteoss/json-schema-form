@@ -1,4 +1,5 @@
 import type { Field } from './field/type'
+import type { JsfSchema } from './types'
 
 type DiskSizeUnit = 'Bytes' | 'KB' | 'MB'
 
@@ -53,19 +54,66 @@ export function convertKBToMB(kb: number): number {
   return Number.parseFloat(mb.toFixed(2)) // Keep 2 decimal places
 }
 
-// When merging schemas, we should skip merging the if/then/else properties as we could be creating wrong conditions
+// When merging a conditional branch into a schema, we should skip merging the if/then/else
+// properties as we could be creating wrong conditions
 const KEYS_TO_SKIP = ['if', 'then', 'else']
 
-function isObject(value: any): boolean {
-  return value && typeof value === 'object' && !Array.isArray(value)
+function isObject(value: unknown): boolean {
+  return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
 /**
- * Merges schema 2 into schema 1 recursively
- * @param schema1 - The first schema to merge
- * @param schema2 - The second schema to merge
+ * Checks if the array is options-like.
+ * Options-like arrays are arrays of objects, all items of which have a const property.
+ *
+ * @param schemaKey - The key of the schema to check.
+ * @param schema - The schema to check.
+ * @returns True if the schema is options-like, false otherwise.
  */
-export function deepMergeSchemas<T extends Record<string, any>>(schema1?: T, schema2?: T): void {
+function isOptionsLikeSchema(schemaKey: string, schema: JsfSchema[]): boolean {
+  switch (schemaKey) {
+    case 'options':
+    case 'enum':
+      return true
+    case 'oneOf':
+    case 'anyOf':
+      return schema.length > 0 && schema.every(item => isObject(item) && 'const' in item)
+    default:
+      return false
+  }
+}
+
+/**
+ * Returns the value that identifies an option, regardless of the option-like array shape:
+ * - `oneOf`/`anyOf` entries are `{ const, title }` objects, identified by `const`
+ * - `options` entries are `{ value, label }` objects, identified by `value`
+ * - `enum` entries are the raw values themselves
+ */
+function getOptionIdentity(option: unknown): unknown {
+  if (isObject(option)) {
+    const obj = option as Record<string, any>
+    if ('const' in obj) {
+      return obj.const
+    }
+    if ('value' in obj) {
+      return obj.value
+    }
+  }
+  return option
+}
+
+/**
+ * Merges a conditional branch schema into the base schema recursively.
+ *
+ * Option-like arrays (enum/oneOf/anyOf/options) are restricted to the options already
+ * present on the base field: the branch may narrow or re-label existing options, but any
+ * option whose value isn't present in the base is ignored. If the base field declares no
+ * option array for a given key, the branch's options are dropped entirely.
+ *
+ * @param schema1 - The base schema to merge into
+ * @param schema2 - The conditional branch schema to merge from
+ */
+export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, schema2?: T): void {
   // Handle null/undefined values
   if (!schema1 || !schema2) {
     return
@@ -85,11 +133,27 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1?: T, sch
 
     const schema1Value = schema1[key]
 
+    // Restrict option-like arrays to the options already present on the base field
+    if (isOptionsLikeSchema(key, schema2Value)) {
+      // Base declares no options for this key -> a conditional cannot introduce any
+      if (!Array.isArray(schema1Value)) {
+        continue
+      }
+
+      const allowedOptions = new Set(schema1Value.map(option => getOptionIdentity(option)))
+      // Keep the branch's option objects (so re-labeling works), but only for values
+      // already present in the base
+      schema1[key as keyof T] = schema2Value.filter(
+        (option: unknown) => allowedOptions.has(getOptionIdentity(option)),
+      )
+      continue
+    }
+
     // If the value is an object:
     if (isObject(schema2Value)) {
       // If both schemas have this key and it's an object, merge recursively
       if (isObject(schema1Value)) {
-        deepMergeSchemas(schema1Value, schema2Value)
+        mergeSchemaBranch(schema1Value, schema2Value)
       }
       // Otherwise, if the value is different, just assign it
       else if (schema1Value !== schema2Value) {
@@ -99,12 +163,10 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1?: T, sch
     // If the value is an array, replace the whole array
     // for the "required" key, we only add new elements to the array
     else if (schema1Value && Array.isArray(schema2Value)) {
-      const originalArray = schema1Value
-
       if (key === 'required') {
         for (const item of schema2Value) {
-          if (!originalArray.includes(item)) {
-            originalArray.push(item)
+          if (!schema1Value.includes(item)) {
+            schema1Value.push(item)
           }
         }
       }
@@ -116,6 +178,27 @@ export function deepMergeSchemas<T extends Record<string, any>>(schema1?: T, sch
     // Finally, if the value is different, just assign it
     else if (schema1[key] !== schema2Value) {
       schema1[key as keyof T] = schema2Value
+    }
+  }
+}
+
+/**
+ * Merges a freshly-built field into an existing field, in place.
+ *
+ * @param target - The existing field to merge into
+ * @param source - The newly-built field to merge from
+ */
+export function mergeFieldProperties(target: Field, source: Field): void {
+  for (const [key, sourceValue] of Object.entries(source)) {
+    const targetValue = target[key]
+
+    // If both values are plain objects, merge them recursively
+    if (isObject(sourceValue) && isObject(targetValue)) {
+      mergeFieldProperties(targetValue as Field, sourceValue as Field)
+    }
+    // Otherwise, replace when the value changed, arrays are fully replaced
+    else if (targetValue !== sourceValue) {
+      target[key] = sourceValue
     }
   }
 }

@@ -3,7 +3,7 @@ import type { CreateHeadlessFormOptions } from './form'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
 import type { LegacyOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
-import { deepMergeSchemas } from './utils'
+import { mergeFieldProperties, mergeSchemaBranch } from './utils'
 import { evaluateIfCondition } from './validation/conditions'
 import { applyComputedAttrsToSchema, getJsonLogicContextFromSchema } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
@@ -168,7 +168,7 @@ function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: Jsf
   const branchSchema = branch as JsfObjectSchema
 
   applySchemaRules(branchSchema, values, options, jsonLogicContext)
-  deepMergeSchemas(schema, branchSchema)
+  mergeSchemaBranch(schema, branchSchema)
 }
 
 /**
@@ -194,7 +194,7 @@ export function updateFieldProperties(fields: Field[], schema: JsfObjectSchema, 
       // Properties might have been removed with the most recent schema (due to most recent form values)
       // so we need to remove them from the original field
       removeNonExistentProperties(field, newField)
-      deepMergeSchemas(field, newField)
+      mergeFieldProperties(field, newField)
 
       const fieldSchema = schema.properties?.[field.name]
       const originalFieldSchema = originalSchema.properties?.[field.name]
