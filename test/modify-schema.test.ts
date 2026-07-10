@@ -1146,6 +1146,21 @@ describe('modifySchema', () => {
       expect(warnings).toHaveLength(0)
     })
 
+    it('preserves unknown top-level schema keys (e.g. x-rmt-meta) not just properties/order/allOf', () => {
+      const schemaWithMeta = {
+        ...schemaTickets,
+        'type': 'object',
+        'x-rmt-meta': { jsfOldVersion: true },
+      }
+
+      const { schema } = modifySchema(schemaWithMeta, {
+        pick: ['quantity'],
+      })
+
+      expect(schema.type).toBe('object')
+      expect(schema['x-rmt-meta']).toEqual({ jsfOldVersion: true })
+    })
+
     it('basic usage without conditionals', () => {
       const schemaMinimal = {
         'properties': {
