@@ -354,9 +354,8 @@ function pickFields(originalSchema: JsfSchema, fieldsToPick: ModifyConfig['pick'
 
         break
       }
-      case 'x-jsf-logic':
-        newSchema[attrKey] = attrValue
-        break
+      default:
+        (newSchema as Record<string, unknown>)[attrKey] = attrValue
     }
   })
 
