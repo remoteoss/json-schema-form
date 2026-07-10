@@ -1,3 +1,11 @@
+#### 1.2.14 (2026-07-10)
+
+##### Bug Fixes
+
+*  modify() preserve unknown top-level schema keys when using pick ([#264](https://github.com/remoteoss/json-schema-form/pull/264)) ([682a03c6](https://github.com/remoteoss/json-schema-form/commit/682a03c64f2d7aea0898b138fe6cb4e9e28c8406))
+
+*  replace option-like arrays via conditionals ([#263](https://github.com/remoteoss/json-schema-form/pull/263)) ([c20265e6](https://github.com/remoteoss/json-schema-form/commit/c20265e629d4d8ad4944dc7ca7bceee80a04c454))
+
 #### 1.2.13 (2026-06-19)
 
 ##### Bug Fixes
