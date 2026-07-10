@@ -1155,7 +1155,7 @@ describe('modifySchema', () => {
 
       const { schema } = modifySchema(schemaWithMeta, {
         pick: ['quantity'],
-      })
+      }) as { schema: { 'type'?: string, 'x-rmt-meta'?: unknown } }
 
       expect(schema.type).toBe('object')
       expect(schema['x-rmt-meta']).toEqual({ jsfOldVersion: true })
