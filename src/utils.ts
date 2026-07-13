@@ -141,8 +141,9 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
       }
 
       const allowedOptions = new Set(schema1Value.map(option => getOptionIdentity(option)))
-      // Keep the branch's option objects (so re-labeling works), but only for values
-      // already present in the base
+      // Keep the branch's option objects (so changing options properties works),
+      // but only for values that are already present in the base
+      // Note: this will set an empty array if the options are not of an expected format
       schema1[key as keyof T] = schema2Value.filter(
         (option: unknown) => allowedOptions.has(getOptionIdentity(option)),
       )

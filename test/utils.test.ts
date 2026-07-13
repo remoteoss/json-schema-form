@@ -205,10 +205,16 @@ describe('mergeSchemaBranch', () => {
     })
 
     it('should ignore enum options that are not present in the base', () => {
-      const schema1: Record<string, any> = { enum: ['a', 'b', 'c'] }
+      const schema1: Record<string, any> = { enum: ['a', 'b', 'c', null] }
       // 'd' does not exist on the base field and must be dropped
-      mergeSchemaBranch(schema1, { enum: ['c', 'd'] })
-      expect(schema1.enum).toEqual(['c'])
+      mergeSchemaBranch(schema1, { enum: ['c', 'd', null] })
+      expect(schema1.enum).toEqual(['c', null])
+    })
+
+    it('should narrow array of enum objects to the options present in the base, assuming option-like objects', () => {
+      const schema1: Record<string, any> = { enum: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }, { value: 'c', label: 'C' }] }
+      mergeSchemaBranch(schema1, { enum: [{ value: 'b', label: 'B' }, { value: 'c', label: 'C' }] })
+      expect(schema1.enum).toEqual([{ value: 'b', label: 'B' }, { value: 'c', label: 'C' }])
     })
 
     it('should narrow the options array and ignore new options', () => {
@@ -220,6 +226,12 @@ describe('mergeSchemaBranch', () => {
       })
       expect(schema1.options).toEqual([{ value: 'c', label: 'C' }])
       expect(schema1.options).toHaveLength(1)
+    })
+
+    it('should ignore options that are not option-like objects, still replacing the array', () => {
+      const schema1: Record<string, any> = { options: [{ flag: true, label: 'A' }, { flag: false, label: 'B' }, { flag: true, label: 'C' }] }
+      mergeSchemaBranch(schema1, { options: [{ flag: true, label: 'A' }, { flag: false, label: 'B' }] })
+      expect(schema1.options).toEqual([])
     })
 
     it('should narrow the anyOf array and ignore new options', () => {
