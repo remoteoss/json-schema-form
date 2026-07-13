@@ -266,13 +266,6 @@ describe('mergeSchemaBranch', () => {
       expect(schema1.oneOf).toEqual([{ const: 'a', title: 'Relabeled A' }])
     })
 
-    it('should drop the branch options entirely when the base declares none', () => {
-      const schema1: Record<string, any> = { type: 'string' }
-      mergeSchemaBranch(schema1, { enum: ['a', 'b'] })
-      expect(schema1).toEqual({ type: 'string' })
-      expect(schema1.enum).toBeUndefined()
-    })
-
     it('should restrict a nested items.anyOf options array', () => {
       const schema1: Record<string, any> = {
         items: { anyOf: [{ const: 'A' }, { const: 'B' }, { const: 'C' }] },
@@ -282,6 +275,24 @@ describe('mergeSchemaBranch', () => {
       })
       expect(schema1.items.anyOf).toEqual([{ const: 'C' }])
       expect(schema1.items.anyOf).toHaveLength(1)
+    })
+
+    it('should add the branch options when the base declares none', () => {
+      const schema1: Record<string, any> = { type: 'string' }
+      mergeSchemaBranch(schema1, { enum: ['a', 'b'] })
+      expect(schema1).toEqual({ type: 'string', enum: ['a', 'b'] })
+    })
+
+    it('should add the branch options when the base declares none for option-like arrays', () => {
+      const schema1: Record<string, any> = { type: 'string' }
+      mergeSchemaBranch(schema1, { oneOf: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] })
+      expect(schema1.oneOf).toEqual([{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }])
+    })
+
+    it('should not add the branch options when the base an empty array', () => {
+      const schema1: Record<string, any> = { type: 'string', enum: [] }
+      mergeSchemaBranch(schema1, { enum: ['a', 'b'] })
+      expect(schema1).toEqual({ type: 'string', enum: [] })
     })
   })
 })

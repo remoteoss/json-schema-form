@@ -135,8 +135,9 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
 
     // Restrict option-like arrays to the options already present on the base field
     if (isOptionsLikeSchema(key, schema2Value)) {
-      // Base declares no options for this key -> a conditional cannot introduce any
+      // Base declares no options for this key, let a conditional branch introduce them
       if (!Array.isArray(schema1Value)) {
+        schema1[key as keyof T] = schema2Value
         continue
       }
 
