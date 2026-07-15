@@ -308,3 +308,94 @@ describe('conditionally replacing option-like arrays', () => {
     expect(form.handleValidation({ userType: 'user', permissions: 'write' }).formErrors).toBeUndefined()
   })
 })
+
+describe('conditionals cannot introduce options that are not in the base field', () => {
+  const getOptions = (form: ReturnType<typeof createHeadlessForm>, name: string) =>
+    form.fields.find(f => f.name === name)?.options
+
+  it('should ignore oneOf options a conditional introduces that are not in the base', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        trigger: { type: 'string' as const },
+        choice: {
+          type: 'string' as const,
+          oneOf: [
+            { const: 'a', title: 'A' },
+            { const: 'b', title: 'B' },
+            { const: 'c', title: 'C' },
+          ],
+        },
+      },
+      allOf: [
+        {
+          if: { properties: { trigger: { const: 'go' } }, required: ['trigger'] },
+          then: {
+            properties: {
+              choice: {
+                // 'd' is not present on the base field and must be ignored
+                oneOf: [{ const: 'c', title: 'C' }, { const: 'd', title: 'D' }],
+              },
+            },
+          },
+        },
+      ],
+    }
+
+    const form = createHeadlessForm(schema)
+
+    form.handleValidation({ trigger: 'go' })
+    // Only 'c' survives; the injected 'd' is dropped
+    expect(getOptions(form, 'choice')).toEqual([{ label: 'C', value: 'c' }])
+    expect(form.handleValidation({ trigger: 'go', choice: 'd' }).formErrors).toEqual({
+      choice: 'The option "d" is not valid.',
+    })
+
+    // Reverting still restores the full base option set
+    form.handleValidation({ trigger: 'stop' })
+    expect(getOptions(form, 'choice')).toEqual([
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b' },
+      { label: 'C', value: 'c' },
+    ])
+  })
+
+  it('should ignore enum options a conditional introduces that are not in the base', () => {
+    const schema = {
+      type: 'object' as const,
+      properties: {
+        userType: { type: 'string' as const },
+        permissions: {
+          type: 'string' as const,
+          enum: ['read', 'write', 'execute'],
+        },
+      },
+      allOf: [
+        {
+          if: { properties: { userType: { const: 'admin' } }, required: ['userType'] },
+          then: {
+            properties: {
+              permissions: {
+                // 'delete' is not present on the base field and must be ignored
+                enum: ['read', 'delete'],
+              },
+            },
+          },
+        },
+      ],
+    }
+
+    const form = createHeadlessForm(schema)
+    const getEnum = () => form.fields.find(f => f.name === 'permissions')?.enum
+
+    form.handleValidation({ userType: 'admin' })
+    expect(getEnum()).toEqual(['read'])
+    expect(form.handleValidation({ userType: 'admin', permissions: 'delete' }).formErrors).toEqual({
+      permissions: 'The option "delete" is not valid.',
+    })
+
+    // Reverting still restores the full base enum
+    form.handleValidation({ userType: 'user' })
+    expect(getEnum()).toEqual(['read', 'write', 'execute'])
+  })
+})

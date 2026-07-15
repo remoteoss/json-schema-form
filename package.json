@@ -32,6 +32,7 @@
     "dev": "NODE_ENV=development tsup --watch",
     "test": "jest",
     "test:watch": "jest --watchAll",
+    "test:write-failed-tests": "SHOULD_WRITE_FAILED_TESTS_TO_FILE=true jest",
     "test:file": "jest --runTestsByPath --watch",
     "test:v0-update-baseline": "cd v0 && jest --json --outputFile=../test/v0-baseline-test-results.json;",
     "test:v0-compare-results": "node test/v0_compare_test_results.js",

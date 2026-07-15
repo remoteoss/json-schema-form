@@ -1,11 +1,14 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import process from 'node:process'
 import { fileURLToPath } from 'node:url'
 
 import { JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME } from './constants.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+
+const shouldWriteFailedTestsToFile = process.env.SHOULD_WRITE_FAILED_TESTS_TO_FILE === 'true'
 
 // Save newly failed tests
 function saveFailedTests(failedTests) {
@@ -25,7 +28,7 @@ function saveFailedTests(failedTests) {
  *
  * Note: The failed tests are not being saved to file every time the suite runs,
  * as this could cause for bugs to surface due to a change in the codebase.
- * The SHOULD_WRITE_FAILED_TESTS_TO_FILE constant can be set to true to write the
+ * The SHOULD_WRITE_FAILED_TESTS_TO_FILE env variable can be set to true to write the
  * failed tests to a file (on-demand), for later consumption at the
  * json_schema_test_suite.test.js file.
  *
@@ -64,17 +67,26 @@ class FailureTrackingReporter {
     }
 
     testResult.testResults.forEach((result) => {
-      if (result.status === 'failed' || result.status === 'pending') {
+      if (result.status === 'failed' || (shouldWriteFailedTestsToFile && result.status === 'pending')) {
         this.addFailedTest(result)
       }
     })
   }
 
-  onRunComplete() {
+  getLastError() {
     if (this.size > 0) {
-      // eslint-disable-next-line no-console
-      console.log(`JSON Schema Test Suite: Test run complete, saving ${this.size} tests to ${JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME} file so they're ignored for now and enabled later`)
-      saveFailedTests(this.unimplementedFeatures)
+      if (shouldWriteFailedTestsToFile) {
+        // eslint-disable-next-line no-console
+        console.log(`JSON Schema Test Suite: Test run complete, ${this.size} failing tests exist.`)
+        // eslint-disable-next-line no-console
+        console.log(`Saving ${this.size} test failures to ${JSON_SCHEMA_SUITE_FAILED_TESTS_FILE_NAME} file so they're skipped on the next test runs.`)
+        saveFailedTests(this.unimplementedFeatures)
+      }
+      else {
+        // eslint-disable-next-line no-console
+        console.log(`JSON Schema Test Suite: Test run complete, ${this.size} new failing tests found!
+🚨 If these failing tests are expected, run 'pnpm test:write-failed-tests' to update the failing tests file and skip them on the next test runs.`)
+      }
     }
   }
 }
