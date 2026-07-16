@@ -1,30 +1,6 @@
 import type { Field } from './field/type'
+import type { CreateHeadlessFormOptions } from './form'
 import type { JsfSchema } from './types'
-
-type DiskSizeUnit = 'Bytes' | 'KB' | 'MB'
-
-/**
- * @todo: Remove this.
- *
- * This utility only exists as an example of using V1 tests for V2 source.
- * It should not be tested, or even part of JSON Schema Form.
- */
-export function convertDiskSizeFromTo(
-  from: DiskSizeUnit,
-  to: DiskSizeUnit,
-): (value: number) => number {
-  const multipliers: Record<DiskSizeUnit, number> = {
-    Bytes: 1,
-    KB: 1024,
-    MB: 1024 * 1024,
-  }
-
-  return (value: number): number => {
-    const fromMultiplier = multipliers[from]
-    const toMultiplier = multipliers[to]
-    return (value * fromMultiplier) / toMultiplier
-  }
-}
 
 /**
  * Get a field from a list of fields by name.
@@ -102,18 +78,40 @@ function getOptionIdentity(option: unknown): unknown {
   return option
 }
 
+let hasWarnedAboutNewConditionalOptions = false
+
+/**
+ * Warns (once) that a conditional branch introduces option(s) not present on the base field.
+ * This is only relevant while running with the legacy behavior (disallowNewConditionalOptions: false).
+ */
+function warnAboutNewConditionalOptions(): void {
+  if (!hasWarnedAboutNewConditionalOptions) {
+    hasWarnedAboutNewConditionalOptions = true
+    console.warn(
+      '[json-schema-form] A conditional branch introduces option(s) not present on the base field. '
+      + 'This currently works but is deprecated and will be disallowed in a future major version. '
+      + 'Set `disallowNewConditionalOptions: true` to opt into the new behavior now. (see PR #265)',
+    )
+  }
+}
+
 /**
  * Merges a conditional branch schema into the base schema recursively.
  *
- * Option-like arrays (enum/oneOf/anyOf/options) are restricted to the options already
- * present on the base field: the branch may narrow or re-label existing options, but any
- * option whose value isn't present in the base is ignored. If the base field declares no
- * option array for a given key, the branch's options are dropped entirely.
+ * When `options.disallowNewConditionalOptions` is true, option-like arrays (enum/oneOf/anyOf/options)
+ * are restricted to the options already present on the base field: the branch may narrow or re-label
+ * existing options, but any option whose value isn't present in the base is ignored. If the base
+ * field declares no option array for a given key, the branch's options are dropped entirely.
+ *
+ * When it is false (default, legacy behavior), option-like arrays are replaced wholesale, so a branch
+ * may introduce new options. In that case, if a branch would introduce an option that the new
+ * behavior would drop, a one-time deprecation warning is emitted.
  *
  * @param schema1 - The base schema to merge into
  * @param schema2 - The conditional branch schema to merge from
+ * @param options - The form options
  */
-export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, schema2?: T): void {
+export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, schema2?: T, options?: CreateHeadlessFormOptions): void {
   // Handle null/undefined values
   if (!schema1 || !schema2) {
     return
@@ -124,6 +122,8 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
     return
   }
 
+  const { disallowNewConditionalOptions = false } = options ?? {}
+
   // Merge all properties from schema2 into schema1
   for (const [key, schema2Value] of Object.entries(schema2)) {
     // let's skip merging some properties
@@ -133,29 +133,43 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
 
     const schema1Value = schema1[key]
 
-    // Restrict option-like arrays to the options already present on the base field
     if (isOptionsLikeSchema(key, schema2Value)) {
-      // Base declares no options for this key, let a conditional branch introduce them
-      if (!Array.isArray(schema1Value)) {
-        schema1[key as keyof T] = schema2Value
+      // Restrict option-like arrays to the options already present on the base field
+      if (disallowNewConditionalOptions) {
+        // Base declares no options for this key, let a conditional branch introduce them
+        if (!Array.isArray(schema1Value)) {
+          schema1[key as keyof T] = schema2Value
+          continue
+        }
+
+        const allowedOptions = new Set(schema1Value.map(option => getOptionIdentity(option)))
+        // Keep the branch's option objects (so changing options properties works),
+        // but only for values that are already present in the base
+        // Note: this will set an empty array if the options are not of an expected format
+        schema1[key as keyof T] = schema2Value.filter(
+          (option: unknown) => allowedOptions.has(getOptionIdentity(option)),
+        )
         continue
       }
 
-      const allowedOptions = new Set(schema1Value.map(option => getOptionIdentity(option)))
-      // Keep the branch's option objects (so changing options properties works),
-      // but only for values that are already present in the base
-      // Note: this will set an empty array if the options are not of an expected format
-      schema1[key as keyof T] = schema2Value.filter(
-        (option: unknown) => allowedOptions.has(getOptionIdentity(option)),
-      )
-      continue
+      // Legacy behavior: option-like arrays are fully replaced below, but warn (once) if the
+      // branch introduces an option that the new behavior would have dropped.
+      else if (Array.isArray(schema1Value)) {
+        const allowedOptions = new Set(schema1Value.map(option => getOptionIdentity(option)))
+        const introducesNewOption = schema2Value.some(
+          (option: unknown) => !allowedOptions.has(getOptionIdentity(option)),
+        )
+        if (introducesNewOption) {
+          warnAboutNewConditionalOptions()
+        }
+      }
     }
 
     // If the value is an object:
     if (isObject(schema2Value)) {
       // If both schemas have this key and it's an object, merge recursively
       if (isObject(schema1Value)) {
-        mergeSchemaBranch(schema1Value, schema2Value)
+        mergeSchemaBranch(schema1Value, schema2Value, options)
       }
       // Otherwise, if the value is different, just assign it
       else if (schema1Value !== schema2Value) {

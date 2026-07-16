@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import { createHeadlessForm } from '../../src/form'
 
 describe('Select field options', () => {
@@ -310,6 +310,9 @@ describe('conditionally replacing option-like arrays', () => {
 })
 
 describe('conditionals cannot introduce options that are not in the base field', () => {
+  // The restriction is opt-in via `disallowNewConditionalOptions: true`.
+  const options = { disallowNewConditionalOptions: true }
+
   const getOptions = (form: ReturnType<typeof createHeadlessForm>, name: string) =>
     form.fields.find(f => f.name === name)?.options
 
@@ -342,7 +345,7 @@ describe('conditionals cannot introduce options that are not in the base field',
       ],
     }
 
-    const form = createHeadlessForm(schema)
+    const form = createHeadlessForm(schema, options)
 
     form.handleValidation({ trigger: 'go' })
     // Only 'c' survives; the injected 'd' is dropped
@@ -385,7 +388,7 @@ describe('conditionals cannot introduce options that are not in the base field',
       ],
     }
 
-    const form = createHeadlessForm(schema)
+    const form = createHeadlessForm(schema, options)
     const getEnum = () => form.fields.find(f => f.name === 'permissions')?.enum
 
     form.handleValidation({ userType: 'admin' })
@@ -397,5 +400,58 @@ describe('conditionals cannot introduce options that are not in the base field',
     // Reverting still restores the full base enum
     form.handleValidation({ userType: 'user' })
     expect(getEnum()).toEqual(['read', 'write', 'execute'])
+  })
+})
+
+describe('conditionals can introduce new options by default (legacy behavior)', () => {
+  let warnSpy: ReturnType<typeof jest.spyOn>
+
+  beforeEach(() => {
+    warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    warnSpy.mockRestore()
+  })
+
+  const schema = {
+    type: 'object' as const,
+    properties: {
+      userType: { type: 'string' as const },
+      permissions: {
+        type: 'string' as const,
+        enum: ['read', 'write', 'execute'],
+      },
+    },
+    allOf: [
+      {
+        if: { properties: { userType: { const: 'admin' } }, required: ['userType'] },
+        then: {
+          properties: {
+            permissions: {
+              // 'delete' is not present on the base field but should be kept (legacy behavior)
+              enum: ['read', 'delete'],
+            },
+          },
+        },
+      },
+    ],
+  }
+
+  it('should keep options a conditional introduces and warn once', () => {
+    const form = createHeadlessForm(schema)
+    const getEnum = () => form.fields.find(f => f.name === 'permissions')?.enum
+
+    form.handleValidation({ userType: 'admin' })
+    // The whole branch enum replaces the base, including the new 'delete' option
+    expect(getEnum()).toEqual(['read', 'delete'])
+    expect(form.handleValidation({ userType: 'admin', permissions: 'delete' }).formErrors).toBeUndefined()
+
+    // Reverting still restores the full base enum
+    form.handleValidation({ userType: 'user' })
+    expect(getEnum()).toEqual(['read', 'write', 'execute'])
+
+    expect(warnSpy).toHaveBeenCalled()
+    expect(warnSpy.mock.calls[0][0]).toContain('disallowNewConditionalOptions')
   })
 })
