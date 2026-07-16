@@ -1,5 +1,5 @@
 import type { Field } from '../src/field/type'
-import { describe, expect, it } from '@jest/globals'
+import { afterEach, beforeEach, describe, expect, it, jest } from '@jest/globals'
 import { convertKBToMB, getField, mergeFieldProperties, mergeSchemaBranch } from '../src/utils'
 
 describe('getField', () => {
@@ -198,22 +198,25 @@ describe('mergeSchemaBranch', () => {
   })
 
   describe('restricting option-like arrays to the base options', () => {
+    // This behavior is opt-in via `disallowNewConditionalOptions: true`.
+    const options = { disallowNewConditionalOptions: true }
+
     it('should narrow enum arrays to the options present in the base', () => {
       const schema1: Record<string, any> = { enum: ['a', 'b', 'c'] }
-      mergeSchemaBranch(schema1, { enum: ['b', 'c'] })
+      mergeSchemaBranch(schema1, { enum: ['b', 'c'] }, options)
       expect(schema1.enum).toEqual(['b', 'c'])
     })
 
     it('should ignore enum options that are not present in the base', () => {
       const schema1: Record<string, any> = { enum: ['a', 'b', 'c', null] }
       // 'd' does not exist on the base field and must be dropped
-      mergeSchemaBranch(schema1, { enum: ['c', 'd', null] })
+      mergeSchemaBranch(schema1, { enum: ['c', 'd', null] }, options)
       expect(schema1.enum).toEqual(['c', null])
     })
 
     it('should narrow array of enum objects to the options present in the base, assuming option-like objects', () => {
       const schema1: Record<string, any> = { enum: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }, { value: 'c', label: 'C' }] }
-      mergeSchemaBranch(schema1, { enum: [{ value: 'b', label: 'B' }, { value: 'c', label: 'C' }] })
+      mergeSchemaBranch(schema1, { enum: [{ value: 'b', label: 'B' }, { value: 'c', label: 'C' }] }, options)
       expect(schema1.enum).toEqual([{ value: 'b', label: 'B' }, { value: 'c', label: 'C' }])
     })
 
@@ -223,14 +226,14 @@ describe('mergeSchemaBranch', () => {
       }
       mergeSchemaBranch(schema1, {
         options: [{ value: 'c', label: 'C' }, { value: 'd', label: 'D' }],
-      })
+      }, options)
       expect(schema1.options).toEqual([{ value: 'c', label: 'C' }])
       expect(schema1.options).toHaveLength(1)
     })
 
     it('should ignore options that are not option-like objects, still replacing the array', () => {
       const schema1: Record<string, any> = { options: [{ flag: true, label: 'A' }, { flag: false, label: 'B' }, { flag: true, label: 'C' }] }
-      mergeSchemaBranch(schema1, { options: [{ flag: true, label: 'A' }, { flag: false, label: 'B' }] })
+      mergeSchemaBranch(schema1, { options: [{ flag: true, label: 'A' }, { flag: false, label: 'B' }] }, options)
       expect(schema1.options).toEqual([])
     })
 
@@ -240,7 +243,7 @@ describe('mergeSchemaBranch', () => {
       }
       mergeSchemaBranch(schema1, {
         anyOf: [{ const: 'C' }, { const: 'X' }],
-      })
+      }, options)
       expect(schema1.anyOf).toEqual([{ const: 'C' }])
       expect(schema1.anyOf).toHaveLength(1)
     })
@@ -251,7 +254,7 @@ describe('mergeSchemaBranch', () => {
       }
       mergeSchemaBranch(schema1, {
         oneOf: [{ const: 'A' }, { const: 'Z' }],
-      })
+      }, options)
       expect(schema1.oneOf).toEqual([{ const: 'A' }])
       expect(schema1.oneOf).toHaveLength(1)
     })
@@ -262,7 +265,7 @@ describe('mergeSchemaBranch', () => {
       }
       mergeSchemaBranch(schema1, {
         oneOf: [{ const: 'a', title: 'Relabeled A' }, { const: 'new', title: 'New' }],
-      })
+      }, options)
       expect(schema1.oneOf).toEqual([{ const: 'a', title: 'Relabeled A' }])
     })
 
@@ -272,27 +275,74 @@ describe('mergeSchemaBranch', () => {
       }
       mergeSchemaBranch(schema1, {
         items: { anyOf: [{ const: 'C' }, { const: 'D' }] },
-      })
+      }, options)
       expect(schema1.items.anyOf).toEqual([{ const: 'C' }])
       expect(schema1.items.anyOf).toHaveLength(1)
     })
 
     it('should add the branch options when the base declares none', () => {
       const schema1: Record<string, any> = { type: 'string' }
-      mergeSchemaBranch(schema1, { enum: ['a', 'b'] })
+      mergeSchemaBranch(schema1, { enum: ['a', 'b'] }, options)
       expect(schema1).toEqual({ type: 'string', enum: ['a', 'b'] })
     })
 
     it('should add the branch options when the base declares none for option-like arrays', () => {
       const schema1: Record<string, any> = { type: 'string' }
-      mergeSchemaBranch(schema1, { oneOf: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] })
+      mergeSchemaBranch(schema1, { oneOf: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }] }, options)
       expect(schema1.oneOf).toEqual([{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }])
     })
 
     it('should not add the branch options when the base an empty array', () => {
       const schema1: Record<string, any> = { type: 'string', enum: [] }
-      mergeSchemaBranch(schema1, { enum: ['a', 'b'] })
+      mergeSchemaBranch(schema1, { enum: ['a', 'b'] }, options)
       expect(schema1).toEqual({ type: 'string', enum: [] })
+    })
+  })
+
+  describe('legacy behavior: allowing new conditional options (default)', () => {
+    let warnSpy: ReturnType<typeof jest.spyOn>
+
+    beforeEach(() => {
+      jest.resetModules()
+      warnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {})
+    })
+
+    afterEach(() => {
+      warnSpy.mockRestore()
+    })
+
+    it('should not warn when a branch only narrows to existing options', () => {
+      const schema1: Record<string, any> = { enum: ['a', 'b', 'c'] }
+      mergeSchemaBranch(schema1, { enum: ['a', 'b'] })
+      expect(warnSpy).not.toHaveBeenCalled()
+    })
+
+    it('should warn once when a branch introduces a new option', () => {
+      const schema1: Record<string, any> = { enum: ['a', 'b'] }
+      expect(warnSpy).toHaveBeenCalledTimes(0)
+      mergeSchemaBranch(schema1, { enum: ['a', 'c'] })
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+      expect(warnSpy.mock.calls[0][0]).toContain('disallowNewConditionalOptions')
+      // A second merge that also introduces a new option should not warn again
+      const schema2: Record<string, any> = { enum: ['x', 'y'] }
+      mergeSchemaBranch(schema2, { enum: ['x', 'z'] })
+      expect(warnSpy).toHaveBeenCalledTimes(1)
+    })
+
+    it('should replace the whole enum array, including new options, when the flag is omitted', () => {
+      const schema1: Record<string, any> = { enum: ['a', 'b', 'c'] }
+      mergeSchemaBranch(schema1, { enum: ['c', 'd'] })
+      expect(schema1.enum).toEqual(['c', 'd'])
+    })
+
+    it('should replace the whole options array, including new options', () => {
+      const schema1: Record<string, any> = {
+        options: [{ value: 'a', label: 'A' }, { value: 'b', label: 'B' }],
+      }
+      mergeSchemaBranch(schema1, {
+        options: [{ value: 'b', label: 'B' }, { value: 'c', label: 'C' }],
+      })
+      expect(schema1.options).toEqual([{ value: 'b', label: 'B' }, { value: 'c', label: 'C' }])
     })
   })
 })

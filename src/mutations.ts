@@ -1,7 +1,6 @@
 import type { Field } from './field/type'
 import type { CreateHeadlessFormOptions } from './form'
 import type { JsfObjectSchema, JsfSchema, JsonLogicContext, NonBooleanJsfSchema, ObjectValue, SchemaValue } from './types'
-import type { LegacyOptions } from './validation/schema'
 import { buildFieldSchema } from './field/schema'
 import { mergeFieldProperties, mergeSchemaBranch } from './utils'
 import { evaluateIfCondition } from './validation/conditions'
@@ -29,15 +28,14 @@ export function calculateFinalSchema({
 }): JsfObjectSchema {
   const jsonLogicContext = schema['x-jsf-logic'] ? getJsonLogicContextFromSchema(schema['x-jsf-logic'], values) : undefined
   const schemaCopy = safeDeepClone(schema)
-  const { legacyOptions } = options
 
-  applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)
+  applySchemaRules(schemaCopy, values, options, jsonLogicContext)
 
   if (jsonLogicContext?.schema.computedValues) {
     applyComputedAttrsToSchema(schemaCopy, jsonLogicContext.schema.computedValues, values)
     // If we had computed values applied to the schema,
     // we need to re-apply the schema rules to update the fields
-    applySchemaRules(schemaCopy, values, legacyOptions, jsonLogicContext)
+    applySchemaRules(schemaCopy, values, options, jsonLogicContext)
   }
 
   return schemaCopy
@@ -55,11 +53,11 @@ function evaluateConditional(
   values: ObjectValue,
   schema: JsfObjectSchema,
   rule: NonBooleanJsfSchema,
-  options: LegacyOptions = {},
+  options: CreateHeadlessFormOptions = {},
   jsonLogicContext: JsonLogicContext | undefined,
 ) {
   // At this point, we know that the rule has an if property
-  const conditionIsTrue = evaluateIfCondition(values, rule.if!, options, jsonLogicContext)
+  const conditionIsTrue = evaluateIfCondition(values, rule.if!, options.legacyOptions ?? {}, jsonLogicContext)
 
   // Prevent fields from being shown when required fields have type errors
   let hasTypeErrors = false
@@ -71,7 +69,7 @@ function evaluateConditional(
       }
       const fieldSchema = schema.properties[fieldName]
       const fieldValue = values[fieldName]
-      const fieldErrors = validateSchema(fieldValue, fieldSchema, options)
+      const fieldErrors = validateSchema(fieldValue, fieldSchema, options.legacyOptions ?? {})
       return fieldErrors.some(error => error.validation === 'type')
     })
   }
@@ -89,7 +87,7 @@ function evaluateConditional(
 function applySchemaRules(
   schema: JsfObjectSchema,
   values: SchemaValue = {},
-  options: LegacyOptions = {},
+  options: CreateHeadlessFormOptions = {},
   jsonLogicContext: JsonLogicContext | undefined,
 ) {
   if (!isObjectValue(values)) {
@@ -164,11 +162,11 @@ function applySchemaRules(
  * @param options - Validation options
  * @param jsonLogicContext - JSON Logic context
  */
-function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: LegacyOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
+function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: CreateHeadlessFormOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
   const branchSchema = branch as JsfObjectSchema
 
   applySchemaRules(branchSchema, values, options, jsonLogicContext)
-  mergeSchemaBranch(schema, branchSchema)
+  mergeSchemaBranch(schema, branchSchema, options)
 }
 
 /**
