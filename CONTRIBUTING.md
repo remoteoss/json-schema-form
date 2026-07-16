@@ -161,6 +161,7 @@ The final release is done after merge.
 We follow [Semantic Versioning](https://semver.org/). Given a version number `MAJOR.MINOR.PATCH`, increment the:
 
 - **MAJOR** version when you make incompatible API changes
+  - disabled since we want to keep v1 backwards compatible for the foreseeable future
 - **MINOR** version when you add functionality in a backward compatible manner
 - **PATCH** version when you make backward compatible bug fixes
 
@@ -168,7 +169,7 @@ Pick the bump that matches your changes and run the matching command:
 
 | Bump    | When to use                                     | Command                     |
 | ------- | ----------------------------------------------- | --------------------------- |
-| `major` | Incompatible API changes                        | `pnpm run release major`    |
+| `major` | Incompatible API changes                        | Disabled                    |
 | `minor` | New functionality, backward compatible          | `pnpm run release minor`    |
 | `patch` | Backward compatible bug fixes                   | `pnpm run release patch`    |
 

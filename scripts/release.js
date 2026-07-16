@@ -19,7 +19,8 @@ const packageJsonPath = path.resolve(__dirname, '../package.json');
 const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'));
 
 const releaseTypes = ['dev', 'beta', 'official'];
-const bumpTypes = ['patch', 'minor', 'major'];
+// 'major' is disabled to avoid accidental major releases
+const bumpTypes = ['patch', 'minor'];
 
 async function checkGitBranchAndStatus() {
   const releaseType = process.argv[2];
