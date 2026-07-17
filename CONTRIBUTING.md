@@ -158,15 +158,30 @@ The final release is done after merge.
 
 ### Publishing a stable release
 
-1.  Checkout `main` and pull the latest commit
-2.  Depending if you want a `patch` or `minor`, run the command `pnpm run release patch` or `pnpm run release minor`.
+We follow [Semantic Versioning](https://semver.org/). Given a version number `MAJOR.MINOR.PATCH`, increment the:
 
-    1. You'll be shown what's the new version and prompt you if it's correct. Eg
+- **MAJOR** version when you make incompatible API changes
+  - disabled since we want to keep v1 backwards compatible for the foreseeable future
+- **MINOR** version when you add functionality in a backward compatible manner
+- **PATCH** version when you make backward compatible bug fixes
+
+Pick the bump that matches your changes and run the matching command:
+
+| Bump    | When to use                                     | Command                     |
+| ------- | ----------------------------------------------- | --------------------------- |
+| `major` | Incompatible API changes                        | Disabled                    |
+| `minor` | New functionality, backward compatible          | `pnpm run release minor`    |
+| `patch` | Backward compatible bug fixes                   | `pnpm run release patch`    |
+
+1.  Checkout `main` and pull the latest commit
+2.  Run the command matching the bump you need (see the table above).
+
+    1. You'll be shown what's the new version and prompt you if it's correct. E.g. with `pnpm run release minor`:
 
        ```
        Creating a new version...
-       :: Current version: 1.0.0-beta.0
-       :::::: New version: 1.1.0-beta.0
+       :: Current version: 1.0.0
+       :::::: New version: 1.1.0
        Ready to commit and publish it? (y/n)
 
        ```
