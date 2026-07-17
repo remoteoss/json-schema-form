@@ -245,9 +245,15 @@ export function validateSchema(
       // Field is considered missing if:
       // - it's undefined OR
       // - it's null AND treatNullAsUndefined option is true
-      // - it's an array/object and it's empty
+      // - it's an object and it's empty
+      //
+      // An array (including an empty one) counts as a present value: `required`
+      // only checks for the presence of a key, while array length is governed
+      // by `minItems` / `maxItems` (validated separately). To require a
+      // non-empty array, use `minItems: 1` rather than relying on `required`.
+
       if (Array.isArray(fieldValue)) {
-        return fieldValue.length === 0
+        return false
       }
 
       if (isObjectValue(fieldValue)) {
