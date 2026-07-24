@@ -236,6 +236,78 @@ if (formErrors?.address?.street) {
 }
 ```
 
+### 3. **Conditional options behavior (`disallowNewConditionalOptions`)**
+
+Conditional branches (`if`/`then`/`else`) can override a field's option-like arrays
+(`enum`, `oneOf`, `anyOf`, and `x-jsf-presentation.options`). Historically a branch could
+introduce brand-new options that weren't present on the base field. That behavior is being
+tightened to match the spec: going forward, a branch may only **narrow or re-label** options
+already declared on the base field. Any option a branch introduces that isn't on the base is dropped.
+
+If the base field doesn't apply a base options array (e.g. no `oneOf` key), then the previous
+behavior still applies, any new option would be accepted.
+
+Setting `disallowNewConditionalOptions: true` option lets you opt into the new behavior today:
+
+```typescript
+const form = createHeadlessForm(schema, {
+  disallowNewConditionalOptions: true,
+})
+```
+
+Example: a `paymentMethod` field whose options depend on the selected `country`. With
+`disallowNewConditionalOptions: true`, the `"cash"` option the branch tries to add is ignored
+because it isn't declared on the base field:
+
+```typescript
+const schema = {
+  type: 'object',
+  properties: {
+    country: {
+      type: 'string',
+      title: 'Country',
+      oneOf: [
+        { const: 'US', title: 'United States' },
+        { const: 'PT', title: 'Portugal' },
+      ],
+    },
+    paymentMethod: {
+      type: 'string',
+      title: 'Payment method',
+      oneOf: [
+        { const: 'card', title: 'Credit card' },
+        { const: 'paypal', title: 'PayPal' },
+        { const: 'bank_transfer', title: 'Bank transfer' },
+      ],
+    },
+  },
+  allOf: [
+    {
+      if: { properties: { country: { const: 'US' } }, required: ['country'] },
+      then: {
+        properties: {
+          paymentMethod: {
+            // 'cash' is not declared on the base field, so it is ignored
+            oneOf: [
+              { const: 'card', title: 'Credit card' },
+              { const: 'cash', title: 'Cash' },
+            ],
+          },
+        },
+      },
+    },
+  ],
+}
+
+const form = createHeadlessForm(schema, { disallowNewConditionalOptions: true })
+form.handleValidation({ country: 'US' })
+// `paymentMethod` now only offers [{ label: 'Credit card', value: 'card' }] , 'cash' was dropped.
+```
+
+> **Deprecation warning:** while running with the default (`false`), a branch that introduces a
+> new option still works but logs a one-time console warning. Set `disallowNewConditionalOptions: true`
+> to silence it and adopt the future behavior early.
+
 ## Common Migration Issues
 
 ### 1. **ESM Import Errors**
