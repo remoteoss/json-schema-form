@@ -83,12 +83,14 @@ let hasWarnedAboutNewConditionalOptions = false
 /**
  * Warns (once) that a conditional branch introduces option(s) not present on the base field.
  * This is only relevant while running with the legacy behavior (disallowNewConditionalOptions: false).
+ *
+ * @param newOptions - The option identities introduced by the branch that are not present on the base field
  */
-function warnAboutNewConditionalOptions(): void {
+function warnAboutNewConditionalOptions(newOptions: unknown[]): void {
   if (!hasWarnedAboutNewConditionalOptions) {
     hasWarnedAboutNewConditionalOptions = true
     console.warn(
-      '[json-schema-form] A conditional branch introduces option(s) not present on the base field. '
+      `[json-schema-form] A conditional branch introduces option(s) not present on the base field: ${JSON.stringify(newOptions)}. `
       + 'This currently works but is deprecated and will be disallowed in a future major version. '
       + 'Set `disallowNewConditionalOptions: true` to opt into the new behavior now. (see PR #265)',
     )
@@ -156,11 +158,11 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
       // branch introduces an option that the new behavior would have dropped.
       else if (Array.isArray(schema1Value)) {
         const allowedOptions = new Set(schema1Value.map(option => getOptionIdentity(option)))
-        const introducesNewOption = schema2Value.some(
-          (option: unknown) => !allowedOptions.has(getOptionIdentity(option)),
-        )
-        if (introducesNewOption) {
-          warnAboutNewConditionalOptions()
+        const newOptions = schema2Value
+          .map((option: unknown) => getOptionIdentity(option))
+          .filter((identity: unknown) => !allowedOptions.has(identity))
+        if (newOptions.length > 0) {
+          warnAboutNewConditionalOptions(newOptions)
         }
       }
     }

@@ -320,9 +320,9 @@ describe('mergeSchemaBranch', () => {
     it('should warn once when a branch introduces a new option', () => {
       const schema1: Record<string, any> = { enum: ['a', 'b'] }
       expect(warnSpy).toHaveBeenCalledTimes(0)
-      mergeSchemaBranch(schema1, { enum: ['a', 'c'] })
+      mergeSchemaBranch(schema1, { enum: ['a', 'c', 'd'] })
       expect(warnSpy).toHaveBeenCalledTimes(1)
-      expect(warnSpy.mock.calls[0][0]).toContain('disallowNewConditionalOptions')
+      expect(warnSpy.mock.calls[0][0]).toEqual('[json-schema-form] A conditional branch introduces option(s) not present on the base field: [\"c\",\"d\"]. This currently works but is deprecated and will be disallowed in a future major version. Set `disallowNewConditionalOptions: true` to opt into the new behavior now. (see PR #265)')
       // A second merge that also introduces a new option should not warn again
       const schema2: Record<string, any> = { enum: ['x', 'y'] }
       mergeSchemaBranch(schema2, { enum: ['x', 'z'] })
