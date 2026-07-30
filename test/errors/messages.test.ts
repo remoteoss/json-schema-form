@@ -575,6 +575,180 @@ describe('validation error messages', () => {
         age: 'Must be greater or equal to 18',
       })
     })
+
+    it('applies a global "type" message across different data types', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          age: { type: 'number' },
+        },
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: { type: 'Invalid value.' },
+      })
+
+      const result = form.handleValidation({ name: 123, age: 'not a number' })
+
+      expect(result.formErrors).toMatchObject({
+        name: 'Invalid value.',
+        age: 'Invalid value.',
+      })
+    })
+
+    it('applies a global "enum" message', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          status: { type: 'string', enum: ['active', 'inactive'] },
+        },
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: { enum: 'Pick one of the allowed options.' },
+      })
+
+      const result = form.handleValidation({ status: 'unknown' })
+
+      expect(result.formErrors).toMatchObject({
+        status: 'Pick one of the allowed options.',
+      })
+    })
+
+    it('applies a global "minLength" message', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          username: { type: 'string', minLength: 5 },
+        },
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: { minLength: 'Too short.' },
+      })
+
+      const result = form.handleValidation({ username: 'ab' })
+
+      expect(result.formErrors).toMatchObject({
+        username: 'Too short.',
+      })
+    })
+
+    it('supports multiple validation types overridden at once', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          age: { type: 'number', minimum: 18 },
+        },
+        required: ['name'],
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: {
+          required: 'This cannot be empty.',
+          minimum: 'Value too low.',
+        },
+      })
+
+      const result = form.handleValidation({ age: 10 })
+
+      expect(result.formErrors).toMatchObject({
+        name: 'This cannot be empty.',
+        age: 'Value too low.',
+      })
+    })
+
+    it('also overrides the checkbox-specific "required" message, since it is the same validation type', () => {
+      // Checkboxes get a special built-in default ("Please acknowledge this field")
+      // instead of the generic "Required field" — applyCustomErrorMessages() doesn't
+      // special-case checkboxes, so a global `required` override applies here too.
+      // Documenting this as intended behavior: the option is about the validation
+      // type, not about how the default happens to be computed for a given input.
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          consent: {
+            'type': 'string',
+            'const': 'yes',
+            'x-jsf-presentation': { inputType: 'checkbox' },
+          },
+        },
+        required: ['consent'],
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: { required: 'This cannot be empty.' },
+      })
+
+      const result = form.handleValidation({})
+
+      expect(result.formErrors).toMatchObject({
+        consent: 'This cannot be empty.',
+      })
+    })
+
+    it('does not produce any error message when the submitted data is valid', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          age: { type: 'number', minimum: 18 },
+        },
+        required: ['name'],
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: {
+          required: 'This cannot be empty.',
+          minimum: 'Value too low.',
+          type: 'Invalid value.',
+        },
+      })
+
+      const result = form.handleValidation({ name: 'Rex', age: 20 })
+
+      expect(result.formErrors).toBeUndefined()
+    })
+
+    it('reaches fields nested inside a sub-object', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          address: {
+            type: 'object',
+            properties: {
+              street: { type: 'string' },
+            },
+            required: ['street'],
+          },
+        },
+        required: ['address'],
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: { required: 'This cannot be empty.' },
+      })
+
+      const result = form.handleValidation({ address: {} })
+
+      expect(result.formErrors).toMatchObject({
+        address: {
+          street: 'This cannot be empty.',
+        },
+      })
+    })
+
+    it('an empty errorMessages object behaves the same as not passing the option at all', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+        },
+        required: ['name'],
+      }
+      const form = createHeadlessForm(schema, { errorMessages: {} })
+
+      const result = form.handleValidation({})
+
+      expect(result.formErrors).toMatchObject({
+        name: 'Required field',
+      })
+    })
   })
 
   describe('schema composition errors', () => {
