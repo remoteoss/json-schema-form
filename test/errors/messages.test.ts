@@ -490,6 +490,93 @@ describe('validation error messages', () => {
     })
   })
 
+  describe('global error messages (options.errorMessages)', () => {
+    it('applies a form-level default message to every field of a given validation type', () => {
+      // Two fields, two different input types, same validation type ('required').
+      // A single `errorMessages.required` should cover both, without repeating
+      // `x-jsf-errorMessage` on each property — this is the i18n use case from
+      // https://github.com/remoteoss/json-schema-form/issues/69
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          pet_name: { title: 'Pet name', type: 'string' },
+          browsers: {
+            'title': 'Browsers',
+            'type': 'string',
+            'oneOf': [
+              { const: 'chr', title: 'Chrome' },
+              { const: 'ff', title: 'Firefox' },
+            ],
+            'x-jsf-presentation': { inputType: 'select' },
+          },
+        },
+        required: ['pet_name', 'browsers'],
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: {
+          required: 'This cannot be empty.',
+        },
+      })
+
+      const result = form.handleValidation({})
+
+      expect(result.formErrors).toMatchObject({
+        pet_name: 'This cannot be empty.',
+        browsers: 'This cannot be empty.',
+      })
+    })
+
+    it('lets a field\'s own x-jsf-errorMessage override the form-level default', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          pet_name: { type: 'string' },
+          email: {
+            'type': 'string',
+            'x-jsf-errorMessage': {
+              required: 'Please provide your email address',
+            },
+          },
+        },
+        required: ['pet_name', 'email'],
+      }
+      const form = createHeadlessForm(schema, {
+        errorMessages: {
+          required: 'This cannot be empty.',
+        },
+      })
+
+      const result = form.handleValidation({})
+
+      expect(result.formErrors).toMatchObject({
+        pet_name: 'This cannot be empty.', // falls back to the form-level default
+        email: 'Please provide your email address', // field-level override wins
+      })
+    })
+
+    it('falls back to the built-in default message when no override matches the validation type', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          age: { type: 'number', minimum: 18 },
+        },
+      }
+      // Only `required` is overridden — `minimum` errors should keep using
+      // the library's built-in message.
+      const form = createHeadlessForm(schema, {
+        errorMessages: {
+          required: 'This cannot be empty.',
+        },
+      })
+
+      const result = form.handleValidation({ age: 10 })
+
+      expect(result.formErrors).toMatchObject({
+        age: 'Must be greater or equal to 18',
+      })
+    })
+  })
+
   describe('schema composition errors', () => {
     it('shows anyOf validation error messages', () => {
       const schema: JsfObjectSchema = {

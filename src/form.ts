@@ -1,4 +1,4 @@
-import type { ValidationError, ValidationErrorPath } from './errors'
+import type { SchemaValidationErrorType, ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
 import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
 import type { LegacyOptions } from './validation/schema'
@@ -166,26 +166,42 @@ function addErrorMessages(errors: ValidationError[]): ValidationErrorWithMessage
 }
 
 /**
- * Apply custom error messages from the schema to validation errors
+ * Apply custom error messages to validation errors.
  * @param errors - The validation errors
  * @param schema - The schema that contains custom error messages
+ * @param globalErrorMessages - Form-level default messages per validation type, from `options.errorMessages`
  * @returns The validation errors with custom error messages applied
+ * @description
+ * Two sources of custom messages can override the built-in default, in order of precedence:
+ * 1. The field's own `x-jsf-errorMessage` (schema-level, one field at a time) — always wins.
+ * 2. `globalErrorMessages` (form-level, applies to every field of that validation type) — used
+ *    only when the field doesn't define its own override. This exists so consumers can set
+ *    messages once (e.g. for i18n) instead of repeating `x-jsf-errorMessage` on every property.
  */
-function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: JsfSchema): ValidationErrorWithMessage[] {
+function applyCustomErrorMessages(
+  errors: ValidationErrorWithMessage[],
+  schema: JsfSchema,
+  globalErrorMessages?: Partial<Record<SchemaValidationErrorType, string>>,
+): ValidationErrorWithMessage[] {
   if (typeof schema !== 'object' || !schema || !errors.length) {
     return errors
   }
 
   return errors.map((error) => {
     const fieldSchema = error.schema
-    const customErrorMessage = fieldSchema['x-jsf-errorMessage']?.[error.validation]
-    if (
-      fieldSchema
-      && customErrorMessage
-    ) {
+    const fieldErrorMessage = fieldSchema['x-jsf-errorMessage']?.[error.validation]
+    if (fieldSchema && fieldErrorMessage) {
       return {
         ...error,
-        message: customErrorMessage,
+        message: fieldErrorMessage,
+      }
+    }
+
+    const globalErrorMessage = globalErrorMessages?.[error.validation]
+    if (globalErrorMessage) {
+      return {
+        ...error,
+        message: globalErrorMessage,
       }
     }
 
@@ -197,14 +213,21 @@ function applyCustomErrorMessages(errors: ValidationErrorWithMessage[], schema: 
  * Validate a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against
+ * @param options - Legacy (v0 back-compat) validation options
+ * @param errorMessages - Form-level default error messages per validation type (see `CreateHeadlessFormOptions.errorMessages`)
  * @returns The validation result
  */
-function validate(value: SchemaValue, schema: JsfSchema, options: LegacyOptions = {}): ValidationResult {
+function validate(
+  value: SchemaValue,
+  schema: JsfSchema,
+  options: LegacyOptions = {},
+  errorMessages?: Partial<Record<SchemaValidationErrorType, string>>,
+): ValidationResult {
   const result: ValidationResult = {}
   const errors = validateSchema(value, schema, options)
 
   const errorsWithMessages = addErrorMessages(errors)
-  const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema)
+  const processedErrors = applyCustomErrorMessages(errorsWithMessages, schema, errorMessages)
 
   const formErrors = validationErrorsToFormErrors(processedErrors)
 
@@ -234,6 +257,28 @@ export interface CreateHeadlessFormOptions {
    * Custom user defined functions. A dictionary of name and function
    */
   customJsonLogicOps?: Record<string, (...args: any[]) => any>
+
+  /**
+   * Default error messages to use per validation type (e.g. `required`, `type`, `minLength`),
+   * applied to every field that doesn't already define its own `x-jsf-errorMessage` for that
+   * validation type.
+   *
+   * Useful for i18n and for apps with many fields: define each message once here instead of
+   * repeating `x-jsf-errorMessage` on every property of the schema.
+   *
+   * Precedence (most specific wins): a field's own `x-jsf-errorMessage` > `errorMessages` (this
+   * option) > the library's built-in default message.
+   * @example
+   * ```ts
+   * createHeadlessForm(schema, {
+   *   errorMessages: {
+   *     required: 'This field is required.',
+   *     minLength: 'This value is too short.',
+   *   },
+   * })
+   * ```
+   */
+  errorMessages?: Partial<Record<SchemaValidationErrorType, string>>
 }
 
 function buildFields(params: { schema: JsfObjectSchema, originalSchema: JsfObjectSchema, strictInputType?: boolean }): Field[] {
@@ -314,7 +359,7 @@ export function createHeadlessForm(
         options,
       })
 
-      const result = validate(value, updatedSchema, options.legacyOptions)
+      const result = validate(value, updatedSchema, options.legacyOptions, options.errorMessages)
 
       updateFieldProperties(fields, updatedSchema, schema)
 
