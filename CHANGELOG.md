@@ -1,3 +1,14 @@
+#### 1.2.15 (2026-08-04)
+
+##### Bug Fixes
+
+*  add option for new conditional options behavior ([#267](https://github.com/remoteoss/json-schema-form/pull/267)) ([c5ce18b6](https://github.com/remoteoss/json-schema-form/commit/c5ce18b6ba998c3f34e1c61354ecbf010b4e9b75))
+*  allow only known options via conditionals ([#265](https://github.com/remoteoss/json-schema-form/pull/265)) ([41845fad](https://github.com/remoteoss/json-schema-form/commit/41845fad1c1368672a5cd1e33df110b000d03623))
+
+###### Chore
+
+* **docs**: Update contributing docs to mention semver ([#266](https://github.com/remoteoss/json-schema-form/pull/266))
+
 #### 1.2.14 (2026-07-10)
 
 ##### Bug Fixes
