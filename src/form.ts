@@ -231,6 +231,16 @@ export interface CreateHeadlessFormOptions {
   strictInputType?: boolean
 
   /**
+   * When true, conditional branches (if/then/else) can only narrow options already present on
+   * a base field; options a branch introduces that aren't on the base are dropped, unless the
+   * base has no options property declared at all.
+   * When false (default), branches may introduce new options anytime (legacy behavior) and a
+   * deprecation warning is emitted. Will default to true in a future major release.
+   * @default false
+   */
+  disallowNewConditionalOptions?: boolean
+
+  /**
    * Custom user defined functions. A dictionary of name and function
    */
   customJsonLogicOps?: Record<string, (...args: any[]) => any>
