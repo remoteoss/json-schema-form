@@ -300,12 +300,12 @@ function fillDefaults(schema: JsfSchema, values: SchemaValue): SchemaValue {
 
   // Object schema: recurse into properties, filling nested defaults.
   if (schema.properties) {
-    const baseValues: ObjectValue = isObjectValue(values) ? values : {}
+    const baseValues: ObjectValue = isObjectValue(values) ? { ...values } : {}
 
     for (const [key, propSchema] of Object.entries(schema.properties)) {
       const nestedValues = fillDefaults(propSchema, baseValues[key])
       if (nestedValues !== undefined) {
-        Object.assign(baseValues, { [key]: nestedValues })
+        baseValues[key] = nestedValues
       }
     }
 

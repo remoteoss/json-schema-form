@@ -122,6 +122,20 @@ describe('createHeadlessForm', () => {
         const form = createHeadlessForm(schema, { initialValues: { payment_method: 'bank_transfer' } })
         expect(getField(form.fields, 'card_type')?.isVisible).toBe(false)
       })
+
+      it('initialValues are not mutated', () => {
+        const initialValues = { card_type: 'visa' }
+        const form = createHeadlessForm(schema, { initialValues })
+
+        expect(initialValues).toStrictEqual({ card_type: 'visa' })
+
+        const cardTypeField = getField(form.fields, 'card_type')
+        expect(cardTypeField?.isVisible).toBe(true)
+        expect(cardTypeField?.options).toEqual([
+          { label: 'Visa', value: 'visa' },
+          { label: 'Mastercard', value: 'mastercard' },
+        ])
+      })
     })
 
     describe('merge semantics', () => {
