@@ -113,6 +113,16 @@ const { schema, warnings } = modify(schemaPet, {
 });
 ```
 
+### 7. **Default values are only applied when the initial value is `undefined`**
+
+Both versions fill a "missing" initial value with the schema's `default`, but they don't match on what counts as a "missing" initial value.
+
+- **v0** applied the default whenever the initial value was **falsy**, so `false`, `0`, `''` and `null` were all replaced by the default.
+- **v1** applies the default only when the initial value is **`undefined`**, so falsy values you explicitly pass are preserved.
+
+> **Note:** in v1, defaults are read from the base schema's `properties` (recursing into nested
+ objects and into each existing item of an array of objects). Defaults declared inside conditional sub-schemas (`allOf`, `anyOf`, `if`/`then`) are not applied to the initial values.
+
 ## Migration Steps
 
 ### Step 1: Update Package
