@@ -300,19 +300,16 @@ function fillDefaults(schema: JsfSchema, values: SchemaValue): SchemaValue {
 
   // Object schema: recurse into properties, filling nested defaults.
   if (schema.properties) {
-    const base: ObjectValue = isObjectValue(values) ? { ...values } : {}
-    let filledAny = isObjectValue(values)
+    const baseValues: ObjectValue = isObjectValue(values) ? values : {}
 
     for (const [key, propSchema] of Object.entries(schema.properties)) {
-      const filled = fillDefaults(propSchema, base[key])
-      if (filled !== undefined) {
-        base[key] = filled
-        filledAny = true
+      const nestedValues = fillDefaults(propSchema, baseValues[key])
+      if (nestedValues !== undefined) {
+        Object.assign(baseValues, { [key]: nestedValues })
       }
     }
 
-    // Don't materialize an empty object that had neither a value nor defaults.
-    return filledAny ? base : values
+    return baseValues
   }
 
   // Array of objects (group-array): fill defaults for each existing item.
@@ -341,14 +338,17 @@ export function createHeadlessForm(
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
   validateOptions(options)
-  const initialValues = fillDefaults(
-    schema,
-    options.initialValues || {},
-  )
   const strictInputType = options.strictInputType || false
   const customJsonLogicOps = options?.customJsonLogicOps
 
   addCustomJsonLogicOperations(customJsonLogicOps)
+
+  // Default values are obtain based on the base schema and the initial values
+  // defaults set via sub-schemas (e.g. allOf, anyOf) are not considered here
+  const initialValues = fillDefaults(
+    schema,
+    options.initialValues || {},
+  )
 
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
   const updatedSchema = calculateFinalSchema({
