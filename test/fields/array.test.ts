@@ -701,6 +701,122 @@ describe('buildFieldArray', () => {
       })
     })
 
+    it('evaluates conditionals with an else branch per array item', () => {
+      // Regression test: the pre-processing in calculateFinalSchema used to
+      // evaluate items conditionals against an empty object, permanently baking
+      // the {}-matching branch into the shared items schema. Rules with an
+      // `else` branch were then wrong for every row.
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          rules: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['name'],
+              properties: {
+                name: { type: 'string' },
+                flat_rate: { type: 'string' },
+                banding: {
+                  type: ['object', 'null'],
+                  properties: {
+                    period: { type: 'string', enum: ['daily', 'weekly'] },
+                    bands: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        required: ['rate'],
+                        properties: { rate: { type: 'string' } },
+                      },
+                    },
+                  },
+                },
+              },
+              allOf: [
+                {
+                  if: {
+                    properties: {
+                      banding: {
+                        type: 'object',
+                        properties: { bands: { minItems: 1 } },
+                        required: ['bands'],
+                      },
+                    },
+                    required: ['banding'],
+                  },
+                  then: { required: ['banding'] },
+                  else: { required: ['flat_rate'] },
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema)
+
+      // Per-row divergence: row 0 satisfies the else branch, row 1 the then branch
+      expect(form.handleValidation({
+        rules: [
+          { name: 'flat', flat_rate: '1.5' },
+          { name: 'banded', banding: { period: 'daily', bands: [{ rate: '2.0' }] } },
+        ],
+      }).formErrors).toEqual(undefined)
+
+      // The else branch must fire only for rows without populated bands
+      expect(form.handleValidation({
+        rules: [
+          { name: 'flat missing rate' },
+          { name: 'banded', banding: { period: 'daily', bands: [{ rate: '2.0' }] } },
+        ],
+      }).formErrors).toEqual({
+        rules: [{ flat_rate: 'Required field' }, undefined],
+      })
+
+      // A banded row must not be forced into the else branch requirements
+      expect(form.handleValidation({
+        rules: [{ name: 'banded', banding: { period: 'daily', bands: [{ rate: '2.0' }] } }],
+      }).formErrors).toEqual(undefined)
+    })
+
+    it('evaluates negated conditionals per array item', () => {
+      // A negated `if` matches the empty object, so the old pre-processing baked
+      // the `then` branch in for every row regardless of its values.
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          rules: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                mode: { type: 'string' },
+                detail: { type: 'string' },
+              },
+              allOf: [
+                {
+                  if: { not: { properties: { mode: { const: 'auto' } }, required: ['mode'] } },
+                  then: { required: ['detail'] },
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({
+        rules: [{ mode: 'auto' }, { mode: 'manual', detail: 'x' }],
+      }).formErrors).toEqual(undefined)
+
+      expect(form.handleValidation({
+        rules: [{ mode: 'manual' }],
+      }).formErrors).toEqual({
+        rules: [{ detail: 'Required field' }],
+      })
+    })
+
     it('handles uniqueItems validation for arrays', () => {
       const schema: JsfObjectSchema = {
         type: 'object',
