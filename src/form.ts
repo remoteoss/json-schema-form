@@ -1,12 +1,13 @@
 import type { ValidationError, ValidationErrorPath } from './errors'
 import type { Field } from './field/type'
-import type { JsfObjectSchema, JsfSchema, SchemaValue } from './types'
+import type { JsfObjectSchema, JsfSchema, ObjectValue, SchemaValue } from './types'
 import type { LegacyOptions } from './validation/schema'
 import { getErrorMessage } from './errors/messages'
 import { buildFieldSchema } from './field/schema'
 import { calculateFinalSchema, updateFieldProperties } from './mutations'
 import { addCustomJsonLogicOperations, removeCustomJsonLogicOperations } from './validation/json-logic'
 import { validateSchema } from './validation/schema'
+import { isObjectValue } from './validation/util'
 
 export { LegacyOptions } from './validation/schema'
 
@@ -284,6 +285,47 @@ function validateOptions(options: CreateHeadlessFormOptions) {
 }
 
 /**
+ * Recursively fills a value with the schema's `default` keywords.
+ *
+ * The `default` is only applied if the initial value is `undefined`.
+ *
+ * @param schema - The schema (or sub-schema) to read defaults from.
+ * @param values - The current values at this path.
+ * @returns The values with defaults filled in.
+ */
+function fillDefaults(schema: JsfSchema, values: SchemaValue): SchemaValue {
+  if (typeof schema === 'boolean') {
+    return values
+  }
+
+  // Object schema: recurse into properties, filling nested defaults.
+  if (schema.properties) {
+    const baseValues: ObjectValue = isObjectValue(values) ? { ...values } : {}
+
+    for (const [key, propSchema] of Object.entries(schema.properties)) {
+      const nestedValues = fillDefaults(propSchema, baseValues[key])
+      if (nestedValues !== undefined) {
+        baseValues[key] = nestedValues
+      }
+    }
+
+    return baseValues
+  }
+
+  // Array of objects (group-array): fill defaults for each existing item.
+  if (schema.items && typeof schema.items !== 'boolean' && Array.isArray(values)) {
+    const itemSchema = schema.items
+    return values.map(item => fillDefaults(itemSchema, item))
+  }
+
+  if (values === undefined && schema.default !== undefined) {
+    return schema.default
+  }
+
+  return values
+}
+
+/**
  * JSON Logic uses a single global operators registry for all of its calls, so
  * we need to take extra measures to keep each createHeadlessForm deterministic.
  *
@@ -296,11 +338,17 @@ export function createHeadlessForm(
   options: CreateHeadlessFormOptions = {},
 ): FormResult {
   validateOptions(options)
-  const initialValues = options.initialValues || {}
   const strictInputType = options.strictInputType || false
   const customJsonLogicOps = options?.customJsonLogicOps
 
   addCustomJsonLogicOperations(customJsonLogicOps)
+
+  // Default values are obtain based on the base schema and the initial values
+  // defaults set via sub-schemas (e.g. allOf, anyOf) are not considered here
+  const initialValues = fillDefaults(
+    schema,
+    options.initialValues || {},
+  )
 
   // Make a new version of the schema with all the computed attrs applied, as well as the final version of each property (taking into account conditional rules)
   const updatedSchema = calculateFinalSchema({
