@@ -371,7 +371,8 @@ describe('buildFieldArray', () => {
       const form = createHeadlessForm(schema)
 
       expect(form.handleValidation({}).formErrors).toEqual({ list: 'Required field' })
-      expect(form.handleValidation({ list: [] }).formErrors).toEqual({ list: 'Required field' })
+      // An empty array satisfies `required` (length is `minItems`'s job, not `required`'s).
+      expect(form.handleValidation({ list: [] }).formErrors).toEqual(undefined)
       expect(form.handleValidation({ list: [{ a: 'test' }] }).formErrors).toEqual(undefined)
       expect(form.handleValidation({ list: [{}] }).formErrors).toEqual({ list: [{ a: 'Required field' }] })
       expect(form.handleValidation({ list: [{ a: 'a' }, {}, { a: 'c' }] }).formErrors).toEqual({ list: [undefined, { a: 'Required field' }, undefined] })
