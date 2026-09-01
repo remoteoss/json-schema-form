@@ -1,9 +1,4 @@
-import difference from 'lodash/difference';
-import get from 'lodash/get';
-import intersection from 'lodash/intersection';
-import merge from 'lodash/merge';
-import mergeWith from 'lodash/mergeWith';
-import set from 'lodash/set';
+import { difference, get, intersection, merge, mergeWith, set } from 'es-toolkit/compat';
 
 // NOTE: If you change this, also update the d.ts file.
 export const WARNING_TYPES = {

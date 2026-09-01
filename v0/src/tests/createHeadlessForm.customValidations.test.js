@@ -1,4 +1,4 @@
-import merge from 'lodash/fp/merge';
+import { merge } from 'es-toolkit/compat';
 
 import { JSONSchemaBuilder, mockFieldset, mockRadioInputString } from './helpers';
 import { mockMoneyInput } from './helpers.custom';
@@ -35,6 +35,7 @@ const schemaBasic = ({ newProperties, allOf } = {}) =>
   JSONSchemaBuilder()
     .addInput(
       merge(
+        {},
         {
           parent_age: { ...mockNumberInput, maximum: 100 },
           child_age: mockNumberInput,
@@ -50,6 +51,7 @@ const schemaWithConditional = ({ newProperties } = {}) =>
   JSONSchemaBuilder()
     .addInput(
       merge(
+        {},
         {
           is_employee: mockRadioInputString,
           salary: { ...mockMoneyInput, minimum: 0 },
