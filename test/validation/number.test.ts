@@ -163,4 +163,18 @@ describe('number validation', () => {
       }),
     ])
   })
+
+  // multipleOf must not be thrown off by floating-point rounding errors.
+  // e.g. `100 % 0.01` evaluates to `0.0099...` in plain JS arithmetic.
+  // See https://github.com/remoteoss/json-schema-form/issues/222
+  it('validates multipleOf without floating-point rounding errors', () => {
+    expect(validateSchema(100, { type: 'number', multipleOf: 0.01 })).toEqual([])
+    expect(validateSchema(0.0075, { type: 'number', multipleOf: 0.0001 })).toEqual([])
+    expect(validateSchema(4.5, { type: 'number', multipleOf: 1.5 })).toEqual([])
+
+    // Values that are genuinely not multiples must still fail
+    expect(validateSchema(0.00751, { type: 'number', multipleOf: 0.0001 })).toEqual([
+      errorLike({ path: [], validation: 'multipleOf' }),
+    ])
+  })
 })
