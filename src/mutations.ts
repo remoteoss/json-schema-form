@@ -78,6 +78,16 @@ function evaluateConditional(
 }
 
 /**
+ * Checks whether a conditional rule should be pre-applied to the schema
+ * @param ifNode - The rule's `if` schema
+ * @param constantIfsOnly - When true, only constant (boolean) conditionals qualify
+ * @returns Whether the rule should be processed
+ */
+function shouldProcessRule(ifNode: JsfSchema | undefined, constantIfsOnly: boolean): boolean {
+  return typeof ifNode !== 'undefined' && (!constantIfsOnly || typeof ifNode === 'boolean')
+}
+
+/**
  * Applies JSON Schema conditional rules to determine updated field properties
  * @param schema - The JSON schema containing the rules
  * @param values - The current form values
@@ -95,13 +105,10 @@ function applySchemaRules(
     return
   }
 
-  const shouldProcessRule = (ifNode: JsfSchema | undefined): boolean =>
-    typeof ifNode !== 'undefined' && (!constantIfsOnly || typeof ifNode === 'boolean')
-
   const conditionalRules: { rule: NonBooleanJsfSchema, matches: boolean }[] = []
 
   // If the schema has an if property, evaluate it and add it to the conditional rules array
-  if (shouldProcessRule(schema.if)) {
+  if (shouldProcessRule(schema.if, constantIfsOnly)) {
     conditionalRules.push(evaluateConditional(values, schema, schema, options, jsonLogicContext))
   }
 
@@ -109,7 +116,7 @@ function applySchemaRules(
   const allOf = schema.allOf ?? []
   const jsonLogicAllOf = schema['x-jsf-logic']?.allOf ?? [];
 
-  [...allOf, ...jsonLogicAllOf].filter((rule: JsfSchema) => shouldProcessRule(rule.if)).forEach((rule) => {
+  [...allOf, ...jsonLogicAllOf].filter((rule: JsfSchema) => shouldProcessRule(rule.if, constantIfsOnly)).forEach((rule) => {
     const result = evaluateConditional(values, schema, rule, options, jsonLogicContext)
     conditionalRules.push(result)
   })
