@@ -903,6 +903,50 @@ describe('buildFieldArray', () => {
       expect(form.handleValidation({ tasks: [{ a: 'x' }] }).formErrors).toEqual(undefined)
     })
 
+    it('evaluates value-dependent conditionals nested in a constant branch per array item', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          tasks: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                mode: { type: 'string' },
+                detail: { type: 'string' },
+              },
+              allOf: [
+                {
+                  if: true,
+                  then: {
+                    allOf: [
+                      {
+                        if: { properties: { mode: { const: 'auto' } }, required: ['mode'] },
+                        then: {},
+                        else: { required: ['detail'] },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({
+        tasks: [{ mode: 'auto' }, { mode: 'manual', detail: 'x' }],
+      }).formErrors).toEqual(undefined)
+
+      expect(form.handleValidation({
+        tasks: [{ mode: 'manual' }],
+      }).formErrors).toEqual({
+        tasks: [{ detail: 'Required field' }],
+      })
+    })
+
     it('handles uniqueItems validation for arrays', () => {
       const schema: JsfObjectSchema = {
         type: 'object',

@@ -125,13 +125,13 @@ function applySchemaRules(
   for (const { rule, matches } of conditionalRules) {
     // If the rule matches, process the then branch
     if (matches && rule.then) {
-      processBranch(schema, values, rule.then, options, jsonLogicContext)
+      processBranch(schema, values, rule.then, options, jsonLogicContext, constantIfsOnly)
       // Delete the then branch to avoid processing it again when validating the schema
       delete rule.then
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
-      processBranch(schema, values, rule.else, options, jsonLogicContext)
+      processBranch(schema, values, rule.else, options, jsonLogicContext, constantIfsOnly)
       // Delete the else branch to avoid processing it again when validating the schema
       delete rule.else
     }
@@ -174,11 +174,12 @@ function applySchemaRules(
  * @param branch - The branch (schema representing and then/else) to process
  * @param options - Validation options
  * @param jsonLogicContext - JSON Logic context
+ * @param constantIfsOnly - When true, only constant (boolean) conditionals are pre-applied
  */
-function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: CreateHeadlessFormOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
+function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: CreateHeadlessFormOptions = {}, jsonLogicContext: JsonLogicContext | undefined, constantIfsOnly: boolean = false) {
   const branchSchema = branch as JsfObjectSchema
 
-  applySchemaRules(branchSchema, values, options, jsonLogicContext)
+  applySchemaRules(branchSchema, values, options, jsonLogicContext, constantIfsOnly)
   mergeSchemaBranch(schema, branchSchema, options)
 }
 
