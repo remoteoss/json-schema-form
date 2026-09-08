@@ -19,6 +19,7 @@ import {
   schemaWithCustomValidationFunction,
   schemaWithDeepVarThatDoesNotExist,
   schemaWithDeepVarThatDoesNotExistOnFieldset,
+  schemaWithIfRequiredAndLogicValidationOnSameField,
   schemaWithInlinedRuleOnComputedAttributeThatReferencesUnknownVar,
   schemaWithMissingComputedValue,
   schemaWithMissingRule,
@@ -488,6 +489,50 @@ describe('jsonLogic: cross-values validations', () => {
       }
 
       expect(actionThatWillThrow).not.toThrow()
+    })
+  })
+})
+
+describe('jsonLogic: if.required with x-jsf-logic-validations on the same field', () => {
+  it('does not throw at build time when an if.required field carries validations', () => {
+    expect(() =>
+      createHeadlessForm(schemaWithIfRequiredAndLogicValidationOnSameField, {
+        strictInputType: false,
+        initialValues: { field_a: 5, field_c: 'x' },
+      }),
+    ).not.toThrow()
+  })
+
+  it('runs the field validation instead of throwing (then branch)', () => {
+    const { handleValidation } = createHeadlessForm(
+      schemaWithIfRequiredAndLogicValidationOnSameField,
+      { strictInputType: false },
+    )
+
+    // field_a === 5 -> if matches -> field_c required; validation a_at_least_ten fails (5 < 10)
+    expect(handleValidation({ field_a: 5, field_c: 'x' }).formErrors).toEqual({
+      field_a: 'Field A must be at least 10',
+    })
+
+    // field_a === 5, field_c missing -> both the validation error AND field_c required
+    expect(handleValidation({ field_a: 5 }).formErrors).toEqual({
+      field_a: 'Field A must be at least 10',
+      field_c: 'Required field',
+    })
+  })
+
+  it('applies the else branch and validation when the condition is false', () => {
+    const { handleValidation } = createHeadlessForm(
+      schemaWithIfRequiredAndLogicValidationOnSameField,
+      { strictInputType: false },
+    )
+
+    // field_a === 20 -> if false -> else hides field_c; validation passes (20 >= 10)
+    expect(handleValidation({ field_a: 20 }).formErrors).toBeUndefined()
+
+    // field_a === 8 -> if false -> validation fails (8 < 10)
+    expect(handleValidation({ field_a: 8 }).formErrors).toEqual({
+      field_a: 'Field A must be at least 10',
     })
   })
 })
