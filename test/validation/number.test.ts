@@ -1,4 +1,6 @@
+import type { JsfObjectSchema } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
+import { createHeadlessForm } from '../../src'
 import { validateSchema } from '../../src/validation/schema'
 import { errorLike } from '../test-utils'
 
@@ -162,5 +164,70 @@ describe('number validation', () => {
         validation: 'multipleOf',
       }),
     ])
+  })
+
+  describe('multipleOf with fractional values', () => {
+    it('accepts values that are true multiples of a fractional multipleOf', () => {
+      expect(validateSchema(3.025, { type: 'number', multipleOf: 0.0001 })).toEqual([])
+      expect(validateSchema(3.4, { type: 'number', multipleOf: 0.0001 })).toEqual([])
+      expect(validateSchema(0, { type: 'number', multipleOf: 0.0001 })).toEqual([])
+      expect(validateSchema(0.0075, { type: 'number', multipleOf: 0.0001 })).toEqual([])
+      expect(validateSchema(100, { type: 'number', multipleOf: 0.01 })).toEqual([])
+      expect(validateSchema(12.34, { type: 'number', multipleOf: 0.01 })).toEqual([])
+      expect(validateSchema(250.5, { type: 'number', multipleOf: 0.01 })).toEqual([])
+      expect(validateSchema(4.5, { type: 'number', multipleOf: 1.5 })).toEqual([])
+      expect(validateSchema(-3.4, { type: 'number', multipleOf: 0.0001 })).toEqual([])
+    })
+
+    it('still rejects values that are not multiples of a fractional multipleOf', () => {
+      const multipleOfError = [errorLike({ path: [], validation: 'multipleOf' })]
+
+      expect(validateSchema(3.12345, { type: 'number', multipleOf: 0.0001 })).toEqual(multipleOfError)
+      expect(validateSchema(0.00751, { type: 'number', multipleOf: 0.0001 })).toEqual(multipleOfError)
+      expect(validateSchema(12.345, { type: 'number', multipleOf: 0.01 })).toEqual(multipleOfError)
+      expect(validateSchema(35, { type: 'number', multipleOf: 1.5 })).toEqual(multipleOfError)
+      expect(validateSchema(-3.12345, { type: 'number', multipleOf: 0.0001 })).toEqual(multipleOfError)
+    })
+
+    it('validates a percentage field nested in a fieldset', () => {
+      const schema: JsfObjectSchema = {
+        'type': 'object',
+        'additionalProperties': false,
+        'properties': {
+          foo: {
+            'type': 'object',
+            'additionalProperties': false,
+            'title': 'Working title',
+            'properties': {
+              problematic_field: {
+                'type': 'number',
+                'title': 'Should accept 3.025',
+                'description': 'Enter a number between 0 and 99.9999',
+                'minimum': 0,
+                'maximum': 99.9999,
+                'multipleOf': 0.0001,
+                'x-jsf-errorMessage': {
+                  maximum: 'Please enter a number as a percentage value with up to 4 decimal places',
+                },
+                'x-jsf-presentation': { inputType: 'number' },
+              },
+            },
+            'required': ['problematic_field'],
+            'x-jsf-order': ['problematic_field'],
+            'x-jsf-presentation': { inputType: 'fieldset' },
+          },
+        },
+        'required': ['foo'],
+        'x-jsf-order': ['foo'],
+      }
+
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({ foo: { problematic_field: 3.025 } }).formErrors).toBeUndefined()
+
+      expect(form.handleValidation({ foo: { problematic_field: 3.02555 } }).formErrors).toEqual({
+        foo: { problematic_field: 'Must be a multiple of 0.0001' },
+      })
+    })
   })
 })

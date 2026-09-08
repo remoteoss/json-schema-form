@@ -177,12 +177,6 @@
     "minProperties validation with a decimal": [
       "too short is invalid"
     ],
-    "by small number": [
-      "0.0075 is multiple of 0.0001"
-    ],
-    "small multiple of large integer": [
-      "any integer is a multiple of 1e-8"
-    ],
     "collect annotations inside a 'not', even if collection is disabled": [
       "unevaluated property"
     ],
