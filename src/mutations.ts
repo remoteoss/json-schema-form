@@ -69,7 +69,7 @@ function evaluateConditional(
       }
       const fieldSchema = schema.properties[fieldName]
       const fieldValue = values[fieldName]
-      const fieldErrors = validateSchema(fieldValue, fieldSchema, options.legacyOptions ?? {})
+      const fieldErrors = validateSchema(fieldValue, fieldSchema, options.legacyOptions ?? {}, [], jsonLogicContext)
       return fieldErrors.some(error => error.validation === 'type')
     })
   }
