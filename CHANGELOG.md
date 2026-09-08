@@ -1,3 +1,10 @@
+#### 1.2.16 (2026-09-08)
+
+##### Bug Fixes
+
+* **validation:**  multipleOf rejected valid fractional multiples ([#272](https://github.com/remoteoss/json-schema-form/pull/272)) ([89763fda](https://github.com/remoteoss/json-schema-form/commit/89763fda1818928038bb904eb26afbbd840e4122))
+*  Use field defaults from schema in v1 ([#269](https://github.com/remoteoss/json-schema-form/pull/269)) ([c968f440](https://github.com/remoteoss/json-schema-form/commit/c968f440f12ef9599d52a839aec38bcb238a411c))
+
 #### 1.2.15 (2026-08-04)
 
 ##### Bug Fixes
