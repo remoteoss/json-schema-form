@@ -67,6 +67,21 @@ export function getSchemaType(schema: JsfSchema): JsfSchemaType | JsfSchemaType[
 }
 
 /**
+ * Whether the schema's type (a single type or a list of types) includes any of the given types.
+ * A schema without a type places no restriction, so it matches every type.
+ */
+export function schemaTypeIncludes(schema: JsfSchema, ...types: JsfSchemaType[]): boolean {
+  const schemaType = getSchemaType(schema)
+
+  if (schemaType === undefined) {
+    return true
+  }
+
+  const schemaTypes = Array.isArray(schemaType) ? schemaType : [schemaType]
+  return types.some(type => schemaTypes.includes(type))
+}
+
+/**
  * Validate the type of a value against a schema
  * @param value - The value to validate
  * @param schema - The schema to validate against

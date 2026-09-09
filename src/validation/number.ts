@@ -1,6 +1,6 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
-import { getSchemaType } from './schema'
+import { schemaTypeIncludes } from './schema'
 
 interface DecimalParts {
   digits: bigint
@@ -81,13 +81,12 @@ export function validateNumber(
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   const errors: ValidationError[] = []
-  const schemaType = getSchemaType(schema)
 
   if (typeof value !== 'number') {
     return []
   }
 
-  if (schemaType !== undefined && !['number', 'integer'].includes(schemaType as string)) {
+  if (!schemaTypeIncludes(schema, 'number', 'integer')) {
     return []
   }
 

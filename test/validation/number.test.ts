@@ -96,6 +96,44 @@ describe('number validation', () => {
     ])
   })
 
+  it('validates numeric keywords when the type also allows null', () => {
+    const nullableNumber = { type: ['number', 'null'], minimum: 1, maximum: 39, multipleOf: 2 }
+
+    expect(validateSchema(null, nullableNumber)).toEqual([])
+    expect(validateSchema(20, nullableNumber)).toEqual([])
+    expect(validateSchema(40, nullableNumber)).toEqual([
+      errorLike({
+        path: [],
+        validation: 'maximum',
+      }),
+    ])
+    expect(validateSchema(0, nullableNumber)).toEqual([
+      errorLike({
+        path: [],
+        validation: 'minimum',
+      }),
+    ])
+    expect(validateSchema(21, nullableNumber)).toEqual([
+      errorLike({
+        path: [],
+        validation: 'multipleOf',
+      }),
+    ])
+
+    expect(validateSchema(40, { type: ['integer', 'null'], maximum: 39 })).toEqual([
+      errorLike({
+        path: [],
+        validation: 'maximum',
+      }),
+    ])
+    expect(validateSchema(40, { type: ['null', 'number'], exclusiveMaximum: 40 })).toEqual([
+      errorLike({
+        path: [],
+        validation: 'exclusiveMaximum',
+      }),
+    ])
+  })
+
   it('validates the number against the exclusiveMinimum and exclusiveMaximum properties', () => {
     expect(validateSchema(11, { type: 'number', exclusiveMinimum: 10 })).toEqual([])
     expect(validateSchema(10, { type: 'number', exclusiveMinimum: 10 })).toEqual([
