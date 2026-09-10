@@ -1,7 +1,7 @@
 import type { ValidationError, ValidationErrorPath } from '../errors'
 import type { NonBooleanJsfSchema, SchemaValue } from '../types'
 import { validateFormat } from './format'
-import { getSchemaType } from './schema'
+import { schemaTypeIncludes } from './schema'
 
 /**
  * Validate a string against a schema
@@ -21,13 +21,12 @@ export function validateString(
   path: ValidationErrorPath = [],
 ): ValidationError[] {
   const errors: ValidationError[] = []
-  const schemaType = getSchemaType(schema)
 
   if (typeof value !== 'string') {
     return []
   }
 
-  if (schemaType !== undefined && schemaType !== 'string') {
+  if (!schemaTypeIncludes(schema, 'string')) {
     return []
   }
 

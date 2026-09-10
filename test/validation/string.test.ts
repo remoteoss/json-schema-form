@@ -113,4 +113,28 @@ describe('string validation', () => {
     // Error message now includes a random example, so we can't do an exact match
     expect(response.formErrors?.name).toMatch(/^Must have a valid format. E.g./)
   })
+
+  it('validates string keywords when the type also allows null', () => {
+    const { handleValidation } = createHeadlessForm({
+      type: 'object',
+      properties: {
+        short: { type: ['string', 'null'], maxLength: 3 },
+        long: { type: ['string', 'null'], minLength: 3 },
+        code: { type: ['null', 'string'], pattern: '^[a-z]+$' },
+      },
+    })
+
+    expect(handleValidation({ short: null, long: null, code: null })).not.toHaveProperty('formErrors')
+    expect(handleValidation({ short: 'abc', long: 'abc', code: 'abc' })).not.toHaveProperty(
+      'formErrors',
+    )
+
+    expect(handleValidation({ short: 'abcd', long: 'ab', code: '123' })).toMatchObject({
+      formErrors: {
+        short: 'Please insert up to 3 characters',
+        long: 'Please insert at least 3 characters',
+        code: expect.stringMatching(/^Must have a valid format. E.g./),
+      },
+    })
+  })
 })
