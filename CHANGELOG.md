@@ -1,3 +1,9 @@
+#### 1.2.17 (2026-09-10)
+
+##### Bug Fixes
+
+* **validation:**  enforce min/max and length rules on nullable types ([d42cbc92](https://github.com/remoteoss/json-schema-form/commit/d42cbc92e1ea9026b622030be7febbd2e64f68f0))
+
 #### 1.2.16 (2026-09-08)
 
 ##### Bug Fixes
