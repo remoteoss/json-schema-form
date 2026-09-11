@@ -701,6 +701,252 @@ describe('buildFieldArray', () => {
       })
     })
 
+    it('evaluates conditionals with an else branch per array item', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          rules: {
+            type: 'array',
+            items: {
+              type: 'object',
+              required: ['name'],
+              properties: {
+                name: { type: 'string' },
+                flat_rate: { type: 'string' },
+                banding: {
+                  type: ['object', 'null'],
+                  properties: {
+                    period: { type: 'string', enum: ['daily', 'weekly'] },
+                    bands: {
+                      type: 'array',
+                      items: {
+                        type: 'object',
+                        required: ['rate'],
+                        properties: { rate: { type: 'string' } },
+                      },
+                    },
+                  },
+                },
+              },
+              allOf: [
+                {
+                  if: {
+                    properties: {
+                      banding: {
+                        type: 'object',
+                        properties: { bands: { minItems: 1 } },
+                        required: ['bands'],
+                      },
+                    },
+                    required: ['banding'],
+                  },
+                  then: { required: ['banding'] },
+                  else: { required: ['flat_rate'] },
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({
+        rules: [
+          { name: 'flat', flat_rate: '1.5' },
+          { name: 'banded', banding: { period: 'daily', bands: [{ rate: '2.0' }] } },
+        ],
+      }).formErrors).toEqual(undefined)
+
+      expect(form.handleValidation({
+        rules: [
+          { name: 'flat missing rate' },
+          { name: 'banded', banding: { period: 'daily', bands: [{ rate: '2.0' }] } },
+        ],
+      }).formErrors).toEqual({
+        rules: [{ flat_rate: 'Required field' }, undefined],
+      })
+
+      expect(form.handleValidation({
+        rules: [{ name: 'banded', banding: { period: 'daily', bands: [{ rate: '2.0' }] } }],
+      }).formErrors).toEqual(undefined)
+    })
+
+    it('evaluates negated conditionals per array item', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          rules: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                mode: { type: 'string' },
+                detail: { type: 'string' },
+              },
+              allOf: [
+                {
+                  if: { not: { properties: { mode: { const: 'auto' } }, required: ['mode'] } },
+                  then: { required: ['detail'] },
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({
+        rules: [{ mode: 'auto' }, { mode: 'manual', detail: 'x' }],
+      }).formErrors).toEqual(undefined)
+
+      expect(form.handleValidation({
+        rules: [{ mode: 'manual' }],
+      }).formErrors).toEqual({
+        rules: [{ detail: 'Required field' }],
+      })
+    })
+
+    it('applies an if: true allOf conditional on an object property', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          address: {
+            'type': 'object',
+            'x-jsf-presentation': { inputType: 'fieldset' },
+            'properties': {
+              city: { type: 'string' },
+              zip: { type: 'string' },
+            },
+            'allOf': [
+              {
+                if: true,
+                then: { required: ['city'], properties: { zip: false } },
+                else: { required: ['zip'], properties: { city: false } },
+              },
+            ],
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema, { initialValues: { address: {} } })
+
+      const addressFields = form.fields.find(({ name }) => name === 'address')?.fields
+      expect(addressFields?.find(({ name }) => name === 'city')?.isVisible).toBe(true)
+      expect(addressFields?.find(({ name }) => name === 'zip')?.isVisible).toBe(false)
+
+      expect(form.handleValidation({ address: {} }).formErrors).toEqual({
+        address: { city: 'Required field' },
+      })
+      expect(form.handleValidation({ address: { city: 'Porto' } }).formErrors).toEqual(undefined)
+    })
+
+    it('applies an if: true conditional directly on an object property', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          config: {
+            type: 'object',
+            properties: {
+              a: { type: 'string' },
+              b: { type: 'string' },
+            },
+            if: true,
+            then: { required: ['a'] },
+            else: { required: ['b'] },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema, { initialValues: { config: {} } })
+
+      const configFields = form.fields.find(({ name }) => name === 'config')?.fields
+      expect(configFields?.find(({ name }) => name === 'a')?.required).toBe(true)
+      expect(configFields?.find(({ name }) => name === 'b')?.required).toBe(false)
+
+      expect(form.handleValidation({ config: {} }).formErrors).toEqual({
+        config: { a: 'Required field' },
+      })
+      expect(form.handleValidation({ config: { a: 'x' } }).formErrors).toEqual(undefined)
+    })
+
+    it('applies an if: true conditional directly on array items', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          tasks: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                a: { type: 'string' },
+                b: { type: 'string' },
+              },
+              if: true,
+              then: { required: ['a'] },
+              else: { required: ['b'] },
+            },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema)
+
+      const taskFields = form.fields.find(({ name }) => name === 'tasks')?.fields
+      expect(taskFields?.find(({ name }) => name === 'a')?.required).toBe(true)
+      expect(taskFields?.find(({ name }) => name === 'b')?.required).toBe(false)
+
+      expect(form.handleValidation({ tasks: [{}, { a: 'x' }] }).formErrors).toEqual({
+        tasks: [{ a: 'Required field' }, undefined],
+      })
+      expect(form.handleValidation({ tasks: [{ a: 'x' }] }).formErrors).toEqual(undefined)
+    })
+
+    it('evaluates value-dependent conditionals nested in a constant branch per array item', () => {
+      const schema: JsfObjectSchema = {
+        type: 'object',
+        properties: {
+          tasks: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                mode: { type: 'string' },
+                detail: { type: 'string' },
+              },
+              allOf: [
+                {
+                  if: true,
+                  then: {
+                    allOf: [
+                      {
+                        if: { properties: { mode: { const: 'auto' } }, required: ['mode'] },
+                        then: {},
+                        else: { required: ['detail'] },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      }
+
+      const form = createHeadlessForm(schema)
+
+      expect(form.handleValidation({
+        tasks: [{ mode: 'auto' }, { mode: 'manual', detail: 'x' }],
+      }).formErrors).toEqual(undefined)
+
+      expect(form.handleValidation({
+        tasks: [{ mode: 'manual' }],
+      }).formErrors).toEqual({
+        tasks: [{ detail: 'Required field' }],
+      })
+    })
+
     it('handles uniqueItems validation for arrays', () => {
       const schema: JsfObjectSchema = {
         type: 'object',

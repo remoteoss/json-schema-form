@@ -78,6 +78,16 @@ function evaluateConditional(
 }
 
 /**
+ * Checks whether a conditional rule should be pre-applied to the schema
+ * @param ifNode - The rule's `if` schema
+ * @param constantIfsOnly - When true, only constant (boolean) conditionals qualify
+ * @returns Whether the rule should be processed
+ */
+function shouldProcessRule(ifNode: JsfSchema | undefined, constantIfsOnly: boolean): boolean {
+  return typeof ifNode !== 'undefined' && (!constantIfsOnly || typeof ifNode === 'boolean')
+}
+
+/**
  * Applies JSON Schema conditional rules to determine updated field properties
  * @param schema - The JSON schema containing the rules
  * @param values - The current form values
@@ -89,6 +99,7 @@ function applySchemaRules(
   values: SchemaValue = {},
   options: CreateHeadlessFormOptions = {},
   jsonLogicContext: JsonLogicContext | undefined,
+  constantIfsOnly: boolean = false,
 ) {
   if (!isObjectValue(values)) {
     return
@@ -97,7 +108,7 @@ function applySchemaRules(
   const conditionalRules: { rule: NonBooleanJsfSchema, matches: boolean }[] = []
 
   // If the schema has an if property, evaluate it and add it to the conditional rules array
-  if (typeof schema.if !== 'undefined') {
+  if (shouldProcessRule(schema.if, constantIfsOnly)) {
     conditionalRules.push(evaluateConditional(values, schema, schema, options, jsonLogicContext))
   }
 
@@ -105,7 +116,7 @@ function applySchemaRules(
   const allOf = schema.allOf ?? []
   const jsonLogicAllOf = schema['x-jsf-logic']?.allOf ?? [];
 
-  [...allOf, ...jsonLogicAllOf].filter((rule: JsfSchema) => typeof rule.if !== 'undefined').forEach((rule) => {
+  [...allOf, ...jsonLogicAllOf].filter((rule: JsfSchema) => shouldProcessRule(rule.if, constantIfsOnly)).forEach((rule) => {
     const result = evaluateConditional(values, schema, rule, options, jsonLogicContext)
     conditionalRules.push(result)
   })
@@ -114,13 +125,13 @@ function applySchemaRules(
   for (const { rule, matches } of conditionalRules) {
     // If the rule matches, process the then branch
     if (matches && rule.then) {
-      processBranch(schema, values, rule.then, options, jsonLogicContext)
+      processBranch(schema, values, rule.then, options, jsonLogicContext, constantIfsOnly)
       // Delete the then branch to avoid processing it again when validating the schema
       delete rule.then
     }
     // If the rule doesn't match, process the else branch
     else if (!matches && rule.else) {
-      processBranch(schema, values, rule.else, options, jsonLogicContext)
+      processBranch(schema, values, rule.else, options, jsonLogicContext, constantIfsOnly)
       // Delete the else branch to avoid processing it again when validating the schema
       delete rule.else
     }
@@ -131,23 +142,25 @@ function applySchemaRules(
       if (typeof property === 'object') {
         const propertySchema = property as JsfObjectSchema
         if (propertySchema.type === 'object') {
-          applySchemaRules(propertySchema, values[key] as ObjectValue, options, jsonLogicContext)
+          applySchemaRules(propertySchema, values[key] as ObjectValue, options, jsonLogicContext, constantIfsOnly)
         }
         if (propertySchema.items) {
           /*
-          * This is a partial workaround to apply conditional logic to fields with items.
-          * Due to the nature of these fields, the value is an array. applySchemaRules expects
-          * an object and it simply does not process the rules if the value is not an object.
+          * An array property has one shared `items` schema but many row values, so a
+          * value-dependent then/else branch cannot be baked into the schema — it would
+          * be wrong for any row where the condition evaluates differently. The previous
+          * workaround evaluated every rule against an empty object, which permanently
+          * merged (and deleted) whichever branch matched `{}`; rules with an `else` or
+          * a negated `if` were then wrong for every row and for validation too.
           *
-          * The correct solution would be to refactor applySchemaRules to handle arrays properly,
-          * but for now we simply pass an empty object to ensure the rules are applied.
-          *
-          * This means that the visibility rules in this case will only be based on the
-          * schema and will not work based on the actual values of the items in the array.
-          *
-          * This is not ideal, but it's better than the previous situation where the rules were not applied at all.
+          * Only constant conditionals (`if: true` / `if: false`) are pre-applied here —
+          * their branch is the same for every row, so baking them is safe and keeps
+          * schema-driven visibility inside items working. Value-dependent rules are
+          * left intact so `validateSchema` (via `validateCondition`) evaluates them per
+          * item with the row's actual value. Per-row FIELD mutations (visibility /
+          * required flags) remain unsupported for group-array items.
           */
-          applySchemaRules(propertySchema.items as JsfObjectSchema, {}, options, jsonLogicContext)
+          applySchemaRules(propertySchema.items as JsfObjectSchema, {}, options, jsonLogicContext, true)
         }
       }
     }
@@ -161,11 +174,12 @@ function applySchemaRules(
  * @param branch - The branch (schema representing and then/else) to process
  * @param options - Validation options
  * @param jsonLogicContext - JSON Logic context
+ * @param constantIfsOnly - When true, only constant (boolean) conditionals are pre-applied
  */
-function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: CreateHeadlessFormOptions = {}, jsonLogicContext: JsonLogicContext | undefined) {
+function processBranch(schema: JsfObjectSchema, values: SchemaValue, branch: JsfSchema, options: CreateHeadlessFormOptions = {}, jsonLogicContext: JsonLogicContext | undefined, constantIfsOnly: boolean = false) {
   const branchSchema = branch as JsfObjectSchema
 
-  applySchemaRules(branchSchema, values, options, jsonLogicContext)
+  applySchemaRules(branchSchema, values, options, jsonLogicContext, constantIfsOnly)
   mergeSchemaBranch(schema, branchSchema, options)
 }
 
