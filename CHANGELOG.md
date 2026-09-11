@@ -1,3 +1,9 @@
+#### 1.2.18 (2026-09-11)
+
+##### Bug Fixes
+
+*  evaluate value-dependent items conditionals per array row ([#271](https://github.com/remoteoss/json-schema-form/pull/271)) ([58ce595e](https://github.com/remoteoss/json-schema-form/commit/58ce595e40615e2d0b7e8167a6762c809a3c1107))
+
 #### 1.2.17 (2026-09-10)
 
 ##### Bug Fixes
