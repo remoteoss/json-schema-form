@@ -796,3 +796,47 @@ export const schemaWithCustomComputedValueFunction = {
     },
   },
 }
+
+// A field named in if.required that ALSO carries x-jsf-logic-validations.
+// Reproduces the "required validation doesn't exist" throw when context is dropped.
+export const schemaWithIfRequiredAndLogicValidationOnSameField = {
+  'type': 'object',
+  'properties': {
+    field_a: {
+      'type': 'number',
+      'x-jsf-logic-validations': ['a_at_least_ten'],
+    },
+    field_c: {
+      type: 'string',
+    },
+  },
+  'required': ['field_a'],
+  'allOf': [
+    {
+      if: {
+        properties: {
+          field_a: { const: 5 },
+        },
+        required: ['field_a'],
+      },
+      then: {
+        required: ['field_c'],
+      },
+      else: {
+        properties: {
+          field_c: false,
+        },
+      },
+    },
+  ],
+  'x-jsf-logic': {
+    validations: {
+      a_at_least_ten: {
+        errorMessage: 'Field A must be at least 10',
+        rule: {
+          '>=': [{ var: 'field_a' }, 10],
+        },
+      },
+    },
+  },
+}
