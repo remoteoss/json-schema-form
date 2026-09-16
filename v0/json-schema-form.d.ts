@@ -2,7 +2,7 @@
  * Shorthand to lookup for keys with `x-jsf-*` preffix.
  */
 export function pickXKey(node: Object, key: 'presentation' | 'errorMessage'): Object | undefined;
-type ValidationTypes =
+export type ValidationTypes =
   | 'type'
   | 'minimum'
   | 'maximum'
@@ -13,7 +13,7 @@ type ValidationTypes =
   | 'accept'
   | 'required';
 
-type JSFConfig = {
+export type JSFConfig = {
   /**
    * Initial json values to prefill the form fields.
    * This influences the initial visibility of conditional fields.
@@ -46,9 +46,9 @@ type JSFConfig = {
     errorMessage?: Partial<Record<ValidationTypes, string>>;
   };
 };
-type Fields = Record<string, unknown>[]; //TODO: Type the field based on the given JSON Schema properties.
+export type Fields = Record<string, unknown>[]; //TODO: Type the field based on the given JSON Schema properties.
 
-type $TSFixMe = any;
+export type $TSFixMe = any;
 
 /**
  * Returns the Yup schema structure of given fields.
@@ -57,7 +57,7 @@ type $TSFixMe = any;
  */
 export function buildCompleteYupSchema(fields: Fields, config: JSFConfig): $TSFixMe; //TODO: We need to update Yup to 1.0 which supports TS.
 
-type HeadlessFormOutput = {
+export type HeadlessFormOutput = {
   /**
    * List of Fields. Each Field corresponds to a form input from the json schema.
    * @example
@@ -102,11 +102,11 @@ type HeadlessFormOutput = {
   error?: Error;
 };
 
-type JSONSchemaObjectType = Record<string, unknown>;
-type FieldName = string;
-type FieldAttrs = Record<string, unknown>;
+export type JSONSchemaObjectType = Record<string, unknown>;
+export type FieldName = string;
+export type FieldAttrs = Record<string, unknown>;
 
-type ModifyConfig = {
+export type ModifyConfig = {
   /**
    * An object with the fields to be modified with the returned attributes.
    */
@@ -133,19 +133,19 @@ type ModifyConfig = {
   muteLogging?: boolean;
 };
 
-type WarningType =
+export type WarningType =
   | 'FIELD_TO_CHANGE_NOT_FOUND'
   | 'ORDER_MISSING_FIELDS'
   | 'FIELD_TO_CREATE_EXISTS'
   | 'PICK_MISSED_FIELD';
 
-type Warning = {
+export type Warning = {
   message: string;
   type: WarningType;
   meta?: Record<string, unknown>;
 };
 
-type ModifyOutput = {
+export type ModifyOutput = {
   schema: JSONSchemaObjectType;
   warnings: Warning[];
 };
