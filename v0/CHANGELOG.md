@@ -1,3 +1,9 @@
+#### 0.12.5-beta.0 (2026-09-17)
+
+##### Bug Fixes
+
+* **v0:**  export type aliases used in json-schema-form.d.ts public API ([#275](https://github.com/remoteoss/json-schema-form/pull/275)) ([17932f50](https://github.com/remoteoss/json-schema-form/commit/17932f508e9b335fcbd1eb91cc62fe2cee3911c3))
+
 #### 0.12.4-beta.0 (2026-06-23)
 
 ##### Bug Fixes
