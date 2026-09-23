@@ -113,7 +113,7 @@ function warnAboutNewConditionalOptions(newOptions: unknown[]): void {
  * @param schema2 - The conditional branch schema to merge from
  * @param options - The form options
  */
-export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, schema2?: T, options?: CreateHeadlessFormOptions): void {
+export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, schema2?: T, options?: CreateHeadlessFormOptions, insidePropertyMap: boolean = false): void {
   // Handle null/undefined values
   if (!schema1 || !schema2) {
     return
@@ -134,6 +134,14 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
     }
 
     const schema1Value = schema1[key]
+
+    // A `false` property subschema is unsatisfiable, so `allOf` semantics keep the property
+    // forbidden no matter what a sibling branch adds; otherwise a branch object overwrites the
+    // `false` and the property wrongly becomes valid again. Scoped to property subschemas so a
+    // branch can still relax a boolean keyword like `additionalProperties: false`.
+    if (insidePropertyMap && schema1Value === false) {
+      continue
+    }
 
     if (isOptionsLikeSchema(key, schema2Value)) {
       // Restrict option-like arrays to the options already present on the base field
@@ -171,7 +179,9 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
     if (isObject(schema2Value)) {
       // If both schemas have this key and it's an object, merge recursively
       if (isObject(schema1Value)) {
-        mergeSchemaBranch(schema1Value, schema2Value, options)
+        // The direct children of `properties`/`patternProperties` are property subschemas, where a
+        // `false` value forbids the property and must survive a sibling branch.
+        mergeSchemaBranch(schema1Value, schema2Value, options, key === 'properties' || key === 'patternProperties')
       }
       // Otherwise, if the value is different, just assign it
       else if (schema1Value !== schema2Value) {

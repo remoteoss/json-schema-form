@@ -181,6 +181,35 @@ describe('mergeSchemaBranch', () => {
     expect(schema1.meta).toEqual({ nested: true })
   })
 
+  it('should keep a `false` property subschema when a branch adds a constraint', () => {
+    // A `false` subschema is unsatisfiable; per allOf semantics it must survive a
+    // sibling branch that constrains the same property, not be overwritten by it.
+    const schema1: Record<string, any> = { properties: { m: false } }
+    mergeSchemaBranch(schema1, { properties: { m: { maximum: 12 } } })
+    expect(schema1.properties.m).toBe(false)
+  })
+
+  it('should let a `false` branch subschema forbid a previously-typed property', () => {
+    const schema1: Record<string, any> = { properties: { m: { maximum: 12 } } }
+    mergeSchemaBranch(schema1, { properties: { m: false } })
+    expect(schema1.properties.m).toBe(false)
+  })
+
+  it('should keep a `false` property subschema forbidden across repeated branches', () => {
+    const schema1: Record<string, any> = { properties: { m: false } }
+    mergeSchemaBranch(schema1, { properties: { m: { maximum: 12 } } })
+    mergeSchemaBranch(schema1, { properties: { m: { minimum: 1 } } })
+    expect(schema1.properties.m).toBe(false)
+  })
+
+  it('should let a branch relax a boolean keyword such as `additionalProperties`', () => {
+    // The forbidden-property guard applies to property subschemas, not to a boolean keyword
+    // whose `false` a branch may legitimately loosen.
+    const schema1: Record<string, any> = { additionalProperties: false }
+    mergeSchemaBranch(schema1, { additionalProperties: true })
+    expect(schema1.additionalProperties).toBe(true)
+  })
+
   it('should skip if/then/else properties', () => {
     const schema1: Record<string, any> = { type: 'object' }
     mergeSchemaBranch(schema1, {
