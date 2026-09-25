@@ -1,3 +1,9 @@
+#### 1.2.19 (2026-09-25)
+
+##### Bug Fixes
+
+*  keep a `false` property subschema when a conditional branch adds a constraint ([#276](https://github.com/remoteoss/json-schema-form/pull/276)) ([e2e92019](https://github.com/remoteoss/json-schema-form/commit/e2e920190dc8a1cc39a34ec55d50e454fe95b79a))
+
 #### 1.2.18 (2026-09-11)
 
 ##### Bug Fixes
