@@ -744,4 +744,51 @@ describe('Field visibility', () => {
       })
     })
   })
+
+  describe('a forbidden property with a sibling branch constraining the same field', () => {
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        contract_duration_type: {
+          type: 'string',
+          oneOf: [{ const: 'indefinite' }, { const: 'fixed_term' }],
+        },
+        months: {
+          type: 'number',
+          minimum: 1,
+        },
+      },
+      required: ['contract_duration_type'],
+      allOf: [
+        {
+          if: {
+            properties: { contract_duration_type: { const: 'fixed_term' } },
+            required: ['contract_duration_type'],
+          },
+          then: { required: ['months'] },
+          else: { properties: { months: false } },
+        },
+        {
+          if: true,
+          then: { properties: { months: { maximum: 12 } } },
+        },
+      ],
+    }
+
+    it('hides the forbidden field and rejects a value for it', () => {
+      const form = createHeadlessForm(schema, { initialValues: { contract_duration_type: 'indefinite' } })
+      expect(getField(form.fields, 'months')?.isVisible).toBe(false)
+
+      const { formErrors } = form.handleValidation({ contract_duration_type: 'indefinite', months: 5 })
+      expect(formErrors?.months).toBeDefined()
+    })
+
+    it('shows the field and accepts a value when the branch requires it', () => {
+      const form = createHeadlessForm(schema, { initialValues: { contract_duration_type: 'fixed_term' } })
+      expect(getField(form.fields, 'months')?.isVisible).toBe(true)
+
+      const { formErrors } = form.handleValidation({ contract_duration_type: 'fixed_term', months: 6 })
+      expect(formErrors).toBeUndefined()
+    })
+  })
 })
