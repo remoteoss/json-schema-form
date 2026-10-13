@@ -1,3 +1,9 @@
+#### 1.2.20 (2026-10-13)
+
+##### Bug Fixes
+
+* **conditionals:**  keep a property visible when a branch sets it to `true` ([#277](https://github.com/remoteoss/json-schema-form/pull/277)) ([298c20aa](https://github.com/remoteoss/json-schema-form/commit/298c20aae6030b4605c8ddf2331091b083d992f5))
+
 #### 1.2.19 (2026-09-25)
 
 ##### Bug Fixes
