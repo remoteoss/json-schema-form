@@ -135,11 +135,10 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
 
     const schema1Value = schema1[key]
 
-    // A `false` property subschema is unsatisfiable, so `allOf` semantics keep the property
-    // forbidden no matter what a sibling branch adds; otherwise a branch object overwrites the
-    // `false` and the property wrongly becomes valid again. Scoped to property subschemas so a
-    // branch can still relax a boolean keyword like `additionalProperties: false`.
-    if (insidePropertyMap && schema1Value === false) {
+    // `allOf` semantics for boolean property subschemas: a base `false` stays forbidden whatever a
+    // branch adds, and a branch `true` adds nothing (assigning it would hide the field). Scoped to
+    // property subschemas so a branch can still relax `additionalProperties: false`.
+    if (insidePropertyMap && (schema1Value === false || schema2Value === true)) {
       continue
     }
 
@@ -179,8 +178,6 @@ export function mergeSchemaBranch<T extends Record<string, any>>(schema1?: T, sc
     if (isObject(schema2Value)) {
       // If both schemas have this key and it's an object, merge recursively
       if (isObject(schema1Value)) {
-        // The direct children of `properties`/`patternProperties` are property subschemas, where a
-        // `false` value forbids the property and must survive a sibling branch.
         mergeSchemaBranch(schema1Value, schema2Value, options, key === 'properties' || key === 'patternProperties')
       }
       // Otherwise, if the value is different, just assign it
