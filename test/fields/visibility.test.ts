@@ -791,4 +791,52 @@ describe('Field visibility', () => {
       expect(formErrors).toBeUndefined()
     })
   })
+
+  describe('a `true` property subschema in a conditional branch', () => {
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        work_schedule: {
+          type: 'string',
+          oneOf: [{ const: 'full_time' }, { const: 'part_time' }],
+        },
+        has_benefits: {
+          type: 'string',
+          oneOf: [{ const: 'yes' }, { const: 'no' }],
+        },
+      },
+      allOf: [
+        {
+          if: {
+            properties: { work_schedule: { const: 'full_time' } },
+            required: ['work_schedule'],
+          },
+          then: { properties: { has_benefits: true } },
+          else: { properties: { has_benefits: false } },
+        },
+      ],
+    }
+
+    it('shows the field when the condition matches', () => {
+      const form = createHeadlessForm(schema, { initialValues: { work_schedule: 'full_time' } })
+      expect(getField(form.fields, 'has_benefits')?.isVisible).toBe(true)
+    })
+
+    it('toggles the field as the condition changes', () => {
+      const form = createHeadlessForm(schema, { initialValues: { work_schedule: 'part_time' } })
+      expect(getField(form.fields, 'has_benefits')?.isVisible).toBe(false)
+
+      form.handleValidation({ work_schedule: 'full_time' })
+      expect(getField(form.fields, 'has_benefits')?.isVisible).toBe(true)
+
+      form.handleValidation({ work_schedule: 'part_time' })
+      expect(getField(form.fields, 'has_benefits')?.isVisible).toBe(false)
+    })
+
+    it('keeps validating the field against its base schema', () => {
+      const form = createHeadlessForm(schema, { initialValues: { work_schedule: 'full_time' } })
+      const { formErrors } = form.handleValidation({ work_schedule: 'full_time', has_benefits: 'maybe' })
+      expect(formErrors?.has_benefits).toBeDefined()
+    })
+  })
 })

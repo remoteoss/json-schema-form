@@ -202,6 +202,18 @@ describe('mergeSchemaBranch', () => {
     expect(schema1.properties.m).toBe(false)
   })
 
+  it('should keep a property subschema when a branch sets it to `true`', () => {
+    const schema1: Record<string, any> = { properties: { m: { type: 'number' } } }
+    mergeSchemaBranch(schema1, { properties: { m: true } })
+    expect(schema1.properties.m).toEqual({ type: 'number' })
+  })
+
+  it('should keep a pattern property subschema when a branch sets it to `true`', () => {
+    const schema1: Record<string, any> = { patternProperties: { '^x_': { type: 'string' } } }
+    mergeSchemaBranch(schema1, { patternProperties: { '^x_': true } })
+    expect(schema1.patternProperties['^x_']).toEqual({ type: 'string' })
+  })
+
   it('should let a branch relax a boolean keyword such as `additionalProperties`', () => {
     // The forbidden-property guard applies to property subschemas, not to a boolean keyword
     // whose `false` a branch may legitimately loosen.
