@@ -7,11 +7,12 @@ description: Review json-schema-form changes against the JSON Schema spec and JS
 
 ## Steps
 
-1. Read the diff and its tests.
-2. Check every rule below. If the diff touches `src/modify-schema.ts`, also check its JSDoc caveats; if it touches `v0/`, check `v0/README.legacy.md`.
-3. Report each violation as `file:line`, the rule, and a schema plus value that breaks.
+1. **Load context.** For a PR: its description, diff and every review thread, resolved ones included. For local work: the diff against `main`. Read each changed file in full, not just the hunks.
+2. **Check every rule below** against the changed code. Flag older code only when the diff makes it worse or newly relevant.
+3. **Report** the findings (format in [Report](#report)).
+4. **Self-review of your own changes:** fix all findings. **Reviewing someone else's PR:** post them only when the person says so (see [Posting](#posting)).
 
-Done when every rule has been checked against the diff.
+Done when every rule has been checked against the diff and every finding has a `file:line`.
 
 ## Spec
 
@@ -50,6 +51,13 @@ Done when every rule has been checked against the diff.
 - A valid form has no `formErrors` key at all.
 - A new `validation` name needs a message in `src/errors/messages.ts`.
 
+## Comments
+
+Most code needs no comment. Flag comments that shouldn't be there;
+- Inline comments say *why*, not *what* the code already says.
+- JSDoc on exported symbols describes behavior the caller sees, not internal mechanism.
+- A comment deleted while its subject still exists, should have been updated instead.
+
 ## Tests
 
 - Apply the `AGENTS.md` conventions.
@@ -68,3 +76,23 @@ v1 keeps these v0 behaviors on purpose, because production forms depend on them.
 - `field.type` is a deprecated alias of `inputType`. New logic and tests use `inputType`.
 - Options come from the first of `oneOf`, `items.anyOf`, `anyOf`, `enum`. `const: null` options are dropped. They're cached module-wide, so treat them as read-only.
 - Defaults come from the base `properties` tree only, not from `allOf` or branches.
+
+## Report
+
+Number the findings. Each has `file:line`, the rule, and a schema plus value that breaks.
+
+```
+**Critical / High** (must fix before merge)
+**Medium** (fix or justify)
+**Low / style**
+**Passed** (areas checked, no issues)
+```
+
+Bugs and regressions are never Low. A clean diff gets a short "no issues".
+
+## Posting
+
+- Default to Critical, High and Medium; nitpicks only on request.
+- Comment inline on the changed line, or reply in an existing thread (re-open it if resolved). Never at the PR's top level.
+- Use [conventional comments](https://conventionalcomments.org/): `issue (blocking):` for Critical / High, `issue:`, `suggestion:`, `question:` when unsure of intent, `nitpick:`, `praise:`.
+- End every comment with `[by <AI tool>]`, e.g. `[by Claude]`.

@@ -1,9 +1,8 @@
 ## Summary
 
-<!-- A couple of sentences: what this PR does, why.
+<!-- Keep it short. One or two sentences on what this PR does and why, then a short, high-level bullet list of changes.
+No file-by-file walkthrough: the code should explain itself. -->
 
-A bullet list of changes, high-level.
- -->
 
 ### Example
 
