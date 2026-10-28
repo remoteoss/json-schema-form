@@ -1,22 +1,43 @@
-# Pull Request
-
 ## Summary
 
-Provide a concise and clear summary of your pull request.
+<!-- One or two sentences: what this PR does and why. -->
 
-## Changes Made
+## Changes
 
-Describe the changes made in this pull request. Be specific about code changes, new features, or bug fixes.
+-
 
-## Related Issues/PRs
+## Before / After
 
-Link to any related issues or pull requests, if applicable.
+<!-- Minimal schema that reproduces the bug or shows the feature. -->
 
-## Screenshots (Before/After if applicable)
+```json
 
-Include screenshots or visual aids to demonstrate the changes visually. If your PR modifies the UI or behavior, include before and after descriptions or screenshots.
+```
+
+<!-- The input you ran (createHeadlessForm options, handleValidation values, modifySchema config...). -->
+
+```js
+
+```
+
+**Before**
+
+```js
+
+```
+
+**After**
+
+```js
+
+```
+
+## Related
+
+<!-- Issues, PRs, or the internal Remote MR that tests the dev release. -->
 
 ## Checklist
 
-- [x] I have read the [Contributing Guidelines](../../CONTRIBUTING.md) and followed them.
-- [ ] Unit tests were added.
+- [ ] Tests added or updated.
+- [ ] Behavior changes ship behind an opt-in option, with a `MIGRATING.md` entry.
+- [ ] Dev release tested in an internal Remote repo (behavior changes only).
