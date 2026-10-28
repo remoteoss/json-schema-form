@@ -1,6 +1,6 @@
 ---
 name: review
-description: Review json-schema-form changes against the JSON Schema spec and JSF caveats. Use when reviewing a JSF diff or PR, or when writing code in src/validation, src/mutations.ts, src/field, src/modify-schema.ts or src/utils.ts.
+description: Review json-schema-form changes against the JSON Schema spec and JSF. Use when writing code or reviewing a PR.
 ---
 
 # Review JSON Schema changes

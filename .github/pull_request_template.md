@@ -40,5 +40,6 @@ const form = createHeadlessForm(schema, ...)
 ## Checklist
 
 - [ ] Tests updated (or added if needed).
+- [ ] Self-reviewed with the `/review` skill.
 - [ ] Breaking change: ship behind an opt-in option, not a major version bump.
 - [ ] (For maintainers): Dev release tested in the internal Remote repo (behavior changes only).
