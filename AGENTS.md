@@ -21,6 +21,7 @@
 - When you change `v0/` behavior on purpose, run `pnpm test:v0-update-baseline` and commit `test/v0-baseline-test-results.json`. `pnpm test:v0` fails on regressions and on newly passing tests.
 - v1 has no major bumps. A behavior change ships behind an opt-in option, with a one-time deprecation warning and a `MIGRATING.md` entry (see `disallowNewConditionalOptions`).
 - PRs are squash-merged with a [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) title.
+- When a change alters a rule or caveat in `.agents/skills/`, update that skill in the same PR.
 
 ## Review
 
