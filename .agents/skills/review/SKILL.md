@@ -8,23 +8,10 @@ description: Review json-schema-form changes against the JSON Schema spec and JS
 ## Steps
 
 1. Read the diff and its tests.
-2. Map each changed file to its sections:
+2. Check every rule below. If the diff touches `src/modify-schema.ts`, also check its JSDoc caveats; if it touches `v0/`, check `v0/README.legacy.md`.
+3. Report each violation as `file:line`, the rule, and a schema plus value that breaks.
 
-   | Changed path | Sections |
-   | --- | --- |
-   | `src/validation/*` | Spec, Legacy, json-logic |
-   | `src/mutations.ts`, `src/utils.ts` | Conditionals |
-   | `src/field/*`, `src/custom/*` | Legacy, Conditionals |
-   | `src/form.ts` | All |
-   | `src/modify-schema.ts` | the `modifySchema` JSDoc caveats |
-   | `src/errors/*` | Errors |
-   | `v0/*` | `v0/README.legacy.md` |
-
-   Every diff also gets **Tests**.
-3. Check every rule in those sections.
-4. Report each violation as `file:line`, the rule, and a schema plus value that breaks.
-
-Done when every changed file is mapped and every rule in its sections is checked.
+Done when every rule has been checked against the diff.
 
 ## Spec
 
