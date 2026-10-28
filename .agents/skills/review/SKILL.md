@@ -51,20 +51,6 @@ Done when every changed file is mapped and every rule in its sections is checked
 - Value-based `items` conditionals run per row during validation. Per-row field state is not supported.
 - `handleValidation` updates `fields` in place.
 
-## Legacy
-
-v1 keeps these v0 behaviors on purpose, because production forms depend on them. "Fixing" one needs an opt-in option.
-
-- `legacyOptions.treatNullAsUndefined`: `null` counts as missing. `legacyOptions.allowForbiddenValues`: values under `false` schemas pass. Both are off by default.
-- `required` treats an empty array or object as missing.
-- `value` is a fallback for `const`.
-- `inputType: 'file'` skips `type` validation. `maxFileSize` is in KB. `accept` passes if any file matches.
-- `minDate` / `maxDate` use `yyyy-MM-dd`.
-- Every schema key is copied onto the field except those in `excludedSchemaProps`. Extend that list; don't add per-key `if`s.
-- `field.type` is a deprecated alias of `inputType`. New logic and tests use `inputType`.
-- Options come from the first of `oneOf`, `items.anyOf`, `anyOf`, `enum`. `const: null` options are dropped. They're cached module-wide, so treat them as read-only.
-- Defaults come from the base `properties` tree only, not from `allOf` or branches.
-
 ## json-logic
 
 - `x-jsf-logic-computedAttrs` doesn't walk `items`.
@@ -81,3 +67,17 @@ v1 keeps these v0 behaviors on purpose, because production forms depend on them.
 
 - Apply the `AGENTS.md` conventions.
 - Test conditional changes in a root `allOf`, inside a fieldset, and inside group-array `items`.
+
+## Legacy
+
+v1 keeps these v0 behaviors on purpose, because production forms depend on them. "Fixing" one needs an opt-in option.
+
+- `legacyOptions.treatNullAsUndefined`: `null` counts as missing. `legacyOptions.allowForbiddenValues`: values under `false` schemas pass. Both are off by default.
+- `required` treats an empty array or object as missing.
+- `value` is a fallback for `const`.
+- `inputType: 'file'` skips `type` validation. `maxFileSize` is in KB. `accept` passes if any file matches.
+- `minDate` / `maxDate` use `yyyy-MM-dd`.
+- Every schema key is copied onto the field except those in `excludedSchemaProps`. Extend that list; don't add per-key `if`s.
+- `field.type` is a deprecated alias of `inputType`. New logic and tests use `inputType`.
+- Options come from the first of `oneOf`, `items.anyOf`, `anyOf`, `enum`. `const: null` options are dropped. They're cached module-wide, so treat them as read-only.
+- Defaults come from the base `properties` tree only, not from `allOf` or branches.
