@@ -2,7 +2,7 @@
 
 <!-- A couple of sentences: what this PR does, why.
 
-A bullet list of changes, highlevel.
+A bullet list of changes, high-level.
  -->
 
 ## Example
@@ -14,7 +14,7 @@ Minimal schema:
 // ...
 ```
 
-How it is ran:
+How it is run:
 <!-- (createHeadlessForm options, handleValidation values, modifySchema config, etc) -->
 
 ```js
