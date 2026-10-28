@@ -7,98 +7,77 @@ description: Review json-schema-form changes against the JSON Schema spec and JS
 
 ## Steps
 
-1. Read the diff and the tests it adds or changes.
-2. Map each changed file to its sections below. Every diff also gets **Tests and compatibility**.
+1. Read the diff and its tests.
+2. Map each changed file to its sections:
 
    | Changed path | Sections |
    | --- | --- |
-   | `src/validation/*` (not `json-logic.ts`) | Spec baseline, Legacy behavior |
-   | `src/validation/json-logic.ts`, `src/validation/conditions.ts` | `x-jsf-*` keywords, Conditionals and visibility |
-   | `src/mutations.ts`, `src/utils.ts` | Conditionals and visibility |
-   | `src/field/*`, `src/custom/*` | Legacy behavior, `x-jsf-*` keywords, Conditionals and visibility |
-   | `src/form.ts` | All sections |
-   | `src/modify-schema.ts` | `modifySchema` |
-   | `src/errors/*` | Error output |
-   | `v0/*` | Tests and compatibility, plus `v0/README.legacy.md` |
+   | `src/validation/*` | Spec, Legacy, json-logic |
+   | `src/mutations.ts`, `src/utils.ts` | Conditionals |
+   | `src/field/*`, `src/custom/*` | Legacy, Conditionals |
+   | `src/form.ts` | All |
+   | `src/modify-schema.ts` | the `modifySchema` JSDoc caveats |
+   | `src/errors/*` | Errors |
+   | `v0/*` | `v0/README.legacy.md` |
 
-3. Apply every rule in those sections. For each rule, write a schema plus value that would break it under the new code.
-4. Report each finding as `file:line`, the rule, and that failing schema plus value. Leave out rules that hold.
+   Every diff also gets **Tests**.
+3. Check every rule in those sections.
+4. Report each violation as `file:line`, the rule, and a schema plus value that breaks.
 
-Done when every changed file is mapped and every rule in its sections has a verdict.
+Done when every changed file is mapped and every rule in its sections is checked.
 
-## Spec baseline
+## Spec
 
-- Target is draft 2020-12. Check spec behavior against the [validation vocabulary](https://json-schema.org/draft/2020-12/json-schema-validation) and the matching file in `json-schema-test-suite/tests/draft2020-12/`.
-- No support for `$ref`, `$defs`, `$id`, `$anchor`, `$dynamicRef`, `dependentRequired`, `dependentSchemas`, `propertyNames`, `minProperties`, `maxProperties`, `unevaluated*`, or `additionalProperties` as a schema. A change that adds one must also remove its entries from `test/json-schema-test-suite/failed-json-schema-test-suite.json`.
-- JSF validates the value, not the schema. A contradictory schema (`minContains > maxContains`) gets normal value errors, with no extra schema checks.
-- `validateSchema` calls every `validate*` without a guard. Each returns `[]` when its keyword is absent or the value's type does not apply (`minLength` ignores numbers).
-- Check that a keyword is present with `!== undefined` (or `'key' in schema`), so `minLength: 0` and `contains: false` still apply.
-- Validators never throw. Only invalid JSF input (an unknown json-logic rule, a removed option) throws, with a `[json-schema-form]` message prefix.
-- Never mutate the caller's `schema` or `initialValues`. Clone first (`safeDeepClone`), as `calculateFinalSchema` does.
-- `type` can be an array. Gate on `schemaTypeIncludes` (`src/validation/schema.ts`), not `schema.type === 'x'`, so `type: ['number', 'null']` still runs `minimum`, `maxLength` and friends.
-- `format` is enforced (the spec says annotation only). This is on purpose.
-- String length counts graphemes, not UTF-16 units.
-- `multipleOf` uses exact decimal math. Float `%` fails on `3.025` / `0.0001`.
-- Boolean schemas are valid anywhere a schema is: `true` accepts all, `false` rejects all.
-- `const`, `enum`, `uniqueItems` and option identity use deep equality. `JSON.stringify` and reference `Set`s break on key order and objects.
+- Target: draft 2020-12. Unsupported keywords are the ones skipped in `test/json-schema-test-suite/failed-json-schema-test-suite.json`. Adding support removes their entries.
+- Validate the value, never the schema. A contradictory schema gets normal value errors.
+- Each `validate*` returns `[]` when its keyword is absent or the value type doesn't apply. `validateSchema` calls them all without guards.
+- Test keyword presence with `!== undefined`, so `minLength: 0` and `contains: false` apply.
+- Validators never throw. Only invalid JSF input throws, prefixed `[json-schema-form]`.
+- Never mutate the caller's `schema` or `initialValues`. Clone first.
+- `type` can be an array: gate on `schemaTypeIncludes`, not `schema.type === 'x'`.
+- `format` is enforced on purpose (the spec says annotation only).
+- `const`, `enum`, `uniqueItems` and option identity use deep equality, not `JSON.stringify`.
 
-## Conditionals and visibility
+## Conditionals
 
-- Hiding a field is written as a branch that sets the property to `false`: `then: { properties: { x: false } }`. The field gets `isVisible: false`, keeps its `default`, and still builds its child fields.
-- A property set to `true` creates no field, and is skipped when merging a branch, so it never hides or overrides the base.
-- A `false` in a property map stays `false` when a sibling branch adds a constraint. Outside property maps (`additionalProperties: false`) a branch may still relax it.
-- Only the node's own `if` and the `if` of each `allOf` item (plus `x-jsf-logic.allOf`) change fields. Conditionals inside `anyOf`, `oneOf` or `not` never do.
-- When merging a branch into the base (`mergeSchemaBranch` in `src/utils.ts`): `required` is unioned and never shrinks, other arrays are replaced, objects merge deeply. Option arrays follow `disallowNewConditionalOptions`.
-- An applied `then`/`else` is deleted from the cloned schema so validation does not run it twice. Code that reads branches after `calculateFinalSchema` sees them gone.
-- A key in `if.properties` that is not in `if.required` matches when the value is absent (spec behavior), so the branch fires on an empty form. Fixtures that mean "when X equals Y" list X in both.
-- If a field named in `if.required` has a `type` error, the rule counts as not matching.
-- `items` conditionals that read values run per row during validation. Only constant `if: true` / `if: false` is applied to the shared `items` schema. Per-row field state is not supported.
-- `handleValidation` updates the `fields` array in place. Callers keep the same object identity.
+- Hide a field with `then: { properties: { x: false } }`. It gets `isVisible: false`, keeps `default`, and still builds child fields.
+- A property set to `true` creates no field and is skipped on merge.
+- A `false` in a property map stays `false` when a branch adds constraints. `additionalProperties: false` can still be relaxed.
+- Only the node's own `if` and `allOf[*].if` (plus `x-jsf-logic.allOf`) change fields. `anyOf`, `oneOf` and `not` never do.
+- Merging a branch (`mergeSchemaBranch`): `required` is unioned, other arrays are replaced, objects merge deeply. Option arrays follow `disallowNewConditionalOptions`.
+- Applied `then` / `else` are deleted from the cloned schema.
+- A key in `if.properties` but not in `if.required` matches when the value is absent, so the branch fires on an empty form.
+- A `type` error on an `if.required` field makes the rule not match.
+- Value-based `items` conditionals run per row during validation. Per-row field state is not supported.
+- `handleValidation` updates `fields` in place.
 
-## Legacy behavior
+## Legacy
 
-v1 follows the spec, but many production forms were built on v0 and depend on where v0 differs from it. v1 keeps these cases on purpose. A diff that "fixes" one is a behavior change: it needs an opt-in option, not a silent change.
+v1 keeps these v0 behaviors on purpose, because production forms depend on them. "Fixing" one needs an opt-in option.
 
-The two `legacyOptions` are off by default. Consumers turn them on to match v0.
+- `legacyOptions.treatNullAsUndefined`: `null` counts as missing. `legacyOptions.allowForbiddenValues`: values under `false` schemas pass. Both are off by default.
+- `required` treats an empty array or object as missing.
+- `value` is a fallback for `const`.
+- `inputType: 'file'` skips `type` validation. `maxFileSize` is in KB. `accept` passes if any file matches.
+- `minDate` / `maxDate` use `yyyy-MM-dd`.
+- Every schema key is copied onto the field except those in `excludedSchemaProps`. Extend that list; don't add per-key `if`s.
+- `field.type` is a deprecated alias of `inputType`. New logic and tests use `inputType`.
+- Options come from the first of `oneOf`, `items.anyOf`, `anyOf`, `enum`. `const: null` options are dropped. They're cached module-wide, so treat them as read-only.
+- Defaults come from the base `properties` tree only, not from `allOf` or branches.
 
-- **`null` values:** with `legacyOptions.treatNullAsUndefined`, `null` counts as missing. v0 forms send `null` for empty and hidden fields.
-- **Hidden fields:** with `legacyOptions.allowForbiddenValues`, a value under a `false` schema passes. v0 forms still send values for hidden fields.
-- **`required`:** an empty array or empty object counts as missing, not only `undefined` (`src/validation/schema.ts`).
-- **`value` keyword:** a non-spec fallback for `const` (`src/validation/const.ts`).
-- **File inputs:** `inputType: 'file'` skips `type` validation. The value is an array of file-like objects. `maxFileSize` is in KB, and `accept` passes if any one file matches (`src/validation/file.ts`).
-- **Dates:** `format: 'date'` makes a date input. `minDate` and `maxDate` in `x-jsf-presentation` use `yyyy-MM-dd` (`src/validation/custom/date.ts`).
-- **Schema keys on the field:** every key is copied onto the field except those in `excludedSchemaProps` (`src/field/schema.ts`), including custom `x-*` keys and functions. To leave a key out, extend that list instead of adding per-key `if`s.
-- **`field.type`:** a deprecated alias of `inputType`. Keep emitting it, but build new logic and test assertions on `inputType`.
-- **Options:** taken from the first of `oneOf`, `items.anyOf`, `anyOf` or `enum`. Options with `const: null` are dropped, and `type: 'array'` makes the field `multiple`.
-- **Options cache:** cached in a module-level `Map` keyed by JSON, so option objects are shared between forms. Treat them as read-only.
-- **Defaults:** taken from `default` in the base `properties` tree, including nested fieldsets and existing group-array rows. Defaults inside `allOf` or conditional branches are not used (`src/form.ts`).
+## json-logic
 
-## `x-jsf-*` keywords
+- `x-jsf-logic-computedAttrs` doesn't walk `items`.
+- `null` and `undefined` become `NaN`.
+- Custom operators go into one global registry. Add and remove them around every entry point.
 
-- `x-jsf-order`: listed fields first, unlisted fields keep their order at the end. Applies to `items` too.
-- `x-jsf-presentation`: spread onto the field. Its `inputType` wins over the inferred one. A branch's presentation merges deeply with the base one, arrays replaced.
-- `x-jsf-errorMessage`: maps a validation name (`required`, `minLength`, `json-logic`, ...) to a message.
-- `x-jsf-logic` (root): `validations` and `computedValues`, plus its own `if`/`then`/`else`/`allOf`. `x-jsf-logic-validations` lists rule names to run on a node. A missing name throws.
-- `x-jsf-logic-computedAttrs`: attribute → computed value name or `{{name}}` template. Deleted after it is applied. It walks `properties`, `if` and composition keywords, but not `items`. `0` is a valid result.
-- json-logic sees `null` and `undefined` as `NaN` (top-level keys only).
-- json-logic-js has one global operator registry. Custom operators are added before and removed after each `createHeadlessForm` and `handleValidation` call. New entry points must do the same.
+## Errors
 
-## `modifySchema`
+- Error text and the `formErrors` shape are public API. Consumers' E2E tests assert them.
+- A valid form has no `formErrors` key at all.
+- A new `validation` name needs a message in `src/errors/messages.ts`.
 
-Read the caveats in the `modifySchema` JSDoc (`src/modify-schema.ts`). Apply every item.
+## Tests
 
-## Error output
-
-- Error text and the `formErrors` shape are public API: consumers' E2E tests assert them. Changing a message is a breaking change.
-- `formErrors` is left out of the result (not set to `undefined`) when the form is valid.
-- Field paths drop `allOf`, `anyOf`, `oneOf`, `then`, `else` and `items`. The last error per field wins.
-- Every new `validation` name needs a message in `src/errors/messages.ts` and a test in `test/errors/messages.test.ts`.
-
-## Tests and compatibility
-
-- Each fix has a regression test that fails without it, in the matching `test/` file.
-- Conditional changes are tested with the rule in a root `allOf` (the common real-world shape), inside a fieldset, and inside group-array `items`.
-- Tests that use console warnings call `mockConsole()` and `restoreConsoleAndEnsureItWasNotCalled()`, or assert the warning.
-- `failed-json-schema-test-suite.json` changes only when the diff fixes a suite test.
-- Changed public behavior ships behind an opt-in option with a one-time deprecation warning and a `MIGRATING.md` entry.
-- `v0/` changes come with an updated `test/v0-baseline-test-results.json` when results change.
+- Apply the `AGENTS.md` conventions.
+- Test conditional changes in a root `allOf`, inside a fieldset, and inside group-array `items`.
