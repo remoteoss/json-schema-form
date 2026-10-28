@@ -5,7 +5,7 @@
 A bullet list of changes, high-level.
  -->
 
-## Example
+### Example
 
 <!-- Minimal schema that reproduces the bug or shows the feature. -->
 Minimal schema:
@@ -39,6 +39,6 @@ const form = createHeadlessForm(schema, ...)
 
 ## Checklist
 
-- [ ] Tests added or updated.
+- [ ] Tests updated (or added if needed).
 - [ ] Breaking change: ship behind an opt-in option, not a major version bump.
 - [ ] (For maintainers): Dev release tested in the internal Remote repo (behavior changes only).
