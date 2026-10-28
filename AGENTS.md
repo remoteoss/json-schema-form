@@ -1,20 +1,15 @@
 # AGENTS.md
 
-`@remoteoss/json-schema-form` (JSF) turns a JSON Schema into headless form `fields` and validates values against it. Architecture: [CONTRIBUTING.md#how-it-works](CONTRIBUTING.md#how-it-works).
+Setup, architecture, dev releases and merging: [CONTRIBUTING.md](CONTRIBUTING.md). This file adds only what it leaves out.
 
 - `src/`: v1 (TypeScript). All new work goes here.
-- `v0/`: legacy v0 (JavaScript), with its own `package.json`, lint and CI. Fixes only.
-
-## Setup
-
-- Use `pnpm` and the Node version from `.nvmrc`.
-- `json-schema-test-suite/` is a git submodule. Run `git submodule update --init` first, or `pnpm test` fails.
+- `v0/`: legacy v0 (JavaScript). Fixes only. Its own rules: [v0/README.legacy.md](v0/README.legacy.md).
 
 ## Done gate
 
-`pnpm check && pnpm test`. This is what CI runs (`.github/workflows/actions.yml`).
+`pnpm check && pnpm test`. This is what CI runs.
 
-A behavior change also needs a dev release (`pnpm release:dev`) tested in an internal Remote repo before merge. Mark it as pending in the PR description. Revert the `-dev` version in `package.json` before merge; CI does not catch it.
+A behavior change also needs a dev release tested in an internal Remote repo before merge. Mark it as pending in the PR description. Revert the `-dev` version in `package.json` before merge; CI does not catch it.
 
 ## Conventions
 
@@ -24,11 +19,9 @@ A behavior change also needs a dev release (`pnpm release:dev`) tested in an int
 - Use `unknown` and narrow it, not `any`. Each `as` cast has a type guard or a comment saying why it is safe.
 - Encode invariants in types (`JsfObjectSchema`, `NonBooleanJsfSchema`) instead of runtime checks the types already guarantee.
 - Official suite tests that v1 fails are skipped via `test/json-schema-test-suite/failed-json-schema-test-suite.json`. When a change makes one pass, delete its entry. Regenerate the file with `pnpm test:write-failed-tests`.
-- When you change `v0/` behavior on purpose, run `pnpm test:v0-update-baseline` and commit `test/v0-baseline-test-results.json`. `pnpm test:v0` fails on regressions and on newly passing tests.
-- v1 has no major bumps. A behavior change ships behind an opt-in option, with a one-time deprecation warning and a `MIGRATING.md` entry (see `disallowNewConditionalOptions`). Legacy switches go under `legacyOptions`, named for what they do, not a version. Warnings name the exact option to set.
-- PRs are squash-merged with a [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) title.
-- When a change alters a rule or caveat in `.agents/skills/`, update that skill in the same PR.
+- A behavior change ships behind an opt-in option, with a one-time deprecation warning and a `MIGRATING.md` entry (see `disallowNewConditionalOptions`). Legacy switches go under `legacyOptions`, named for what they do, not a version. Warnings name the exact option to set.
+- When a change alters a rule or caveat in `.agents/skills/` or the `modifySchema` JSDoc, update it in the same PR.
 
 ## Review
 
-Reviewing a JSF diff, or changing validation, conditionals, field generation, json-logic or `modifySchema`: read `.agents/skills/review-json-schema/SKILL.md` first. It lists the JSON Schema spec rules and JSF caveats.
+Reviewing a JSF diff, or changing validation, conditionals, field generation, json-logic or `modifySchema`: read `.agents/skills/review/SKILL.md` first. It lists the JSON Schema spec rules and JSF caveats.

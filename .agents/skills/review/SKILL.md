@@ -1,5 +1,5 @@
 ---
-name: review-json-schema
+name: review
 description: Review json-schema-form changes against the JSON Schema spec and JSF caveats. Use when reviewing a JSF diff or PR, or when writing code in src/validation, src/mutations.ts, src/field, src/modify-schema.ts or src/utils.ts.
 ---
 
@@ -19,7 +19,7 @@ description: Review json-schema-form changes against the JSON Schema spec and JS
    | `src/form.ts` | All sections |
    | `src/modify-schema.ts` | `modifySchema` |
    | `src/errors/*` | Error output |
-   | `v0/*` | Tests and compatibility only (v0 has its own rules) |
+   | `v0/*` | Tests and compatibility, plus `v0/README.legacy.md` |
 
 3. Apply every rule in those sections. For each rule, write a schema plus value that would break it under the new code.
 4. Report each finding as `file:line`, the rule, and that failing schema plus value. Leave out rules that hold.
@@ -57,18 +57,21 @@ Done when every changed file is mapped and every rule in its sections has a verd
 
 ## Legacy behavior
 
-These break the spec on purpose, for v0 parity. Keep them.
+v1 follows the spec, but many production forms were built on v0 and depend on where v0 differs from it. v1 keeps these cases on purpose. A diff that "fixes" one is a behavior change: it needs an opt-in option, not a silent change.
 
-- `legacyOptions.treatNullAsUndefined`: `null` counts as missing. `legacyOptions.allowForbiddenValues`: a value under a `false` schema passes. Both are off by default.
-- `required` treats an empty array or empty object as missing.
-- `value` is a fallback for `const`.
-- Every schema key is copied onto the field except those in `excludedSchemaProps` (`src/field/schema.ts`). Custom `x-*` keys and functions survive. Extend that list rather than adding per-key `if`s.
-- `field.type` is a deprecated alias of `inputType`. Keep emitting it, but build new logic and test assertions on `inputType`.
-- Field options come from the first of `oneOf`, `items.anyOf`, `anyOf`, `enum`. Options with `const: null` are dropped. `type: 'array'` makes the field `multiple`.
-- Options are cached in a module-level `Map` keyed by JSON. Option objects are shared between forms, so treat them as read-only.
-- `inputType: 'file'` skips `type` validation. `maxFileSize` is in KB. `accept` passes if any file matches.
-- `format: 'date'` makes a date input. `minDate` / `maxDate` in `x-jsf-presentation` use `yyyy-MM-dd`.
-- Initial values come from `default` in the base `properties` tree (nested fieldsets and existing group-array rows included), not from defaults inside `allOf` or branches.
+The two `legacyOptions` are off by default. Consumers turn them on to match v0.
+
+- **`null` values:** with `legacyOptions.treatNullAsUndefined`, `null` counts as missing. v0 forms send `null` for empty and hidden fields.
+- **Hidden fields:** with `legacyOptions.allowForbiddenValues`, a value under a `false` schema passes. v0 forms still send values for hidden fields.
+- **`required`:** an empty array or empty object counts as missing, not only `undefined` (`src/validation/schema.ts`).
+- **`value` keyword:** a non-spec fallback for `const` (`src/validation/const.ts`).
+- **File inputs:** `inputType: 'file'` skips `type` validation. The value is an array of file-like objects. `maxFileSize` is in KB, and `accept` passes if any one file matches (`src/validation/file.ts`).
+- **Dates:** `format: 'date'` makes a date input. `minDate` and `maxDate` in `x-jsf-presentation` use `yyyy-MM-dd` (`src/validation/custom/date.ts`).
+- **Schema keys on the field:** every key is copied onto the field except those in `excludedSchemaProps` (`src/field/schema.ts`), including custom `x-*` keys and functions. To leave a key out, extend that list instead of adding per-key `if`s.
+- **`field.type`:** a deprecated alias of `inputType`. Keep emitting it, but build new logic and test assertions on `inputType`.
+- **Options:** taken from the first of `oneOf`, `items.anyOf`, `anyOf` or `enum`. Options with `const: null` are dropped, and `type: 'array'` makes the field `multiple`.
+- **Options cache:** cached in a module-level `Map` keyed by JSON, so option objects are shared between forms. Treat them as read-only.
+- **Defaults:** taken from `default` in the base `properties` tree, including nested fieldsets and existing group-array rows. Defaults inside `allOf` or conditional branches are not used (`src/form.ts`).
 
 ## `x-jsf-*` keywords
 
@@ -82,12 +85,7 @@ These break the spec on purpose, for v0 parity. Keep them.
 
 ## `modifySchema`
 
-- It clones with a JSON round-trip, so functions and `undefined` are lost.
-- Steps run in a fixed order: `fields`, `allFields`, `create`, `pick`, `orderRoot`.
-- Arrays in a modification replace the original array.
-- `presentation` and `errorMessage` are converted to `x-jsf-presentation` and `x-jsf-errorMessage`.
-- `pick` works at root level only. It filters `required`, `x-jsf-order` and `allOf`, and re-adds fields a kept conditional needs, with a warning.
-- Warnings go through `console.warn` unless `muteLogging` is set.
+Read the caveats in the `modifySchema` JSDoc (`src/modify-schema.ts`). Apply every item.
 
 ## Error output
 
