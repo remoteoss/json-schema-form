@@ -1,35 +1,36 @@
 ## Summary
 
-<!-- One or two sentences: what this PR does and why. -->
+<!-- A couple of sentences: what this PR does, why.
 
-## Changes
+A bullet list of changes, highlevel.
+ -->
 
--
-
-## Before / After
+## Example
 
 <!-- Minimal schema that reproduces the bug or shows the feature. -->
+Minimal schema:
 
 ```json
-
+// ...
 ```
 
-<!-- The input you ran (createHeadlessForm options, handleValidation values, modifySchema config...). -->
+How it is ran:
+<!-- (createHeadlessForm options, handleValidation values, modifySchema config, etc) -->
 
 ```js
-
+const form = createHeadlessForm(schema, ...)
 ```
 
-**Before**
+**Output before:**
 
 ```js
-
+// ...
 ```
 
-**After**
+**Output after:**
 
 ```js
-
+// ...
 ```
 
 ## Related
@@ -39,5 +40,5 @@
 ## Checklist
 
 - [ ] Tests added or updated.
-- [ ] Behavior changes ship behind an opt-in option, with a `MIGRATING.md` entry.
-- [ ] Dev release tested in an internal Remote repo (behavior changes only).
+- [ ] Breaking change: ship behind an opt-in option, not a major version bump.
+- [ ] (For maintainers): Dev release tested in the internal Remote repo (behavior changes only).
