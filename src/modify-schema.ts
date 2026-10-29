@@ -444,6 +444,14 @@ function findMissingFields(conditional: JsfSchema | undefined, { fields, path }:
  * Modifies the schema
  * Use modify() when you need to customize the generated fields. This function creates a new version of JSON schema based on a provided configuration. Then you pass the new schema to createHeadlessForm()
  *
+ * Caveats:
+ * - The schema is cloned with a JSON round-trip, so functions and `undefined` are lost.
+ * - Steps run in a fixed order: `fields`, `allFields`, `create`, `pick`, `orderRoot`.
+ * - Arrays in a modification replace the original array.
+ * - `presentation` and `errorMessage` are converted to `x-jsf-presentation` and `x-jsf-errorMessage`.
+ * - `pick` works at root level only. It filters `required`, `x-jsf-order` and `allOf`, and re-adds fields a kept conditional needs, with a warning.
+ * - Warnings go through `console.warn` unless `muteLogging` is set.
+ *
  * @example
  * const modifiedSchema = modify(schema, {
  *   fields: {
