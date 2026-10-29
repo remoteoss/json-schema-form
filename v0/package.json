@@ -47,8 +47,8 @@
     ]
   },
   "dependencies": {
+    "es-toolkit": "^1.39.3",
     "json-logic-js": "^2.0.2",
-    "lodash": "^4.17.21",
     "randexp": "^0.5.3",
     "yup": "^0.30.0"
   },

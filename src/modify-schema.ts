@@ -1,10 +1,5 @@
 import type { JsfSchema } from './types'
-import difference from 'lodash/difference'
-import get from 'lodash/get'
-import intersection from 'lodash/intersection'
-import merge from 'lodash/merge'
-import mergeWith from 'lodash/mergeWith'
-import set from 'lodash/set'
+import { difference, get, intersection, merge, mergeWith, set } from 'es-toolkit/compat'
 
 type FieldOutput = Partial<JsfSchema>
 
