@@ -169,6 +169,11 @@ function cycleThroughPropertiesAndApplyValues(schemaCopy: JsfSchema, computedVal
       }
     }
 
+    // Computed values come from the top-level form values, so they're the same for every array row
+    if (typeof propertySchema.items === 'object') {
+      processProperty(propertySchema.items)
+    }
+
     // If the schema has an if statement, we need to cycle through the properties and apply the computed values
     if (typeof propertySchema.if === 'object') {
       cycleThroughPropertiesAndApplyValues(propertySchema.if, computedValues)
