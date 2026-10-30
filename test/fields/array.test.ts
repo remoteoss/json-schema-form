@@ -2,6 +2,7 @@ import type { JsfObjectSchema, JsfSchema, JsfSchemaType } from '../../src/types'
 import { describe, expect, it } from '@jest/globals'
 import { createHeadlessForm } from '../../src'
 import { buildFieldSchema as buildField } from '../../src/field/schema'
+import { calculateFinalSchema } from '../../src/mutations'
 
 describe('buildFieldArray', () => {
   function buildFieldSchema(schema: JsfSchema, name: string, required: boolean = false, strictInputType?: boolean, type?: JsfSchemaType) {
@@ -1640,13 +1641,32 @@ describe('buildFieldArray', () => {
       expect(getRowField(form, 'amount')?.additionalProps).toEqual({ currency: 'USD' })
     })
 
-    it('does not mutate the original schema', () => {
+    it('leaves the original schema untouched (regression guard for in-place mutation)', () => {
       const schema = buildSchema()
       const original = JSON.parse(JSON.stringify(schema))
 
       createHeadlessForm(schema, { initialValues: { currency: 'EUR', items: [] } })
 
       expect(schema).toEqual(original)
+    })
+
+    it('applies the same computed attribute regardless of how many rows exist', () => {
+      const withRows = createHeadlessForm(buildSchema(), {
+        initialValues: { currency: 'EUR', items: [{ amount: 1 }, { amount: 2 }, { amount: 3 }] },
+      })
+      const withoutRows = createHeadlessForm(buildSchema(), { initialValues: { currency: 'EUR', items: [] } })
+
+      expect(getRowField(withRows, 'amount')?.additionalProps).toEqual({ currency: 'EUR' })
+      expect(getRowField(withoutRows, 'amount')?.additionalProps).toEqual({ currency: 'EUR' })
+    })
+
+    it('removes x-jsf-logic-computedAttrs from the row schema once applied', () => {
+      const finalSchema = calculateFinalSchema({ schema: buildSchema(), values: { currency: 'EUR', items: [] } })
+
+      const rowSchema = (finalSchema.properties!.items as JsfObjectSchema).items as JsfObjectSchema
+      const amount = rowSchema.properties!.amount as JsfObjectSchema
+      expect(amount['x-jsf-logic-computedAttrs']).toBeUndefined()
+      expect(amount['x-jsf-presentation']).toMatchObject({ additionalProps: { currency: 'EUR' } })
     })
 
     it('applies a computed attribute on a group-array nested in an object property', () => {
