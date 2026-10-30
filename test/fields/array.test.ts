@@ -1578,4 +1578,114 @@ describe('buildFieldArray', () => {
       expect(pagesField?.default).toBe(0)
     })
   })
+
+  describe('computed attributes inside items', () => {
+    function buildSchema(): JsfObjectSchema {
+      return {
+        'type': 'object',
+        'properties': {
+          currency: {
+            'type': 'string',
+            'oneOf': [
+              { const: 'EUR', title: 'EUR' },
+              { const: 'USD', title: 'USD' },
+            ],
+            'x-jsf-presentation': { inputType: 'select' },
+          },
+          items: {
+            'type': 'array',
+            'x-jsf-presentation': { inputType: 'group-array' },
+            'items': {
+              type: 'object',
+              properties: {
+                description: { 'type': 'string', 'x-jsf-presentation': { inputType: 'text' } },
+                amount: {
+                  'type': 'integer',
+                  'x-jsf-presentation': { inputType: 'money' },
+                  'x-jsf-logic-computedAttrs': {
+                    'x-jsf-presentation': { additionalProps: { currency: 'currency_selected' } },
+                  },
+                },
+              },
+            },
+          },
+        },
+        'x-jsf-logic': { computedValues: { currency_selected: { rule: { var: 'currency' } } } },
+        'x-rmt-meta': { jsfVersion: '1' },
+      } as JsfObjectSchema
+    }
+
+    function getRowField(form: ReturnType<typeof createHeadlessForm>, name: string) {
+      const arrayField = form.fields.find(f => f.name === 'items')
+      return arrayField?.fields?.find(f => f.name === name)
+    }
+
+    it('applies a computed attribute declared on a row field', () => {
+      const form = createHeadlessForm(buildSchema(), {
+        initialValues: { currency: 'EUR', items: [{ description: 'a', amount: 1 }] },
+      })
+
+      expect(getRowField(form, 'amount')?.additionalProps).toEqual({ currency: 'EUR' })
+      expect(getRowField(form, 'description')?.additionalProps).toBeUndefined()
+      expect(form.fields.find(f => f.name === 'items')?.additionalProps).toBeUndefined()
+    })
+
+    it('updates the row field attribute when the values change', () => {
+      const form = createHeadlessForm(buildSchema(), {
+        initialValues: { currency: 'EUR', items: [{ description: 'a', amount: 1 }] },
+      })
+
+      form.handleValidation({ currency: 'USD', items: [{ description: 'a', amount: 1 }] })
+
+      expect(getRowField(form, 'amount')?.additionalProps).toEqual({ currency: 'USD' })
+    })
+
+    it('does not mutate the original schema', () => {
+      const schema = buildSchema()
+      const original = JSON.parse(JSON.stringify(schema))
+
+      createHeadlessForm(schema, { initialValues: { currency: 'EUR', items: [] } })
+
+      expect(schema).toEqual(original)
+    })
+
+    it('applies a computed attribute on a group-array nested in an object property', () => {
+      const schema = buildSchema()
+      const wrapper = {
+        'type': 'object',
+        'properties': {
+          currency: schema.properties!.currency,
+          invoice: { 'type': 'object', 'x-jsf-presentation': { inputType: 'fieldset' }, 'properties': { items: schema.properties!.items } },
+        },
+        'x-jsf-logic': schema['x-jsf-logic'],
+      } as JsfObjectSchema
+
+      const form = createHeadlessForm(wrapper, { initialValues: { currency: 'EUR' } })
+
+      const invoice = form.fields.find(f => f.name === 'invoice')
+      const rowField = invoice?.fields?.find(f => f.name === 'items')?.fields?.find(f => f.name === 'amount')
+      expect(rowField?.additionalProps).toEqual({ currency: 'EUR' })
+    })
+
+    it('still applies a computed attribute declared on a top-level field', () => {
+      const schema = {
+        'type': 'object',
+        'properties': {
+          currency: { 'type': 'string', 'x-jsf-presentation': { inputType: 'text' } },
+          amount: {
+            'type': 'integer',
+            'x-jsf-presentation': { inputType: 'money' },
+            'x-jsf-logic-computedAttrs': {
+              'x-jsf-presentation': { additionalProps: { currency: 'currency_selected' } },
+            },
+          },
+        },
+        'x-jsf-logic': { computedValues: { currency_selected: { rule: { var: 'currency' } } } },
+      } as JsfObjectSchema
+
+      const form = createHeadlessForm(schema, { initialValues: { currency: 'EUR' } })
+
+      expect(form.fields.find(f => f.name === 'amount')?.additionalProps).toEqual({ currency: 'EUR' })
+    })
+  })
 })
