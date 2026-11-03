@@ -34,6 +34,28 @@ describe('required field validation', () => {
     expect(form.handleValidation({ name: 'Some value' })).not.toHaveProperty('formErrors')
   })
 
+  it('does not treat Object.prototype members as filled in fields', () => {
+    const schema: JsfObjectSchema = {
+      type: 'object',
+      properties: {
+        constructor: {
+          type: 'string',
+        },
+        toString: {
+          type: 'string',
+        },
+      },
+      required: ['constructor', 'toString'],
+    }
+    const form = createHeadlessForm(schema)
+
+    expect(form.handleValidation({})).toMatchObject({
+      formErrors: { constructor: 'Required field', toString: 'Required field' },
+    })
+
+    expect(form.handleValidation({ constructor: 'Builder', toString: 'text' })).not.toHaveProperty('formErrors')
+  })
+
   it('allows null values when specified in the type array', () => {
     const schema: JsfObjectSchema = {
       type: 'object',

@@ -256,7 +256,8 @@ export function validateSchema(
   // If the schema defines "required", run required checks even when type is undefined.
   if (schema.required && isObjectValue(value)) {
     const missingKeys = schema.required.filter((key: string) => {
-      const fieldValue = value[key]
+      // Only own properties count, so names like `toString` or `constructor` aren't picked up from the prototype
+      const fieldValue = Object.hasOwn(value, key) ? value[key] : undefined
       // Field is considered missing if:
       // - it's undefined OR
       // - it's null AND treatNullAsUndefined option is true
