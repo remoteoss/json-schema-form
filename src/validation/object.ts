@@ -26,7 +26,9 @@ export function validateObject(
   if (typeof schema === 'object' && schema.properties && isObjectValue(value)) {
     const errors = []
     for (const [key, propertySchema] of Object.entries(schema.properties)) {
-      errors.push(...validateSchema(value[key], propertySchema, options, [...path, key], jsonLogicContext))
+      // Properties inherited from the prototype (e.g. `constructor`) are not part of the value
+      const propertyValue = Object.hasOwn(value, key) ? value[key] : undefined
+      errors.push(...validateSchema(propertyValue, propertySchema, options, [...path, key], jsonLogicContext))
     }
     return errors
   }

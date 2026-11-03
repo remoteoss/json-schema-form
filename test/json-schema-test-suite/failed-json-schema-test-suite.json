@@ -203,9 +203,6 @@
       "patternProperty invalidates nonproperty",
       "additionalProperty invalidates others"
     ],
-    "properties whose names are Javascript object property names": [
-      "none of the properties mentioned"
-    ],
     "propertyNames validation": [
       "some property names invalid"
     ],
@@ -356,9 +353,6 @@
     ],
     "$ref to $ref finds detached $anchor": [
       "non-number is invalid"
-    ],
-    "required properties whose names are Javascript object property names": [
-      "__proto__ present"
     ],
     "unevaluatedItems false": [
       "with unevaluated items"
