@@ -33,9 +33,6 @@ importers:
       '@types/json-logic-js':
         specifier: ^2.0.8
         version: 2.0.8
-      '@types/lodash':
-        specifier: ^4.17.16
-        version: 4.17.16
       '@types/validator':
         specifier: ^13.12.2
         version: 13.12.2
@@ -48,6 +45,9 @@ importers:
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
+      es-toolkit:
+        specifier: ^1.39.3
+        version: 1.46.1
       eslint:
         specifier: ^9.18.0
         version: 9.18.0
@@ -60,9 +60,6 @@ importers:
       json-schema-typed:
         specifier: ^8.0.1
         version: 8.0.1
-      lodash:
-        specifier: ^4.17.21
-        version: 4.17.21
       randexp:
         specifier: ^0.5.3
         version: 0.5.3
@@ -1243,9 +1240,6 @@ packages:
   '@types/json-schema@7.0.15':
     resolution: {integrity: sha512-5+fP8P8MFNC+AyZCDxrB2pkZFPGzqQWUzpSeuuVLvm8VMcorNYavBqoFcxK8bQz4Qsbn4oUEEem4wDLfcysGHA==}
 
-  '@types/lodash@4.17.16':
-    resolution: {integrity: sha512-HX7Em5NYQAXKW+1T+FiuG27NGwzJfCX3s1GjOa7ujxZa52kjJLOr4FUxT+giF6Tgxv1e+/czV/iTtBw27WTU9g==}
-
   '@types/mdast@4.0.4':
     resolution: {integrity: sha512-kGaNbPh1k7AFzgpud/gMdvIm5xuECykRR+JnWKQno9TAXVa6WIVCGTPvYGekIDL4uwCZQSYbUxNBSb1aUo79oA==}
 
@@ -1700,6 +1694,9 @@ packages:
 
   es-module-lexer@1.6.0:
     resolution: {integrity: sha512-qqnD1yMU6tk/jnaMosogGySTZP8YtUgAffA9nMN+E/rjxcfRQ6IEk7IiozUjgxKoFHBGjTLnrHB/YC45r/59EQ==}
+
+  es-toolkit@1.46.1:
+    resolution: {integrity: sha512-5eNtXOs3tbfxXOj04tjjseeWkRWaoCjdEI+96DgwzZoe6c9juL49pXlzAFTI72aWC9Y8p7168g6XIKjh7k6pyQ==}
 
   esbuild@0.24.2:
     resolution: {integrity: sha512-+9egpBW8I3CD5XPe0n6BfT5fxLzxrlDzqydF3aviG+9ni1lDC/OvMHcxqEFV0+LANZG5R1bFMWfUrjVsdwxJvA==}
@@ -4640,8 +4637,6 @@ snapshots:
 
   '@types/json-schema@7.0.15': {}
 
-  '@types/lodash@4.17.16': {}
-
   '@types/mdast@4.0.4':
     dependencies:
       '@types/unist': 3.0.3
@@ -5117,6 +5112,8 @@ snapshots:
       is-arrayish: 0.2.1
 
   es-module-lexer@1.6.0: {}
+
+  es-toolkit@1.46.1: {}
 
   esbuild@0.24.2:
     optionalDependencies:

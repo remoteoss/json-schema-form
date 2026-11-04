@@ -1,5 +1,4 @@
-import flow from 'lodash/flow';
-import noop from 'lodash/noop';
+import { flow, noop } from 'es-toolkit/compat';
 import { randexp } from 'randexp';
 import { string, number, boolean, object, array, mixed } from 'yup';
 

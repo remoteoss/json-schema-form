@@ -1,5 +1,4 @@
-import merge from 'lodash/merge';
-import omit from 'lodash/omit';
+import { merge, omit } from 'es-toolkit/compat';
 
 import { extractParametersFromNode } from './helpers';
 import { supportedTypes } from './internals/fields';

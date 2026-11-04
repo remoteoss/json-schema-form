@@ -1,9 +1,4 @@
-import inRange from 'lodash/inRange';
-import isFunction from 'lodash/isFunction';
-import isNil from 'lodash/isNil';
-import isObject from 'lodash/isObject';
-import mapValues from 'lodash/mapValues';
-import pick from 'lodash/pick';
+import { inRange, isFunction, isNil, isObject, mapValues, pick } from 'es-toolkit/compat';
 
 import { pickXKey } from './internals/helpers';
 import { buildYupSchema } from './yupSchema';

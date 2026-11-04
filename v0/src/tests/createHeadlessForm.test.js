@@ -1,5 +1,4 @@
-import isNil from 'lodash/isNil';
-import omitBy from 'lodash/omitBy';
+import { isNil, omitBy } from 'es-toolkit/compat';
 import { object } from 'yup';
 
 import {

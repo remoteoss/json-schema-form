@@ -1,9 +1,4 @@
-import get from 'lodash/get';
-import isNil from 'lodash/isNil';
-import omit from 'lodash/omit';
-import omitBy from 'lodash/omitBy';
-import pickBy from 'lodash/pickBy';
-import set from 'lodash/set';
+import { get, isNil, omit, omitBy, pickBy, set } from 'es-toolkit/compat';
 import { lazy } from 'yup';
 
 import { checkIfConditionMatchesProperties } from './internals/checkIfConditionMatches';
