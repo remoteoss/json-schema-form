@@ -229,6 +229,79 @@ describe('fields', () => {
     ])
   })
 
+  describe('meta', () => {
+    it('reads meta from x-jsf-presentation', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          note: {
+            'type': 'string',
+            'x-jsf-presentation': { inputType: 'text', meta: { ignoreValue: true } },
+          },
+        },
+      }
+
+      const [field] = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(field.meta).toEqual({ ignoreValue: true })
+    })
+
+    it('ignores meta placed next to x-jsf-presentation instead of inside it', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          note: {
+            'type': 'string',
+            // @ts-expect-error meta belongs inside x-jsf-presentation, not next to it
+            'meta': { ignoreValue: true },
+            'x-jsf-presentation': { inputType: 'text' },
+          },
+        },
+      }
+
+      const [field] = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(field).not.toHaveProperty('meta')
+    })
+
+    it('keeps the x-jsf-presentation meta when both are present', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          note: {
+            'type': 'string',
+            // @ts-expect-error meta belongs inside x-jsf-presentation, not next to it
+            'meta': { ignoreValue: false, source: 'root' },
+            'x-jsf-presentation': { inputType: 'text', meta: { ignoreValue: true } },
+          },
+        },
+      }
+
+      const [field] = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(field.meta).toEqual({ ignoreValue: true })
+    })
+
+    it('still builds a property named meta', () => {
+      const schema: JsfSchema = {
+        type: 'object',
+        properties: {
+          meta: {
+            type: 'object',
+            properties: {
+              tag: { type: 'string' },
+            },
+          },
+        },
+      }
+
+      const fields = buildFieldSchema(schema, 'root', true)!.fields!
+
+      expect(fields.map(field => field.name)).toEqual(['meta'])
+      expect(fields[0].fields?.map(field => field.name)).toEqual(['tag'])
+    })
+  })
+
   it('should handle boolean schema', () => {
     const schema = {
       type: 'object',

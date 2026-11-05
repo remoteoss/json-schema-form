@@ -341,6 +341,7 @@ const excludedSchemaProps = [
   'type', // Handled separately
   'x-jsf-errorMessage', // Handled separately
   'x-jsf-presentation', // Handled separately
+  'meta', // Only read from 'x-jsf-presentation'
   'oneOf', // Transformed to 'options'
   'anyOf', // Transformed to 'options'
   'properties', // Handled separately

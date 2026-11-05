@@ -1,3 +1,13 @@
+#### 1.2.21 (2026-11-03)
+
+##### Chores
+
+*  add AGENTS.md and JSON Schema review skill ([#280](https://github.com/remoteoss/json-schema-form/pull/280)) ([a5fdd2d2](https://github.com/remoteoss/json-schema-form/commit/a5fdd2d26209cefca5d30d523be03b9f0d4dd129))
+
+##### Bug Fixes
+
+* **fields:**  read meta only from x-jsf-presentation ([#278](https://github.com/remoteoss/json-schema-form/pull/278)) ([c41ede1f](https://github.com/remoteoss/json-schema-form/commit/c41ede1fdd5e80ba95a8d14cffe4eced817fff0b))
+
 #### 1.2.20 (2026-10-13)
 
 ##### Bug Fixes
