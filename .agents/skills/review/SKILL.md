@@ -41,7 +41,7 @@ Done when every rule has been checked against the diff and every finding has a `
 
 ## json-logic
 
-- `x-jsf-logic-computedAttrs` doesn't walk `items`.
+- `x-jsf-logic-computedAttrs` is applied inside `items` too, from the top-level values. A rule that reads the row's own values is not supported.
 - `null` and `undefined` become `NaN`.
 - Custom operators go into one global registry. Add and remove them around every entry point.
 
